@@ -1,0 +1,35 @@
+/*
+To change this license header, choose License Headers in Project Properties.
+To change this template file, choose Tools | Templates
+and open the template in the editor.
+*/
+/* 
+    Created on : 23/09/2014, 11:10:35 AM
+    Author     : daniel
+*/
+
+.menu_lateral{
+    width: 200px;
+    height: 98%;
+    position: absolute;
+    left: 0px;
+    border-right: 2px solid #dedfe0;
+    overflow: auto auto;
+    padding-right: 7px;
+    padding-left: 4px;
+}
+
+.menu_lateral table tr{
+    cursor: pointer;    
+}
+
+.work_space
+{   
+    height: 98%;
+    position: absolute;
+    left: 210px;
+    right: 0px;
+    overflow: auto;
+    margin-left: 20px;
+   padding-right: 5px;
+}

@@ -1,0 +1,81 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<Modelo xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="file:///C:/wamp/www/cs-docs/Configuracion/Esquema_CSDOCS1.0.xsd">
+	<CrearInstanciaBD>
+		<InstanciaBD>Gorsa</InstanciaBD>
+	</CrearInstanciaBD>
+	
+	<EstructuraEmpresas>
+		<CrearEstructuraEmpresa DataBaseName="Gorsa">
+			<DefaultStructProperties>
+				<NombreEmpresa type="VARCHAR" long="100" required="true"/>				
+				<Descripcion type="TEXT" required="true"/>
+				<ClaveEmpresa type="VARCHAR" long="50" required="true"/>
+			</DefaultStructProperties>	
+			
+		</CrearEstructuraEmpresa>
+		<InsertEmpresa DataBaseName="Gorsa">
+			<Field Value="e1">ClaveEmpresa</Field> <!--Campo Alfanumérico Requerido -->
+			<Field Value="Serv. Prof. de Apoyo Admtivo">NombreEmpresa</Field>
+			<Field Value="Servicios Profesionales de Apoyo Administrativo">Descripcion</Field>
+		</InsertEmpresa>
+	</EstructuraEmpresas>
+	
+	<EstructuraRepositorio>			
+		<CrearEstructuraRepositorio DataBaseName="Gorsa" ClaveEmpresa="e1">		
+				<NombreRepositorio>Sociedades</NombreRepositorio>
+				<DefaultStructProperties>		
+					<TipoArchivo type="VARCHAR" long="10" required="true"/>
+					<RutaArchivo type="TEXT" required="true"/>
+					<UsuarioPublicador type="VARCHAR" long="20" required="true"/>
+					<FechaIngreso type="DATE" required="true"/>
+					<ResumenExtract type="TEXT" required="true"/>
+					<Autor type="VARCHAR" long="100" required="true"/>
+					<Topografia type="INT" long="10" required="true"/>
+					<Clasificacion type="VARCHAR" long="250" required="false"/>
+					<Gestion type="INT" long="10" required="true"/>
+					<Expediente type="INT" long="10" required="true"/>
+					<NombreArchivo type="VARCHAR" long="100" required="true"/>
+					<Full type="TEXT" required="true"/>
+				</DefaultStructProperties>
+				<DefinitionUsersProperties>
+						<Properties name="NoConsecutivo" type="INT" long="10"/>
+						<Properties name="NombreEmpresa" type="VARCHAR" long="200"/>
+						<Properties name="Sociedad" type="VARCHAR" long="200"/>								
+				</DefinitionUsersProperties>															
+		</CrearEstructuraRepositorio>
+	</EstructuraRepositorio>		
+						
+	
+	
+	
+	<EstructuraUsuarios>
+		<CrearEstructuraUsuario DataBaseName="Gorsa">
+			<DefaultStructProperties >
+				<Login type="VARCHAR" long="50" required="true"/>
+				<Password type="VARCHAR" long="50" required="true"/>
+			</DefaultStructProperties>		
+			<!-- Los valores no llevan espacio  -->
+			<DefinitionUsersProperties>
+				<Properties name="Nombre" type="VARCHAR" long="70" required="true"/>
+				<Properties name="ApellidoP" type="VARCHAR" long="30" required="true"/>
+				<Properties name="ApellidoM" type="VARCHAR" long="30" required="false"/>
+			</DefinitionUsersProperties>
+		</CrearEstructuraUsuario>
+		
+		<InsertUsuario DataBaseName="Gorsa">
+			<Field Value="admin">Login</Field>
+			<Field Value="admin">Password</Field>
+			<Field Value="Administrador">Nombre</Field>
+			<Field Value="Administrador">ApellidoP</Field>
+			<Field Value="Administrador">ApellidoM</Field>
+		</InsertUsuario>
+		<InsertUsuario DataBaseName="Gorsa">
+			<Field Value="daniel">Login</Field>
+			<Field Value="123456">Password</Field>
+			<Field Value="Daniel">Nombre</Field>
+			<Field Value="Luna">ApellidoP</Field>
+			<Field Value="González">ApellidoM</Field>
+		</InsertUsuario>
+	</EstructuraUsuarios>
+	
+</Modelo>

@@ -1,0 +1,7 @@
+Comenzando restauración del directorio DEGLOEMA S.A. DE C.V id=2   id parent = 1
+SELECT *FROM temp_dir_Creditos WHERE IdDirectory = 2 
+/volume1/web/Configuracion/RestoreTrash/FICEIN/root
+UPDATE RepositorioGlobal SET Full='pdf ,  root ,  2015-04-09 ,  DEGLOEMA S.A. DE C.V..pdf , E005555 , CONSTRUCTORA Y ARRENDADORA VIL S.A. DE C.V , DEG060313N91 , 018855555 , 018855555 , 2013-10-11 , A , 10,000.00 , S.A. , Solicitud   ||Nota|| 2, 2, Nota1 Daniel' WHERE IdFile=1 AND IdRepositorio=3
+INSERT INTO Creditos (IdRepositorio,IdDirectory, IdEmpresa,TipoArchivo,RutaArchivo,UsuarioPublicador,FechaIngreso,ResumenExtract,Autor,Topografia,Clasificacion,Gestion,Expediente,NombreArchivo,Full,NoCredito,Nombre,RFC,Telefono1,Telefono2,FechaDocumento,TipoCredito,TipoPersona,DocumentoCredito) VALUES (1,2,1, 'pdf' , '../Estructuras/FICEIN/Creditos/1/2/DEGLOEMA S.A. DE C.V..pdf' , 'root' , '2015-04-09' , '0' , '0' , 0 , '0' , 0 , 0 , 'DEGLOEMA S.A. DE C.V..pdf' , 'pdf ,  root ,  2015-04-09 ,  DEGLOEMA S.A. DE C.V..pdf , E005555 , CONSTRUCTORA Y ARRENDADORA VIL S.A. DE C.V , DEG060313N91 , 018855555 , 018855555 , 2013-10-11 , A , 10,000.00 , S.A. , Solicitud   ||Nota|| 2, 2, Nota1 Daniel' , 'E005555' , 'CONSTRUCTORA Y ARRENDADORA VIL S.A. DE C.V' , 'DEG060313N91' , '018855555' , '018855555' , '2013-10-11' , 1 , 2 , 1)
+
+Se eliminó el proceso root0409121237

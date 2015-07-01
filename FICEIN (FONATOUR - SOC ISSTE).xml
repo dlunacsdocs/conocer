@@ -1,0 +1,333 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<Modelo xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="file:///C:/wamp/www/cs-docs/Configuracion/Esquema_CSDOCS1.0.xsd">
+	<CrearInstanciaBD>
+		<InstanciaBD>FICEIN</InstanciaBD>
+	</CrearInstanciaBD>
+	<EstructuraRepositorio>			
+		<CrearEstructuraRepositorio DataBaseName="FICEIN" ClaveEmpresa="FICEIN">		
+				<NombreRepositorio>RecursosHumanos</NombreRepositorio>
+				<DefaultStructProperties>		
+					<TipoArchivo type="VARCHAR" long="10" required="true"/>
+					<RutaArchivo type="TEXT" required="true"/>
+					<UsuarioPublicador type="VARCHAR" long="20" required="true"/>
+					<FechaIngreso type="DATE" required="true"/>
+					<ResumenExtract type="TEXT" required="true"/>
+					<Autor type="VARCHAR" long="100" required="true"/>
+					<Topografia type="INT" long="10" required="true"/>
+					<Clasificacion type="VARCHAR" long="250" required="false"/>
+					<Gestion type="INT" long="10" required="true"/>
+					<Expediente type="INT" long="10" required="true"/>
+					<NombreArchivo type="VARCHAR" long="100" required="true"/>
+					<Full type="TEXT" required="true"/>
+				</DefaultStructProperties>
+				<DefinitionUsersProperties>
+						<Properties name="NoEmpleado" type="VARCHAR" long="10"/>
+						<Properties name="Nombre" type="VARCHAR" long="50"/>																
+						<Properties name="FechaDocumento" type="VARCHAR" long="10"/>
+						<Properties name="Descripcion" type="TEXT"/>
+						
+						<ListProperties>
+							<ListSearch name="TipoDocumento" TipoCatalogo="true">
+								<Properties name="TipoDocumento" type="VARCHAR" long="200"/>
+							</ListSearch>						
+						</ListProperties>
+													
+				</DefinitionUsersProperties>															
+		</CrearEstructuraRepositorio>
+			
+			<CrearEstructuraRepositorio DataBaseName="FICEIN" ClaveEmpresa="FICEIN">			
+				<NombreRepositorio>Contratos</NombreRepositorio>
+				<DefaultStructProperties>		
+					<TipoArchivo type="VARCHAR" long="10" required="true"/>
+					<RutaArchivo type="TEXT" required="true"/>
+					<UsuarioPublicador type="VARCHAR" long="20" required="true"/>
+					<FechaIngreso type="DATE" required="true"/>
+					<ResumenExtract type="TEXT" required="true"/>
+					<Autor type="VARCHAR" long="100" required="true"/>
+					<Topografia type="INT" long="10" required="true"/>
+					<Clasificacion type="VARCHAR" long="250" required="false"/>
+					<Gestion type="INT" long="10" required="true"/>
+					<Expediente type="INT" long="10" required="true"/>
+					<NombreArchivo type="VARCHAR" long="100" required="true"/>
+					<Full type="TEXT" required="true"/>
+				</DefaultStructProperties>
+				<DefinitionUsersProperties>
+						<Properties name="NoContrato" type="VARCHAR" long="10" required="true"/>
+						<Properties name="RFC" type="VARCHAR" long="50" required="true"/>
+						<Properties name="Nombre" type="VARCHAR" long="200" required="true"/>
+						<Properties name="FechaDocumento" type="DATE" required="true"/>
+						<Properties name="Observaciones" type="TEXT" required="true"/>
+						
+						<ListProperties>
+							<ListSearch name="DocumentoContratos" TipoCatalogo="true">
+								<Properties name="TipoDocumento" type="VARCHAR" long="50"/>
+							</ListSearch>						
+						</ListProperties>
+						<Properties name="Edad" type="INT" long="3"/>
+								
+				</DefinitionUsersProperties>															
+			</CrearEstructuraRepositorio>	
+
+		<CrearEstructuraRepositorio DataBaseName="FICEIN" ClaveEmpresa="FICEIN">			
+				<NombreRepositorio>Creditos</NombreRepositorio>
+				<DefaultStructProperties>		
+					<TipoArchivo type="VARCHAR" long="10" required="true"/>
+					<RutaArchivo type="TEXT" required="true"/>
+					<UsuarioPublicador type="VARCHAR" long="20" required="true"/>
+					<FechaIngreso type="DATE" required="true"/>
+					<ResumenExtract type="TEXT" required="true"/>
+					<Autor type="VARCHAR" long="100" required="true"/>
+					<Topografia type="INT" long="10" required="true"/>
+					<Clasificacion type="VARCHAR" long="250" required="false"/>
+					<Gestion type="INT" long="10" required="true"/>
+					<Expediente type="INT" long="10" required="true"/>
+					<NombreArchivo type="VARCHAR" long="100" required="true"/>
+					<Full type="TEXT" required="true"/>
+				</DefaultStructProperties>
+				<DefinitionUsersProperties>
+						<Properties name="NoCredito" type="VARCHAR" long="20" required="true"/>
+						<Properties name="Nombre" type="VARCHAR" long="200" required="true"/>
+						<Properties name="RFC" type="VARCHAR" long="50" required="true"/>
+						<Properties name="Telefono1" type="VARCHAR" long="15" required="true"/>
+						<Properties name="Telefono2" type="VARCHAR" long="15" required="true"/>
+						<Properties name="FechaDocumento" type="DATE"/>
+
+						<ListProperties>
+							<ListSearch name="TipoCredito" TipoCatalogo="true">
+								<Properties name="Tipo" type="VARCHAR" long="20"/>
+								<Properties name="Monto" type="VARCHAR" long="20"/>
+							</ListSearch>						
+						</ListProperties>
+						
+						<ListProperties>
+							<ListSearch name="TipoPersona" TipoCatalogo="true">
+								<Properties name="TipoPersona" type="VARCHAR" long="20"/>
+							</ListSearch>						
+						</ListProperties>
+						
+						<ListProperties>
+							<ListSearch name="DocumentoCredito" TipoCatalogo="true">
+								<Properties name="Tipo" type="VARCHAR" long="20"/>
+							</ListSearch>						
+						</ListProperties>
+											
+				</DefinitionUsersProperties>																		
+		</CrearEstructuraRepositorio>
+		
+		<CrearEstructuraRepositorio DataBaseName="FICEIN" ClaveEmpresa="FICEIN">			
+			<NombreRepositorio>ISSTE</NombreRepositorio>
+			<DefaultStructProperties>		
+				<TipoArchivo type="VARCHAR" long="10" required="true"/>
+				<RutaArchivo type="TEXT" required="true"/>
+				<UsuarioPublicador type="VARCHAR" long="20" required="true"/>
+				<FechaIngreso type="DATE" required="true"/>
+				<ResumenExtract type="TEXT" required="true"/>
+				<Autor type="VARCHAR" long="100" required="true"/>
+				<Topografia type="INT" long="10" required="true"/>
+				<Clasificacion type="VARCHAR" long="250" required="false"/>
+				<Gestion type="INT" long="10" required="true"/>
+				<Expediente type="INT" long="10" required="true"/>
+				<NombreArchivo type="VARCHAR" long="100" required="true"/>
+				<Full type="TEXT" required="true"/>
+			</DefaultStructProperties>
+			
+			<DefinitionUsersProperties>
+				
+				<Properties name="NoContrato" type="VARCHAR" long="50" required="true"/>
+			
+				<ListProperties>
+					<ListSearch name="Tipo_Contrato" TipoCatalogo="true">
+						<Properties name="Tipo" type="VARCHAR" long="20"/>
+						<Properties name="Descripcion" type="TEXT"/>
+					</ListSearch>						
+				</ListProperties>
+				
+				<ListProperties>
+					<ListSearch name="Modalidad_Procedimiento" TipoCatalogo="true">
+						<Properties name="Tipo" type="VARCHAR" long="20"/>
+						<Properties name="Descripcion" type="TEXT"/>
+					</ListSearch>						
+				</ListProperties>
+			
+				
+				<Properties name="No_Licitacion" type="VARCHAR" long="200" required="true"/>
+				<Properties name="Plazo_Ejecucion" type="VARCHAR" long="50" required="true"/>
+				<Properties name="Objeto_Contrato" type="TEXT" required="true"/>
+				<Properties name="Monto" type="VARCHAR" long="15" required="true"/>
+				<Properties name="Periodo_Ejercicio_Presupuestal" type="DATE"/>
+
+				<ListProperties>
+					<ListSearch name="Modalidad_Periodo_Ejercicio" TipoCatalogo="true">
+						<Properties name="Tipo" type="VARCHAR" long="20"/>
+					</ListSearch>						
+				</ListProperties>
+				
+				<ListProperties>
+					<ListSearch name="Entidad_Federativa" TipoCatalogo="true">
+						<Properties name="Entidad" type="VARCHAR" long="20"/>
+					</ListSearch>						
+				</ListProperties>
+				
+				<Properties name="Localidad" type="VARCHAR" long="15" required="true"/>
+						
+				<ListProperties>
+					<ListSearch name="Unidades_Medicas" TipoCatalogo="true">
+						<Properties name="Unidad" type="VARCHAR" long="100"/>
+					</ListSearch>						
+				</ListProperties>
+				
+				<ListProperties>
+					<ListSearch name="Estatus" TipoCatalogo="true">
+						<Properties name="Tipo" type="VARCHAR" long="50"/>
+					</ListSearch>						
+				</ListProperties>
+						
+				<Properties name="RFC_Empresa" type="VARCHAR" long="50" required="true"/>				
+				<Properties name="Razon_Social" type="VARCHAR" long="50" required="true"/>
+				<Properties name="Representante_Legal" type="VARCHAR" long="50" required="false"/>
+				<Properties name="Domicilio_Contratista" type="VARCHAR" long="50" required="true"/>
+				
+
+											
+			</DefinitionUsersProperties>																		
+		</CrearEstructuraRepositorio>
+		
+	</EstructuraRepositorio>
+<!--	
+	<InsertDatosRepositorios>
+		<InsertDatosRepositorio>
+			<idEmpresa>11025</idEmpresa>
+				<NombreRepositorio>Repositorio1</NombreRepositorio>
+				<Descripcion></Descripcion>
+				<TipoArchivo>Texto</TipoArchivo>
+				<RutaArchivo>/volume1/</RutaArchivo>
+				<UsuarioPublicador>daniel</UsuarioPublicador>
+				<Fecha>2002-09-24</Fecha>
+				<IdRepositorio>1</IdRepositorio>
+				<ResumenExtract></ResumenExtract>
+				<Autor>daniel</Autor>
+				<Topografia>xsdd</Topografia>
+				<Clasificacion>Ingenieria</Clasificacion>
+				<Vigencia>1 año</Vigencia>
+				<NombreBD>cs-docs</NombreBD>
+		</InsertDatosRepositorio>
+		
+	</InsertDatosRepositorios>
+	-->
+	
+	<EstructuraEmpresas>
+		<CrearEstructuraEmpresa DataBaseName="FICEIN">
+			<DefaultStructProperties>
+				<NombreEmpresa type="VARCHAR" long="100" required="true"/>				
+				<Descripcion type="TEXT" required="true"/>
+				<ClaveEmpresa type="VARCHAR" long="50" required="true"/>
+			</DefaultStructProperties>
+			<DefinitionUsersProperties>
+				<Properties name="Direccion" type="VARCHAR" long="200" required="false"/>
+				<Properties name="Telefono" type="INT" long="15" required="false"/>
+				<Properties name="NoLicencia" type="VARCHAR" long="50" required="false"/>
+			</DefinitionUsersProperties>
+			
+		</CrearEstructuraEmpresa>
+
+		<InsertEmpresa DataBaseName="FICEIN">
+			<Field Value="FICEIN">ClaveEmpresa</Field>
+			<Field Value="FICEIN">NombreEmpresa</Field>
+			<Field Value="Empresa Otorgadora de Créditos Personales">Descripcion</Field>
+			<Field Value="Polanco">Direccion</Field>
+			<Field Value="59805092">Telefono</Field>
+			<Field Value="MX-06418-20">NoLicencia</Field>
+		</InsertEmpresa>
+	</EstructuraEmpresas>
+	
+	<EstructuraUsuarios>
+		<CrearEstructuraUsuario DataBaseName="FICEIN">
+			<DefaultStructProperties>
+				<Login type="VARCHAR" long="50" required="true"/>
+				<Password type="VARCHAR" long="50" required="true"/>
+				<Descripcion type="TEXT" required="false"/>
+			</DefaultStructProperties>		
+			<!-- Los valores no llevan espacio  -->
+			<DefinitionUsersProperties>
+				<Properties name="Nombre" type="VARCHAR" long="70" required="true"/>
+				<Properties name="ApellidoP" type="VARCHAR" long="30" required="true"/>
+				<Properties name="ApellidoM" type="VARCHAR" long="30" required="false"/>
+			</DefinitionUsersProperties>
+		</CrearEstructuraUsuario>
+		
+		<InsertUsuario DataBaseName="FICEIN">
+			<Field Value="daniel">Login</Field>
+			<Field Value="123456">Password</Field>
+			<Field Value = "">Descripcion</Field>
+			<Field Value="Ulises Daniel">Nombre</Field>
+			<Field Value="Luna">ApellidoP</Field>
+			<Field Value="González">ApellidoM</Field>
+		</InsertUsuario>
+		
+		<InsertUsuario DataBaseName="FICEIN">
+			<Field Value="marco">Login</Field>
+			<Field Value="123456">Password</Field>
+			<Field Value = "">Descripcion</Field>
+			<Field Value="Marco Antonio">Nombre</Field>
+			<Field Value="Carpio">ApellidoP</Field>
+			<Field Value="Ramón">ApellidoM</Field>
+
+		</InsertUsuario>
+		
+		<InsertUsuario DataBaseName="FICEIN">
+			<Field Value="eduardo">Login</Field>
+			<Field Value="123456">Password</Field>
+			<Field Value = "">Descripcion</Field>
+			<Field Value="Eduardo">Nombre</Field>
+			<Field Value="Cruz">ApellidoP</Field>
+			<Field Value="Del Angel">ApellidoM</Field>
+		</InsertUsuario>
+		
+		<InsertUsuario DataBaseName="FICEIN">
+			<Field Value="rocio">Login</Field>
+			<Field Value="123456">Password</Field>
+			<Field Value = "">Descripcion</Field>
+			<Field Value="Rocio Elizabeth">Nombre</Field>
+			<Field Value="Iglesias">ApellidoP</Field>
+			<Field Value="Lozano">ApellidoM</Field>
+		</InsertUsuario>
+		
+		<InsertUsuario DataBaseName="FICEIN">
+			<Field Value="fernanda">Login</Field>
+			<Field Value="123456">Password</Field>
+			<Field Value = "">Descripcion</Field>
+			<Field Value="Fernanda">Nombre</Field>
+			<Field Value="Ramírez">ApellidoP</Field>
+			<Field Value="Castro">ApellidoM</Field>
+		</InsertUsuario>
+		
+		<InsertUsuario DataBaseName="FICEIN">
+			<Field Value="roxana">Login</Field>
+			<Field Value="123456">Password</Field>
+			<Field Value = "">Descripcion</Field>
+			<Field Value="Roxana">Nombre</Field>
+			<Field Value="Romero">ApellidoP</Field>
+			<Field Value="Beltrán">ApellidoM</Field>
+		</InsertUsuario>
+		
+		<InsertUsuario DataBaseName="FICEIN">
+			<Field Value="ricardo">Login</Field>
+			<Field Value="123456">Password</Field>
+			<Field Value = "">Descripcion</Field>
+			<Field Value="Ricardo">Nombre</Field>
+			<Field Value="Montaya">ApellidoP</Field>
+			<Field Value="Hernández">ApellidoM</Field>
+		</InsertUsuario>
+		
+		<InsertUsuario DataBaseName="FICEIN">
+			<Field Value="yahir">Login</Field>
+			<Field Value="123456">Password</Field>
+			<Field Value = "">Descripcion</Field>
+			<Field Value="Yahir">Nombre</Field>
+			<Field Value="González">ApellidoP</Field>
+			<Field Value="">ApellidoM</Field>
+		</InsertUsuario>
+		
+	</EstructuraUsuarios>
+	
+</Modelo>

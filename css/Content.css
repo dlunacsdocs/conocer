@@ -1,0 +1,656 @@
+/*
+To change this license header, choose License Headers in Project Properties.
+To change this template file, choose Tools | Templates
+and open the template in the editor.
+*/
+/* 
+    Created on : 24/09/2014, 11:46:30 AM
+    Author     : daniel
+*/
+.no-close .ui-dialog-titlebar-close {display: none }
+
+.TreeSpace
+{
+    position: absolute;
+    width: 280px;
+    bottom: 15px;
+    top: 40px;
+    left: 5px;
+    overflow: auto;    
+    border-right: 2px solid #eff0f0;
+}
+
+.WorkSpaceWithTree
+{
+    position: absolute;
+    right: 0px;
+    left: 290px;
+    bottom: 15px;
+    top: 40px;
+    overflow: auto;
+    margin: 20px;
+}
+
+.content_management{
+    display: none;
+    font-family: Verdana,Arial,sans-serif; 
+    font-size: 14px;
+}
+
+.CM_menu_lateral
+{
+    left: 0px;
+    top: 95px;
+    bottom: 0px;
+    width: 300px;
+    position: absolute;
+    border-right: 2px solid #dedfe0;
+    overflow: auto;
+    padding-top: 5px;
+    padding-bottom: 20px;
+    z-index: 1;
+}
+
+.div_arbol{
+    position: absolute;
+    width: 99%;
+    height: 97%;        
+}
+
+.contentTools
+{
+    top:0px;
+    width: 98%;
+    position: absolute;
+    height: 99%;
+    /*background-color: black;*/
+    overflow: auto;
+    border:none;   
+}
+
+.contentTools img
+{
+    cursor:pointer;
+    margin-right: 25px;
+}
+
+.contentTools input
+{
+    padding-right: 25px;
+    padding-left: 10px;
+}
+
+.contentEngine{
+    
+}
+
+.contentDetailTools
+{
+    position: absolute;
+    display: block;
+    left: 3px;
+    top: 35px;
+    height: 40px;
+    right: 3px;
+    /*border-bottom: 1px solid #4297d7;*/
+    vertical-align: central;
+    background-color: #c4e5f4;
+}
+
+div.IconsTools
+{
+    z-index: 999;
+    position: absolute;
+    height: 99%;
+    /*width: 60%;*/
+    right:  0px;
+    top: 0px;
+    display: block;
+    overflow: auto;
+}
+
+div.SelectTools
+{
+    display: block;    
+}
+
+.contentDetailEngine
+{
+    position: absolute;
+    display: block;
+    top: 90px;
+    width: 98%;
+    bottom: 10px;
+    overflow: auto;   
+    padding-right: 15px;
+    
+}
+.contentDetailTools select
+{
+    -moz-border-radius: 4px;
+    -webkit-border-radius: 4px;
+    font-family: Verdana,Arial,sans-serif; 
+    font-size: 13px;
+    width: 220px;
+    height: 30px;
+    border-left: .5px solid #c8d1db;
+    border-top: 2px solid #c8d1db;    
+    cursor: pointer;
+    top: 5px;
+    display: table-cell;
+    margin-left: 20px;
+    margin-top: 5px;
+}
+.contentDetailTools input
+{
+    -moz-border-radius: 4px;
+    -webkit-border-radius: 4px;
+    font-family: Verdana,Arial,sans-serif; 
+    font-size: 13px;
+    width: 220px;
+    height: 25px;
+    border-left: .5px solid #c8d1db;
+    border-top: 2px solid #c8d1db;    
+    cursor: pointer;
+    top: 5px;
+    display: table-cell;
+    margin-left: 20px;
+    margin-top: 5px;
+}
+.contentDetailTools img
+{
+    top: 2px;
+    float: right;
+}
+
+.contentDetail
+{
+    position: absolute;
+    top: 90px;
+    left: 300px;
+    right: 0px;
+    bottom: 10px;
+    overflow: auto;
+    padding-left: 20px;
+    padding-right: 20px;       
+}
+
+.DetailTrashDir
+{
+    position: absolute;
+    top: 90px;
+    bottom: 10px;
+    overflow: auto;
+    padding-left: 20px;
+    padding-right: 20px;      
+    left: 0px;
+    right: 0px;
+}
+
+.DetailTrashFiles
+{
+    position: absolute;
+    top: 90px;
+    bottom: 10px;
+    overflow: auto;
+    padding-left: 20px;
+    padding-right: 20px;      
+    left: 0px;
+    right: 0px;
+}
+
+
+.contentUsuarios{
+    
+}
+
+input.RequiredActivo{
+    border:1px solid red;
+    background-color: #fff0f0;    
+}
+
+select.RequiredActivo{
+    border:1px solid red;
+    background-color: #fff0f0;    
+}
+
+
+/********************************************************************************
+*                              Content Usuarios                                 *
+********************************************************************************/
+.table_UsersGroups tr{
+    min-height: 50px;
+}
+table.table_UsersGroups tr td{
+    min-width: 200px;
+    height: 40px;
+    cursor: pointer;
+    vertical-align:middle;
+    color: #505a94;
+    font-family: Verdana,Arial,sans-serif; 
+    font-size: 14px;
+    padding-bottom: 5px;
+    padding-top: 5px;
+    border-bottom: 1px solid #ebf0f5;
+}
+/*.table_UsersGroups tr:nth-child(odd){
+  background-color:#e3e5ff;
+}
+.table_UsersGroups tr:nth-child(even){
+background-color:#FFFFFF;
+}*/
+
+.table_UsersGroups th{
+   /*background: #488abb;*/
+   color:#0086e5;
+   height: 15px;
+   text-align: center;
+   
+   font-size: 14px;
+   border-bottom: 1px solid #d7e1eb;
+   border-right: 1px solid #d7e1eb;
+   border-left: 1px solid #d7e1eb;
+}
+
+.table_UsersGroups tr.seleccionado{
+    background-color: #e6f5ff;
+}
+.table_UsersGroups tr:hover{
+    background-color: #f5faff;
+}
+
+.div_UsersFromGroups{
+    font-family: Verdana,Arial,sans-serif; 
+    font-size: 14px;
+}
+.div_UsersFromGroups table
+{
+    width: 100%;
+    position: absolute;
+}
+.div_UsersFromGroups table tr td
+{
+    min-width: 100px;
+    height: 40px;
+    cursor: pointer;
+    color: #505a94;
+    vertical-align:middle;
+    font-family: Verdana,Arial,sans-serif; 
+    font-size: 14px;
+    padding-bottom: 5px;
+    padding-top: 5px;
+    border-bottom: 1px solid #ebf0f5;
+}
+
+.div_UsersFromGroups table th
+{
+   color:#0086e5;
+   height: 15px;
+   text-align: center;
+   
+   font-size: 14px;
+   border-bottom: 1px solid #d7e1eb;
+   border-right: 1px solid #d7e1eb;
+   border-left: 1px solid #d7e1eb;
+}
+
+.div_UsersFromGroups table tr:hover
+{
+    background-color: #f5faff;
+}
+
+.div_UsersFromGroups tr.seleccionado{
+    background-color: #e6f5ff;
+}
+
+.div_UsersFromGroups input
+{
+    position: absolute;
+    bottom: 0px;
+    
+}
+
+.select_empresas{
+    
+}
+
+.select_repositorios
+{
+    
+}
+
+
+
+/********************************************************************************
+*                                 Vista Previa                                  *
+*********************************************************************************/
+.preview
+{
+
+}
+
+/*******************************************************************************
+*                           Vista Previa del Detalle de un Archivo              *
+*********************************************************************************
+*/
+
+.detalle_archivo{
+    font-family: Verdana,Arial,sans-serif; 
+    font-size: 14px;
+    overflow: auto;
+    display: none;
+}
+.detalle_archivo table{
+    width: 95%;
+    position: absolute;
+    
+}
+.detalle_archivo table th
+{
+    min-height: 30px;
+}
+.detalle_archivo table tr
+{
+    width:  250px;
+    height:  30px;
+    
+}
+
+.detalle_archivo tr td
+{
+    vertical-align: middle;
+}
+.detalle_archivo tr td input
+{
+    width: 98%;
+}
+
+.detalle_archivo table tr:nth-child(odd){
+  background-color:#e3e5ff;
+}
+.detalle_archivo table tr:nth-child(even){
+background-color:#FFFFFF;
+}
+
+
+/****************************Detalle de Estructura *******************************/
+
+.TablaPresentacion{
+    width: 95%;
+    position: absolute;
+    
+} 
+table.TablaPresentacion th
+{
+    min-height: 30px;
+}
+table.TablaPresentacion tr
+{
+    width:  250px;
+    height:  30px;
+    
+}
+
+table.TablaPresentacion tr td
+{
+    vertical-align: middle;
+}
+table.TablaPresentacion tr td input
+{
+    width: 98%;
+}
+
+table.TablaPresentacion tr:nth-child(odd){
+  background-color:#e3e5ff;
+}
+table.TablaPresentacion tr:nth-child(even){
+background-color:#FFFFFF;
+}
+
+
+
+/*********************************** Refresh árbol********************** */
+div.TreeRefresh
+{
+    position: absolute;
+    width: 15px;
+    height: 15px;
+    z-index: 9999;
+    cursor: pointer;
+    top: 78px;
+    left: 260px;
+    /*display: none;*/
+}
+
+div.TreeRefresh img
+{
+    width: 20px;
+    height: 20px;
+}
+
+/********************************Carga de Archivos ****************************/
+
+
+/******************************CheckBox Tabla listado de archivos*****************/
+.checkbox_detail
+{
+    cursor: pointer;
+}
+
+
+/******************* Mensajes de Consfirmación *******************************/
+div.Mensajes
+{
+    font-family: Verdana,Arial,sans-serif; 
+    font-size: 14px;
+}
+
+#Loading
+{
+    text-align: center;
+}
+
+div.loading
+{
+    margin: auto;
+    text-align: center;
+}
+
+/*************************** Visor de Imágenes *********************************/
+.viewer
+{
+    width: 99%;
+    height: 99%;
+    
+    border: 1px solid black;
+    position: absolute;
+}
+
+.wrapper
+{
+    overflow: hidden;
+}
+
+
+/********************************** Notas **************************************/
+.div_notes{
+    position:absolute;
+    width: 100%;
+    height: 100%;
+}
+
+.TextAreaNotes
+{
+/*    position: absolute;*/
+    font-family: Verdana,Arial,sans-serif; 
+    font-size: 10px;
+    min-width: 450px;
+    min-height: 400px;
+}
+.TextAreaPreviewNotes
+{
+    font-family: Verdana,Arial,sans-serif; 
+    font-size: 10px;
+    min-width: 200px;
+    min-height: 200px;
+}
+.div_PreviewNote
+{
+    z-index: 999;
+}
+
+
+/******************************* Style Forms ***********************************/
+
+.FormStandart
+{
+    -moz-border-radius: 4px;
+    -webkit-border-radius: 4px;
+    font-family: Verdana,Arial,sans-serif; 
+    font-size: 13px;
+    width: 220px;
+    height: 25px;
+    /*border-left: .5px solid #c8d1db;*/
+    border: 2px solid #c8d1db;    
+    top: 5px;
+    display: table-cell;
+    margin-top: 5px;
+    margin-bottom: 5px;
+}
+
+
+/********************************* Consola de Usuarios *************************/
+.TreeRepositoriesUserGroups 
+{
+    position: absolute;
+    width: 300px;
+    top:20px;
+    bottom: 20px;
+    right: 0px;
+    left: 20px;
+    overflow: auto;
+    border: none;
+    border: solid 1px #79b7e7;
+}
+
+.TreeMenusUserGroups
+{
+    position: absolute;
+    right: 10px;
+    left: 330px;
+    top: 20px;
+    bottom: 20px;
+    overflow: auto;
+    border: none;
+    border: solid 1px #79b7e7;
+}
+
+.UserGroupContent
+{
+    position: absolute;
+    top: 30px;
+    left: 0px;
+    right: 0px;
+    bottom: 0px;
+    overflow: auto;
+    /*padding-left: 20px;
+    /*padding-right: 20px;*/
+
+    /*padding-right: 15px;*/    
+}
+.UserGroupContentTab
+{
+    position: absolute;
+    top: 0px;
+    bottom: 10px;
+    left: 10px;
+    right: 10px;
+    border: none;
+}
+
+table.TableStandart{
+    width: 95%;
+    position: absolute;
+    table-layout: fixed;
+    
+} 
+table.TableStandart th
+{
+    min-height: 30px;
+}
+table.TableStandart tr
+{
+    width:  250px;
+    height:  30px;
+    
+}
+
+table.TableStandart tr td
+{
+    vertical-align: middle;
+}
+table.TableStandart tr td input
+{
+    
+    width: 99%;
+}
+
+table.TableStandart tr:nth-child(odd){
+  background-color:#e3e5ff;
+}
+table.TableStandart tr:nth-child(even){
+background-color:#FFFFFF;
+}
+
+
+
+/********************************** Notas del Visor PDF ******************************/
+#NotesZone
+{
+    z-index: 999;
+    width: 10px;
+    position: absolute;
+    top: 40px;
+    bottom: 5px;
+    right: 60px;    
+}
+
+#NotesZone img
+{
+    cursor: pointer;
+}
+
+/************************* Tablas dentro de acordeones **************************/
+
+.TableInsideAccordion
+{
+    position: relative;
+    width: 100%;
+}
+
+table.TableInsideAccordion tr
+{
+    min-height: 70px;
+}
+
+table tr.TableInsideAccordionHoverWithoutClass
+{    
+    color: #0086e5;
+    background-color: #d9efff;
+}
+table tr.TableInsideAccordionHoverWithClass
+{    
+    color: white;
+}
+ 
+table tr.TableInsideAccordionFocus
+{
+    background-color: #d9efff;
+    color: #0086e5;
+}
+
+table tr.TableInsideAccordionActive
+{
+    background-color: #0086e5;
+    color:white;
+}

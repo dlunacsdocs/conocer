@@ -1,0 +1,10 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<Modelo xsi:noNamespaceSchemaLocation="cs-docs/Configuracion/Esquema_CSDOCS1.0.xsd" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance">	
+	<!-- Campos Definidos por el usuario  -->	
+	<Field Value="701">No_Cliente</Field> 
+	<Field Value="89300333-01-2015">No_Credito</Field>
+	<Field Value="ESCOBEDO MARRON FELIX ENRIQUE">Nombre</Field>
+	<Field Value="ESMF51548FFC">RFC</Field>
+	<Field Value="0">Edad</Field>
+	<List name="Doc_Operaciones_Pasivas" IdList="2"/>
+</Modelo>
