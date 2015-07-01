@@ -12,6 +12,7 @@
  * @author Daniel
  */
 $RoutFile = filter_input(INPUT_SERVER, "DOCUMENT_ROOT"); /* /var/services/web */
+
 require_once 'XML.php';
 require_once 'DataBase.php';
 
@@ -28,8 +29,27 @@ class Enterprise {
                 break;
             case 'NewField': $this->NewField();
                 break;
+            case 'DeleteField':$this->DeleteField();
+                break;
             default : break;
         }
+    }
+    
+    private function DeleteField()
+    {
+        $DataBaseName = filter_input(INPUT_POST, "DataBaseName");
+        $IdGroup = filter_input(INPUT_POST, "IdFroup");
+        $IdUser = filter_input(INPUT_POST, "IdUser");
+        $UserName = filter_input(INPUT_POST, "UserName");
+        $FieldName = filter_input(INPUT_POST, "FieldName");
+        
+        $DeletedResult = DesignerForms::DeleteField($DataBaseName , "Empresa", $FieldName);
+        
+        if($DeletedResult!=1)
+            return;
+        
+        XML::XMLReponse("DeletedField", 0, "Campo \"$FieldName\" eliminado");
+        
     }
 
     private function NewField() {

@@ -11,6 +11,8 @@
  *
  * @author daniel
  */
+$RoutFile = dirname(getcwd());        
+
 require_once 'DataBase.php';
 require_once 'XML.php';
 require_once 'DesignerForms.php';

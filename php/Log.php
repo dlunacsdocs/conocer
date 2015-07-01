@@ -36,7 +36,11 @@ class Log {
             $Route_Log = "$RoutFile/Log/$DataBaseName/".date('Y')."/".date('m')."/".date('d');
         
         if(!file_exists($Route_Log))
-            mkdir ($Route_Log,0777,true);
+            if(!($mkdir = mkdir ($Route_Log,0777,true)))
+            {
+                echo "No fué posible crear el directorio de almacenamiento de registros. $mkdir";
+                return 0;
+            }
         
         if(!$Dictionary = parse_ini_file("../Configuracion/DictionaryLog/Dictionary.ini"))
             return 0;

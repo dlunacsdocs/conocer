@@ -25,7 +25,7 @@ function login()
       dataType:"html", 
       type: 'POST',   
       url: "php/Login.php",
-      data: "opcion=Login&user="+User+"&password="+Password+"&instancia="+instancia+"&database_name="+database_name, 
+      data: "opcion=Login&UserName="+User+"&Password="+Password+"&IdDataBase="+instancia+"&DataBaseName="+database_name, 
       success:  function(xml){
           $('.loading').remove();
 

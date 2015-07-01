@@ -12,6 +12,8 @@
  * 
  * @author Daniel
  *-----------------------------------------------------------------------------*/
+$RoutFile = dirname(getcwd());        
+
 require_once './DataBase.php';
 require_once './Log.php';
 require_once './XML.php';

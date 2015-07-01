@@ -30,9 +30,7 @@ var ClassEnterprise = function()
     };
     
     _ValidateNewField = function()
-    {
-        console.log('_ValidateNewField');
-        
+    {        
         var fieldsManager = new FieldsManager();
         var FieldsValues = fieldsManager.GetFieldsValues(EnterprisedT, EnterpriseDT);
         if(!$.isPlainObject(FieldsValues))    
@@ -57,11 +55,80 @@ var ClassEnterprise = function()
         {            
             if($.parseXML( xml )===null){Error(xml); return 0;}else xml=$.parseXML( xml );
 
-            if($(xml).find('AddedField').length>0)
+        if($(xml).find('AddedField').length>0)
+        {
+            var Mensaje = $(xml).find('Mensaje').text();
+            Notificacion(Mensaje);
+            
+            /*  Se reconstruye la ventana para agregar un nuevo campo y se selecciona el campo agregado sobre la tabla */
+            var fieldsManager = new FieldsManager();
+            fieldsManager.BuildWindow();
+
+            var buttons = {"Cancelar": function(){$(this).remove();},   "Agregar":{text:"Agregar", click:function(){_ValidateNewField();}}};
+
+            $('#DivFormsNewField').dialog('option','buttons', buttons);
+
+            $('#TableEnterpriseDetail tr').removeClass('selected');
+
+            var FieldProperties = [FieldsValues.FieldName, FieldsValues.FieldType, FieldsValues.FieldLength, FieldsValues.RequiredField];
+
+            var ai = EnterpriseDT.row.add(FieldProperties).draw();
+            var n = EnterprisedT.fnSettings().aoData[ ai[0] ].nTr;
+            n.setAttribute('class',"selected");
+                
+        }
+            
+        $(xml).find("Error").each(function()
+        {
+            var $Error=$(this);
+            var mensaje=$Error.find("Mensaje").text();
+            Error(mensaje);
+        });                 
+
+        },
+        beforeSend:function(){},
+        error: function(jqXHR, textStatus, errorThrown) {Error(textStatus +"<br>"+ errorThrown);}
+        });           
+        
+    };
+    
+    _DeleteField = function()
+    {
+        console.log("_DeleteField");
+        
+        var FieldSelected = $('#TableEnterpriseDetail tr.selected');
+        var FieldName, data;
+        
+        if(FieldSelected.length!==1)
+            return Advertencia("Debe seleccionar un campo");
+        
+        
+        
+         EnterprisedT.$('tr.selected').each(function()
+        {
+            var position = EnterprisedT.fnGetPosition(this); // getting the clicked row position
+            FieldName = EnterprisedT.fnGetData(position)[0];
+        });
+        
+        data = {option:"DeleteField",DataBaseName:EnvironmentData.DataBaseName, IdUser:EnvironmentData.IdUsuario, UserName: EnvironmentData.NombreUsuario, IdGroup : EnvironmentData.IdGrupo, GroupName : EnvironmentData.NombreGrupo, FieldName:FieldName};
+        
+        $.ajax({
+        async:false, 
+        cache:false,
+        dataType:"html", 
+        type: 'POST',   
+        url: "php/Enterprise.php",
+        data: data, 
+        success:  function(xml)
+        {            
+            if($.parseXML( xml )===null){Error(xml); return 0;}else xml=$.parseXML( xml );
+
+            if($(xml).find('DeletedField').length>0)
             {
                 var Mensaje = $(xml).find('Mensaje').text();
                 Notificacion(Mensaje);
-                self.NewRepository();
+                EnterpriseDT.row('tr.selected').remove().draw( false );  
+                EnterprisedT.$('tbody tr:first').click();
             }
             
             $(xml).find("Error").each(function()
@@ -75,12 +142,6 @@ var ClassEnterprise = function()
         beforeSend:function(){},
         error: function(jqXHR, textStatus, errorThrown) {Error(textStatus +"<br>"+ errorThrown);}
         });           
-        
-    };
-    
-    _DeleteField = function()
-    {
-        
     };
     
 };

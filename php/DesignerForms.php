@@ -209,8 +209,8 @@ class DesignerForms {
     function ReturnStructure($TypeStructure,$Estructura)
     {
         $catalogo=0;
-        $XML=new XML();
         $ArrayEstructura=array();
+        
         for($cont=0;$cont<count($Estructura);$cont++)
         {
             $cadena=explode('###', $Estructura[$cont]);
@@ -283,7 +283,7 @@ class DesignerForms {
         echo $doc->saveXML();
     }
     
-    static function CreateProperty($FieldName, $FieldType, $FieldLength, $RequiredField)
+    public static function CreateProperty($FieldName, $FieldType, $FieldLength, $RequiredField)
     {
         $FieldTypeMysql = '';
         
@@ -311,7 +311,46 @@ class DesignerForms {
         return $FieldDetail;
     }
     
-    static function AddPropertyIntoStructureConfig($DataBaseName,$StructureName, $NewProperty)
+    /* Función que elimina del archivo de configuración un campo de  */
+    public static function DeleteField($DataBaseName, $StructureName,  $FieldName)
+    {
+        $RoutFile = dirname(getcwd());        
+        
+        if(!file_exists("$RoutFile/Configuracion/$DataBaseName.ini"))
+            return XML::XMLReponse ("Error", 0, "<p><b>Error</b> no existe el registro de estructura de la intsnaica <b>$DataBaseName</b></p>");
+        
+        if(!($Structure = parse_ini_file("$RoutFile/Configuracion/$DataBaseName.ini")))
+                return XML::XmlArrayResponse ("Error", 0, "<p><b>Error</b> al intentar abrir el registro de estructura de la instancia <b>$DataBaseName</b></p>");
+        
+        if(!($gestor = fopen("$RoutFile/Configuracion/$DataBaseName.ini", "w")))
+                return XML::XMLReponse("Error", 0, "<p><b>Error</b> al intentar abrir el registro de estructura de la instancia <b>$DataBaseName</b><br>Detalles:<br><br>$gestor");
+        
+        foreach ($Structure as $key =>$Section)
+        {
+            fwrite($gestor,";#############################################################################".PHP_EOL);
+            fwrite($gestor, ";--------  $key --------".PHP_EOL);
+            fwrite($gestor,";#############################################################################".PHP_EOL);
+            fwrite($gestor, "$key=$key".PHP_EOL);
+            for($cont = 0; $cont < count($Section); $cont++)
+            {
+                $property = explode("###", $Section[$cont]);
+                if(strcasecmp($StructureName, $key)==0)
+                    if(strcasecmp($property[0], "Properties")==0)
+                    {
+                        $Field = explode(" ", $property[1]);
+                        if(strcasecmp($FieldName, $Field[1])==0)
+                            continue;
+                    }
+                fwrite($gestor, $key."[]=".$Section[$cont].PHP_EOL);
+            }
+        }
+        
+        fclose($gestor);
+        
+        return 1;
+    }
+    
+    public static function AddPropertyIntoStructureConfig($DataBaseName,$StructureName, $NewProperty)
     {
 
         if(!file_exists("../Configuracion/$DataBaseName.ini"))

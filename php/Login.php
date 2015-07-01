@@ -105,9 +105,10 @@ class Login {
         $XML = new XML();
         $bd = new DataBase();
         
-        $user = filter_input(INPUT_POST, "user");
-        $pass = filter_input(INPUT_POST, "password");
-        $DataBaseName = filter_input(INPUT_POST, "database_name");
+        $user = filter_input(INPUT_POST, "UserName");
+        $pass = filter_input(INPUT_POST, "Password");
+        $DataBaseName = filter_input(INPUT_POST, "DataBaseName");
+        $IdDataBase = filter_input(INPUT_POST, "IdDataBase");
         
         $ResultSelect = array();   
         
@@ -159,7 +160,10 @@ class Login {
         header ("Content-Type:text/xml");
         echo $doc->saveXML();
         
-        $Log->Write ("1", $Resultado['IdUsuario'], $user," '$user'", $DataBaseName);
+        if(!($IdDataBase>0))
+            $DataBaseName = "NoDataBase";
+        
+         $Log->Write ("1", $Resultado['IdUsuario'], $user," '$user'", $DataBaseName);
     }    
 }
 
