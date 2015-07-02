@@ -4,7 +4,7 @@
  * and open the template in the editor.
  */
 
-/* global EnvironmentData, BotonesWindow, ConsoleSettings, LanguajeDataTable */
+/* global EnvironmentData, BotonesWindow, ConsoleSettings, LanguajeDataTable, DimensionsDialogNewRegister, DimensionsDialogMetadatas */
 
 var EnterprisedT, EnterpriseDT;
 
@@ -93,9 +93,7 @@ var ClassEnterprise = function()
     };
     
     _DeleteField = function()
-    {
-        console.log("_DeleteField");
-        
+    {        
         var FieldSelected = $('#TableEnterpriseDetail tr.selected');
         var FieldName, data;
         
@@ -142,6 +140,149 @@ var ClassEnterprise = function()
         beforeSend:function(){},
         error: function(jqXHR, textStatus, errorThrown) {Error(textStatus +"<br>"+ errorThrown);}
         });           
+    };
+    
+    /*******************************************************************************************************************************************
+     *                                              OPCION LISTADO DE EMPRESAS 
+     /******************************************************************************************************************************************/
+    
+    _FormsNewEnterprise = function()
+    {
+        console.log("FormsNewEnterprise:::");
+        
+        $('#DivFormsNewEnterprise').remove();
+        $('body').append('<div id = "DivFormsNewEnterprise"></div>');
+        
+        $('#DivFormsNewEnterprise').dialog(DimensionsDialogMetadatas, {title:"Nueva Empresa", buttons:{Cerrar:function(){$(this).remove();}}});
+ 
+        
+        $('#DivFormsNewEnterprise').append('<div class="Loading" id = "IconWaitingEnterprise"><img src="../img/loadinfologin.gif"></div>');
+
+        $('#DivFormsNewEnterprise').append('<table id = "TableEnterpriseNewRegister"></table>');
+        
+        var EnterpriseStructure = GetAllStructure("Empresa");
+        
+        $('#IconWaitingEnterprise').remove();
+        
+        if($.type(EnterpriseStructure)!=='object')
+            return Error("No fué posible recuperar la estructura de empresas");
+        console.log(EnterpriseStructure);
+        BuildFullStructureTable("Empresa",'TableEnterpriseNewRegister',EnterpriseStructure);
+        
+        var Forms = $('#DivFormsNewEnterprise input');
+        var FieldsValidator = new ClassFieldsValidator();
+        FieldsValidator.InspectCharacters(Forms);
+        
+        var buttons = {
+                "Cancelar":function(){$(this).remove();},
+                "Agregar":function(){_AddNewRegister(EnterpriseStructure);}
+        };
+        
+        $('#DivFormsNewEnterprise').dialog('option', 'buttons', buttons);
+        
+        
+        
+    };
+    
+    /* Agrega un nuevo registro  */
+    _AddNewRegister = function(EnterpriseStructure)
+    {
+        console.log("AddingNewRegister::");
+        
+        var RegularExpression = /^([a-zA-Z0-9\_])+$/g;
+        var Forms = $('#DivFormsNewEnterprise input');
+        var FieldsValidator = new ClassFieldsValidator();
+        
+        var validation = FieldsValidator.ValidateFields(Forms);
+        if(validation===0)
+            return;
+        
+        var Data = [];
+        
+        var xml="<AddNewRegister version='1.0' encoding='UTF-8'>";
+              
+        $(EnterpriseStructure).find("Campo").each(function()
+        {               
+            var $Campo=$(this);
+            var name=$Campo.find("name").text();
+            var type=$Campo.find("type").text();
+            var long=$Campo.find("long").text();
+            var required=$Campo.find("required").text();
+            var value = $('#TableEnterpriseNewRegister_'+name).val();                     
+           
+            xml+='<Campo>\n\
+                <name>'+name+'</name>\n\
+                <value>'+value+'</value>\n\
+                <type>'+type+'</type>\n\
+                <long>'+long+'</long>\n\
+                <required>'+required+'</required>\n\
+             </Campo>';
+           
+             Data[Data.length] = value;
+
+        });
+
+       xml+='</AddNewRegister>';
+       
+       var EnterpriseKey = $('#TableEnterpriseNewRegister_ClaveEmpresa').val();
+       
+       if(!RegularExpression.test(EnterpriseKey))
+       {
+           $('#TableEnterpriseNewRegister_ClaveEmpresa').attr('title','El campo no debe contener espacios y únicamente letras y números');
+           $('#TableEnterpriseNewRegister_ClaveEmpresa').tooltip();
+           return FieldsValidator.AddClassRequiredActive($('#TableEnterpriseNewRegister_ClaveEmpresa'));
+       }
+       else
+           FieldsValidator.RemoveClassRequiredActive($('#TableEnterpriseNewRegister_ClaveEmpresa'));
+       
+           $('#EnterpriseWS').append('<div class="Loading" id = "IconWaitingEnterprise"><img src="../img/loadinfologin.gif"></div>');      
+
+       
+        var data = {option:"AddNewRegister",DataBaseName:EnvironmentData.DataBaseName, IdUser:EnvironmentData.IdUsuario, UserName: EnvironmentData.NombreUsuario, IdGroup : EnvironmentData.IdGrupo, GroupName : EnvironmentData.NombreGrupo, xml:xml};
+       
+       $.ajax({
+        async:false, 
+        cache:false,
+        dataType:"html", 
+        type: 'POST',   
+        url: "php/Enterprise.php",
+        data: data, 
+        success:  function(xml)
+        {            
+            $('#IconWaitingEnterprise').remove();
+            
+            if($.parseXML( xml )===null){Error(xml); return 0;}else xml=$.parseXML( xml );
+
+            if($(xml).find('AddedNewRecord').length>0)
+            {
+                $('#EnterprisesTable tr').removeClass('selected');
+                
+                var Mensaje = $(xml).find('Mensaje').text();
+                Notificacion(Mensaje);
+                
+                var IdEnterprise = $(this).find('NewIdEnterprise').text();
+                
+                var ai = EnterpriseDT.row.add(Data).draw();
+                var n = EnterprisedT.fnSettings().aoData[ ai[0] ].nTr;
+                n.setAttribute('class',"selected");
+                n.setAttribute('id',IdEnterprise);
+                
+                $('#DivFormsNewEnterprise').remove();
+            }
+            
+            $(xml).find("Error").each(function()
+            {
+                var $Error=$(this);
+                var mensaje=$Error.find("Mensaje").text();
+                Error(mensaje);
+            });                 
+
+        },
+        beforeSend:function(){},
+        error: function(jqXHR, textStatus, errorThrown) {Error(textStatus +"<br>"+ errorThrown);}
+        });           
+        
+        
     };
     
 };
@@ -291,27 +432,32 @@ ClassEnterprise.prototype.AdminStructure = function()
 
 ClassEnterprise.prototype.DisplayEnterprises = function()
 {
-    console.log("DisplayEnterprises");
     var self = this;
     
     $('#EnterpriseWS').empty();
     $('#EnterpriseWS').append('<div class="titulo_ventana">Empresas del Sistema</div>');
     $('#EnterpriseWS').append('<div class="Loading" id = "IconWaitingEnterprises"><img src="../img/loadinfologin.gif"></div>');
     
-    var th = '<th>Clave</th><th>Nombre</th>';  /* Campos de default */
-    var EnterpriseStructure = GeStructure('Empresa');    
+    var FieldsArray = new Array();
+   
+    var th = ''; 
+    
+    var EnterpriseStructure = GetAllStructure('Empresa');    
 
     $(EnterpriseStructure).find('Campo').each(function()
     {
-        console.log(this);
         var FieldName = $(this).find('name').text();
         var FieldType = $(this).find('type').text();
         var FieldLength = $(this).find('long').text();
         var RequiredField = $(this).find('required').text();
-        
         th+="<th>"+FieldName+"</th>";
+        
+        var index = FieldsArray.length;
+        $(this).attr('index', index);
+
+        FieldsArray[index] = FieldName;
     });
-    
+ 
     $('#EnterpriseWS').append('<table id = "EnterprisesTable" class = "display hover"><thead>'+th+'</thead></table>');
     
     EnterprisedT = $('#EnterprisesTable').dataTable(
@@ -319,7 +465,7 @@ ClassEnterprise.prototype.DisplayEnterprises = function()
        'bPaginate':false, 'bInfo':false, bFilter: false, "bSort": false, "autoWidth" : false, "oLanguage":LanguajeDataTable,"dom": 'lfTrtip',
         "tableTools": {
             "aButtons": [
-                {"sExtends":"text", "sButtonText": "Nuevo", "fnClick" :function(){}},
+                {"sExtends":"text", "sButtonText": "Nuevo", "fnClick" :function(){_FormsNewEnterprise();}},
                 {"sExtends":"text", "sButtonText": "Editar", "fnClick" :function(){}},
                 {"sExtends":"text", "sButtonText": "Eliminar", "fnClick" :function(){}},
                 {"sExtends": "copy","sButtonText": "Copiar al portapapeles"},
@@ -366,7 +512,9 @@ ClassEnterprise.prototype.DisplayEnterprises = function()
             var RequiredField = $(this).find('required').text(); 
             var FieldValue = $(Enterprise).find(FieldName).text();
             
-            data[data.length] = [FieldValue];
+            var ColumnIndex = $(this).attr('index');
+            
+            data[ColumnIndex] = [FieldValue];
         });
         
         var ai = EnterpriseDT.row.add(data).draw();

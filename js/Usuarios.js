@@ -265,7 +265,6 @@ ClassUsers = function()
         if(!Validation)
             return 0;
        
-       var FlagMistake = 0;
        var Data = [];
        
        var UserNameModiffied = '';
@@ -312,7 +311,7 @@ ClassUsers = function()
            $(xml).find("Modify").each(function()
                {               
                    var mensaje=$(this).find("Mensaje").text();                
-                   $('#div_edit_user').dialog('close');
+                   $('#div_edit_user').remove();
                    Notificacion(mensaje);   
                    
                    $('#Table_UsersList tr.selected').each(function()
