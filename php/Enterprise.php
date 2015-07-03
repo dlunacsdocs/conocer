@@ -33,6 +33,8 @@ class Enterprise {
                 break;
             case 'AddNewRegister': $this->AddNewRegister();
                 break;
+            case 'DeleteEnterprise':$this->DeleteEnterprise();
+                break;
             default : break;
         }
     }
@@ -142,6 +144,11 @@ class Enterprise {
         
         XML::XMLReponse("DeletedField", 0, "Campo \"$FieldName\" eliminado");
         
+    }
+    
+    private function DeleteEnterprise()
+    {
+        var_dump($_POST);
     }
 
     private function NewField() {

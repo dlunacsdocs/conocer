@@ -285,6 +285,83 @@ var ClassEnterprise = function()
         
     };
     
+    _DeleteEnterprise = function()
+    {
+        
+        var EnterpriseSelected = $('#EnterprisesTable tr.selected');
+        var EnterpriseKey, index, cont = 0;
+        
+        if(EnterpriseSelected.length!==1)
+            return Advertencia("Debe seleccionar una empresa");
+        
+        var NumColumns = EnterpriseDT.columns().header();
+        $(NumColumns).each(function()
+        {
+            var ColumnTitle = $(this).html();
+            if(ColumnTitle==="ClaveEmpresa")
+                index = cont;
+            
+            cont++;
+        });
+        
+        if(index===undefined)
+            return Advertencia("No existe el campo ClaveEmpresa, no es posible realizar esta acción");
+        
+        EnterprisedT.$('tr.selected').each(function()
+        {
+            var position = EnterprisedT.fnGetPosition(this); // getting the clicked row position
+            EnterpriseKey = EnterprisedT.fnGetData(position)[index];
+        });
+        
+        console.log(EnterpriseKey[0]);
+        
+        $('#EnterpriseWS').append('<div class="Loading" id = "IconWaitingEnterprise"><img src="../img/loadinfologin.gif"></div>');      
+
+        var data = {option:"DeleteEnterprise",DataBaseName:EnvironmentData.DataBaseName, IdUser:EnvironmentData.IdUsuario, UserName: EnvironmentData.NombreUsuario, IdGroup : EnvironmentData.IdGrupo, GroupName : EnvironmentData.NombreGrupo, EnterpriseKey:EnterpriseKey[0]};
+       
+       $.ajax({
+        async:false, 
+        cache:false,
+        dataType:"html", 
+        type: 'POST',   
+        url: "php/Enterprise.php",
+        data: data, 
+        success:  function(xml)
+        {            
+            $('#IconWaitingEnterprise').remove();
+            
+            if($.parseXML( xml )===null){Error(xml); return 0;}else xml=$.parseXML( xml );
+
+            if($(xml).find('AddedNewRecord').length>0)
+            {
+                $('#EnterprisesTable tr').removeClass('selected');
+                
+                var Mensaje = $(xml).find('Mensaje').text();
+                Notificacion(Mensaje);
+                
+                var IdEnterprise = $(this).find('NewIdEnterprise').text();
+                
+                var ai = EnterpriseDT.row.add(Data).draw();
+                var n = EnterprisedT.fnSettings().aoData[ ai[0] ].nTr;
+                n.setAttribute('class',"selected");
+                n.setAttribute('id',IdEnterprise);
+                
+                $('#DivFormsNewEnterprise').remove();
+            }
+            
+            $(xml).find("Error").each(function()
+            {
+                var $Error=$(this);
+                var mensaje=$Error.find("Mensaje").text();
+                Error(mensaje);
+            });                 
+
+        },
+        beforeSend:function(){},
+        error: function(jqXHR, textStatus, errorThrown) {Error(textStatus +"<br>"+ errorThrown);}
+        });           
+    };
+    
 };
 
 
@@ -467,7 +544,7 @@ ClassEnterprise.prototype.DisplayEnterprises = function()
             "aButtons": [
                 {"sExtends":"text", "sButtonText": "Nuevo", "fnClick" :function(){_FormsNewEnterprise();}},
                 {"sExtends":"text", "sButtonText": "Editar", "fnClick" :function(){}},
-                {"sExtends":"text", "sButtonText": "Eliminar", "fnClick" :function(){}},
+                {"sExtends":"text", "sButtonText": "Eliminar", "fnClick" :function(){_DeleteEnterprise();}},
                 {"sExtends": "copy","sButtonText": "Copiar al portapapeles"},
                 {
                     "sExtends":    "collection",
