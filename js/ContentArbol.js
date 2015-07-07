@@ -181,7 +181,8 @@ function CM_ModifyDir(IdDirectory,IdParentDirectory,NameDirectory)
     var IdRepositorio=$('#CM_select_repositorios').val();
     var DataBaseName=$('#database_name').val();
     var NombreRepositorio=$('#CM_select_repositorios option:selected').html();
-    var IdEmpresa=$('#CM_select_empresas').val();
+    var IdEmpresa = $('#CM_select_empresas option:selected').attr('id');
+    IdEmpresa = parseInt(IdEmpresa);
     var nombre_usuario=$('#login_usr').val();
     var id_usuario=$('#id_usr').val();
     
@@ -228,7 +229,8 @@ function CM_DeleteDir()
     var IdRepositorio=$('#CM_select_repositorios').val();
     var DataBaseName=$('#database_name').val();
     var NombreRepositorio=$('#CM_select_repositorios option:selected').html();
-    var IdEmpresa=$('#CM_select_empresas').val();
+    var IdEmpresa = $('#CM_select_empresas option:selected').attr('id');
+    IdEmpresa = parseInt(IdEmpresa);
     var nombre_usuario=$('#login_usr').val();
     var title=node.data.title;
     var IdUsuario=$('#id_usr').val();
@@ -424,7 +426,8 @@ function CM_InsertDir(IdParentDirectory,NameDirectory,Path)
     var IdRepositorio=$('#CM_select_repositorios').val();
     var DataBaseName=$('#database_name').val();
     var NombreRepositorio=$('#CM_select_repositorios option:selected').html();
-    var IdEmpresa=$('#CM_select_empresas').val();
+    var IdEmpresa = $('#CM_select_empresas option:selected').attr('id');
+    IdEmpresa = parseInt(IdEmpresa);
     var nombre_usuario=$('#login_usr').val();
     var id_usuario=$('#id_usr').val();
 

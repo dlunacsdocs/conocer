@@ -45,7 +45,7 @@ class Log {
         if(!$Dictionary = parse_ini_file("../Configuracion/DictionaryLog/Dictionary.ini"))
             return 0;
         
-        $ClientIp = $this->getRealIP();
+        $ClientIp = Log::getRealIP();
         
         if(isset($Dictionary[$key]))
         {
@@ -71,7 +71,7 @@ class Log {
         if(!$Dictionary = parse_ini_file("../Configuracion/DictionaryLog/Dictionary.ini"))
             return 0;
         
-        $ClientIp = $this->getRealIP();
+        $ClientIp = Log::getRealIP();
         
         if(isset($Dictionary[$key]))
         {
@@ -142,7 +142,7 @@ class Log {
         
     }
     
-    function getRealIP()
+    static function getRealIP()
     {
         if (!empty($_SERVER['HTTP_CLIENT_IP']))
             return $_SERVER['HTTP_CLIENT_IP'];

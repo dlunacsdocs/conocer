@@ -8,6 +8,9 @@
  *
  * @author daniel
  */
+
+$RoutFile = dirname(getcwd());        
+
 require_once 'DesignerForms.php';
 class DataBase {
     function Conexion()

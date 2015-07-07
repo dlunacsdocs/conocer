@@ -92,6 +92,30 @@ var ClassEnterprise = function()
         
     };
     
+    _ConfirmDeleteField = function()
+    {
+        var FieldSelected = $('#TableEnterpriseDetail tr.selected');
+        var FieldName, data;
+        
+        if(FieldSelected.length!==1)
+            return Advertencia("Debe seleccionar un campo");
+           
+         EnterprisedT.$('tr.selected').each(function()
+        {
+            var position = EnterprisedT.fnGetPosition(this); // getting the clicked row position
+            FieldName = EnterprisedT.fnGetData(position)[0];
+        });
+        
+        $('#divConfirmDeleteField').remove();
+        $('body').append('<div id = "divConfirmDeleteField"></div>');
+        $('#divConfirmDeleteField').append("<p>¿Realmente desea eliminar el campo <b>"+FieldName+"</b>? esta acción no puede revertirse</p>");
+        $('#divConfirmDeleteField').dialog({title:"Mensaje de confirmación", width: 300, minWidth:150, height:250, minHeight:150, modal:true, buttons:{
+                Cancelar: function(){$(this).remove();},
+                Aceptar:function(){_DeleteField();}
+        }});
+        
+    };
+    
     _DeleteField = function()
     {        
         var FieldSelected = $('#TableEnterpriseDetail tr.selected');
@@ -99,9 +123,7 @@ var ClassEnterprise = function()
         
         if(FieldSelected.length!==1)
             return Advertencia("Debe seleccionar un campo");
-        
-        
-        
+           
          EnterprisedT.$('tr.selected').each(function()
         {
             var position = EnterprisedT.fnGetPosition(this); // getting the clicked row position
@@ -123,10 +145,12 @@ var ClassEnterprise = function()
 
             if($(xml).find('DeletedField').length>0)
             {
+                $('#divConfirmDeleteField').remove();
                 var Mensaje = $(xml).find('Mensaje').text();
                 Notificacion(Mensaje);
                 EnterpriseDT.row('tr.selected').remove().draw( false );  
                 EnterprisedT.$('tbody tr:first').click();
+                
             }
             
             $(xml).find("Error").each(function()
@@ -285,9 +309,8 @@ var ClassEnterprise = function()
         
     };
     
-    _DeleteEnterprise = function()
+    _ConfirmationDeleteEnterprise = function()
     {
-        
         var EnterpriseSelected = $('#EnterprisesTable tr.selected');
         var EnterpriseKey, index, cont = 0;
         
@@ -313,11 +336,22 @@ var ClassEnterprise = function()
             EnterpriseKey = EnterprisedT.fnGetData(position)[index];
         });
         
-        console.log(EnterpriseKey[0]);
+        $('#DivConfirmationDeleteEnterprise').remove();
+        $('body').append('<div id = "DivConfirmationDeleteEnterprise"></div>');
+        $('#DivConfirmationDeleteEnterprise').dialog({width: 300, minWidth:150, Height:250, minHeight:150, modal:true, title:"Mensaje de confirmación", buttons:{
+                Cancelar:function(){$(this).remove();},
+                Aceptar:function(){_DeleteEnterprise();}
+        }});
         
+        
+    };
+    
+    _DeleteEnterprise = function(EnterpriseKey)
+    {
+                
         $('#EnterpriseWS').append('<div class="Loading" id = "IconWaitingEnterprise"><img src="../img/loadinfologin.gif"></div>');      
 
-        var data = {option:"DeleteEnterprise",DataBaseName:EnvironmentData.DataBaseName, IdUser:EnvironmentData.IdUsuario, UserName: EnvironmentData.NombreUsuario, IdGroup : EnvironmentData.IdGrupo, GroupName : EnvironmentData.NombreGrupo, EnterpriseKey:EnterpriseKey[0]};
+        var data = {option:"DeleteEnterprise",DataBaseName:EnvironmentData.DataBaseName, IdUser:EnvironmentData.IdUsuario, UserName: EnvironmentData.NombreUsuario, IdGroup : EnvironmentData.IdGrupo, GroupName : EnvironmentData.NombreGrupo, EnterpriseKey:EnterpriseKey};
        
        $.ajax({
         async:false, 
@@ -332,21 +366,13 @@ var ClassEnterprise = function()
             
             if($.parseXML( xml )===null){Error(xml); return 0;}else xml=$.parseXML( xml );
 
-            if($(xml).find('AddedNewRecord').length>0)
-            {
-                $('#EnterprisesTable tr').removeClass('selected');
-                
+            if($(xml).find('DeletedEnterprise').length>0)
+            {                
                 var Mensaje = $(xml).find('Mensaje').text();
                 Notificacion(Mensaje);
                 
-                var IdEnterprise = $(this).find('NewIdEnterprise').text();
-                
-                var ai = EnterpriseDT.row.add(Data).draw();
-                var n = EnterprisedT.fnSettings().aoData[ ai[0] ].nTr;
-                n.setAttribute('class',"selected");
-                n.setAttribute('id',IdEnterprise);
-                
-                $('#DivFormsNewEnterprise').remove();
+                EnterpriseDT.row('tr.selected').remove().draw( false );  
+                EnterprisedT.$('tbody tr:first').click();
             }
             
             $(xml).find("Error").each(function()
@@ -457,7 +483,7 @@ ClassEnterprise.prototype.AdminStructure = function()
         "tableTools": {
             "aButtons": [
                 {"sExtends":"text", "sButtonText": "Agregar Campo", "fnClick" :function(){_DisplayWindowFields();}},
-                {"sExtends":"text", "sButtonText": "Eliminar Campo", "fnClick" :function(){_DeleteField();}},
+                {"sExtends":"text", "sButtonText": "Eliminar Campo", "fnClick" :function(){_ConfirmDeleteField();}},
                 {"sExtends": "copy","sButtonText": "Copiar al portapapeles"},
                 {
                     "sExtends":    "collection",
@@ -544,7 +570,7 @@ ClassEnterprise.prototype.DisplayEnterprises = function()
             "aButtons": [
                 {"sExtends":"text", "sButtonText": "Nuevo", "fnClick" :function(){_FormsNewEnterprise();}},
                 {"sExtends":"text", "sButtonText": "Editar", "fnClick" :function(){}},
-                {"sExtends":"text", "sButtonText": "Eliminar", "fnClick" :function(){_DeleteEnterprise();}},
+                {"sExtends":"text", "sButtonText": "Eliminar", "fnClick" :function(){_ConfirmationDeleteEnterprise();}},
                 {"sExtends": "copy","sButtonText": "Copiar al portapapeles"},
                 {
                     "sExtends":    "collection",

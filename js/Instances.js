@@ -6,6 +6,7 @@
 
 var EnvironmentData = new ClassEnvironmentData();
 var Repository = new ClassRepository();
+var Enterprise = new ClassEnterprise();
 var Tree = new ClassTree();
 var UsersGroups = new ClassUsersGroups();
 var Users = new ClassUsers();

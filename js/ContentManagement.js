@@ -3,30 +3,50 @@
  * To change this template file, choose Tools | Templates
  * and open the template in the editor.
  */
-/* global Permissions, BotonesWindow */
+/* global Permissions, BotonesWindow, EnvironmentData */
 
 var WindowContentManagement={width:dWidth, height:dHeight, title:"CSDocs", minWidth:800, minHeight:800,closeOnEscape:false};
 
 $(document).ready(function()
-{             
+{                 
    $('.LinkContainer').click(function()
    {        
         CleaningContent();
                         
        $('#content_management').dialog(WindowContentManagement).dialogExtend(BotonesWindow);
        $( "#tabs" ).tabs();
-       $( "#tabs li" ).removeClass( "ui-corner-top" );        
-                     
-       getEmpresas();      
+       $( "#tabs li" ).removeClass( "ui-corner-top" );       
+       
+       var enterprises = Enterprise.GetEnterprises();
+       $("#CM_select_empresas option").remove();
+       $("#CM_select_empresas").append("<option value='0'>Seleccione una Empresa</option>");
+       $(enterprises).find('Enterprise').each(function()
+        {
+            var IdEnterprise = $(this).find('IdEmpresa').text();
+            var EnterpriseKey = $(this).find('ClaveEmpresa').text();
+            var EnterpriseName = $(this).find('NombreEmpresa').text();
+           $("#CM_select_empresas").append("<option value=\""+EnterpriseKey+"\" id = \""+IdEnterprise+"\">"+EnterpriseName+"</option>");
+        });
        
    }) ;
    
    $('#CM_select_empresas').change(function()
        {
             CleaningContent();
-           
-           if(($('#CM_select_empresas').val())>0)
-               getRepositorios();
+           var EnterpriseKey = $('#CM_select_empresas').val();
+           if(EnterpriseKey!=="0")
+           {           
+               $("#CM_select_repositorios option").remove();
+               $("#CM_select_repositorios").append("<option value='0'>Seleccione un Repositorio</option>");
+               var repositories = Repository.GetRepositories(EnterpriseKey);
+               
+                $(repositories).find('Repository').each(function()
+                {
+                    var IdRepository = $(this).find('IdRepositorio').text();
+                    var RepositoryName = $(this).find('NombreRepositorio').text();
+                    $('#CM_select_repositorios').append('<option value = "'+IdRepository+'">'+RepositoryName+'</option>');
+                });
+           }
            else
            {
                $('#CM_select_repositorios').empty().append("<option value=\""+0+"\">Seleccione una Empresa</option>");
@@ -79,12 +99,11 @@ function getEmpresas()
     
     $('#CM_select_repositorios').empty().append("<option value=\""+0+"\">Seleccione una Empresa</option>");
     
-    var DataBase=$('#database_usr').val();
-    var IdUsuario=$('#id_usr').val();
+
     ajax=objetoAjax();
     ajax.open("POST", 'php/ContentManagement.php',true);
     ajax.setRequestHeader("Content-Type", "application/x-www-form-urlencoded;charset=utf-8;");
-    ajax.send("opcion=getListEmpresas&DataBase="+DataBase+'&IdUsuario='+IdUsuario);
+    ajax.send("opcion=getListEmpresas&DataBaseName="+EnvironmentData.DataBaseName+'&IdUser='+EnvironmentData.IdUsuario);
     ajax.onreadystatechange=function() 
     {
        if (ajax.readyState===4 && ajax.status===200) 
@@ -93,15 +112,14 @@ function getEmpresas()
            var xml = ajax.responseXML;
            $("#CM_select_empresas option").remove();
            $("#CM_select_empresas").append("<option value='0'>Seleccione una Empresa</option>");
-           $("#CM_engine_empresas option").remove();
-           $("#CM_engine_empresas").append("<option value='0'>Seleccione una Empresa</option>");
            $(xml).find("Empresa").each(function()
             {
                var $Empresa=$(this);
                var id=$Empresa.find("IdEmpresa").text();
                var nombre = $Empresa.find("NombreEmpresa").text();  
-               $("#CM_select_empresas").append("<option value=\""+id+"\">"+nombre+"</option>");
-               $("#CM_engine_empresas").append("<option value=\""+id+"\">"+nombre+"</option>");
+               var EnterpriseKey = $Empresa.find('ClaveEmpresa').text();
+               
+               $("#CM_select_empresas").append("<option value=\""+EnterpriseKey+"\">"+nombre+"</option>");
             });
             $(xml).find("Error").each(function()
             {
@@ -155,7 +173,7 @@ function getListEmpresas(SelectEmpresas)
 
 function getRepositorios()
 {
-    var IdEmpresa=$('#CM_select_empresas').val();
+    var EnterpriseKey = $('#CM_select_empresas').val();
   
      $.ajax({
       async:true, 
@@ -163,7 +181,7 @@ function getRepositorios()
       dataType:"html", 
       type: 'POST',   
       url: "php/ContentManagement.php",
-      data: "opcion=getListRepositorios&DataBaseName="+EnvironmentData.DataBaseName+'&IdUsuario='+EnvironmentData.IdUsuario+'&IdGrupo='+EnvironmentData.IdGrupo+'&NombreGrupo='+EnvironmentData.NombreGrupo+'&IdEmpresa='+IdEmpresa, 
+      data: "opcion=getListRepositorios&DataBaseName="+EnvironmentData.DataBaseName+'&IdUsuario='+EnvironmentData.IdUsuario+'&IdGrupo='+EnvironmentData.IdGrupo+'&NombreGrupo='+EnvironmentData.NombreGrupo+'&EnterpriseKey='+EnterpriseKey, 
       success:  function(xml){
           
           if($.parseXML( xml )===null){ Error(xml); return 0;}else xml=$.parseXML( xml );         
@@ -186,20 +204,17 @@ function getRepositorios()
       beforeSend:function(){},
       error:function(objXMLHttpRequest){Error(objXMLHttpRequest);}
     });    
-   
 }
 
-
-function getListRepositorios(IdEmpresa,SelectRepositorio)
+function getListRepositorios(EnterpriseKey,IdEmpresa,SelectRepositorio)
 {
-   
       $.ajax({
       async:false, 
       cache:false,
       dataType:"html", 
       type: 'POST',   
       url: "php/ContentManagement.php",
-      data: "opcion=getListRepositorios&DataBaseName="+EnvironmentData.DataBaseName+'&IdUsuario='+EnvironmentData.IdUsuario+'&IdGrupo='+EnvironmentData.IdGrupo+'&NombreGrupo='+EnvironmentData.NombreGrupo+'&IdEmpresa='+IdEmpresa, 
+      data: "opcion=getListRepositorios&DataBaseName="+EnvironmentData.DataBaseName+'&IdUsuario='+EnvironmentData.IdUsuario+'&IdGrupo='+EnvironmentData.IdGrupo+'&NombreGrupo='+EnvironmentData.NombreGrupo+'&IdEmpresa='+IdEmpresa+"&EnterpriseKey="+EnterpriseKey, 
       success:  function(xml){
           
           if($.parseXML( xml )===null){ Error(xml); return 0;}else xml=$.parseXML( xml );         

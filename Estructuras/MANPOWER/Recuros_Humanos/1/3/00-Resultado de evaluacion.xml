@@ -1,0 +1,12 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<Modelo xsi:noNamespaceSchemaLocation="cs-docs/Configuracion/Esquema_CSDOCS1.0.xsd" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance">	
+	<!-- Campos Definidos por el usuario  -->	 
+	<Field Value="ALBERTO TREJO AREVALO">Nombre</Field>
+	<Field Value="21">Edad</Field>
+	<Field Value="TEAA880425HDFRRL05">Curp</Field>
+	<Field Value="2007/02/07">Fecha</Field>
+	<Field Value="Campanula y Coyoacán">Observaciones</Field>
+	
+	<List name="Perfil" IdList="1"/>
+	<List name="Documentos" IdList="9"/>
+</Modelo>

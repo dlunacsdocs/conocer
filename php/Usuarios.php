@@ -17,6 +17,9 @@ require_once 'DesignerForms.php';
 require_once 'Log.php';
 require_once __DIR__.'/Encrypter.php';
 
+$RoutFile = dirname(getcwd());        
+
+
 class Usuarios {
     public function __construct() {
         $this->Ajax();
@@ -47,16 +50,17 @@ class Usuarios {
         $IdUser = filter_input(INPUT_POST, "IdUser");
         $UserName = filter_input(INPUT_POST, "UserName");
         $DataBaseName = filter_input(INPUT_POST, "DataBaseName");
+        $RoutFile = dirname(getcwd());        
         $UserLogin = '';
         $Password = '';
                        
-        if(!file_exists("../version/config.ini"))
+        if(!file_exists("$RoutFile/version/config.ini"))
         {
             XML::XMLReponse("Error", 0, "<p><b>Error</b><br><br> El registro de configuración de CSDocs no existe. Reportelo directamente con CSDocs</p>");
             return 0;
         }
         
-        $EncryptedSetting = parse_ini_file("../version/config.ini", true);
+        $EncryptedSetting = parse_ini_file("$RoutFile/version/config.ini", true);
         if($EncryptedSetting === FALSE)
         {
             XML::XMLReponse("Error", 0, "<p><b>Error</b> en el registro de configuración de CSDocs $EncryptedSetting</p>");

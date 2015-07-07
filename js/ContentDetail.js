@@ -802,8 +802,12 @@ function CM_CargarArchivo()
 
         var IdRepositorio = $('#CM_select_repositorios').val();
         var NombreRepositorio = $('#CM_select_repositorios option:selected').html();
-        var IdEmpresa = $('#CM_select_empresas').val();
+        var IdEmpresa = $('#CM_select_empresas option:selected').attr('id');
+        IdEmpresa = parseInt(IdEmpresa);
         var NombreEmpresa = $('#CM_select_empresas option:selected').html();
+    
+        if(!(IdEmpresa)>0)
+            return Advertencia("El identificador de la empresa no es correcto");
         
         var ArchivoFile = $('#CM_InputFileCarga').val();
         ArchivoFile = ArchivoFile.split('\\');
@@ -959,7 +963,7 @@ function AddNewRow(IdRepository, xml)
     {                                                        
         var $SetMetadatas = $(this);
         var mensaje = $SetMetadatas.find("Mensaje").text();
-        var estado = $SetMetadatas.find("Estado").text();
+        var IdFile = $SetMetadatas.find('IdRepositorio').text();
         var NombreArchivo = $SetMetadatas.find("NombreArchivo").text();
         var FechaIngreso = $SetMetadatas.find("FechaIngreso").text();
         var TipoArchivo = $SetMetadatas.find("TipoArchivo").text();
@@ -982,9 +986,11 @@ function AddNewRow(IdRepository, xml)
         ];
 
         /* Se inserta la Fila y su Id */
+        $('#table_DetailResult tr').removeClass('selected');
         var ai = TableContentDT.row.add(data);         
         var n = TableContentdT.fnSettings().aoData[ ai[0] ].nTr;
         n.setAttribute('id',IdRepositorio);
+        n.setAttribute('class','selected');
         TableContentDT.draw();
 
         $('#CM_Carga').dialog('destroy');

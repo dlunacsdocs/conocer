@@ -148,7 +148,45 @@ class Enterprise {
     
     private function DeleteEnterprise()
     {
-        var_dump($_POST);
+        $DB = new DataBase();
+
+        $DataBaseName = filter_input(INPUT_POST, "DataBaseName");
+//        $IdUser = filter_input(INPUT_POST, "IdUser");
+//        $UserName = filter_input(INPUT_POST, "UserName");
+//        $IdRepository = filter_input(INPUT_POST, "IdRepository");
+//        $IdGroup = filter_input(INPUT_POST, "IdGroup");
+//        $GroupName = filter_input(INPUT_POST, "GroupName");
+        
+        $EnterpriseKey = filter_input(INPUT_POST, "EnterpriseKey");
+        
+        $QueryGetEnterprises = "SELECT IdRepositorio FROM Repositorios WHERE ClaveEmpresa = '$EnterpriseKey'";
+        $ResultQueryGet = $DB->ConsultaSelect($DataBaseName, $QueryGetEnterprises);
+        if($ResultQueryGet['Estado']!=1)
+            return XML::XMLReponse ("Error", 0, "<p><b>Error</b> al obtener las empresas relacionadas a la clave de empresa <b>$EnterpriseKey</b></p><br>Detalles:<br><br>".$ResultQueryGet['Estado']);
+        
+        $Enterprises = $ResultQueryGet['ArrayDatos'];
+        
+        $QForDeletetingEnterprise = "DELETE FROM  Empresas WHERE ClaveEmpresa = '$EnterpriseKey' ";
+        if(($ResultDeletingEnterprise = $DB->ConsultaQuery($DataBaseName, $QForDeletetingEnterprise))!=1)
+                return XML::XMLReponse ("Error", 0, "<p></b>Error</b/> al intentar eliminar la empresa con clave <b>$EnterpriseKey</b></p><br>Detalles:<br><br>$ResultDeletingEnterprise");
+        
+        $QueryForDeletion = "DELETE FROM Enterprise WHERE ";
+        
+        if(count($Enterprises)==0)
+            return XML::XMLReponse("DeletedEnterprise", 1, "Empresa con clave $EnterpriseKey eliminada con éxito");
+        
+        for($cont = 0; $cont < count($Enterprises); $cont++)
+        {
+            if($cont>0)
+                $QueryForDeletion." AND IdRepositorio = ".$Enterprises[$cont]['IdRepositorio'];
+            else
+                $QueryForDeletion.=" IdRepositorio = ".$Enterprises[$cont]['IdRepositorio'];
+        }
+        
+        if(($ResultQueryForDeletion = $DB->ConsultaQuery($DataBaseName, $QueryForDeletion))!=1)
+                return XML::XMLReponse ("Error", 0, "<p></b>Error</b/> al intentar eliminar las empresas relacionadas a la clave <b>$EnterpriseKey</b></p><br>Detalles:<br><br>$ResultQueryForDeletion");
+        
+        XML::XMLReponse("DeletedEnterprise", 1, "Empresa con clave $EnterpriseKey eliminada con éxito");
     }
 
     private function NewField() {

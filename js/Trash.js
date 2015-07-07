@@ -5,6 +5,8 @@
  */
 
 
+/* global Repository, Enterprise */
+
 $(document).ready(function()
 {    
     $('.LinkTrash').click(function()
@@ -14,18 +16,45 @@ $(document).ready(function()
         $('.DetailTrashDir').empty();
         $('.DetailTrashFiles').empty();
         OpenTrah();
-        getListEmpresasToSelect("TrashDir_select_empresas");   /* Se llena el select de empresas de la papelera */
-        getListEmpresasToSelect("TrashFiles_select_empresas");   /* Se llena el select de empresas de la papelera */                        
+        
+        var enterprises = Enterprise.GetEnterprises();
+       $("#TrashDir_select_empresas option").remove();
+       $("#TrashDir_select_empresas").append("<option value='0'>Seleccione una Empresa</option>");
+       $("#TrashFiles_select_empresas option").remove();
+       $("#TrashFiles_select_empresas").append("<option value='0'>Seleccione una Empresa</option>");
+       $(enterprises).find('Enterprise').each(function()
+        {
+            var IdEnterprise = $(this).find('IdEmpresa').text();
+            var EnterpriseKey = $(this).find('ClaveEmpresa').text();
+            var EnterpriseName = $(this).find('NombreEmpresa').text();
+           $("#TrashFiles_select_empresas").append("<option value=\""+EnterpriseKey+"\" id = \""+IdEnterprise+"\">"+EnterpriseName+"</option>");
+           $("#TrashDir_select_empresas").append("<option value=\""+EnterpriseKey+"\" id = \""+IdEnterprise+"\">"+EnterpriseName+"</option>");
+        });
+        
+//        getListEmpresasToSelect("TrashDir_select_empresas");   /* Se llena el select de empresas de la papelera */
+//        getListEmpresasToSelect("TrashFiles_select_empresas");   /* Se llena el select de empresas de la papelera */                        
     });
     
                 /*  Validación de Selects */
                 
     $('#TrashDir_select_empresas').change(function()
     {
-        var IdEmpresa=$('#TrashDir_select_empresas').val();
+        var IdEmpresa = $('#TrashDir_select_empresas option:selected').attr('id');
+        var EnterpriseKey = $('#TrashDir_select_empresas').val();
+        IdEmpresa = parseInt(IdEmpresa);
+        
         if(IdEmpresa>0)
         {
-            getListRepositorios($('#TrashDir_select_empresas').val(),"TrashDir_select_repositorios");
+//            getListRepositorios($('#TrashDir_select_empresas').val(),"TrashDir_select_repositorios");
+            var repositories = Repository.GetRepositories(EnterpriseKey);
+            $("#TrashDir_select_repositorios option").remove();
+            $("#TrashDir_select_repositorios").append("<option value='0'>Seleccione un Repositorio</option>");   
+            $(repositories).find('Repository').each(function()
+            {
+                var IdRepository = $(this).find('IdRepositorio').text();
+                var RepositoryName = $(this).find('NombreRepositorio').text();
+                $('#TrashDir_select_repositorios').append('<option value = "'+IdRepository+'">'+RepositoryName+'</option>');
+            });
         }
         else
         {
@@ -36,9 +65,22 @@ $(document).ready(function()
     
     $('#TrashFiles_select_empresas').change(function()
     {
-        if($('#TrashFiles_select_empresas').val()>0)
+        var IdEnterprise = $('#TrashFiles_select_empresas option:selected').attr('id');
+        IdEnterprise = parseInt(IdEnterprise);
+        
+        if(IdEnterprise>0)
         {
-            getListRepositorios($('#TrashFiles_select_empresas').val(),"TrashFiles_select_repositorios");
+//            getListRepositorios($('#TrashFiles_select_empresas').val(),"TrashFiles_select_repositorios");
+            var EnterpriseKey = $('#TrashFiles_select_empresas').val();
+            var repositories = Repository.GetRepositories(EnterpriseKey);
+            $("#TrashFiles_select_repositorios option").remove();
+            $("#TrashFiles_select_repositorios").append("<option value='0'>Seleccione un Repositorio</option>");   
+            $(repositories).find('Repository').each(function()
+            {
+                var IdRepository = $(this).find('IdRepositorio').text();
+                var RepositoryName = $(this).find('NombreRepositorio').text();
+                $('#TrashFiles_select_repositorios').append('<option value = "'+IdRepository+'">'+RepositoryName+'</option>');
+            });
         }
         else
         {

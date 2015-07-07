@@ -1816,28 +1816,27 @@ class ContentManagement {
                 if(file_exists($PathDestino.$name))
                     unlink($PathDestino.$name);
                 
-                $XML->ResponseXML("Error", 0, "<p>Error al almacenar metadatos $ResultInsertGlobal. <br>$BodyQuery</p>");
+                $XML->ResponseXML("Error", 0, "<p>Error al almacenar metadatos en Global $ResultInsertGlobal. <br>$BodyQuery</p>");
             }                                                
         }
         else
-        {
-            $XML->ResponseXML("Error", 0, "<p>Error al almacenar metadatos $Metadata</p>");
-        }
+            return $XML->ResponseXML("Error", 0, "<p>Error al almacenar metadatos en el repositorio $Metadata</p><br><br>$query");
     }        
     
     private function getListEmpresas()
     {
         $XML=new XML();
         $BD= new DataBase();
-        $IdDataBAse=filter_input(INPUT_POST, "DataBase");
-        $IdUsuario=filter_input(INPUT_POST, "IdUsuario");
-        $DataBase=$BD->getDataBase($IdDataBAse);
-               
-        $query="SELECT *FROM Empresas";        
+        $IdUsuario=filter_input(INPUT_POST, "IdUser");
+        $DataBaseName = filter_input(INPUT_POST, "DataBaseName");
+        
+        $query="SELECT *FROM Empresas ";        
         /* Resultado de Query */        
-        $ListEmpresas= $BD->ConsultaSelect($DataBase['ArrayDatos']['NombreInstancia'], $query);
+        $ListEmpresas= $BD->ConsultaSelect($DataBaseName, $query);
+        
         /* Comprobación del Estado de la Consulta */
-        if($ListEmpresas['Estado']!=1){return $XML->ResponseXML("Error", 0,$ListEmpresas['Estado']); }      
+        if($ListEmpresas['Estado']!=1)
+            return $XML->ResponseXML("Error", 0,$ListEmpresas['Estado']);  
 
         /*  Se recorre el listado de empresas para ser mostrado en el Select del Content MNanagement */
         $Listado=$ListEmpresas['ArrayDatos'];
@@ -1902,7 +1901,7 @@ class ContentManagement {
         $NombreGrupo = filter_input(INPUT_POST, "NombreGrupo");
         $IdEmpresa=filter_input(INPUT_POST, "IdEmpresa");
         $IdUsuario=filter_input(INPUT_POST, "IdUsuario");
-
+        $EnterpriseKey = filter_input(INPUT_POST, "EnterpriseKey");
                     
 //        $query="select em.IdEmpresa, re.IdRepositorio, re.NombreRepositorio from Repositorios re INNER JOIN Empresas em "
 //                . "on re.ClaveEmpresa=em.ClaveEmpresa WHERE em.IdEmpresa=$IdEmpresa";     

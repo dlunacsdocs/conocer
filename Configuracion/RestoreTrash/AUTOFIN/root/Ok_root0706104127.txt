@@ -1,0 +1,7 @@
+Restaurando el Documento 00-Resultado de evaluacion_1_2_3.pdf
+DELETE FROM temp_rep_Operaciones_Pasivas WHERE IdRepositorio=1
+Se restauró a 00-Resultado de evaluacion_1_2_3.pdf
+PHP Notice:  Undefined index: REMOTE_ADDR in /volume1/web/php/Log.php on line 153
+
+Notice: Undefined index: REMOTE_ADDR in /volume1/web/php/Log.php on line 153
+Se eliminó el proceso root0706104127

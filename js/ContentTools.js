@@ -80,7 +80,8 @@ var ClassTools = function()
         IdParent=IdParent.data.key;
         var IdRepositorio = $('#CM_select_repositorios').val();
         var NombreRepositorio = $('#CM_select_repositorios option:selected').html();
-        var IdEmpresa = $('#CM_select_empresas').val();
+        var IdEmpresa = $('#CM_select_empresas option:selected').attr('id');
+        IdEmpresa = parseInt(IdEmpresa);
         var NombreEmpresa = $('#CM_select_empresas option:selected').html();
         var SourceMassiveUpload = $('#SelectMassiverUpload').val();
 
@@ -243,7 +244,8 @@ function CheckMassiveLoadPending()
     IdParent=IdParent.data.key;
     var IdRepositorio = $('#CM_select_repositorios').val();
     var NombreRepositorio = $('#CM_select_repositorios option:selected').html();
-    var IdEmpresa = $('#CM_select_empresas').val();
+    var IdEmpresa = $('#CM_select_empresas option:selected').attr('id');
+    IdEmpresa = parseInt(IdEmpresa);
     var NombreEmpresa = $('#CM_select_empresas option:selected').html();
         
     $.ajax({
@@ -310,7 +312,8 @@ function AnswerOfUserML(Answer)
     var DataBaseName=$('#database_name').val();
     var id_usuario=$('#id_usr').val();
     var nombre_usuario=$('#login_usr').val();
-    var IdEmpresa=$('#CM_select_empresas').val();
+    var IdEmpresa = $('#CM_select_empresas option:selected').attr('id');
+    IdEmpresa = parseInt(IdEmpresa);
     
     ajax=objetoAjax();
         ajax.open("POST", 'php/MassiveUpload.php',true);
@@ -458,7 +461,8 @@ function PasteFile()
     var DataBaseName = $('#database_name').val();
     var id_usuario = $('#id_usr').val();
     var nombre_usuario = $('#login_usr').val();
-    var IdEmpresa = $('#CM_select_empresas').val();
+    var IdEmpresa = $('#CM_select_empresas option:selected').attr('id');
+    IdEmpresa = parseInt(IdEmpresa);
     var NombreEmpresa = $('#CM_select_empresas option:selected').html();
         
     /* Se reinicializan las variables de cortar */
@@ -592,7 +596,8 @@ function DeleteFile()
     var DataBaseName=$('#database_name').val();
     var id_usuario=$('#id_usr').val();
     var nombre_usuario=$('#login_usr').val();
-    var IdEmpresa=$('#CM_select_empresas').val();
+    var IdEmpresa=$('#CM_select_empresas option:selected').attr('id');
+    IdEmpresa = parseInt(IdEmpresa);
     if(!(node.data.key>0)){return;}
         
     $.ajax({

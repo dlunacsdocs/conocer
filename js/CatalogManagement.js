@@ -3,7 +3,7 @@
  * To change this template file, choose Tools | Templates
  * and open the template in the editor.
  */
-/* global CatalogAdmin, BotonesWindow, EnvironmentData */
+/* global CatalogAdmin, BotonesWindow, EnvironmentData, Enterprise */
 
 var WindowCatalogo={minHeight:500,minWidth:800,width:$(window).width()-100, height:600, closeOnEscape:false};
 var CatalogTabledT = undefined;
@@ -65,10 +65,9 @@ ClassCatalogAdministrator = function()
    _CM_AddCatalogoXML = function()
    {
        Loading();
-       var ValEmpresa=$('#SelectEmpresasAddCatalogo').val();
-       ValEmpresa=ValEmpresa.split(",");
-       var IdRepositorio=$('#SelectRepositoriosAddCatalogo').val(), IdEmpresa=ValEmpresa[0], 
-       NombreRepositorio=$('#SelectRepositoriosAddCatalogo option:selected').html(), ClaveEmpresa=ValEmpresa[1],
+       var ClaveEmpresa=$('#SelectEmpresasAddCatalogo').val();
+       var IdRepositorio=$('#SelectRepositoriosAddCatalogo').val()
+       NombreRepositorio=$('#SelectRepositoriosAddCatalogo option:selected').html(),
        xml_usuario=document.getElementById("InputFile_AddCatalogo"), archivo = xml_usuario.files;   
    
        var data = new FormData();
@@ -79,7 +78,6 @@ ClassCatalogAdministrator = function()
                data.append('opcion','AddCatalogoXML');
                data.append('id_usuario',EnvironmentData.IdUsuario);
                data.append('DataBaseName',EnvironmentData.DataBaseName);
-               data.append('IdEmpresa',IdEmpresa);
                data.append('ClaveEmpresa',ClaveEmpresa);
                data.append('NombreRepositorio',NombreRepositorio);
                data.append('IdRepository', IdRepositorio);
@@ -713,19 +711,34 @@ ClassCatalogAdministrator = function()
        $('#TableCatalogosAdd').append('<tr><td>Empresa:</td> <td><select class = "FormStandart" id="SelectEmpresasAddCatalogo"><option>Seleccione una empresa...</option></select></td></tr>');
        $('#TableCatalogosAdd').append('<tr><td>Repositorio:</td><td> <select class = "FormStandart" id="SelectRepositoriosAddCatalogo"><option>Esperando empresa...</option></select></td></tr>');
        
-       getListEmpresas('SelectEmpresasAddCatalogo');
+       var enterprises = Enterprise.GetEnterprises();
 
+       $(enterprises).find('Enterprise').each(function()
+        {
+            var IdEnterprise = $(this).find('IdEmpresa').text();
+            var EnterpriseKey = $(this).find('ClaveEmpresa').text();
+            var EnterpriseName = $(this).find('NombreEmpresa').text();
+           $("#SelectEmpresasAddCatalogo").append("<option value=\""+EnterpriseKey+"\">"+EnterpriseName+"</option>");
+        });
+       
        $('#SelectEmpresasAddCatalogo').change(function()
        {
-           var ValEmpresa = $('#SelectEmpresasAddCatalogo').val();
-           ValEmpresa = ValEmpresa.split(",");
-           var IdEmpresa = ValEmpresa[0];
-           var Clave = ValEmpresa[1];
-           if(IdEmpresa>0)
+           var EnterpriseKey = $('#SelectEmpresasAddCatalogo').val();
+           if(EnterpriseKey!=="0")
            {
-              getListRepositorios(IdEmpresa,'SelectRepositoriosAddCatalogo');
+              var repositories = Repository.GetRepositories(EnterpriseKey);
+              
+              $("#SelectRepositoriosAddCatalogo option").remove();
+               $("#SelectRepositoriosAddCatalogo").append("<option value='0'>Seleccione un Repositorio</option>");
+              $(repositories).find('Repository').each(function()
+                {
+                    var IdRepository = $(this).find('IdRepositorio').text();
+                    var RepositoryName = $(this).find('NombreRepositorio').text();
+                    $('#SelectRepositoriosAddCatalogo').append('<option value = "'+IdRepository+'">'+RepositoryName+'</option>');
+                });
+              
               $('#SelectRepositoriosAddCatalogo').change(function(){
-                  if($('#SelectRepositoriosAddCatalogo').val()>0)
+                  if($('#SelectRepositoriosAddCatalogo').val()!=="0")
                   {
                       $('#InputFile_AddCatalogo').remove();
                       $('#WS_Catalogo').append('<input type="file" id="InputFile_AddCatalogo" accept="text/xml">');
@@ -861,31 +874,48 @@ ClassCatalogAdministrator = function()
 
 ClassCatalogAdministrator.prototype.ViewCatalog = function()
    {            
+
         $('#WS_Catalogo').empty();
         $('#WS_Catalogo').append('<div class="titulo_ventana">Consulta de un Catálogo</div>');
         $('#WS_Catalogo').append('<p>Seleccione los datos solicitados</p>');
         $('#WS_Catalogo').append('<table id="TableCatalogosAdd"><tbody><tr><td></td><td></td></tbody></table>');
-        $('#WS_Catalogo').append('<p>Empresa: <select id="SelectEmpresasAddCatalogo" class = "FormStandart"><option>Seleccione una empresa...</option></select></p>');
-        $('#WS_Catalogo').append('<p>Repositorio: <select id="SelectRepositoriosAddCatalogo" class = "FormStandart"><option>Esperando empresa...</option></select></p>');
-        $('#WS_Catalogo').append('<p>Catalogos: <select id="SelectCatalogosAddOption" class = "FormStandart"><option>Esperando Repositorio...</option></select></p>');
-        getListEmpresas('SelectEmpresasAddCatalogo');
+        $('#WS_Catalogo').append('<p>Empresa: <select id="SelectEmpresasAddCatalogo" class = "FormStandart"><option value = "0">Seleccione una empresa...</option></select></p>');
+        $('#WS_Catalogo').append('<p>Repositorio: <select id="SelectRepositoriosAddCatalogo" class = "FormStandart"><option value = "0">Esperando empresa...</option></select></p>');
+        $('#WS_Catalogo').append('<p>Catalogos: <select id="SelectCatalogosAddOption" class = "FormStandart"><option value = "0">Esperando Repositorio...</option></select></p>');
+
+        var enterprises = Enterprise.GetEnterprises();
+
+        $(enterprises).find('Enterprise').each(function()
+        {
+            var IdEnterprise = $(this).find('IdEmpresa').text();
+            var EnterpriseKey = $(this).find('ClaveEmpresa').text();
+            var EnterpriseName = $(this).find('NombreEmpresa').text();
+           $("#SelectEmpresasAddCatalogo").append("<option value=\""+EnterpriseKey+"\">"+EnterpriseName+"</option>");
+        });
 
         $('#SelectEmpresasAddCatalogo').change(function()
         {
             
             _DeleteCatalogTable();    
-            var ValEmpresa=$('#SelectEmpresasAddCatalogo').val();
-            ValEmpresa=ValEmpresa.split(",");
-            var IdEmpresa=ValEmpresa[0];
-            var Clave=ValEmpresa[1];
-            if(IdEmpresa>0)
+            var EnterpriseKey = $('#SelectEmpresasAddCatalogo').val();
+            if(EnterpriseKey!=="0")
             {
-               getListRepositorios(IdEmpresa,'SelectRepositoriosAddCatalogo');           
+              var repositories = Repository.GetRepositories(EnterpriseKey);
+              
+              $("#SelectRepositoriosAddCatalogo option").remove();
+               $("#SelectRepositoriosAddCatalogo").append("<option value='0'>Seleccione un Repositorio</option>");
+              $(repositories).find('Repository').each(function()
+                {
+                    var IdRepository = $(this).find('IdRepositorio').text();
+                    var RepositoryName = $(this).find('NombreRepositorio').text();
+                    $('#SelectRepositoriosAddCatalogo').append('<option value = "'+IdRepository+'">'+RepositoryName+'</option>');
+                });
+                
                $('#SelectRepositoriosAddCatalogo').change(function(){
                    
                    _DeleteCatalogTable();
                 
-                   if($('#SelectRepositoriosAddCatalogo').val()>0)
+                   if($('#SelectRepositoriosAddCatalogo').val()!=="0")
                    {                       
                         var IdRepositorio=$('#SelectRepositoriosAddCatalogo').val();     
 
