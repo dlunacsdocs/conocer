@@ -199,7 +199,7 @@ var ClassEnterprise = function()
         
         var buttons = {
                 "Cancelar":function(){$(this).remove();},
-                "Agregar":function(){_AddNewRegister(EnterpriseStructure);}
+                "Agregar":function(){_AddNewEnterprise(EnterpriseStructure);}
         };
         
         $('#DivFormsNewEnterprise').dialog('option', 'buttons', buttons);
@@ -209,7 +209,7 @@ var ClassEnterprise = function()
     };
     
     /* Agrega un nuevo registro  */
-    _AddNewRegister = function(EnterpriseStructure)
+    _AddNewEnterprise = function(EnterpriseStructure)
     {
         console.log("AddingNewRegister::");
         
@@ -234,13 +234,14 @@ var ClassEnterprise = function()
             var required=$Campo.find("required").text();
             var value = $('#TableEnterpriseNewRegister_'+name).val();                     
            
-            xml+='<Campo>\n\
-                <name>'+name+'</name>\n\
-                <value>'+value+'</value>\n\
-                <type>'+type+'</type>\n\
-                <long>'+long+'</long>\n\
-                <required>'+required+'</required>\n\
-             </Campo>';
+           if(value !=="")
+                xml+='<Campo>\n\
+                    <name>'+name+'</name>\n\
+                    <value>'+value+'</value>\n\
+                    <type>'+type+'</type>\n\
+                    <long>'+long+'</long>\n\
+                    <required>'+required+'</required>\n\
+                 </Campo>';
            
              Data[Data.length] = value;
 
@@ -312,7 +313,7 @@ var ClassEnterprise = function()
     _ConfirmationDeleteEnterprise = function()
     {
         var EnterpriseSelected = $('#EnterprisesTable tr.selected');
-        var EnterpriseKey, index, cont = 0;
+        var IdEnterprise, EnterpriseKey, index, cont = 0;
         
         if(EnterpriseSelected.length!==1)
             return Advertencia("Debe seleccionar una empresa");
@@ -333,25 +334,27 @@ var ClassEnterprise = function()
         EnterprisedT.$('tr.selected').each(function()
         {
             var position = EnterprisedT.fnGetPosition(this); // getting the clicked row position
+            IdEnterprise = $(this).attr('id');
             EnterpriseKey = EnterprisedT.fnGetData(position)[index];
         });
         
         $('#DivConfirmationDeleteEnterprise').remove();
         $('body').append('<div id = "DivConfirmationDeleteEnterprise"></div>');
+        $('#DivConfirmationDeleteEnterprise').append('<p>¿Realmente desea eliminar la empresa <b>'+EnterpriseKey+'</b>? Esta operación eliminará los repositorios ligados a esta empresa y no puede revertirse.</p><p>¿Desea continuar?</p>');
         $('#DivConfirmationDeleteEnterprise').dialog({width: 300, minWidth:150, Height:250, minHeight:150, modal:true, title:"Mensaje de confirmación", buttons:{
                 Cancelar:function(){$(this).remove();},
-                Aceptar:function(){_DeleteEnterprise();}
+                Aceptar:function(){_DeleteEnterprise(IdEnterprise, EnterpriseKey[0]);}
         }});
         
         
     };
     
-    _DeleteEnterprise = function(EnterpriseKey)
+    _DeleteEnterprise = function(IdEnterprise, EnterpriseKey)
     {
                 
         $('#EnterpriseWS').append('<div class="Loading" id = "IconWaitingEnterprise"><img src="../img/loadinfologin.gif"></div>');      
 
-        var data = {option:"DeleteEnterprise",DataBaseName:EnvironmentData.DataBaseName, IdUser:EnvironmentData.IdUsuario, UserName: EnvironmentData.NombreUsuario, IdGroup : EnvironmentData.IdGrupo, GroupName : EnvironmentData.NombreGrupo, EnterpriseKey:EnterpriseKey};
+        var data = {option:"DeleteEnterprise",DataBaseName:EnvironmentData.DataBaseName, IdUser:EnvironmentData.IdUsuario, UserName: EnvironmentData.NombreUsuario, IdGroup : EnvironmentData.IdGrupo, GroupName : EnvironmentData.NombreGrupo, IdEnterprise: IdEnterprise, EnterpriseKey:EnterpriseKey};
        
        $.ajax({
         async:false, 
@@ -386,6 +389,45 @@ var ClassEnterprise = function()
         beforeSend:function(){},
         error: function(jqXHR, textStatus, errorThrown) {Error(textStatus +"<br>"+ errorThrown);}
         });           
+    };
+    
+    _EditEnterprise = function(EnterpriseStructure)
+    {
+        var EnterpriseSelected = $('#EnterprisesTable tr.selected');
+        var IdEnterprise, EnterpriseKey, index, cont = 0;
+        
+        if(EnterpriseSelected.length!==1)
+            return Advertencia("Debe seleccionar una empresa");
+        
+        var NumColumns = EnterpriseDT.columns().header();
+        $(NumColumns).each(function()
+        {
+            var ColumnTitle = $(this).html();
+            if(ColumnTitle==="ClaveEmpresa")
+                index = cont;
+            
+            cont++;
+        });
+        
+        if(index===undefined)
+            return Advertencia("No existe el campo ClaveEmpresa, no es posible realizar esta acción");
+        
+        EnterprisedT.$('tr.selected').each(function()
+        {
+            var position = EnterprisedT.fnGetPosition(this); // getting the clicked row position
+            IdEnterprise = $(this).attr('id');
+            EnterpriseKey = EnterprisedT.fnGetData(position)[index];
+        });
+        
+        $('#DivEditEnterprise').remove();
+        $('body').append('<div id = "DivEditEnterprise"></div>');
+        $('#DivEditEnterprise').append('<table id = "TableEditEnterprise"></table>');
+        BuildFullStructureTable("Empresa","TableEditEnterprise",EnterpriseStructure);
+        $('#DivEditEnterprise').dialog(DimensionsDialogMetadatas, {title:"Información de empresa "+EnterpriseKey, buttons:{
+                Cancelar: function(){$(this).remove();},
+                Modificar: function(){}
+        }});
+        
     };
     
 };
@@ -569,7 +611,7 @@ ClassEnterprise.prototype.DisplayEnterprises = function()
         "tableTools": {
             "aButtons": [
                 {"sExtends":"text", "sButtonText": "Nuevo", "fnClick" :function(){_FormsNewEnterprise();}},
-                {"sExtends":"text", "sButtonText": "Editar", "fnClick" :function(){}},
+                {"sExtends":"text", "sButtonText": "Editar", "fnClick" :function(){_EditEnterprise(EnterpriseStructure);}},
                 {"sExtends":"text", "sButtonText": "Eliminar", "fnClick" :function(){_ConfirmationDeleteEnterprise();}},
                 {"sExtends": "copy","sButtonText": "Copiar al portapapeles"},
                 {

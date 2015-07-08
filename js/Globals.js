@@ -259,49 +259,49 @@ function ValidatingNodesOfTree(o)
 }
 
 
-function getListEmpresasToSelect(SelectEmpresas)
-{
-    var DataBase = $('#database_usr').val();
-    var IdUsuario = $('#id_usr').val();
-
-    $.ajax({
-        async: false,
-        cache: false,
-        dataType: "xml",
-        type: 'POST',
-        url: "php/ContentManagement.php",
-        data: "opcion=getListEmpresas&DataBase=" + DataBase + '&IdUsuario=' + IdUsuario,
-        success: function (respuesta) {
-            if (respuesta === null) {
-                Error(respuesta);
-                return 0;
-            }
-            var xml = respuesta;
-            $("#" + SelectEmpresas + " option").remove();
-            $("#" + SelectEmpresas).append("<option value='0'>Seleccione una Empresa</option>");
-            $(xml).find("Empresa").each(function ()
-            {
-                var $Empresa = $(this);
-                var id = $Empresa.find("IdEmpresa").text();
-                var clave = $Empresa.find("ClaveEmpresa").text();
-                var nombre = $Empresa.find("NombreEmpresa").text();
-                $("#" + SelectEmpresas).append("<option value=\"" + id + "\">" + nombre + "</option>");
-            });
-            $(xml).find("Error").each(function ()
-            {
-                var $Instancias = $(this);
-                var estado = $Instancias.find("Estado").text();
-                var mensaje = $Instancias.find("Mensaje").text();
-                Error(mensaje);
-            });
-        },
-        beforeSend: function () {
-        },
-        error: function (objXMLHttpRequest) {
-            Error(objXMLHttpRequest);
-        }
-    });
-}
+//function getListEmpresasToSelect(SelectEmpresas)
+//{
+//    var DataBase = $('#database_usr').val();
+//    var IdUsuario = $('#id_usr').val();
+//
+//    $.ajax({
+//        async: false,
+//        cache: false,
+//        dataType: "xml",
+//        type: 'POST',
+//        url: "php/ContentManagement.php",
+//        data: "opcion=getListEmpresas&DataBase=" + DataBase + '&IdUsuario=' + IdUsuario,
+//        success: function (respuesta) {
+//            if (respuesta === null) {
+//                Error(respuesta);
+//                return 0;
+//            }
+//            var xml = respuesta;
+//            $("#" + SelectEmpresas + " option").remove();
+//            $("#" + SelectEmpresas).append("<option value='0'>Seleccione una Empresa</option>");
+//            $(xml).find("Empresa").each(function ()
+//            {
+//                var $Empresa = $(this);
+//                var id = $Empresa.find("IdEmpresa").text();
+//                var clave = $Empresa.find("ClaveEmpresa").text();
+//                var nombre = $Empresa.find("NombreEmpresa").text();
+//                $("#" + SelectEmpresas).append("<option value=\"" + id + "\">" + nombre + "</option>");
+//            });
+//            $(xml).find("Error").each(function ()
+//            {
+//                var $Instancias = $(this);
+//                var estado = $Instancias.find("Estado").text();
+//                var mensaje = $Instancias.find("Mensaje").text();
+//                Error(mensaje);
+//            });
+//        },
+//        beforeSend: function () {
+//        },
+//        error: function (objXMLHttpRequest) {
+//            Error(objXMLHttpRequest);
+//        }
+//    });
+//}
 
 
 function Notificacion(titulo, mensaje)

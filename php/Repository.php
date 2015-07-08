@@ -5,7 +5,7 @@
  *
  * @author daniel
  */
-$RoutFile = filter_input(INPUT_SERVER, "DOCUMENT_ROOT"); /* /var/services/web */
+$RoutFile = dirname(getcwd());        
 
 require_once 'DataBase.php';
 require_once 'XML.php';
@@ -256,25 +256,93 @@ class Repository {
     }
 
     private function GetListRepositories() {
-        $BD = new DataBase();
 //        $Log = new Log();
 
         $DataBaseName = filter_input(INPUT_POST, "DataBaseName");
         $IdRepositorio = filter_input(INPUT_POST, "IdRepositorio");
+        $IdGroup = filter_input(INPUT_POST, "IdGroup");
         $IdUsuario = filter_input(INPUT_POST, "IdUsuario");
         $NombreUsuario = filter_input(INPUT_POST, "NombreUsuario");
         $EnterpriseKey = filter_input(INPUT_POST, "EnterpriseKey");
-        $SelectRepositories = '';
-        if (strlen($EnterpriseKey) > 0)
-            $SelectRepositories = "SELECT *FROM Repositorios WHERE ClaveEmpresa = '$EnterpriseKey'";
+        
+        $Repositories = $this->GetRepositoriesList($DataBaseName, $EnterpriseKey, $IdGroup);
+        
+        if(is_array($Repositories))
+            XML::XmlArrayResponse("Repositories", "Repository", $Repositories);
         else
-            $SelectRepositories = "SELECT *FROM Repositorios";
+            return XML::XMLReponse("Error", 0, "<p><b>Error</b> al obtener el listado de repositorios.</p><br>Detalles:<br><br>" . $Repositories);
 
-        $ResultSelect = $BD->ConsultaSelect($DataBaseName, $SelectRepositories);
+    }
+    
+    public function GetRepositoriesList($DataBaseName, $EnterpriseKey, $IdGroup)
+    {
+        $BD = new DataBase();
+
+        $query = "SELECT  em.IdEmpresa, re.IdRepositorio, re.NombreRepositorio FROM Repositorios re "
+                . "INNER JOIN RepositoryControl rc ON rc.IdRepositorio = re.IdRepositorio "
+                . "INNER JOIN Empresas em on re.ClaveEmpresa=em.ClaveEmpresa "
+                . "WHERE rc.IdGrupo = $IdGroup AND re.ClaveEmpresa = '$EnterpriseKey'";
+
+        $ResultSelect = $BD->ConsultaSelect($DataBaseName, $query);
         if ($ResultSelect['Estado'] != 1)
-            return XML::XMLReponse("Error", 0, "<p><b>Error</b> al obtener el listado de repositorios.</p><br>Detalles:<br><br>" . $ResultSelect['Estado']);
+            return $ResultSelect['Estado'];
+        
+        return $ResultSelect['ArrayDatos'];
+        
+    }
+    /* @DeleteForEnterprise: bandera utilizada para indicar que la eliminación de documentos de uno o varios rep de la tabla
+     *                                   Global y del registro de repositorios (Tabla Repositorios)  se realizará en una sola consulta y no en varias */
+    public function DeleteRepository($DataBaseName, $IdEnterprise, $EnterpriseKey , $IdRepository, $RepositoryName, $DeleteForEnterprise = 0)
+    {
+        $DB = new DataBase();
+        $RoutFile = dirname(getcwd());        
+        $RepositoryPath = "$RoutFile/Estructuras/$DataBaseName/$RepositoryName";
+        
+        if(file_exists($RepositoryPath))
+            exec("rm -R $RepositoryPath");
+        
+        /* Eliminando Repositorio */
+        $DropRepository = "DROP TABLE IF EXISTS $RepositoryName  ";
+        
+        if(($ResultDropRepository = $DB->ConsultaQuery($DataBaseName, $DropRepository))!=1)
+                return "<p><b>Error</b> al eliminar el repositorio </p><br>Detalles:<br><br>$ResultDropRepository";
+        
+        /* Eliminando Tabla de directorios del Repositorio */
+        $DropDirTable = "DROP TABLE IF EXISTS  dir_$RepositoryName ";
+        
+        if(($ResultDropDirTable = $DB->ConsultaQuery($DataBaseName, $DropDirTable))!=1)
+                return "<p><b>Error</b> al eliminar tabla de directorios del repositorio <b>$RepositoryName</b></p><br>Detalles:<br><br>$ResultDropDirTable";
+        
+        /* Eliminando Trash del Repositorio */
+        $DropDirTrash = "DROP TABLE IF EXISTS temp_dir_$RepositoryName ";
+        
+        if(($ResultDropDirTrash = $DB->ConsultaQuery($DataBaseName, $DropDirTrash))!=1)
+                return "<p><b>Error</b>: al eliminar trash de directorios del repositorio <b>$RepositoryName</b> </p><br>Detalles:<br><br> $ResultDropDirTrash";
+        
+        $DropRepTrash = "DROP TABLE  IF EXISTS temp_rep_$RepositoryName ";
+        
+        if(($ResultDropRepTrash = $DB->ConsultaQuery($DataBaseName, $DropRepTrash))!=1)
+                return "<p><b>Error</b> al eliminar trash del repositorio <b>$RepositoryName</b></p><br>Detalles:<br><br>$ResultDropRepTrash";
+        
+        $DeletingOfGlobal = "";
+        
+        if($DeleteForEnterprise ==0)
+        {
+            /* Eliminando del repositorio Global  todos los documentos del repositorio*/
 
-        XML::XmlArrayResponse("Repositories", "Repository", $ResultSelect['ArrayDatos']);
+            $DeletingOfGlobal = "DELETE FROM RepositorioGlobal WHERE IdRepositorio = $IdRepository AND IdEmpresa = $IdEnterprise";
+        
+            if(($ResultDeletingOfGlobal = $DB->ConsultaQuery($DataBaseName, $DeletingOfGlobal))!=1)
+                    return "<p><b>Error</b> al intentar eliminar los documentos del repositorio <b>$RepositoryName</b> localizados en Global</p><br>Detalles:<br><br>$ResultDeletingOfGlobal"; 
+
+            $DeletingOfRepository = "DELETE FROM Repositorios WHERE IdRepositorio = $IdRepository";
+                if(($ResultDeletingOfRepository = $DB->ConsultaQuery($DataBaseName, $DeletingOfRepository))!=1)
+                    return "<p><b>Error</b> al intentar eliminar el repositorio <b>$RepositoryName</b> del registro de repositorios</p><br>Detalles:<br><br>$ResultDeletingOfRepository";
+        } 
+        
+        
+        
+        return 1;
     }
 
 }

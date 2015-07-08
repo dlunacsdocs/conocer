@@ -30,9 +30,7 @@ $(document).ready(function()
            $("#TrashFiles_select_empresas").append("<option value=\""+EnterpriseKey+"\" id = \""+IdEnterprise+"\">"+EnterpriseName+"</option>");
            $("#TrashDir_select_empresas").append("<option value=\""+EnterpriseKey+"\" id = \""+IdEnterprise+"\">"+EnterpriseName+"</option>");
         });
-        
-//        getListEmpresasToSelect("TrashDir_select_empresas");   /* Se llena el select de empresas de la papelera */
-//        getListEmpresasToSelect("TrashFiles_select_empresas");   /* Se llena el select de empresas de la papelera */                        
+                    
     });
     
                 /*  Validación de Selects */

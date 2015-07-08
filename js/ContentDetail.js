@@ -227,7 +227,7 @@ function GetDetalle(Source, IdGlobal, IdFile)
        /* Columnas que contienen la información de un list search */
        $('#table_CatalogoDetalle_'+NombreCatalogo).append(thead);
        
-       TableCatalogdT = $('#table_CatalogoDetalle_'+NombreCatalogo).dataTable();    
+       TableCatalogdT = $('#table_CatalogoDetalle_'+NombreCatalogo).dataTable({oLanguage:LanguajeDataTable});    
        TableCatalogDT = new $.fn.dataTable.Api('#table_CatalogoDetalle_'+NombreCatalogo);
        
        /* El Array Struct Contiene la estructura del catálogo y a partir de ella se recorre el XML que contiene
@@ -476,7 +476,7 @@ function SetSearchResult(IdRepository,xml)
     $('.contentDetail').empty();
     $('.contentDetail').append('<table id="table_DetailResult" class="display hover"></table>');
     $('#table_DetailResult').append('<thead><tr><th>Nombre</th><th>Fecha de Ingreso</th><th>Tipo</th><th>Resumen</th><th>Vista Previa</th><th>Detalle</th><th>Ruta</th><th></th></tr></thead><tbody></tbody>');
-     TableContentdT = $('#table_DetailResult').dataTable({"columns": [null,null,null,null,{ "width": "7%" },{ "width": "16%" },null,null]});    
+     TableContentdT = $('#table_DetailResult').dataTable({oLanguage:LanguajeDataTable, "columns": [null,null,null,null,{ "width": "7%" },{ "width": "16%" },null,null]});    
      TableContentDT = new $.fn.dataTable.Api( '#table_DetailResult' );
     var cont = 0;
      $(xml).find("Resultado").each(function()

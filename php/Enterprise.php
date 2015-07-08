@@ -15,6 +15,7 @@ $RoutFile = filter_input(INPUT_SERVER, "DOCUMENT_ROOT"); /* /var/services/web */
 
 require_once 'XML.php';
 require_once 'DataBase.php';
+require_once 'Repository.php';
 
 class Enterprise {
 
@@ -74,14 +75,13 @@ class Enterprise {
         foreach ($RegisterXml->Campo as $field)
         {       
             $FieldValue = $field->value;
-            $FiledType = $field->type;
+            $FieldType = $field->type;
             $FieldName = $field->name;
             
             if(strcasecmp("ClaveEmpresa", $FieldName)==0)
                     $EnterpriseKey = $FieldValue;
             
-            $FormattedField = DataBase::FieldFormat($FieldValue, $FiledType);
-            
+            $FormattedField = DataBase::FieldFormat($FieldValue, $FieldType);
             if(strcasecmp($FormattedField, 0)!=0)
             {
                 $ValuesChain.= $FormattedField.", ";
@@ -149,42 +149,64 @@ class Enterprise {
     private function DeleteEnterprise()
     {
         $DB = new DataBase();
-
-        $DataBaseName = filter_input(INPUT_POST, "DataBaseName");
-//        $IdUser = filter_input(INPUT_POST, "IdUser");
-//        $UserName = filter_input(INPUT_POST, "UserName");
-//        $IdRepository = filter_input(INPUT_POST, "IdRepository");
-//        $IdGroup = filter_input(INPUT_POST, "IdGroup");
-//        $GroupName = filter_input(INPUT_POST, "GroupName");
+        $Repository = new Repository();
         
+        $DataBaseName = filter_input(INPUT_POST, "DataBaseName");
+        $IdUser = filter_input(INPUT_POST, "IdUser");
+        $UserName = filter_input(INPUT_POST, "UserName");
+        $IdRepository = filter_input(INPUT_POST, "IdRepository");
+        $IdGroup = filter_input(INPUT_POST, "IdGroup");
+        $GroupName = filter_input(INPUT_POST, "GroupName");
+        $IdEnterprise = filter_input(INPUT_POST, "IdEnterprise");
         $EnterpriseKey = filter_input(INPUT_POST, "EnterpriseKey");
         
-        $QueryGetEnterprises = "SELECT IdRepositorio FROM Repositorios WHERE ClaveEmpresa = '$EnterpriseKey'";
-        $ResultQueryGet = $DB->ConsultaSelect($DataBaseName, $QueryGetEnterprises);
+        $QueryGetRepositories = "SELECT IdRepositorio, ClaveEmpresa, NombreRepositorio FROM Repositorios WHERE ClaveEmpresa = '$EnterpriseKey'";
+        $ResultQueryGet = $DB->ConsultaSelect($DataBaseName, $QueryGetRepositories);
+        
         if($ResultQueryGet['Estado']!=1)
             return XML::XMLReponse ("Error", 0, "<p><b>Error</b> al obtener las empresas relacionadas a la clave de empresa <b>$EnterpriseKey</b></p><br>Detalles:<br><br>".$ResultQueryGet['Estado']);
         
-        $Enterprises = $ResultQueryGet['ArrayDatos'];
+        $Repositories = $ResultQueryGet['ArrayDatos'];
+        
+        /* Eliminado de la table Empresas */
         
         $QForDeletetingEnterprise = "DELETE FROM  Empresas WHERE ClaveEmpresa = '$EnterpriseKey' ";
         if(($ResultDeletingEnterprise = $DB->ConsultaQuery($DataBaseName, $QForDeletetingEnterprise))!=1)
                 return XML::XMLReponse ("Error", 0, "<p></b>Error</b/> al intentar eliminar la empresa con clave <b>$EnterpriseKey</b></p><br>Detalles:<br><br>$ResultDeletingEnterprise");
         
-        $QueryForDeletion = "DELETE FROM Enterprise WHERE ";
+        /* Borrado de repositorios desde el RepositoryControl */
         
-        if(count($Enterprises)==0)
+        $QueryForDeletion = "DELETE FROM RepositoryControl WHERE ";    
+        if(count($Repositories)==0)
             return XML::XMLReponse("DeletedEnterprise", 1, "Empresa con clave $EnterpriseKey eliminada con éxito");
         
-        for($cont = 0; $cont < count($Enterprises); $cont++)
+        for($cont = 0; $cont < count($Repositories); $cont++)
         {
             if($cont>0)
-                $QueryForDeletion." AND IdRepositorio = ".$Enterprises[$cont]['IdRepositorio'];
+                $QueryForDeletion.=" OR  IdRepositorio = ".$Repositories[$cont]['IdRepositorio'];
             else
-                $QueryForDeletion.=" IdRepositorio = ".$Enterprises[$cont]['IdRepositorio'];
+                $QueryForDeletion.=" IdRepositorio = ".$Repositories[$cont]['IdRepositorio'];
         }
         
         if(($ResultQueryForDeletion = $DB->ConsultaQuery($DataBaseName, $QueryForDeletion))!=1)
-                return XML::XMLReponse ("Error", 0, "<p></b>Error</b/> al intentar eliminar las empresas relacionadas a la clave <b>$EnterpriseKey</b></p><br>Detalles:<br><br>$ResultQueryForDeletion");
+                return XML::XMLReponse ("Error", 0, "<p></b>Error</b/> al intentar eliminar las empresas relacionadas a la clave <b>$EnterpriseKey</b> del Control de Repositorios</p><br>Detalles:<br><br>$ResultQueryForDeletion");
+        
+        /* Eliminando las tablas de cada repositorio ligado a la empresa    */
+        for($cont = 0; $cont < count($Repositories); $cont++)
+        {
+            $DeletingRepository = $Repository->DeleteRepository($DataBaseName, $IdEnterprise,  $Repositories[$cont]['IdRepositorio'], $Repositories[$cont]['NombreRepositorio'], 1);            
+        }
+        
+        $DeletingOfGlobal = "DELETE FROM RepositorioGlobal WHERE  IdEmpresa = $IdEnterprise";
+        
+        if(($ResultDeletingOfGlobal = $DB->ConsultaQuery($DataBaseName, $DeletingOfGlobal))!=1)
+                return XML::XMLReponse ("Error", 0, "<p><b>Error</b> al eliminar los registros desde Global</p><br>Detalles:<br><br>$ResultDeletingOfGlobal");
+        
+        $DeletingOfRepository = "DELETE FROM Repositorios WHERE ClaveEmpresa = '$EnterpriseKey'";
+        
+        if(($ResultDeletingOfRepository = $DB->ConsultaQuery($DataBaseName, $DeletingOfRepository))!=1)
+            return XML::XMLReponse ("Error", 1, "<p><b>Error</b> al intentar eliminar los repositorios ligados a la empresa <b>$EnterpriseKey</b> del registro de Repositorios</p><br>Detalles:<br><br>$ResultDeletingOfRepository");
+        
         
         XML::XMLReponse("DeletedEnterprise", 1, "Empresa con clave $EnterpriseKey eliminada con éxito");
     }

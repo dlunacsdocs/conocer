@@ -849,20 +849,19 @@ ClassRepository.prototype.OptionAdministrator = function()
     $("#RMSelectEnterprises").append("<option value='0'>Seleccione una Empresa</option>");  
     $('#WS_Repository').append('<p>Repositorio: <select id = "RMSelectRepositories" class = "FormStandart required" FieldType = "varchar" FieldLength = "50"></select></p>');
     $('#RMSelectRepositories').append('<option value = "0">Seleccione un repositorio</option>');
+    
     $(Enterprises).find("Enterprise").each(function()
     {
        var $Empresa=$(this);
        var id = $Empresa.find("IdEmpresa").text();
        var nombre = $Empresa.find("NombreEmpresa").text();  
        var ClaveEmpresa = $Empresa.find('ClaveEmpresa').text();
-       $("#RMSelectEnterprises").append("<option value=\""+ClaveEmpresa+"\">"+ClaveEmpresa+" ("+ nombre.slice(0,60) +")</option>");                                   
+       $("#RMSelectEnterprises").append("<option value=\""+ClaveEmpresa+"\" id = \""+id+"\">"+ClaveEmpresa+" ("+ nombre.slice(0,60) +")</option>");                                   
     });        
     /* Fin Select */
     
     $('#IconWaitingNewRepository').remove();
-    
-    var Repositories;
-    
+        
     $('#RMSelectEnterprises').change(function()
     {
         var EnterpriseKey = $(this).val();
@@ -871,6 +870,11 @@ ClassRepository.prototype.OptionAdministrator = function()
             Repositories = self.GetRepositories(EnterpriseKey);
  
             /* Select con lista de repositorios de la empresa seleccionada */
+            $('#RMSelectRepositories').empty().append('<option value = "0">Seleccione un repositorio...</option>');
+            $('#DivRepositoryDetail').remove();
+            
+            if($(Repositories).find('Repository').length===0)
+                $('#RMSelectRepositories').empty().append('<option value = "0">No existen repositorios...</option>');
             
             $(Repositories).find('Repository').each(function()
             {
@@ -991,7 +995,7 @@ ClassRepository.prototype.BuildRepositoriesManager = function()
 ClassRepository.prototype.GetRepositories = function(EnterpriseKey)
 {
     var RepositoriesXml = 0;
-    var data = {opcion:"GetListRepositories", DataBaseName:EnvironmentData.DataBaseName, IdUser:EnvironmentData.IdUsuario, UserName:EnvironmentData.NombreUsuario, EnterpriseKey:EnterpriseKey};
+    var data = {opcion:"GetListRepositories", DataBaseName:EnvironmentData.DataBaseName, IdGroup:EnvironmentData.IdGrupo, GroupName:EnvironmentData.NombreGrupo, IdUser:EnvironmentData.IdUsuario, UserName:EnvironmentData.NombreUsuario, EnterpriseKey:EnterpriseKey};
     $.ajax({
     async:false, 
     cache:false,
@@ -1102,78 +1106,3 @@ function CM_Repository()
         }
     };        
 }
-
-/*******************************************************************************
- *  Define una nueva estructura para un repositorio a travÃƒÂ©s de un XML
- * @returns {undefined}
- */
-//function CM_AddRepository()
-//{
-//    $('#WS_Repository').empty();
-//    $('#WS_Repository').append('<div class="titulo_ventana">Agregar un Nuevo Repositorio</div>');
-//    $('#WS_Repository').append('<p>Seleccione un XML con la estructura del repositorio en base al XSD definido por el sistema.</p>');
-//    $('#WS_Repository').append('<table id="AddRepository_table_forms"><tbody><tr><td></td><td></td></tbody></table>');
-//    $('#WS_Repository').append('<p>Empresa: <select id="AddRepositorySelectListEmpresas"><option>Seleccione una empresa...</option></select></p>');
-//    
-//    getListEmpresas('AddRepositorySelectListEmpresas');
-//        
-//    $('#AddRepositorySelectListEmpresas').change(function()
-//    {
-//        var ValEmpresa=$('#AddRepositorySelectListEmpresas').val();
-//        ValEmpresa=ValEmpresa.split(",");
-//        var IdEmpresa=ValEmpresa[0];
-//        var Clave=ValEmpresa[1];
-//        if(IdEmpresa>0)
-//        {
-//           $('#WS_Repository').append('<input type ="file" accept="text/xml" id="AddRepository_SelectFile">'); 
-//           $('#AddRepository_SelectFile').change(function(){AddRepositoryXML();});
-//        }
-//        else
-//        {
-//            $('#AddRepository_SelectFile').remove();
-//        }
-//        
-//    });     
-//}
-/*******************************************************************************
- * Envia el XML seleccionado por el usuario para realizar el insert de un nuevo repositorio
- * @returns {undefined}
- */
-//function AddRepositoryXML()
-//{
-//    Loading();
-//    var ValEmpresa=$('#AddRepositorySelectListEmpresas').val();
-//    ValEmpresa=ValEmpresa.split(",");
-//    var IdEmpresa=ValEmpresa[0];
-//    var DataBaseName=$('#database_name').val();
-//    var ClaveEmpresa=ValEmpresa[1];
-//    var id_usuario=$('#id_usr').val();
-//    var nombre_usuario=$('#login_usr').val();
-//    var xml_usuario=document.getElementById("AddRepository_SelectFile");
-//    var archivo = xml_usuario.files;     
-//    var data = new FormData();
-//
-//      for(i=0; i<archivo.length; i++)
-//      {
-//            data.append('archivo',archivo[i]);
-//            data.append('opcion','XMLInsertRepositorio');
-//            data.append('id_usuario',id_usuario);
-//            data.append('DataBaseName',DataBaseName);
-//            data.append('IdEmpresa',IdEmpresa);
-//            data.append('ClaveEmpresa',ClaveEmpresa);
-//            data.append('nombre_usuario',nombre_usuario);
-//      } 
-//    ajax=objetoAjax();
-//    ajax.open("POST", 'php/ContentManagement.php',true);
-//    ajax.send(data);    
-//    ajax.onreadystatechange=function() 
-//    {
-//        if (ajax.readyState===4 && ajax.status===200) 
-//       { 
-//           $('#AddRepository_SelectFile').remove();
-//           $('#WS_Repository').append('<input type ="file" accept="text/xml" id="AddRepository_SelectFile">');
-//           $('#Loading').dialog('close');
-//           if(ajax.responseXML===null){Salida(ajax.responseText);return;}
-//        }
-//    };
-//}

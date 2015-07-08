@@ -503,8 +503,8 @@ function PasteFile()
                 FechaIngreso,
                 TipoArchivo,
                 Detalle,
-                '<img src="img/acuse.png" title="vista previa de "'+NombreArchivo+'" onclick="VistaPrevia(\''+Ruta+'\',\''+TipoArchivo+'\')">',
-                '<img src="img/metadata.png" title="vista previa de '+NombreArchivo+'" onclick="GetDetalle(\''+IdRepositorio+'\',\''+NombreArchivo+'\',\'Busqueda\')">',
+                '<img src="img/acuse.png" title="vista previa de "'+NombreArchivo+'" onclick="Preview(\''+TipoArchivo+'\', \'0\', \''+ IdRepositorio +'\' , \'Content\')">',
+                '<img src="img/metadata.png" title="vista previa de '+NombreArchivo+'" onclick="GetDetalle(\'Content\', \'0\', \''+IdRepositorio+'\')">',
                 Ruta,
                 '<center><input type="checkbox" id="'+IdRepositorio+'"  class="checkbox_detail"></center>'
             ];

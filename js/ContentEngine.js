@@ -3,7 +3,7 @@
  * To change this template file, choose Tools | Templates
  * and open the template in the editor.
  */
-/* global EnvironmentData */
+/* global EnvironmentData, LanguajeDataTable */
 
 TableEngineDT = '';
 TableEnginedT = '';
@@ -67,7 +67,7 @@ function SetSearchEngineResult(xml)
     $('.contentDetailEngine').append('<table id="table_EngineResult" class="display hover"></table>');
     $('#table_EngineResult').append('<thead><tr><th>Empresa</th><th>Repositorio</th><th>Nombre del Archivo</th><th>Fecha de Ingreso</th><th>Tipo de Documento</th><th>Detalle</th><th>Vista Previa</th><th>Detalle</th><th>Ruta</th><th>IdFile</th><th>IdEmpresa</th><th>IdRepositorio</th></tr></thead><tbody></tbody>');
 //    TableEngineDT=$('#table_EngineResult').DataTable(DataTable);
-    TableEnginedT = $('#table_EngineResult').dataTable();
+    TableEnginedT = $('#table_EngineResult').dataTable({oLanguage:LanguajeDataTable});
     TableEngineDT = new $.fn.dataTable.Api('#table_EngineResult');
 
 var cont=1;

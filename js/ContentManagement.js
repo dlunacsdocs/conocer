@@ -85,54 +85,6 @@ function CleaningContent()
     $('.contentDetail').empty();
 }
 
-/*******************************************************************************
- * Se obtiene el listado de emmpresas y se muestran en el Content Management
- * @returns {List de Empresas}
- */
-function getEmpresas()
-{
-//    var arbol=InitDynatree();
-//    var node=arbol.dynatree("getActiveNode");                              
-//    if(node){    arbol.dynatree("destroy"); $('#contentTree').empty(); }     
-//    $('.contentDetail').empty();
-    
-    
-    $('#CM_select_repositorios').empty().append("<option value=\""+0+"\">Seleccione una Empresa</option>");
-    
-
-    ajax=objetoAjax();
-    ajax.open("POST", 'php/ContentManagement.php',true);
-    ajax.setRequestHeader("Content-Type", "application/x-www-form-urlencoded;charset=utf-8;");
-    ajax.send("opcion=getListEmpresas&DataBaseName="+EnvironmentData.DataBaseName+'&IdUser='+EnvironmentData.IdUsuario);
-    ajax.onreadystatechange=function() 
-    {
-       if (ajax.readyState===4 && ajax.status===200) 
-       {
-          if(ajax.responseXML===null){Error(ajax.responseText);return;     }  
-           var xml = ajax.responseXML;
-           $("#CM_select_empresas option").remove();
-           $("#CM_select_empresas").append("<option value='0'>Seleccione una Empresa</option>");
-           $(xml).find("Empresa").each(function()
-            {
-               var $Empresa=$(this);
-               var id=$Empresa.find("IdEmpresa").text();
-               var nombre = $Empresa.find("NombreEmpresa").text();  
-               var EnterpriseKey = $Empresa.find('ClaveEmpresa').text();
-               
-               $("#CM_select_empresas").append("<option value=\""+EnterpriseKey+"\">"+nombre+"</option>");
-            });
-            $(xml).find("Error").each(function()
-            {
-                var $Instancias=$(this);
-                var estado=$Instancias.find("Estado").text();
-                var mensaje=$Instancias.find("Mensaje").text();
-                Error(mensaje);
-            });
-            
-       }       
-   };
-}
-
 function getListEmpresas(SelectEmpresas)
 {
     var DataBase=$('#database_usr').val();
