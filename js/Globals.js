@@ -327,3 +327,20 @@ function Notificacion(titulo, mensaje)
 function Trim(x) {
     return x.replace(/^\s+|\s+$/gm, '');
 }
+
+
+/* Returns:
+
+ 0:  exact match
+
+-1:  string_a < string_b
+
+ 1:  string_b > string_b
+
+ */
+function strcmp(a, b) {
+    a = a.toString(), b = b.toString();
+    for (var i=0,n=Math.max(a.length, b.length); i<n && a.charAt(i) === b.charAt(i); ++i);
+    if (i === n) return 0;
+    return a.charAt(i) > b.charAt(i) ? -1 : 1;
+}

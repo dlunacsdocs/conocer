@@ -442,7 +442,7 @@ ClassFieldsValidator.prototype.CheckFieldsLength = function(object)
                     break;
                 
             case 'date':
-                _AnalizeDataDate(object);
+                Flag = _AnalizeDataDate(object);
                     break;
                 
             case 'text':
@@ -457,12 +457,16 @@ ClassFieldsValidator.prototype.AddClassRequiredActive = function(input)
 {
     if(!$(input).hasClass('RequiredActivo'))
         $(input).addClass('RequiredActivo');
+    
+    $(input).tooltip();
 };
 
 ClassFieldsValidator.prototype.RemoveClassRequiredActive = function(input)
 {
     if($(input).hasClass('RequiredActivo'))
         $(input).removeClass('RequiredActivo');
+    
+    $(input).attr('title','')
 };
 
 ClassFieldsValidator.prototype.CheckIfIsRequiredField = function(input)

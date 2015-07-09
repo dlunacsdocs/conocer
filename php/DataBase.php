@@ -1871,43 +1871,73 @@ function ExistRegister($DataBaseName,$Table,$field,$Value)
     
     public static function  FieldFormat($FieldValue, $FieldType)
     {
-        $FieldType_ = strtolower($FieldType);
-        
-        switch ($FieldType_)
+        if((strcasecmp($FieldType, "varchar")==0))
         {
-            case 'varchar':
-                $FieldValue_ = trim($FieldValue,'\'\t\n\r\0\x0B');
-                $FormattedField = "'$FieldValue_'";
+//                $FieldValue_ = trim($FieldValue,'\'\t\n\r\0\x0B');
+                $FormattedField = "'$FieldValue'";
                 return $FormattedField;
-                
-            case 'double':
-                $FormattedField = trim($FieldValue,'\'\t\n\r\0\x0B');
-                return $FormattedField;
-            
-            case 'int':
-                $FormattedField = trim($FieldValue,'\'\t\n\r\0\x0B');
-                return $FormattedField;
-                
-            case 'integer':
-                $FormattedField = trim($FieldValue,'\'\t\n\r\0\x0B');
-                return $FormattedField;
-                
-            case 'float':
-                $FormattedField = trim($FieldValue,'\'\t\n\r\0\x0B');
-                return $FormattedField;
-                
-            case 'date':
-                $FieldValue_ = trim($FieldValue,'\'\t\n\r\0\x0B');
-                $FormattedField = "'$FieldValue_'";
-                return $FormattedField;
-                
-            case 'text':
-                $FieldValue_ = trim($FieldValue,'\'\t\n\r\0\x0B');
-                $FormattedField = "'$FieldValue_'";
-                return $FormattedField;
-                
-            default: return 0;
         }
+        
+         if(strcasecmp($FieldType, "double")==0)
+        {
+                if(strcasecmp(trim($FieldValue),"")==0)    /*cadena vacia*/
+                        return "''";
+//                $FormattedField = trim($FieldValue,'\'\t\n\r\0\x0B');
+                if(!is_numeric($FieldValue))
+                    return 0;
+                
+                return $FieldValue;
+        }
+            
+         if(strcasecmp($FieldType, "int")==0)
+        {
+                if(strcasecmp(trim($FieldValue),"")==0)    /*cadena vacia*/
+                        return 0;
+//                $FormattedField = trim($FieldValue,'\'\t\n\r\0\x0B');
+                if(!is_numeric($FieldValue))
+                    return 0;
+                
+                return $FieldValue;
+        }
+        
+         if(strcasecmp($FieldType, "integer")==0)
+        {
+                if(strcasecmp(trim($FieldValue),"")==0)    /*cadena vacia*/
+                       return 0;
+//                $FormattedField = trim($FieldValue,'\'\t\n\r\0\x0B');
+                if(!is_numeric($FieldValue))
+                    return 0;
+                
+                return $FieldValue;
+        }
+        
+         if(strcasecmp($FieldType, "float")==0)
+        {
+                 if(strcasecmp(trim($FieldValue),"")==0)    /*cadena vacia*/
+                        return 0;
+//                $FormattedField = trim($FieldValue,'\'\t\n\r\0\x0B');
+                if(!is_numeric($FieldValue))
+                    return 0;
+                
+                return $FieldValue;
+        }
+        
+         if(strcasecmp($FieldType, "date")==0)
+        {
+//                $FieldValue_ = trim($FieldValue,'\'\t\n\r\0\x0B');
+                $FormattedField = "'$FieldValue";
+                return $FormattedField;
+        }
+        
+         if(strcasecmp($FieldType, "text")==0)
+        {
+//                $FieldValue_ = trim($FieldValue,'\'\t\n\r\0\x0B');
+                $FormattedField = "'$FieldValue'";
+                return $FormattedField;
+                
+        }
+        
+        return "No se reconoce el tipo de dato  FieldFormat::";
     }
     
     public function CheckUsersNumber()

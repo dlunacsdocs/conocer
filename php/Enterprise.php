@@ -11,7 +11,7 @@
  *
  * @author Daniel
  */
-$RoutFile = filter_input(INPUT_SERVER, "DOCUMENT_ROOT"); /* /var/services/web */
+$RoutFile = dirname(getcwd());        
 
 require_once 'XML.php';
 require_once 'DataBase.php';
@@ -36,8 +36,82 @@ class Enterprise {
                 break;
             case 'DeleteEnterprise':$this->DeleteEnterprise();
                 break;
+            case 'ModifyEnterprise':$this->ModifyEnterprise();
+                break;
             default : break;
         }
+    }
+    
+    private function ModifyEnterprise()
+    {
+        $DB = new DataBase();
+        
+        $DataBaseName = filter_input(INPUT_POST, "DataBaseName");
+        $IdGroup = filter_input(INPUT_POST, "IdGroup");
+        $IdUser = filter_input(INPUT_POST, "IdUser");
+        $UserName = filter_input(INPUT_POST, "UserName");
+        $IdEnterprise = filter_input(INPUT_POST, "IdEnterprise");
+        $Xml = filter_input(INPUT_POST, "Xml");
+        $ValuesChain = '';
+        $UpdateEnterprise_ = "UPDATE Empresas SET ";
+
+        
+        if(!($xml =  simplexml_load_string($Xml)))
+        {
+            $Error='';
+          
+            $errors=libxml_get_errors();
+            
+            for ($aux=0;$aux<count($errors); $aux++) {
+                $Error.= $this->display_xml_error($errors[$aux]);
+            }
+            
+            libxml_clear_errors();   /* Se limpia buffer de errores */          
+            
+            return XML::XMLReponse ("Error", 0, "<p><b>Error</b> al cargar el xml generado con los datos de la nueva empresa, es posible que no se haya formado correctamente $Error</p>");
+        }
+//        $varchar = "varchar";
+//        if(strcasecmp("varchar", $varchar)==0)
+//                echo "varchar encontrado";
+//        return;
+        foreach ($xml->Field as $Value)
+        {
+            $FieldName = $Value->FieldName;
+            $FieldValue =$Value->FieldValue;
+            $RequiredField = $Value->RequiredField;
+            $FieldType = $Value->FieldType;
+                        
+            $FieldValue_ = trim($FieldValue, "");
+            $FieldType_  = trim($FieldType);
+            
+            $Formated = DataBase::FieldFormat($FieldValue_, $FieldType_);
+//            echo "<p>Analizando $FieldType $FieldValue =  $Formated</p>";
+            $UpdateEnterprise_.= " $FieldName = $Formated,";
+            
+            $ValuesChain.="$Formated, ";
+        }
+        
+        $OldEnterpriseKey = trim($xml->OldEnterpriseKey, "");
+        $NewEnterpriseKey = trim($xml->NewEnterpriseKey, "");
+                
+        $UpdateEnterprise = trim($UpdateEnterprise_, ",");
+        
+        $UpdateEnterprise.=" WHERE IdEmpresa = $IdEnterprise";
+//        echo $UpdateEnterprise; return;
+        if(($UpdateResult = $DB->ConsultaQuery($DataBaseName, $UpdateEnterprise))!=1)
+                return XML::XMLReponse ("Error", 0, "<p><b>Error</b> al intentar actualizar la información</p><br>Detalles:<br><br>$UpdateResult");
+        
+        if(strcasecmp($OldEnterpriseKey, $NewEnterpriseKey)!=0)
+        {
+            $UpdateRepositories = "UPDATE Repositorios SET ClaveEmpresa = '$NewEnterpriseKey' WHERE ClaveEmpresa = '$OldEnterpriseKey'";
+            
+            if(($ResultUpdateRepositories = $DB->ConsultaQuery($DataBaseName, $UpdateRepositories))!=1)
+                return XML::XMLReponse("Error", 0, "<p><b>Error</b> al intentar actualizar la clave de empresa en Repositorios</p><br>Detalles:<br><br>$ResultUpdateRepositories");
+        }
+        
+       
+          
+        XML::XMLReponse("ModifiedEnterprise", 1, "Datos actualizados de la empresa ");
     }
     
     private function AddNewRegister()
@@ -45,7 +119,7 @@ class Enterprise {
         $DB = new DataBase();
         
         $DataBaseName = filter_input(INPUT_POST, "DataBaseName");
-        $IdGroup = filter_input(INPUT_POST, "IdFroup");
+        $IdGroup = filter_input(INPUT_POST, "IdGroup");
         $IdUser = filter_input(INPUT_POST, "IdUser");
         $UserName = filter_input(INPUT_POST, "UserName");
         $EnterpriseKey = '';
