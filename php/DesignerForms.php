@@ -381,6 +381,39 @@ class DesignerForms {
         return 1;
     }
     
+    /* Elimina una estructura completa p.e. un repositorio */
+    public static function DeleteStructure($DataBaseName, $StructureName)
+    {
+        $RoutFile = dirname(getcwd());        
+        
+        if(!file_exists("$RoutFile/Configuracion/$DataBaseName.ini"))
+            return XML::XMLReponse ("Error", 0, "<p><b>Error</b> no existe el registro de estructura de la intsnaica <b>$DataBaseName</b></p>");
+        
+        if(!($Structure = parse_ini_file("$RoutFile/Configuracion/$DataBaseName.ini")))
+                return XML::XmlArrayResponse ("Error", 0, "<p><b>Error</b> al intentar abrir el registro de estructura de la instancia <b>$DataBaseName</b></p>");
+        
+        if(!($gestor = fopen("$RoutFile/Configuracion/$DataBaseName.ini", "w")))
+                return XML::XMLReponse("Error", 0, "<p><b>Error</b> al intentar abrir el registro de estructura de la instancia <b>$DataBaseName</b><br>Detalles:<br><br>$gestor");
+        
+            foreach ($Structure as $key =>$Section)
+            {
+                    if(strcasecmp($StructureName, $key)!=0)
+                    {
+                        fwrite($gestor,";#############################################################################".PHP_EOL);
+                        fwrite($gestor, ";--------  $key --------".PHP_EOL);
+                        fwrite($gestor,";#############################################################################".PHP_EOL);
+                        fwrite($gestor, "$key=$key".PHP_EOL);
+                        for($cont = 0; $cont < count($Section); $cont++)
+                        {
+                            fwrite($gestor, $key."[]=".$Section[$cont].PHP_EOL);
+                        }
+                    }           
+        }
+        
+        fclose($gestor);
+        
+        return 1;
+    }
       
 //    function write_ini_file($assoc_arr, $path, $has_sections=FALSE)
 //    { 

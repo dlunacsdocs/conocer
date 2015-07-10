@@ -242,12 +242,6 @@ class Enterprise {
         
         $Repositories = $ResultQueryGet['ArrayDatos'];
         
-        /* Eliminado de la table Empresas */
-        
-        $QForDeletetingEnterprise = "DELETE FROM  Empresas WHERE ClaveEmpresa = '$EnterpriseKey' ";
-        if(($ResultDeletingEnterprise = $DB->ConsultaQuery($DataBaseName, $QForDeletetingEnterprise))!=1)
-                return XML::XMLReponse ("Error", 0, "<p></b>Error</b/> al intentar eliminar la empresa con clave <b>$EnterpriseKey</b></p><br>Detalles:<br><br>$ResultDeletingEnterprise");
-        
         /* Borrado de repositorios desde el RepositoryControl */
         
         $QueryForDeletion = "DELETE FROM RepositoryControl WHERE ";    
@@ -270,7 +264,7 @@ class Enterprise {
         {
             $DeletingRepository = $Repository->DeleteRepository($DataBaseName, $IdEnterprise,  $Repositories[$cont]['IdRepositorio'], $Repositories[$cont]['NombreRepositorio'], 1);            
         }
-        
+                
         $DeletingOfGlobal = "DELETE FROM RepositorioGlobal WHERE  IdEmpresa = $IdEnterprise";
         
         if(($ResultDeletingOfGlobal = $DB->ConsultaQuery($DataBaseName, $DeletingOfGlobal))!=1)
@@ -280,6 +274,12 @@ class Enterprise {
         
         if(($ResultDeletingOfRepository = $DB->ConsultaQuery($DataBaseName, $DeletingOfRepository))!=1)
             return XML::XMLReponse ("Error", 1, "<p><b>Error</b> al intentar eliminar los repositorios ligados a la empresa <b>$EnterpriseKey</b> del registro de Repositorios</p><br>Detalles:<br><br>$ResultDeletingOfRepository");
+        
+        /* Eliminado de la tabla Empresas */
+        
+        $QForDeletetingEnterprise = "DELETE FROM  Empresas WHERE ClaveEmpresa = '$EnterpriseKey' ";
+        if(($ResultDeletingEnterprise = $DB->ConsultaQuery($DataBaseName, $QForDeletetingEnterprise))!=1)
+                return XML::XMLReponse ("Error", 0, "<p></b>Error</b/> al intentar eliminar la empresa con clave <b>$EnterpriseKey</b></p><br>Detalles:<br><br>$ResultDeletingEnterprise");
         
         
         XML::XMLReponse("DeletedEnterprise", 1, "Empresa con clave $EnterpriseKey eliminada con éxito");

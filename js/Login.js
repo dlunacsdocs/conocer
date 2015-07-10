@@ -3,7 +3,7 @@
  * To change this template file, choose Tools | Templates
  * and open the template in the editor.
  */
-
+var UserData = undefined;
 
 /* global Permissions, EnvironmentData */
 
@@ -54,7 +54,8 @@ function login()
                      EnvironmentData.NombreGrupo = NombreGrupo;
                      EnvironmentData.IdGrupo = IdGrupo;
 
-                     
+                     UserData = {IDataBaseName: EnvironmentData.DataBaseName, dUser:EnvironmentData.IdUsuario, UserName:EnvironmentData.NombreUsuario, IdGroup:EnvironmentData.IdGrupo, GroupName:EnvironmentData.NombreGrupo};
+
                      
                      /* Líneas para DEMO */
                      if(EnvironmentData.NombreUsuario==='eduardo' || EnvironmentData.NombreUsuario==='marco')

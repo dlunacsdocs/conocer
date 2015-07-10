@@ -281,7 +281,7 @@ var ClassRepository = function()
             {
                 var $Error=$(this);
                 var mensaje=$Error.find("Mensaje").text();
-                Error(mensaje);
+                Salida(mensaje);
             });                 
 
         },
@@ -469,6 +469,7 @@ var ClassRepository = function()
                 "aButtons": [
                     {"sExtends":"text", "sButtonText": "Agregar Campo", "fnClick" :function(){_FormsAddNewField();}},
                     {"sExtends":"text", "sButtonText": "Eliminar Campo", "fnClick" :function(){_ConfirmDeleteRepositoryField();}},
+                    {"sExtends":"text", "sButtonText": "Eliminar Repositorio", "fnClick" :function(){_ConfirmDeleteRepository();}},
                     {"sExtends": "copy","sButtonText": "Copiar al portapapeles"},
                     {
                         "sExtends":    "collection",
@@ -515,6 +516,66 @@ var ClassRepository = function()
         
         $('#IconWaitingNewRepository').remove();    
     };
+    _ConfirmDeleteRepository = function()
+    {
+        var RepositoryName = $('#RMSelectRepositories option:selected').html();
+        
+        $('#DivConfirmDeleteRepository').remove();
+        $('body').append('<div id = "DivConfirmDeleteRepository"></div>');
+        $('#DivConfirmDeleteRepository').append('<p>Realmente desea eliminar el repositorio <b>'+RepositoryName+'</b></p>');
+        $('#DivConfirmDeleteRepository').dialog({title:"Mensaje de confirmación", width:250, minWidth:150, height:250, minHeight:150, modal:true, buttons:{
+                Cancelar:function(){$(this).remove();},
+                Continuar: function(){_DeleteRepository();}
+        }});
+    };
+    
+    _DeleteRepository = function()
+    {
+        $('#WS_Repository').append('<div class="Loading" id = "IconWaitingRepository"><img src="../img/loadinfologin.gif"></div>');
+
+        var IdRepository = $('#RMSelectRepositories option:selected').val();
+        var RepositoryName = $('#RMSelectRepositories option:selected').html();
+        var IdEnterprise = $('#RMSelectEnterprises option:selected').attr('id');
+        
+        var data = {opcion:'DeleteRepository', DataBaseName:EnvironmentData.DataBaseName, IdUser:EnvironmentData.IdUsuario, UserName:EnvironmentData.NombreUsuario, IdRepository:IdRepository, RepositoryName:RepositoryName, IdEnterprise:IdEnterprise};
+        
+        $.ajax({
+        async:false, 
+        cache:false,
+        dataType:"html", 
+        type: 'POST',   
+        url: "php/Repository.php",
+        data: data, 
+        success:  function(xml)
+        {            
+            if($.parseXML( xml )===null){Error(xml); return 0;}else xml=$.parseXML( xml );
+
+            if($(xml).find('DeletedRepository').length>0)
+            {
+                $('#DivConfirmDeleteRepository').remove();
+                var Mensaje = $(xml).find('Mensaje').text();
+                Notificacion(Mensaje);
+                
+                $("#RMSelectRepositories option:first").click();
+                $('#RMSelectRepositories option[value='+IdRepository+']').remove(); 
+                $('#DivRepositoryDetail').remove();
+                
+            }
+            
+            $(xml).find("Error").each(function()
+            {
+                var $Error=$(this);
+                var mensaje=$Error.find("Mensaje").text();
+                Error(mensaje);
+            });                 
+
+        },
+        beforeSend:function(){},
+        error: function(jqXHR, textStatus, errorThrown) {Error(textStatus +"<br>"+ errorThrown);}
+        });         
+        
+        $('#IconWaitingRepository').remove();
+    }
     
     _ConfirmDeleteRepositoryField = function()
     {

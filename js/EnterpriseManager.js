@@ -427,6 +427,8 @@ var ClassEnterprise = function ()
 
                 if ($(xml).find('DeletedEnterprise').length > 0)
                 {
+                    $('#DivConfirmationDeleteEnterprise').remove();
+                    
                     var Mensaje = $(xml).find('Mensaje').text();
                     Notificacion(Mensaje);
 
@@ -665,13 +667,13 @@ ClassEnterprise.prototype.BuildConsole = function ()
                       <h3><a href="#">Empresas</a></h3>\n\
                       <div id = "ConsoleEnterpriseManager">\n\
                           <table class="TableInsideAccordion">\n\
-                          <tr class = "tr_EnterpriseStructure" title="Administracion de Empresas">\n\
-                                  <td><img src="img/enterprise.png" ></td>\n\
-                                  <td>Estructura</td>\n\
-                              </tr>\n\
                               <tr class = "tr_EnterpriseList" title="Empresas">\n\
                                   <td><img src="img/AddEnterprise.png" ></td>\n\
                                   <td>Empresas</td>\n\
+                              </tr>\n\
+                              <tr class = "tr_EnterpriseStructure" title="Administracion de Empresas">\n\
+                                  <td><img src="img/enterprise.png" ></td>\n\
+                                  <td>Estructura</td>\n\
                               </tr>\n\
                           </table>\n\
                       </div>\n\
@@ -721,7 +723,7 @@ ClassEnterprise.prototype.BuildConsole = function ()
         self.DisplayEnterprises();
     });
 
-    $('.tr_EnterpriseStructure').click();
+    $('.tr_EnterpriseList').click();
 };
 
 ClassEnterprise.prototype.AdminStructure = function ()

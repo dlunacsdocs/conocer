@@ -5,6 +5,7 @@ var CAWindowUsers={minHeight:500,minWidth:800,width:800, height:500};
 var TableUsersdT = undefined;
 var TableUsersDT = undefined;
 
+
 $(document).ready(function(){
             /********* Efectos sobre tabla dentro de acordeón ***********/
     $('#UserManagementTable').on( 'click', 'tr', function ()

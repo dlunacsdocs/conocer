@@ -651,9 +651,7 @@ class DataBase {
    
     
     function crear_repositorio($StructRepositorio)
-    {
-        echo "<p>*****Creando Repositorios Peso Detalle=".count($StructRepositorio)."******</p>";
-        
+    {        
         foreach ($StructRepositorio as $Repositorio)
         {
             echo "<br><p>Creando el Repositorio <b>$Repositorio->NombreRepositorio</b></p><br>";

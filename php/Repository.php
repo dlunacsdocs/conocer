@@ -32,6 +32,8 @@ class Repository {
                 break;
             case 'XMLInsertRepositorio': $this->XMLInsertRepositorio(); 
                 break;
+            case 'DeleteRepository': $this->DeletingRepository();
+                break;
         }
     }
     
@@ -290,9 +292,31 @@ class Repository {
         return $ResultSelect['ArrayDatos'];
         
     }
-    /* @DeleteForEnterprise: bandera utilizada para indicar que la eliminación de documentos de uno o varios rep de la tabla
+    
+    
+    function  DeletingRepository()
+    {
+        $DataBaseName = filter_input(INPUT_POST, "DataBaseName");
+        $IdRepositorio = filter_input(INPUT_POST, "IdRepositorio");
+        $IdGroup = filter_input(INPUT_POST, "IdGroup");
+        $IdUsuario = filter_input(INPUT_POST, "IdUsuario");
+        $NombreUsuario = filter_input(INPUT_POST, "NombreUsuario");
+        $IdEnterprise = filter_input(INPUT_POST, "IdEnterprise");
+        $IdRepository = filter_input(INPUT_POST, "IdRepository");
+        $RepositoryName = filter_input(INPUT_POST, "RepositoryName");
+        
+        
+        If(($DeletingResult = $this->DeleteRepository($DataBaseName, $IdEnterprise, $IdRepository, $RepositoryName))!=1)
+                echo $DeletingResult;
+        
+        XML::XMLReponse("DeletedRepository", 1, "Repositorio eliminado con éxito");
+    }
+
+
+    /* Función llamda desde Enterprise.php
+     * @DeleteForEnterprise: bandera utilizada para indicar que la eliminación de documentos de uno o varios rep de la tabla
      *                                   Global y del registro de repositorios (Tabla Repositorios)  se realizará en una sola consulta y no en varias */
-    public function DeleteRepository($DataBaseName, $IdEnterprise, $EnterpriseKey , $IdRepository, $RepositoryName, $DeleteForEnterprise = 0)
+    public function DeleteRepository($DataBaseName, $IdEnterprise , $IdRepository, $RepositoryName, $DeleteForEnterprise = 0)
     {
         $DB = new DataBase();
         $RoutFile = dirname(getcwd());        
@@ -301,6 +325,9 @@ class Repository {
         if(file_exists($RepositoryPath))
             exec("rm -R $RepositoryPath");
         
+        if(($DeleteStructure = DesignerForms::DeleteStructure($DataBaseName, $RepositoryName))!=1)
+                return "No pudo eliminarse la empresa desde el registro de estructura";
+
         /* Eliminando Repositorio */
         $DropRepository = "DROP TABLE IF EXISTS $RepositoryName  ";
         
