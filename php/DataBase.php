@@ -846,9 +846,9 @@ class DataBase {
             
             /* Se busca que no exista el repositoria para registrarlo en la tabla de Repositorios */            
             $query="SELECT *FROM Repositorios WHERE NombreRepositorio='$nombre_tabla'";
-            
+    
             $ExistRepositorio=  $this->ConsultaSelect($DataBaseName, $query);            
-            /* Sino existe un registro del repositorio este se crea y se registra */            
+            /* Sino existe un registro del repositorio este se crea y se registra */        
             if($ExistRepositorio['Estado']==TRUE and count($ExistRepositorio['ArrayDatos'])==0)
             {
                 echo "<P>Creando $nombre_tabla</P>";

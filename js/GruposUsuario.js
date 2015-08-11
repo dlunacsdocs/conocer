@@ -693,8 +693,8 @@ var ClassUsersGroups = function()
     
     var _PermissionsRepositoriesUserGroups = function()
     {
-        var XmlRepositories = Repository.GetRepositories(null);
-        
+        var XmlRepositories = Repository.GetRepositories(0);
+     
         if(!$.isXMLDoc(XmlRepositories))
         {
             $('#UsersPlaceWaiting').remove();
@@ -708,7 +708,7 @@ var ClassUsersGroups = function()
             var IdRepositorio = $(this).find('IdRepositorio').text();
             var Nombre = $(this).find('NombreRepositorio').text();
             var ClaveEmpresa = $(this).find('ClaveEmpresa').text();
-            
+            console.log("Ingresando al menú el repositorio "+Nombre);
             $('#MSR_0').append('<li id="MSR_'+IdRepositorio+'" class="folder" data="icon: \'Repositorio.png\'">'+Nombre+'<ul id="'+IdRepositorio+'_MSR"></ul>');             
         });    
         
@@ -738,16 +738,20 @@ var ClassUsersGroups = function()
         _GetRepositoryAccessList(RepositoriesTree);    /* Permisos de acceso (check) árbol izquierdo (repositorios)*/            
 ////        
         var rootNode = RepositoriesTree.getNodeByKey("0_MSR");  
-        console.log(rootNode);
+      
         var RepositoryChildren = rootNode.getChildren();
-        RepositoryChildren[0].activate();
+        
         
         $('#PanelPermissionsUserGroups').dialog({title:"Control de Permisos para el grupo \""+ this.NombreGrupo +"\"", width: 650, height:600, minWidth:650, minHeight:400, buttons:{
                 "Aplicar":{text:"Aplicar", click:function(){_ApplyPermissionsSettings();}},
                 "Cerrar":function(){$(this).dialog('close');}
         }});
+    
+    $('#UsersPlaceWaiting').remove();    
+    
+    RepositoryChildren[0].activate();               /* Se activa el primer repositorio */
         
-        $('#UsersPlaceWaiting').remove();    
+        
     };
     
     /* Operaciones que el usuario puede realizar */
