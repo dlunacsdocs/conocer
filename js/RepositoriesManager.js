@@ -817,7 +817,7 @@ var ClassRepository = function()
         contentType: false,
         dataType:"html", 
         type: 'POST',   
-        url: "php/ContentManagement.php",
+        url: "php/Repository.php",
         data: data, 
         success:  function(xml){
             

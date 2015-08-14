@@ -279,12 +279,15 @@ class Repository {
     public function GetRepositoriesList($DataBaseName, $EnterpriseKey, $IdGroup)
     {
         $BD = new DataBase();
-
-        $query = "SELECT  em.IdEmpresa, re.IdRepositorio, re.NombreRepositorio FROM Repositorios re "
+        
+        if($EnterpriseKey==0)
+            $query = "SELECT *FROM Repositorios";
+        else
+            $query = "SELECT  em.IdEmpresa, re.IdRepositorio, re.NombreRepositorio FROM Repositorios re "
                 . "INNER JOIN RepositoryControl rc ON rc.IdRepositorio = re.IdRepositorio "
                 . "INNER JOIN Empresas em on re.ClaveEmpresa=em.ClaveEmpresa "
                 . "WHERE rc.IdGrupo = $IdGroup AND re.ClaveEmpresa = '$EnterpriseKey'";
-
+        
         $ResultSelect = $BD->ConsultaSelect($DataBaseName, $query);
         if ($ResultSelect['Estado'] != 1)
             return $ResultSelect['Estado'];
