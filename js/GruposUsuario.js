@@ -749,7 +749,8 @@ var ClassUsersGroups = function()
     
     $('#UsersPlaceWaiting').remove();    
     
-    RepositoryChildren[0].activate();               /* Se activa el primer repositorio */    
+    RepositoryChildren[0].activate();               /* Se activa el primer repositorio */
+        
         
     };
     
