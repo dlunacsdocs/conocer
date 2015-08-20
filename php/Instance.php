@@ -77,18 +77,27 @@ class Instance {
     }
     
     private function GetInstances()
+    {        
+        $instances = $this->getInstancesArray();
+        
+        if(is_array($instances))
+            XML::XmlArrayResponse("Instances", "Instance", $instances);
+        else
+            XML::XMLReponse("Error", 0, "<p><b>Error</b> al obtener el listado de instancias del sistema</p><br><br>Detalles:<br><br>".$instances);
+
+    }
+    
+    function getInstancesArray()
     {
         $DB = new DataBase();
         
         $QueryInstances = "SELECT *FROM instancias";
         $ResultQuery = $DB->ConsultaSelect("cs-docs", $QueryInstances);
-        if($ResultQuery['Estado']!=1)
-        {
-            XML::XMLReponse("Error", 0, "<p><b>Error</b> al obtener el listado de instancias del sistema</p><br><br>Detalles:<br><br>".$ResultQuery['Estado']);
-            return 0;
-        }
         
-        XML::XmlArrayResponse("Instances", "Instance", $ResultQuery['ArrayDatos']);
+        if($ResultQuery['Estado']!=1)
+            return $ResultQuery['Estado'];
+        else
+            return $ResultQuery['ArrayDatos'];
     }
     
 }

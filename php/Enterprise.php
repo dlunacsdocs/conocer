@@ -318,22 +318,32 @@ class Enterprise {
     }
 
     private function GetEnterprises() {
-        $BD = new DataBase();
-
         $IdUser = filter_input(INPUT_POST, "IdUser");
         $UserName = filter_input(INPUT_POST, "UserName");
         $DataBaseName = filter_input(INPUT_POST, "DataBaseName");
 
+        $enterprises = $this->getEnterprisesArray($DataBaseName);
+        
+        if(is_array($enterprises))
+            return XML::XmlArrayResponse("Enterprises", "Enterprise", $enterprises);
+        else
+            return XML::XMLReponse("Error", 0, "<b>Error</b> al obtener el listado de empresas.</p><br>Detalles:<br><br>" . $enterprises);
+
+    }
+    
+    function getEnterprisesArray($dataBaseName)
+    {
+        $BD = new DataBase();
+
         $query = "SELECT *FROM Empresas";
 
-        $ListEmpresas = $BD->ConsultaSelect($DataBaseName, $query);
+        $ListEmpresas = $BD->ConsultaSelect($dataBaseName, $query);
 
         if ($ListEmpresas['Estado'] != 1)
-            return XML::XMLReponse("Error", 0, "<b>Error</b> al obtener el listado de empresas.</p><br>Detalles:<br><br>" . $ListEmpresas['Estado']);
-
-        $EnterpriseList = $ListEmpresas['ArrayDatos'];
-
-        XML::XmlArrayResponse("Enterprises", "Enterprise", $EnterpriseList);
+            return $ListEmpresas['Estado'];
+        
+         return $ListEmpresas['ArrayDatos'];
+        
     }
     
     private function display_xml_error($error)

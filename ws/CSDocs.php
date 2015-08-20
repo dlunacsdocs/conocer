@@ -9,6 +9,8 @@
 $RoutFile = dirname(getcwd());        
 
 require_once("$RoutFile/apis/soap/lib/nusoap.php");
+require_once("FunctionsWS.php");
+
 
 $server = new nusoap_server();
 
@@ -19,24 +21,93 @@ $server->configureWSDL('Servicios Web de CSDocs', 'urn:ecm');
  *******************************************************************************/
 
 // Parametros de Salida
-$server->wsdl->addComplexType(  'instance', 
+$server->wsdl->addComplexType(  'instanceData', 
                                 'complexType', 
                                 'struct', 
                                 'all', 
                                 '',
-                                array('idInstance'   => array('idSession' => 'mensaje','type' => 'xsd:integer'),
-                                      'instanceName'   => array('idUser' => 'mensaje','type' => 'xsd:string')
+                                array('idInstance'   => array('name' => 'idInstance','type' => 'xsd:integer'),
+                                      'instanceName'   => array('name' => 'instanceName','type' => 'xsd:string'),
+                                    'message' => array('name'=>'message', 'type'=>'xsd:string')
                                 )
 );
 
+// Complex Array ++++++++++++++++++++++++++++++++++++++++++
+$server->wsdl->addComplexType('instanceList',
+                              'complexType',
+                              'array',
+                              '',
+                              'SOAP-ENC:Array',
+                              array(),
+                              array(
+                                  array(
+                                      'ref' => 'SOAP-ENC:arrayType',
+                                      'wsdl:arrayType' => 'tns:instanceData[]'
+                                  )
+                              ),
+                              "tns:instanceData"
+);
+
 $server->register(  'getInstances', // nombre del metodo o funcion
-                    array('' => ''), // parametros de entrada
-                    array('instance' => 'tns:instance'), // parametros de salida
+                    array(), // parametros de entrada
+                    array('instanceList' => 'tns:instanceList'), // parametros de salida
                     'urn:ecm', // namespace
                     'urn:getInstances', // soapaction debe ir asociado al nombre del metodo
                     'rpc', // style
                     'encoded', // use
                     'Retorna el registro de instancias dadas de alta en el sistema' // documentation
+);
+
+/*******************************************************************************
+ *                                EMPRESAS                                     *
+ *******************************************************************************/
+
+// Parametros de entrada
+$server->wsdl->addComplexType(  'enterpriseRequest', 
+                                'complexType', 
+                                'struct', 
+                                'all', 
+                                '',
+                                array('instanceName'   => array('name' => 'instanceName','type' => 'xsd:string')                                )
+);
+
+// Parametros de salida
+$server->wsdl->addComplexType(  'enterpriseResponse', 
+                                'complexType', 
+                                'struct', 
+                                'all', 
+                                '',
+                                array('idEnterprise'   => array('name' => 'userName','type' => 'xsd:integer'),
+                                      'enterpriseName'    => array('name' => 'password','type' => 'xsd:string'),
+                                      'enterpriseKey'    => array('name' => 'enterpriseKey','type' => 'xsd:string'),
+                                      'message'    => array('name' => 'message','type' => 'xsd:string')
+                                )
+);
+
+// Complex Array ++++++++++++++++++++++++++++++++++++++++++
+$server->wsdl->addComplexType('enterpriseList',
+                              'complexType',
+                              'array',
+                              '',
+                              'SOAP-ENC:Array',
+                              array(),
+                              array(
+                                  array(
+                                      'ref' => 'SOAP-ENC:arrayType',
+                                      'wsdl:arrayType' => 'tns:enterpriseResponse[]'
+                                  )
+                              ),
+                              "tns:enterpriseResponse"
+);
+
+$server->register(  'getEnterprises', // nombre del metodo o funcion
+                    array('enterpriseRequest' => 'tns:enterpriseRequest'), // parametros de entrada
+                    array('enterpriseResponse' => 'tns:enterpriseList'), // parametros de salida
+                    'urn:ecm', // namespace
+                    'urn:getEnterprises', // soapaction debe ir asociado al nombre del metodo
+                    'rpc', // style
+                    'encoded', // use
+                    'Retorna el listado de empresas asociadas a una instancia' // documentation
 );
 
 /*******************************************************************************
@@ -87,11 +158,6 @@ function login($data)
     return array("message"=>$msg);
 }
 
-function getInstances()
-{
-    
-    return array("instanceName"=>"Petición de instancias realizada");
-}
 
 $HTTP_RAW_POST_DATA = isset($HTTP_RAW_POST_DATA) ? $HTTP_RAW_POST_DATA : '';
 $server->service($HTTP_RAW_POST_DATA);
