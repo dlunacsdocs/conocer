@@ -21,6 +21,11 @@ $RoutFile = dirname(getcwd());
 
 
 class Usuarios {
+    static $userName =  null;
+    static $idUser = 0;
+    static $idGroup = 0;
+    static $gorupName = null;
+    
     public function __construct() {
         $this->Ajax();
     }

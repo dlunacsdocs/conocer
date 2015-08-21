@@ -2,9 +2,14 @@
 
 $RoutFile = dirname(getcwd());        
 
+require_once "$RoutFile/php/Session.php";
 require_once("$RoutFile/php/DataBase.php");
 require_once("$RoutFile/php/Enterprise.php");
 
+function login()
+{
+    
+}
 
 function getInstances()
 {

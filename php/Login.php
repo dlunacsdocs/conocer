@@ -6,6 +6,9 @@
 require_once 'DataBase.php';
 require_once "Log.php";
 require_once "XML.php";
+require_once 'Usuarios.php';
+require_once 'Session.php';
+
 class Login {
     public function __construct() {
         $this->ajax();
@@ -142,7 +145,24 @@ class Login {
             $Resultado['IdGrupo'] = 1;            
             $Resultado['Nombre'] = "Administradores";
         }
-
+        
+        if(isset($Resultado['IdUsuario']))
+            Usuarios::$idUser = $Resultado['IdUsuario'];
+        if(isset($Resultado['Login']))
+            Usuarios::$userName = $Resultado['Login'];
+        if(isset($Resultado['IdGrupo']))
+            Usuarios::$idGroup = $Resultado['IdGrupo'];
+        if(isset($Resultado['NombreGrupo']))
+            Usuarios::$gorupName = $Resultado['NombreGrupo'];
+        
+        DataBase::$dataBaseName = $DataBaseName;
+        
+        if($Resultado['IdUsuario']>0){
+            $idSession = Session::createSession(Usuarios::$idUser,  Usuarios::$userName, DataBase::$dataBaseName);
+            Session::$idSession = $idSession;
+            var_dump($_SESSION);
+        }
+                
         $doc  = new DOMDocument('1.0','utf-8');
         $doc->formatOutput = true;
         $root = $doc->createElement('StartSession');
@@ -156,7 +176,9 @@ class Login {
         $IdGrupo = $doc->createElement("IdGrupo",$Resultado['IdGrupo']);
         $root->appendChild($IdGrupo);
         $NombreGrupo = $doc->createElement("NombreGrupo",$Resultado['Nombre']);
-        $root->appendChild($NombreGrupo);        
+        $root->appendChild($NombreGrupo);     
+        $xmlIdSession = $doc->createElement("idSession", Session::$idSession);
+        $root->appendChild($xmlIdSession);
         header ("Content-Type:text/xml");
         echo $doc->saveXML();
         
