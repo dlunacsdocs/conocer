@@ -160,7 +160,7 @@ class Login {
         if($Resultado['IdUsuario']>0){
             $idSession = Session::createSession(Usuarios::$idUser,  Usuarios::$userName, DataBase::$dataBaseName);
             Session::$idSession = $idSession;
-            var_dump($_SESSION);
+//            var_dump($_SESSION);
         }
                 
         $doc  = new DOMDocument('1.0','utf-8');
