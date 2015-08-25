@@ -13,6 +13,7 @@ $RoutFile = dirname(getcwd());
 
 require_once 'DesignerForms.php';
 class DataBase {
+    public static $idDataBaseName = 0;
     public static $dataBaseName = null;
     function Conexion()
     {

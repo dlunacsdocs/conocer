@@ -132,10 +132,9 @@ $server->wsdl->addComplexType(  'loginReponse',
                                 'struct', 
                                 'all', 
                                 '',
-                                array('idSession'   => array('idSession' => 'mensaje','type' => 'xsd:string'),
-                                      'idUser'   => array('idUser' => 'mensaje','type' => 'xsd:string'),
-                                      'userName'   => array('userName' => 'mensaje','type' => 'xsd:string'),
-                                      'message'   => array('userName' => 'mensaje','type' => 'xsd:string'),
+                                array('userName'   => array('userName' => 'mensaje','type' => 'xsd:string'),
+                                      'error'   => array('error' => 'mensaje','type' => 'xsd:string'),
+                                      'message'   => array('userName' => 'mensaje','type' => 'xsd:string')
                                 )
 );
 
@@ -149,14 +148,6 @@ $server->register(  'login', // nombre del metodo o funcion
                     'Inicio de sesión dentro del sistema CSDocs' // documentation
 );
 
-function login($data)
-{
-    $userName = $data['userName'];
-    $password = $data['password'];
-    $msg = "Intento de inicio de sesión con el usuario $userName y el password $password";
-    
-    return array("message"=>$msg);
-}
 
 
 $HTTP_RAW_POST_DATA = isset($HTTP_RAW_POST_DATA) ? $HTTP_RAW_POST_DATA : '';

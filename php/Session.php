@@ -6,36 +6,40 @@
 class Session {
     static $idSession = null;
     
-    public static function createSession($idUser, $userName, $dataBaseName)
+    public static function createSession($idDataBase,$dataBaseName, $idUser, $userName, $idGroup, $groupName)
     {
-        session_start();
+        if(!isset($_SESSION))
+            session_start();
 
         $sessionId = session_id();
         
         $_SESSION['idSession'] = $sessionId;
-         
+        $_SESSION['idDataBase'] = $idDataBase;
+        $_SESSION['dataBaseName'] = $dataBaseName;
         $_SESSION['idUser'] = $idUser;
         $_SESSION['userName'] = $userName;
-        $_SESSION['dataBaseName'] = $dataBaseName;
+        $_SESSION['idGroup'] = $idGroup;
+        $_SESSION['groupName'] = $groupName;
         
         return $sessionId;
         
     }
     
-    public static function getIdSession($dataBaseName, $userName)
+    public static function getSessionParameters()
     {
-        if(isset($_SESSION['userName']) and isset($_SESSION['dataBaseName'])){
-            
-            if(strcasecmp($_SESSION['userName'], $userName)==0 and strcasecmp($_SESSION['dataBaseName'], $dataBaseName)==0){
-                if(isset ($_SESSION['idSession']))
-                    return $_SESSION['idSession'];
-                else
-                    return null;
-            }
-            else{
-                return null;
-            }
-        } 
+        if(!isset($_SESSION))
+            session_start();
+       
+        return array('idSession'=>$_SESSION['idSession'], "dataBaseName"=>$_SESSION['dataBaseName'], 
+            "userName"=>$_SESSION['userName'], 'idUser'=>$_SESSION['idUser'] , 
+            'idGroup'=>$_SESSION['idGroup'],'groupName'=>$_SESSION['groupName']);
+        
+    }
+    
+    public static function getIdSession()
+    {
+        if(isset($_SESSION['userName']) and isset($_SESSION['dataBaseName']))
+            return $_SESSION['idSession'];
         else 
             return null;
         

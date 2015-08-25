@@ -7,6 +7,16 @@ require_once("$RoutFile/php/DataBase.php");
 require_once("$RoutFile/php/Enterprise.php");
 
 
+function login($data)
+{
+    $userName = $data['userName'];
+    $password = $data['password'];
+    
+    
+    
+    return array("message"=>$msg);
+}
+
 function getInstances()
 {
     $DB = new DataBase();
