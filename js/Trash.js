@@ -5,7 +5,7 @@
  */
 
 
-/* global Repository, Enterprise */
+/* global Repository, Enterprise, EnvironmentData */
 
 $(document).ready(function()
 {    
@@ -139,7 +139,6 @@ function OpenTrah()
  *-----------------------------------------------------------------------------*/
 function ListDeleted()
 {            
-    var nombre_usuario=$('#login_usr').val();
     var active = $( "#TrashTabs" ).tabs( "option", "active" );  
     var NombreRepositorio=0;
     var IdRepositorio=0;
@@ -159,8 +158,6 @@ function ListDeleted()
         $('#TrashTabFiles .DetailTrashFiles').append('<div class="loading"><img src="../img/loadinfologin.gif"></div>');
       break;
     }     
-    var IdUsuario=$('#id_usr').val();
-    var DataBaseName=$('#database_name').val();
     
     if(IdRepositorio===0){Advertencia("Seleccione un Reposiorio."); return;}               
     
@@ -170,7 +167,7 @@ function ListDeleted()
       dataType:"html", 
       type: 'POST',   
       url: "php/Trash.php",
-      data: 'opcion='+option+'&DataBaseName='+DataBaseName+'&IdUsuario='+IdUsuario+'&IdRepositorio='+IdRepositorio+'&NombreRepositorio='+NombreRepositorio+'&nombre_usuario='+nombre_usuario, 
+      data: 'opcion='+option+'&DataBaseName='+EnvironmentData.DataBaseName+'&IdUsuario='+EnvironmentData.IdUsuario+'&IdRepositorio='+IdRepositorio+'&NombreRepositorio='+NombreRepositorio+'&nombre_usuario='+EnvironmentData.NombreUsuario, 
       success:  function(xml){
           
           $('.loading').remove();
@@ -291,9 +288,7 @@ function BuildDeletedTableFiles(xml)
  * la restauración de los mismos */
 
 function RestoreTrashed()
-{
-    var nombre_usuario=$('#login_usr').val();
-    
+{    
     var active = $( "#TrashTabs" ).tabs( "option", "active" );  
     
     var NombreRepositorio=0, IdRepositorio=0, option=0, TablaSelected = 0, Tabla =0;
@@ -317,10 +312,6 @@ function RestoreTrashed()
          
         default: break;
     }     
-    
-    var IdUsuario=$('#id_usr').val();
-    var DataBaseName=$('#database_name').val();
-    var UserGroup = $('#group_name').val(); 
 
     /* Se genera el XML que contiene los  Ids de los directorios o documentos a restaurar.
      * Los Ids son tomados de las filas seleccionadas por el usuario */
@@ -373,7 +364,7 @@ function RestoreTrashed()
       dataType:"html", 
       type: 'POST',   
       url: "php/Trash.php",
-      data: 'opcion='+option+'&DataBaseName='+DataBaseName+'&IdUsuario='+IdUsuario+'&IdRepositorio='+IdRepositorio+'&NombreRepositorio='+NombreRepositorio+'&nombre_usuario='+nombre_usuario+'&XmlRestore='+XmlRestore+'&UserGroup='+UserGroup, 
+      data: 'opcion='+option+'&DataBaseName='+EnvironmentData.DataBaseName+'&IdUsuario='+EnvironmentData.IdUsuario+'&IdRepositorio='+IdRepositorio+'&NombreRepositorio='+NombreRepositorio+'&nombre_usuario='+EnvironmentData.NombreUsuario+'&XmlRestore='+XmlRestore+'&UserGroup='+EnvironmentData.NombreGrupo, 
       success:  function(xml){
           
           $('.loading').remove();
@@ -683,9 +674,7 @@ function ProgressRestoreFiles(PathAdvancing,KeyProcess)
 
 /* Elimina permanentemente de la papelera los elementos seleccionados por el usuario */
 function EmptyTrash()
-{
-    var nombre_usuario=$('#login_usr').val();
-    
+{    
     var active = $( "#TrashTabs" ).tabs( "option", "active" );  
     
     var NombreRepositorio=0, IdRepositorio=0, option=0, TablaSelected = 0, Tabla =0;
@@ -709,10 +698,6 @@ function EmptyTrash()
          
         default: break;
     }     
-    
-    var IdUsuario=$('#id_usr').val();
-    var DataBaseName=$('#database_name').val();
-    var UserGroup = $('#group_name').val(); 
 
     /* Se genera el XML que contiene los  Ids de los directorios o documentos a restaurar.
      * Los Ids son tomados de las filas seleccionadas por el usuario */
@@ -768,7 +753,7 @@ function EmptyTrash()
       dataType:"html", 
       type: 'POST',   
       url: "php/Trash.php",
-      data: 'opcion='+option+'&DataBaseName='+DataBaseName+'&IdUsuario='+IdUsuario+'&IdRepositorio='+IdRepositorio+'&NombreRepositorio='+NombreRepositorio+'&nombre_usuario='+nombre_usuario+'&XmlEmpty='+XmlRestore+'&UserGroup='+UserGroup, 
+      data: 'opcion='+option+'&DataBaseName='+EnvironmentData.DataBaseName+'&IdUsuario='+EnvironmentData.IdUsuario+'&IdRepositorio='+IdRepositorio+'&NombreRepositorio='+NombreRepositorio+'&nombre_usuario='+EnvironmentData.NombreUsuario+'&XmlEmpty='+XmlRestore+'&UserGroup='+EnvironmentData.NombreGrupo, 
       success:  function(xml){
           
           $('.loading').remove();

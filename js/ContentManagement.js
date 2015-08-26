@@ -87,8 +87,6 @@ function CleaningContent()
 
 function getListEmpresas(SelectEmpresas)
 {
-    var DataBase=$('#database_usr').val();
-    var IdUsuario=$('#id_usr').val();
    
    $.ajax({
       async:false, 
@@ -96,7 +94,7 @@ function getListEmpresas(SelectEmpresas)
       dataType:"xml", 
       type: 'POST',   
       url: "php/ContentManagement.php",
-      data: "opcion=getListEmpresas&DataBase="+DataBase+'&IdUsuario='+IdUsuario, 
+      data: "opcion=getListEmpresas&DataBase="+EnvironmentData.DataBaseName+'&IdUsuario='+EnvironmentData.IdUsuario, 
       success:  function(respuesta){
           if(respuesta===null){Error(respuesta);return 0;}
            var xml=respuesta; 

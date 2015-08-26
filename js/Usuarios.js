@@ -95,9 +95,6 @@ ClassUsers = function()
     {
         var self = this;
         Loading();
-        var DataBaseName=$('#database_name').val();
-        var id_usuario=$('#id_usr').val();
-        var nombre_usuario=$('#login_usr').val();
         var xml_usuario=document.getElementById("NewUser_InputFile");
         var archivo = xml_usuario.files;     
         var data = new FormData();
@@ -106,9 +103,9 @@ ClassUsers = function()
           {
                 data.append('archivo',archivo[i]);
                 data.append('opcion','AddXmlUser');
-                data.append('id_usuario',id_usuario);
-                data.append('DataBaseName',DataBaseName);
-                data.append('nombre_usuario',nombre_usuario);
+                data.append('id_usuario',EnvironmentData.IdUsuario);
+                data.append('DataBaseName',EnvironmentData.DataBaseName);
+                data.append('nombre_usuario',EnvironmentData.NombreUsuario);
           } 
             ajax=objetoAjax();
             ajax.open("POST", 'php/Usuarios.php',true);

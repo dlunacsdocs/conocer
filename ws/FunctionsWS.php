@@ -5,16 +5,46 @@ $RoutFile = dirname(getcwd());
 require_once "$RoutFile/php/Session.php";
 require_once("$RoutFile/php/DataBase.php");
 require_once("$RoutFile/php/Enterprise.php");
-
+require_once ("$RoutFile/php/Login.php");
 
 function login($data)
 {
+    $login = new Login();
+    $session = new Session();
+    
+    if(!isset($data['idInstance']))
+        return array("error"=>"idInstance no encontrado.");
+    if(!isset($data['instanceName']))
+        return array('error'=>'instanceName no encontrado.');
+    if(!isset($data['userName']))
+        return array('error'=>'userName no encontrado.');
+
+    $idInstance = $data['idInstance'];
+    $instanceName = $data['instanceName'];
     $userName = $data['userName'];
     $password = $data['password'];
     
-    
-    
-    return array("message"=>$msg);
+    $userData = $login->searchRegisterUser($instanceName, $userName, $password);
+    $idSession = null;
+
+    if(is_array($userData)){
+        $text = '';
+        if(isset($userData['IdUsuario']))
+            $text.= $userData['IdUsuario'];
+        if(isset($userData['Login']))
+            $text.= $userData['Login'];
+        if(isset($userData['IdGrupo']))
+            $text.= $userData['IdGrupo'];
+        if(isset($userData['Nombre']))
+            $text.= $userData['Nombre'];
+        
+//        return array('error'=>"($idInstance, $instanceName,". $text);
+        $idSession = $session->createSession($idInstance, $instanceName, $userData['IdUsuario'], $userData['Login'], $userData['IdGrupo'], $userData['Nombre']);
+        return array('idSession'=>$idSession);
+        
+    }
+    else
+        return array("error"=>"Usuario o contraseña incorrectos");
 }
 
 function getInstances()

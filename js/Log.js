@@ -4,7 +4,7 @@
  * and open the template in the editor.
  */
 
-/* global LanguajeDataTable, GlobalDatePicker, BotonesWindow, dHeight, Wvisor */
+/* global LanguajeDataTable, GlobalDatePicker, BotonesWindow, dHeight, Wvisor, EnvironmentData */
 
 var LogdT, LogDT;
 
@@ -114,10 +114,6 @@ Log.prototype.ShowWindowLog = function()
 Log.prototype.QueryLog = function()
 {
     var xml = 0;
-    var nombre_usuario = $('#login_usr').val();
-    var IdUsuario = $('#id_usr').val();
-    var DataBaseName = $('#database_name').val();
-    var UserGroup = $('#group_name').val(); 
     var Date = $('#DateLog').val();
 
     if(!this.validarFecha(Date))
@@ -134,7 +130,7 @@ Log.prototype.QueryLog = function()
       dataType:"html", 
       type: 'POST',   
       url: "php/Log.php",
-      data: 'opcion=LogQuery&DataBaseName='+DataBaseName+'&IdUsuario='+IdUsuario+'&nombre_usuario='+nombre_usuario+'&UserGroup='+UserGroup+'&Date='+Date, 
+      data: 'opcion=LogQuery&DataBaseName='+EnvironmentData.DataBaseName+'&IdUsuario='+EnvironmentData.IdUsuario+'&nombre_usuario='+EnvironmentData.NombreUsuario+'&UserGroup='+EnvironmentData.NombreGrupo+'&Date='+Date, 
       success:  function(response){
           $('#LoadingQueryRegisters').remove();
           xml = response;              

@@ -121,7 +121,9 @@ $server->wsdl->addComplexType(  'loginRequest',
                                 'struct', 
                                 'all', 
                                 '',
-                                array('userName'   => array('name' => 'userName','type' => 'xsd:string'),
+                                array('idInstance' => array('name' => 'idInstance', 'type' => 'xsd:integer'),
+                                      'instanceName' => array('name' => 'instanceName', 'type' => 'xsd:string'),
+                                      'userName'   => array('name' => 'userName','type' => 'xsd:string'),
                                       'password'    => array('name' => 'password','type' => 'xsd:string')
                                 )
 );
@@ -132,15 +134,15 @@ $server->wsdl->addComplexType(  'loginReponse',
                                 'struct', 
                                 'all', 
                                 '',
-                                array('userName'   => array('userName' => 'mensaje','type' => 'xsd:string'),
-                                      'error'   => array('error' => 'mensaje','type' => 'xsd:string'),
-                                      'message'   => array('userName' => 'mensaje','type' => 'xsd:string')
+                                array('idSession'   => array('name' => 'idSession','type' => 'xsd:string'),
+                                      'error'   => array('name' => 'error','type' => 'xsd:string'),
+                                      'message'   => array('name' => 'message','type' => 'xsd:string')
                                 )
 );
 
 $server->register(  'login', // nombre del metodo o funcion
                     array('loginRequest' => 'tns:loginRequest'), // parametros de entrada
-                    array('return' => 'tns:loginReponse'), // parametros de salida
+                    array('loginReponse' => 'tns:loginReponse'), // parametros de salida
                     'urn:ecm', // namespace
                     'urn:login', // soapaction debe ir asociado al nombre del metodo
                     'rpc', // style

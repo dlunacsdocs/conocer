@@ -5,6 +5,8 @@
  */
 
 /* Refresh del árbol */
+/* global EnvironmentData */
+
 $(document).ready(function(){
     $('#TreeRefresh').click(function()
     {
@@ -22,7 +24,6 @@ function CM_getTree()
 {
     
     var IdRepositorio=$('#CM_select_repositorios').val();
-    var DataBaseName=$('#database_name').val();
     var NombreRepositorio=$('#CM_select_repositorios option:selected').html();
         
     if(!(IdRepositorio>0)){return;}
@@ -32,7 +33,7 @@ function CM_getTree()
     var ajax=objetoAjax();
     ajax.open("POST", 'php/Tree.php',true);
     ajax.setRequestHeader("Content-Type", "application/x-www-form-urlencoded;charset=utf-8;");
-    ajax.send("opcion=getTree&IdRepositorio="+IdRepositorio+"&DataBaseName="+DataBaseName+'&NombreRepositorio='+NombreRepositorio);
+    ajax.send("opcion=getTree&IdRepositorio="+IdRepositorio+"&DataBaseName="+EnvironmentData.DataBaseName+'&NombreRepositorio='+NombreRepositorio);
     ajax.onreadystatechange=function() 
     {
        if (ajax.readyState===4 && ajax.status===200) 
@@ -179,17 +180,14 @@ function editNode(node){
 function CM_ModifyDir(IdDirectory,IdParentDirectory,NameDirectory)
 {
     var IdRepositorio=$('#CM_select_repositorios').val();
-    var DataBaseName=$('#database_name').val();
     var NombreRepositorio=$('#CM_select_repositorios option:selected').html();
     var IdEmpresa = $('#CM_select_empresas option:selected').attr('id');
     IdEmpresa = parseInt(IdEmpresa);
-    var nombre_usuario=$('#login_usr').val();
-    var id_usuario=$('#id_usr').val();
     
     ajax=objetoAjax();
     ajax.open("POST", 'php/Tree.php',true);
     ajax.setRequestHeader("Content-Type", "application/x-www-form-urlencoded;charset=utf-8;");
-    ajax.send("opcion=ModifyDir&IdRepositorio="+IdRepositorio+"&DataBaseName="+DataBaseName+'&NombreRepositorio='+NombreRepositorio+"&IdParentDirectory="+IdParentDirectory+"&NameDirectory="+NameDirectory+"&$IdEmpresa="+IdEmpresa+"&IdDirectory="+IdDirectory+'&nombre_usuario='+nombre_usuario+'&id_usuario='+id_usuario);
+    ajax.send("opcion=ModifyDir&IdRepositorio="+IdRepositorio+"&DataBaseName="+EnvironmentData.DataBaseName+'&NombreRepositorio='+NombreRepositorio+"&IdParentDirectory="+IdParentDirectory+"&NameDirectory="+NameDirectory+"&$IdEmpresa="+IdEmpresa+"&IdDirectory="+IdDirectory+'&nombre_usuario='+EnvironmentData.NombreUsuario+'&id_usuario='+EnvironmentData.IdUsuario);
     ajax.onreadystatechange=function() 
     {
        if (ajax.readyState===4 && ajax.status===200) 
@@ -227,24 +225,18 @@ function CM_DeleteDir()
     var IdParent_=node.getParent().data.key;
     if(!(IdParent_>0)){Error("No se puede realizar esta acción sobre este elemento."); return;}
     var IdRepositorio=$('#CM_select_repositorios').val();
-    var DataBaseName=$('#database_name').val();
     var NombreRepositorio=$('#CM_select_repositorios option:selected').html();
     var IdEmpresa = $('#CM_select_empresas option:selected').attr('id');
     IdEmpresa = parseInt(IdEmpresa);
-    var nombre_usuario=$('#login_usr').val();
     var title=node.data.title;
-    var IdUsuario=$('#id_usr').val();
     
     /* Se envia el listado de XML con cada uno de los Ids que seran eliminados (directorios) */
     var XMLResponse="<Delete version='1.0' encoding='UTF-8'>";
             
     var Bodyxml='';
-    var data = new FormData();
     var Children=node.getChildren();
     var SubChildren=0;
-    var ListChildren=new Array();
     
-    var Cadena='';
     
     if(Children!==null)
     {
@@ -282,7 +274,7 @@ function CM_DeleteDir()
     ajax=objetoAjax();
     ajax.open("POST", 'php/Tree.php',true);
     ajax.setRequestHeader("Content-Type", "application/x-www-form-urlencoded;charset=utf-8;");
-    ajax.send("opcion=DeleteDir&IdRepositorio="+IdRepositorio+"&DataBaseName="+DataBaseName+'&NombreRepositorio='+NombreRepositorio+"&IdDirectory="+IdDirectory+'&XMLResponse='+XMLResponse+'&IdEmpresa='+IdEmpresa+'&nombre_usuario='+nombre_usuario+'&NameDirectory='+NameDirectory+'&Path='+Path+'&title='+title+'&IdParent='+IdParent_+'&IdUsuario='+IdUsuario);
+    ajax.send("opcion=DeleteDir&IdRepositorio="+IdRepositorio+"&DataBaseName="+EnvironmentData.DataBaseName+'&NombreRepositorio='+NombreRepositorio+"&IdDirectory="+IdDirectory+'&XMLResponse='+XMLResponse+'&IdEmpresa='+IdEmpresa+'&nombre_usuario='+EnvironmentData.NombreUsuario+'&NameDirectory='+NameDirectory+'&Path='+Path+'&title='+title+'&IdParent='+IdParent_+'&IdUsuario='+EnvironmentData.IdUsuario);
     ajax.onreadystatechange=function() 
     {
        if (ajax.readyState===4 && ajax.status===200) 
@@ -424,12 +416,9 @@ function CM_InsertDir(IdParentDirectory,NameDirectory,Path)
     node.data.unselectable = true; 
     $(".contentDetailTools").attr('disabled', 'disabled');
     var IdRepositorio=$('#CM_select_repositorios').val();
-    var DataBaseName=$('#database_name').val();
     var NombreRepositorio=$('#CM_select_repositorios option:selected').html();
     var IdEmpresa = $('#CM_select_empresas option:selected').attr('id');
     IdEmpresa = parseInt(IdEmpresa);
-    var nombre_usuario=$('#login_usr').val();
-    var id_usuario=$('#id_usr').val();
 
    $.ajax({
       async:false, 
@@ -437,7 +426,7 @@ function CM_InsertDir(IdParentDirectory,NameDirectory,Path)
       dataType:"xml", 
       type: 'POST',   
       url: "php/Tree.php",
-      data: "opcion=InsertDir&IdRepositorio="+IdRepositorio+"&DataBaseName="+DataBaseName+'&NombreRepositorio='+NombreRepositorio+"&IdParentDirectory="+IdParentDirectory+"&NameDirectory="+NameDirectory+"&$IdEmpresa="+IdEmpresa+"&Path="+Path+'&nombre_usuario='+nombre_usuario+'&id_usuario='+id_usuario, 
+      data: "opcion=InsertDir&IdRepositorio="+IdRepositorio+"&DataBaseName="+EnvironmentData.DataBaseName+'&NombreRepositorio='+NombreRepositorio+"&IdParentDirectory="+IdParentDirectory+"&NameDirectory="+NameDirectory+"&$IdEmpresa="+IdEmpresa+"&Path="+Path+'&nombre_usuario='+EnvironmentData.NombreUsuario+'&id_usuario='+EnvironmentData.IdUsuario, 
       success:  function(xml){
 //          $("#CM_directorio_nuevo").attr('disabled', '');/* Opción agregar directorio desactivada */           
            $(xml).find("NewDirectory").each(function()

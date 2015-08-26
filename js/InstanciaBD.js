@@ -68,19 +68,20 @@ function mostrar_crear_instanciaBD()
 /* Se recoge el XML introducido por el Usuario y se envia al servidor para su lectura*/
 function CreateInstancia()
 {
-    var id_usuario=$('#id_usr').val();
-    var nombre_usuario=$('#login_usr').val();
     var xml_usuario=document.getElementById("xml_nueva_instancia");
     var archivo = xml_usuario.files;     
-      var data = new FormData();
-      if(!(archivo.length>0)){Advertencia('Debe seleccionar un XMl con la estructura de una nueva Instancia'); return;}
-      for(i=0; i<archivo.length; i++)
+    var data = new FormData();
+      
+    if(!(archivo.length>0)){Advertencia('Debe seleccionar un XMl con la estructura de una nueva Instancia'); return;}
+      
+    for(i=0; i<archivo.length; i++)
       {
             data.append('archivo',archivo[i]);
             data.append('opcion','ReadXML');
-            data.append('id_usuario',id_usuario);
-            data.append('nombre_usuario',nombre_usuario);
-      } 
+            data.append('id_usuario',EnvironmentData.IdUsuario);
+            data.append('nombre_usuario',EnvironmentData.NombreUsuario);
+      }
+      
       Loading();
       
     ajax=objetoAjax();

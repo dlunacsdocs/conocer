@@ -794,7 +794,6 @@ var ClassRepository = function()
     /* Toma un xml a través de un XML */
     _AddNewRepositoryXml = function()
     {
-        var DataBaseName=$('#database_name').val();
         var xml_usuario = document.getElementById("AddRepository_SelectFile");
         var archivo = xml_usuario.files;     
         var data = new FormData();
@@ -804,7 +803,7 @@ var ClassRepository = function()
             data.append('archivo',archivo[i]);
             data.append('opcion','XMLInsertRepositorio');
             data.append('IdUser',EnvironmentData.IdUsuario);
-            data.append('DataBaseName',DataBaseName);
+            data.append('DataBaseName',EnvironmentData.DataBaseName);
             data.append('UserName',EnvironmentData.NombreUsuario);
         } 
         
@@ -1094,17 +1093,16 @@ function CM_Repository()
     var buttons = {};
     $('#DivRepositoriesManager').dialog("option","buttons",buttons); /* Se eliminan los botones de la ventana de dialogo */
     
-    var DataBaseName=$('#database_name').val();
     $('#WS_Repository').empty();
     $('#WS_Repository').append('<div class="titulo_ventana">Estructura de Repositorio</div>');    
     $('#tree_repository').remove();
     $('#consola_repository_tree').append('<div id="tree_repository"></div>');
-    $('#tree_repository').append('<ul><li id="Tree_Repository" class="folder expanded " data="icon: \'database.png\'">'+DataBaseName+'<ul id="Tree_Repository_"></ul></ul>');
-    var DataBaseName=$('#database_name').val();
+    $('#tree_repository').append('<ul><li id="Tree_Repository" class="folder expanded " data="icon: \'database.png\'">'+EnvironmentData.DataBaseName+'<ul id="Tree_Repository_"></ul></ul>');
+    
     ajax=objetoAjax();
     ajax.open("POST", 'php/Tree.php',true);
     ajax.setRequestHeader("Content-Type", "application/x-www-form-urlencoded;charset=utf-8;");
-    ajax.send("opcion=GetListReposity&DataBaseName="+DataBaseName);    
+    ajax.send("opcion=GetListReposity&DataBaseName="+EnvironmentData.DataBaseName);    
     ajax.onreadystatechange=function() 
     {
         if (ajax.readyState===4 && ajax.status===200) 

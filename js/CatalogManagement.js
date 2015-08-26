@@ -766,15 +766,13 @@ ClassCatalogAdministrator = function()
    {
        Loading();
        $('#WS_Catalogo').empty();
-       var DataBaseName=$('#database_name').val();
-       var IdUsuario=$('#id_usr').val();
        $('#tree_catalogos').remove();
        $('#consola_catalogos_tree').append('<div id="tree_catalogos"></div>');   
-       $('#tree_catalogos').append('<ul><li id="Tree_Repository" class="folder expanded" data="icon: \'database.png\'">'+DataBaseName+'<ul id="Tree_Repository_"></ul></ul>');
+       $('#tree_catalogos').append('<ul><li id="Tree_Repository" class="folder expanded" data="icon: \'database.png\'">'+EnvironmentData.DataBaseName+'<ul id="Tree_Repository_"></ul></ul>');
        ajax=objetoAjax();
        ajax.open("POST", 'php/ContentManagement.php',true);
        ajax.setRequestHeader("Content-Type", "application/x-www-form-urlencoded;charset=utf-8;");
-       ajax.send("opcion=GetListCatalogos&DataBaseName="+DataBaseName+'&IdUsuario='+IdUsuario);
+       ajax.send("opcion=GetListCatalogos&DataBaseName="+EnvironmentData.DataBaseName+'&IdUsuario='+EnvironmentData.IdUsuario);
        ajax.onreadystatechange=function() 
        {
            $('#Loading').dialog('close');
@@ -971,8 +969,6 @@ ClassCatalogAdministrator.prototype.SetCatalogName = function(CatalogName)
 
 ClassCatalogAdministrator.prototype.getCatalogos = function(IdRepositorio,SelectCatalogos)
 {        
-    var DataBaseName=$('#database_name').val();
-    var IdUsuario=$('#id_usr').val();
 
     $.ajax({
     async:false, 
@@ -980,7 +976,7 @@ ClassCatalogAdministrator.prototype.getCatalogos = function(IdRepositorio,Select
     dataType:"html", 
     type: 'POST',   
     url: "php/ContentManagement.php",
-    data: "opcion=getCatalogos&DataBaseName="+DataBaseName+'&IdUsuario='+IdUsuario+"&IdRepositorio="+IdRepositorio, 
+    data: "opcion=getCatalogos&DataBaseName="+EnvironmentData.DataBaseName+'&IdUsuario='+EnvironmentData.IdUsuario+"&IdRepositorio="+IdRepositorio, 
     success:  function(respuesta){
     var xml=respuesta; 
     $("#"+SelectCatalogos+" option").remove();

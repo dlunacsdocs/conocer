@@ -593,16 +593,14 @@ function CM_CargarArchivo()
    */
   function getCatalogs(IdRepositorio)
   {
-      var IdUsuario=$('#id_usr').val();
       var ArrayCatalogos=new Array();
-      var DataBaseName=$('#database_name').val();
       $.ajax({
       async:false, 
       cache:false,
       dataType:"html", 
       type: 'POST',   
       url: "php/ContentManagement.php",
-      data: "opcion=getCatalogos&DataBaseName="+DataBaseName+'&IdUsuario='+IdUsuario+"&IdRepositorio="+IdRepositorio, 
+      data: "opcion=getCatalogos&DataBaseName="+EnvironmentData.DataBaseName+'&IdUsuario='+EnvironmentData.IdUsuario+"&IdRepositorio="+IdRepositorio, 
       success:  function(respuesta){
            var xml=respuesta; 
            
@@ -1020,16 +1018,14 @@ function AddNewRow(IdRepository, xml)
  ------------------------------------------------------------------------------*/  
 function getCatalogOptions(IdRepositorio,SelectCatalogos)
 {   
-    var DataBaseName=$('#database_name').val();
-    var IdUsuario=$('#id_usr').val();
-    
+
    $.ajax({
       async:false, 
       cache:false,
       dataType:"html", 
       type: 'POST',   
       url: "php/ContentManagement.php",
-      data: "opcion=getCatalogos&DataBaseName="+DataBaseName+'&IdUsuario='+IdUsuario+"&IdRepositorio="+IdRepositorio, 
+      data: "opcion=getCatalogos&DataBaseName="+EnvironmentData.DataBaseName+'&IdUsuario='+EnvironmentData.IdUsuario+"&IdRepositorio="+IdRepositorio, 
       success:  function(respuesta){
            var xml=respuesta; 
            $("#"+SelectCatalogos+" option").remove();

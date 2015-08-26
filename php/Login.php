@@ -100,8 +100,7 @@ class Login {
         
         $idSession = Session::getIdSession();
 //        var_dump($idSession);
-        if($idSession!=null)
-                return XML::XMLReponse ("Error", 0, "Ya hay una sesión iniciada.");
+
         
         $ResultSelect = $this->searchRegisterUser($DataBaseName, $user, $pass);
         
@@ -110,9 +109,9 @@ class Login {
 
             
         if(count($ResultSelect)===0)
-            $Resultado=array("Login"=>0,"IdUsuario"=>-1, "IdGrupo"=>0, "Nombre"=>0);
+            $Resultado=array("Login"=>0,"IdUsuario"=>-1, "IdGrupo"=>0, "Nombre"=>0, 'dataBaseName'=>$DataBaseName);
         else{
-            $Resultado = $ResultSelect[0];
+            $Resultado = $ResultSelect;
             
             DataBase::$dataBaseName = $DataBaseName;
             DataBase::$idDataBaseName = $IdDataBase;
@@ -122,13 +121,7 @@ class Login {
             else
                 $Resultado['dataBaseName'] = $DataBaseName;
         }
-        
-        if(strcasecmp("root", $user)==0)
-        {
-            $Resultado['IdGrupo'] = 1;            
-            $Resultado['Nombre'] = "Administradores";
-        }
-        
+         
         if(isset($Resultado['IdUsuario']))
             Usuarios::$idUser = $Resultado['IdUsuario'];
         if(isset($Resultado['Login']))
@@ -139,8 +132,10 @@ class Login {
             Usuarios::$groupName = $Resultado['NombreGrupo'];
         
         if($Resultado['IdUsuario']>0)
-            Session::$idSession = Session::createSession(DataBase::$dataBaseName ,DataBase::$dataBaseName, 
-                    Usuarios::$idUser,  Usuarios::$userName, $Resultado['IdGrupo'], $Resultado['Nombre']);
+            if($idSession!=null)
+//                return XML::XMLReponse ("Error", 0, "Ya hay una sesión iniciada.");
+                Session::$idSession = Session::createSession(DataBase::$dataBaseName ,DataBase::$dataBaseName, 
+                        Usuarios::$idUser,  Usuarios::$userName, $Resultado['IdGrupo'], $Resultado['Nombre']);
       
         $this->loginResponse($Resultado);
     }
@@ -169,7 +164,7 @@ class Login {
          Log::WriteEvent ("1", $Resultado['IdUsuario'], $Resultado['IdUsuario']," '". $Resultado['Login']."'", $Resultado['dataBaseName']);
     }
     
-    private function searchRegisterUser($instanceName ,$userName, $password)
+    public function searchRegisterUser($instanceName ,$userName, $password)
     {
         $bd = new DataBase();
         
@@ -193,8 +188,18 @@ class Login {
         
         if($ResultSelect['Estado']!=1)
             return $ResultSelect['Estado'];
+        
+        if(count($ResultSelect['ArrayDatos'])>0){
+            if(strcasecmp("root", $userName)==0)
+            {
+                $ResultSelect['ArrayDatos'][0]['IdGrupo'] = 1;            
+                $ResultSelect['ArrayDatos'][0]['Nombre'] = "Administradores";
+            }
+            
+            return $ResultSelect['ArrayDatos'][0];
+        }
         else
-            return $ResultSelect['ArrayDatos'];
+            return array();
         
     }
     
