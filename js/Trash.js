@@ -43,7 +43,6 @@ $(document).ready(function()
         
         if(IdEmpresa>0)
         {
-//            getListRepositorios($('#TrashDir_select_empresas').val(),"TrashDir_select_repositorios");
             var repositories = Repository.GetRepositories(EnterpriseKey);
             $("#TrashDir_select_repositorios option").remove();
             $("#TrashDir_select_repositorios").append("<option value='0'>Seleccione un Repositorio</option>");   
@@ -68,7 +67,6 @@ $(document).ready(function()
         
         if(IdEnterprise>0)
         {
-//            getListRepositorios($('#TrashFiles_select_empresas').val(),"TrashFiles_select_repositorios");
             var EnterpriseKey = $('#TrashFiles_select_empresas').val();
             var repositories = Repository.GetRepositories(EnterpriseKey);
             $("#TrashFiles_select_repositorios option").remove();

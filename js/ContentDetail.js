@@ -637,7 +637,7 @@ function CM_CargarArchivo()
    function SetListProperties(TypeStructure,NombreCatalogo)
    {
        var xml = GeStructure(TypeStructure);
-       var ArrayListSearch= new Array();
+
        $(xml).find("Campo").each(function()
         {               
            var $Campo=$(this);

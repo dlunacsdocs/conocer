@@ -9,23 +9,42 @@ require_once ("$RoutFile/php/Login.php");
 
 function login($data)
 {
+    
+    if(!isset($_SESSION))
+        session_start();
+    
     $login = new Login();
     $session = new Session();
-    
+      
     if(!isset($data['idInstance']))
         return array("error"=>"idInstance no encontrado.");
     if(!isset($data['instanceName']))
         return array('error'=>'instanceName no encontrado.');
     if(!isset($data['userName']))
         return array('error'=>'userName no encontrado.');
-
-    $idInstance = $data['idInstance'];
-    $instanceName = $data['instanceName'];
-    $userName = $data['userName'];
-    $password = $data['password'];
     
-    $userData = $login->searchRegisterUser($instanceName, $userName, $password);
-    $idSession = null;
+    /*Se comprueba si existía una sesión activa  */
+    $idSession = $session->getIdSession();
+    
+    $userData = array();
+    
+    if($idSession!=null){
+        $userData = $session->getSessionParameters ();
+    }else{
+        $idInstance = $data['idInstance'];
+        $instanceName = $data['instanceName'];
+        $userName = $data['userName'];
+        $password = $data['password'];
+
+        $userData = $login->searchRegisterUser($instanceName, $userName, $password);
+        
+    }
+    
+    if(!is_array($userData))
+            return array("error" => $userData);
+        if(count($userData)==0)
+            return array("error" => "Acceso denegado. Compruebe que tiene permisos para entrar al sistema al igual que su usuario o contraseña sean correctos");
+
 
     if(is_array($userData)){
         $text = '';
@@ -37,7 +56,7 @@ function login($data)
             $text.= $userData['IdGrupo'];
         if(isset($userData['Nombre']))
             $text.= $userData['Nombre'];
-        
+       
 //        return array('error'=>"($idInstance, $instanceName,". $text);
         $idSession = $session->createSession($idInstance, $instanceName, $userData['IdUsuario'], $userData['Login'], $userData['IdGrupo'], $userData['Nombre']);
         return array('idSession'=>$idSession);

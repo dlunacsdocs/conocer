@@ -216,7 +216,7 @@ class Catalog {
         $NombreCatalogo=  filter_input(INPUT_POST, "CatalogName");
         $TipoCatalogo=  filter_input(INPUT_POST, "CatalogType");
         $ListSearch='';
-        if($TipoCatalogo=='ListSearch'){$ListSearch=' LIMIT 25';}
+//        if($TipoCatalogo=='ListSearch'){$ListSearch=' LIMIT 25';}
         $Consulta="SELECT *FROM $NombreCatalogo $ListSearch";
         $Catalogos=$BD->ConsultaSelect($DataBaseName, $Consulta);        
         if($Catalogos['Estado']!=1){$XML->ResponseXML("Error", 0, "<p><b>Error</b> al consultar el Catálogo <b>$NombreCatalogo</b></p><br>Detalles:<br><br>".$Catalogos['Estado']); return;}

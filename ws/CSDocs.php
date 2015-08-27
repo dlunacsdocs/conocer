@@ -11,7 +11,8 @@ $RoutFile = dirname(getcwd());
 require_once("$RoutFile/apis/soap/lib/nusoap.php");
 require_once("FunctionsWS.php");
 
-
+session_start(); 
+  
 $server = new nusoap_server();
 
 $server->configureWSDL('Servicios Web de CSDocs', 'urn:ecm');
@@ -68,7 +69,8 @@ $server->wsdl->addComplexType(  'enterpriseRequest',
                                 'struct', 
                                 'all', 
                                 '',
-                                array('instanceName'   => array('name' => 'instanceName','type' => 'xsd:string')                                )
+                                array('idSession'   => array('name' => 'instanceName','type' => 'xsd:string'),
+                                      'instanceName'   => array('name' => 'instanceName','type' => 'xsd:string')                                )
 );
 
 // Parametros de salida
