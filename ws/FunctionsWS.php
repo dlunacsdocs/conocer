@@ -43,7 +43,7 @@ function login($data)
     if(!is_array($userData))
             return array("error" => $userData);
         if(count($userData)==0)
-            return array("error" => "Acceso denegado. Compruebe que tiene permisos para entrar al sistema al igual que su usuario o contraseña sean correctos");
+            return array("noAccess" => "Acceso denegado. Compruebe que tiene permisos para entrar al sistema al igual que su usuario o contraseña sean correctos");
 
 
     if(is_array($userData)){
@@ -101,7 +101,24 @@ function getEnterprises($data)
     $Enterprise = new Enterprise();
     $enterprisesArray = array();
     
+    if(!isset($data['idSession']))
+        $enterprisesArray[] = array("error"=>"Parámetro idSession no encontrado");
+    if(!isset($data['userName']))
+        $enterprisesArray[] =  array('error'=>'Parámetro userName no encontrado.');
+    if(!isset($data['password']))
+        $enterprisesArray[] = array('error'=>'Parámetro password no encontrado');
+    if(!isset($data['instanceName']))
+        $enterprisesArray[] = array('error'=>'Parámetro instanceName no encontrado.');
+    
+    if(count($enterprisesArray)>0){
+        return $enterprisesArray;
+    }
+    
+    $idSession = $data['idSession'];
+        
     $enterprises = $Enterprise->getEnterprisesArray($data['instanceName']);
+    
+    session_id($idSession);
     
     if(!is_array($enterprises))
         return array("message"=>$enterprises);
@@ -113,4 +130,25 @@ function getEnterprises($data)
     }
     
     return $enterprisesArray;
+}
+
+function getRepositories($data){
+    $repositoriesArray = array();
+    
+    if(!isset($data['idSession']))
+        $repositoriesArray[] = array('error'=>'Párametro idSession no encontrado');
+    if(!isset($data['userName']))
+        $repositoriesArray[] =  array('error'=>'Parámetro userName no encontrado.');
+    if(!isset($data['password']))
+        $repositoriesArray[] = array('error'=>'Parámetro password no encontrado');
+    if(!isset($data['enterpriseKey']))
+        $repositoriesArray[] = array('error'=>'Párametro enterpriseKey no encontrado');
+    
+    if(count($repositoriesArray)>0)
+        return $repositoriesArray;
+    
+    
+    $repositoriesArray[] = array('message' => "Prueba de WebService de repositorios párametros recibidos ".  implode(',',  array_keys($data)));
+    
+    return $repositoriesArray;
 }

@@ -17,6 +17,48 @@ $server = new nusoap_server();
 
 $server->configureWSDL('Servicios Web de CSDocs', 'urn:ecm');
 
+
+/*******************************************************************************
+ *                                  LOGIN                                      *
+ *******************************************************************************/
+
+
+// Parametros de entrada
+$server->wsdl->addComplexType(  'loginRequest', 
+                                'complexType', 
+                                'struct', 
+                                'all', 
+                                '',
+                                array('idInstance' => array('name' => 'idInstance', 'type' => 'xsd:integer'),
+                                      'instanceName' => array('name' => 'instanceName', 'type' => 'xsd:string'),
+                                      'userName'   => array('name' => 'userName','type' => 'xsd:string'),
+                                      'password'    => array('name' => 'password','type' => 'xsd:string')
+                                )
+);
+
+// Parametros de Salida
+$server->wsdl->addComplexType(  'loginReponse', 
+                                'complexType', 
+                                'struct', 
+                                'all', 
+                                '',
+                                array('idSession'   => array('name' => 'idSession','type' => 'xsd:string'),
+                                      'error'   => array('name' => 'error','type' => 'xsd:string'),
+                                      'noAccess'   => array('name' => 'noAccess','type' => 'xsd:string'),
+                                      'message'   => array('name' => 'message','type' => 'xsd:string')
+                                )
+);
+
+$server->register(  'login', // nombre del metodo o funcion
+                    array('loginRequest' => 'tns:loginRequest'), // parametros de entrada
+                    array('loginReponse' => 'tns:loginReponse'), // parametros de salida
+                    'urn:ecm', // namespace
+                    'urn:login', // soapaction debe ir asociado al nombre del metodo
+                    'rpc', // style
+                    'encoded', // use
+                    'Inicio de sesión dentro del sistema CSDocs' // documentation
+);
+
 /*******************************************************************************
  *                              INSTANCIAS                                     *
  *******************************************************************************/
@@ -70,6 +112,8 @@ $server->wsdl->addComplexType(  'enterpriseRequest',
                                 'all', 
                                 '',
                                 array('idSession'   => array('name' => 'instanceName','type' => 'xsd:string'),
+                                      'userName'   => array('name' => 'userName','type' => 'xsd:string') ,   
+                                      'password'   => array('name' => 'password','type' => 'xsd:string') ,   
                                       'instanceName'   => array('name' => 'instanceName','type' => 'xsd:string')                                )
 );
 
@@ -82,6 +126,7 @@ $server->wsdl->addComplexType(  'enterpriseResponse',
                                 array('idEnterprise'   => array('name' => 'userName','type' => 'xsd:integer'),
                                       'enterpriseName'    => array('name' => 'password','type' => 'xsd:string'),
                                       'enterpriseKey'    => array('name' => 'enterpriseKey','type' => 'xsd:string'),
+                                      'error'    => array('name' => 'error','type' => 'xsd:string'),
                                       'message'    => array('name' => 'message','type' => 'xsd:string')
                                 )
 );
@@ -113,45 +158,61 @@ $server->register(  'getEnterprises', // nombre del metodo o funcion
 );
 
 /*******************************************************************************
- *                                  LOGIN                                      *
+ *                                REPOSITORIOS                                 *
  *******************************************************************************/
 
-
 // Parametros de entrada
-$server->wsdl->addComplexType(  'loginRequest', 
-                                'complexType', 
-                                'struct', 
-                                'all', 
-                                '',
-                                array('idInstance' => array('name' => 'idInstance', 'type' => 'xsd:integer'),
-                                      'instanceName' => array('name' => 'instanceName', 'type' => 'xsd:string'),
-                                      'userName'   => array('name' => 'userName','type' => 'xsd:string'),
-                                      'password'    => array('name' => 'password','type' => 'xsd:string')
-                                )
-);
-
-// Parametros de Salida
-$server->wsdl->addComplexType(  'loginReponse', 
+$server->wsdl->addComplexType(  'repositoryRequest', 
                                 'complexType', 
                                 'struct', 
                                 'all', 
                                 '',
                                 array('idSession'   => array('name' => 'idSession','type' => 'xsd:string'),
-                                      'error'   => array('name' => 'error','type' => 'xsd:string'),
-                                      'message'   => array('name' => 'message','type' => 'xsd:string')
+                                      'userName'   => array('name' => 'userName','type' => 'xsd:string') ,   
+                                      'password'   => array('name' => 'password','type' => 'xsd:string') ,   
+                                      'instanceName'   => array('name' => 'instanceName','type' => 'xsd:string'),
+                                      'enterpriseKey'   => array('name' => 'enterpriseKey','type' => 'xsd:string'))
+);
+
+// Parametros de salida
+$server->wsdl->addComplexType(  'repositoryResponse', 
+                                'complexType', 
+                                'struct', 
+                                'all', 
+                                '',
+                                array('idEnterprise'   => array('name' => 'idEnterprise','type' => 'xsd:integer'),
+                                      'idRepository'    => array('name' => 'idRepository','type' => 'xsd:integer'),
+                                      'repositoryName'    => array('name' => 'repositoryName','type' => 'xsd:string'),
+                                      'error'    => array('name' => 'error','type' => 'xsd:string'),
+                                      'message'    => array('name' => 'message','type' => 'xsd:string')
                                 )
 );
 
-$server->register(  'login', // nombre del metodo o funcion
-                    array('loginRequest' => 'tns:loginRequest'), // parametros de entrada
-                    array('loginReponse' => 'tns:loginReponse'), // parametros de salida
-                    'urn:ecm', // namespace
-                    'urn:login', // soapaction debe ir asociado al nombre del metodo
-                    'rpc', // style
-                    'encoded', // use
-                    'Inicio de sesión dentro del sistema CSDocs' // documentation
+// Complex Array ++++++++++++++++++++++++++++++++++++++++++
+$server->wsdl->addComplexType('repositoryList',
+                              'complexType',
+                              'array',
+                              '',
+                              'SOAP-ENC:Array',
+                              array(),
+                              array(
+                                  array(
+                                      'ref' => 'SOAP-ENC:arrayType',
+                                      'wsdl:arrayType' => 'tns:repositoryResponse[]'
+                                  )
+                              ),
+                              "tns:repositoryResponse"
 );
 
+$server->register(  'getRepositories', // nombre del metodo o funcion
+                    array('repositoryRequest' => 'tns:repositoryRequest'), // parametros de entrada
+                    array('repositoryResponse' => 'tns:repositoryList'), // parametros de salida
+                    'urn:ecm', // namespace
+                    'urn:getRepositories', // soapaction debe ir asociado al nombre del metodo
+                    'rpc', // style
+                    'encoded', // use
+                    'Retorna el listado de positorios relacionados a una empresa' // documentation
+);
 
 
 $HTTP_RAW_POST_DATA = isset($HTTP_RAW_POST_DATA) ? $HTTP_RAW_POST_DATA : '';
