@@ -434,8 +434,7 @@ class Usuarios {
        {
            $DataBase->InsertUserRoot();
        }       
-    }
-    
+    }    
     
 }
 $usuarios=new Usuarios();

@@ -22,8 +22,8 @@ class Repository {
         switch (filter_input(INPUT_POST, "opcion")) {
             case 'GetListRepositories': $this->GetListRepositories();
                 break;
-            case 'GetRepositoriesDetail': $this->GetRepositoriesDetail();
-                break;
+//            case 'GetRepositoriesDetail': $this->GetRepositoriesDetail();
+//                break;
             case 'NewRepository': $this->NewRepository();
                 break;
             case 'AddNewFieldToRepository': $this->AddNewFieldToRepository();
@@ -263,11 +263,11 @@ class Repository {
         $DataBaseName = filter_input(INPUT_POST, "DataBaseName");
         $IdRepositorio = filter_input(INPUT_POST, "IdRepositorio");
         $IdGroup = filter_input(INPUT_POST, "IdGroup");
-        $IdUsuario = filter_input(INPUT_POST, "IdUsuario");
+        $idUser = filter_input(INPUT_POST, "IdUsuario");
         $NombreUsuario = filter_input(INPUT_POST, "NombreUsuario");
         $EnterpriseKey = filter_input(INPUT_POST, "EnterpriseKey");
         
-        $Repositories = $this->GetRepositoriesList($DataBaseName, $EnterpriseKey, $IdGroup);
+        $Repositories = $this->GetRepositoriesList($DataBaseName, $EnterpriseKey, $IdGroup, $idUser);
         
         if(is_array($Repositories))
             XML::XmlArrayResponse("Repositories", "Repository", $Repositories);
@@ -276,7 +276,7 @@ class Repository {
 
     }
     
-    public function GetRepositoriesList($DataBaseName, $EnterpriseKey, $IdGroup)
+    public function GetRepositoriesList($DataBaseName, $EnterpriseKey, $IdGroup, $idUser)
     {
         $BD = new DataBase();
         
@@ -295,8 +295,7 @@ class Repository {
         return $ResultSelect['ArrayDatos'];
         
     }
-    
-    
+        
     function  DeletingRepository()
     {
         $DataBaseName = filter_input(INPUT_POST, "DataBaseName");
