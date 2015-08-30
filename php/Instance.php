@@ -72,6 +72,9 @@ class Instance {
         if(file_exists("/volume1/Publisher/$InstanceName"))
             exec("rm -R /volume1/Publisher/$InstanceName");  
         
+        if(file_exists("$RoutFile/Log/$InstanceName"))
+            exec ("rm -R $RoutFile/Log/$InstanceName");
+        
         XML::XMLReponse("DeleteInstance", 1, "Instancia $InstanceName eliminada");
         
     }

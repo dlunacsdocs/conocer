@@ -263,7 +263,7 @@ class Repository {
         $DataBaseName = filter_input(INPUT_POST, "DataBaseName");
         $IdRepositorio = filter_input(INPUT_POST, "IdRepositorio");
         $IdGroup = filter_input(INPUT_POST, "IdGroup");
-        $idUser = filter_input(INPUT_POST, "IdUsuario");
+        $idUser = filter_input(INPUT_POST, "IdUser");
         $NombreUsuario = filter_input(INPUT_POST, "NombreUsuario");
         $EnterpriseKey = filter_input(INPUT_POST, "EnterpriseKey");
         
@@ -280,7 +280,7 @@ class Repository {
     {
         $BD = new DataBase();
         
-        if($EnterpriseKey==0)
+        if(strcasecmp($EnterpriseKey, 0)==0)
             $query = "SELECT *FROM Repositorios";
         else
             $query = "SELECT  em.IdEmpresa, re.IdRepositorio, re.NombreRepositorio FROM Repositorios re "

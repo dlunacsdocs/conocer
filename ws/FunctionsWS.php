@@ -153,40 +153,42 @@ function getRepositories($data){
     $enterpriseKey = $data['enterpriseKey'];
     $userName = $data['userName'];
     $password = $data['password'];
+    $idGroup = 0;
+    $idUser = 0;
     
     $Login = new Login();
     $Repository = new Repository();
-    
-    
+   
     $userDetail = $Login->searchRegisterUser($instanceName ,$userName, $password);
+    
+    
 
     if(!is_array($userDetail)){
         $repositoriesArray[] = array("error"=>"Error inesperado. $userDetail");
         return $repositoriesArray;
     }
-    else if($userDetail['idGrupo']>0)       
+    else if(!isset($userDetail['IdGrupo'])){
         $repositoriesArray[] = array("message"=>"Primer if");
-//        $repositories = $Repository->GetRepositoriesList($instanceName, $enterpriseKey, $userDetail['idGrupo'], $userDetail['IdUsuario']);
-    else
-        $repositoriesArray[] = array('error' => "Ocurrió un error. ");
-//    
+        
+        $repositoriesArray[] = array("error"=>"No se encontrò al usuario en un grupo.");
+        
+    }else{
+        $idGroup = $userDetail['IdGrupo'];
+        $idUser = $userDetail['IdUsuario'];
+        if($idGroup>0){
+            $repositories = $Repository->GetRepositoriesList($instanceName, $enterpriseKey, $idGroup, $idUser);
+
+        }else
+            $repositoriesArray[] = array("error"=>"Id grupo no encontrado");
+    }
+          
     if(count($repositoriesArray)>0)
         return $repositoriesArray;
     
-    $repositoriesArray[] = array("message"=>"$instanceName $enterpriseKey".$userDetail['IdGrupo'].$userDetail['IdUsuario']);
-    
-//    $query = "SELECT  em.IdEmpresa, re.IdRepositorio, re.NombreRepositorio FROM Repositorios re "
-//                . "INNER JOIN RepositoryControl rc ON rc.IdRepositorio = re.IdRepositorio "
-//                . "INNER JOIN Empresas em on re.ClaveEmpresa=em.ClaveEmpresa "
-//                . "WHERE rc.IdGrupo = $IdGroup AND re.ClaveEmpresa = '$EnterpriseKey'";
-    
-//    for($cont = 0; $cont < count($repositories); $cont++){
-//        $repositoriesArray[] = array('idRepository'=>$repositories[$cont]['IdRepositorio'], 
-//            'repositoryName'=>$repositories[$cont]['NombreRepositorio']);        
-//    }
-//     array('message' => "Resultado obtenido ".  implode(',',  $repositories));
-//         $repositoriesArray[] = array('message' => "Resultado obtenido $idGroup");
-//
-//    
+    for($cont = 0; $cont < count($repositories); $cont++){
+        $repositoriesArray[] = array('idRepository'=>$repositories[$cont]['IdRepositorio'], 
+            'repositoryName'=>$repositories[$cont]['NombreRepositorio']);        
+    }
+ 
     return $repositoriesArray;
 }
