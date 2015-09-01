@@ -132,7 +132,7 @@ class Login {
             Usuarios::$groupName = $Resultado['NombreGrupo'];
         
         if($Resultado['IdUsuario']>0)
-            if($idSession!=null)
+            if($idSession==null)
 //                return XML::XMLReponse ("Error", 0, "Ya hay una sesión iniciada.");
                 Session::$idSession = Session::createSession(DataBase::$dataBaseName ,DataBase::$dataBaseName, 
                         Usuarios::$idUser,  Usuarios::$userName, $Resultado['IdGrupo'], $Resultado['Nombre']);

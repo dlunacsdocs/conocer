@@ -770,9 +770,9 @@ ClassCatalogAdministrator = function()
        $('#consola_catalogos_tree').append('<div id="tree_catalogos"></div>');   
        $('#tree_catalogos').append('<ul><li id="Tree_Repository" class="folder expanded" data="icon: \'database.png\'">'+EnvironmentData.DataBaseName+'<ul id="Tree_Repository_"></ul></ul>');
        ajax=objetoAjax();
-       ajax.open("POST", 'php/ContentManagement.php',true);
+       ajax.open("POST", 'php/Catalog.php',true);
        ajax.setRequestHeader("Content-Type", "application/x-www-form-urlencoded;charset=utf-8;");
-       ajax.send("opcion=GetListCatalogos&DataBaseName="+EnvironmentData.DataBaseName+'&IdUsuario='+EnvironmentData.IdUsuario);
+       ajax.send("opcion=GetListCatalogos");
        ajax.onreadystatechange=function() 
        {
            $('#Loading').dialog('close');
@@ -850,7 +850,7 @@ ClassCatalogAdministrator = function()
          dataType:"html", 
          type: 'POST',   
          url: "php/Catalog.php",
-         data: "opcion=GetCatalogRecordsInXml&DataBaseName="+EnvironmentData.DataBaseName+'&IdUser='+EnvironmentData.IdUsuario+'&UserName='+EnvironmentData.NombreUsuario+'&CatalogType='+CatalogType +'&CatalogName='+CatalogName, 
+         data: "opcion=GetCatalogRecordsInXml&CatalogType="+CatalogType +'&CatalogName='+CatalogName, 
          success:  function(respuesta){
             if($.parseXML( respuesta )===null){Error(respuesta);return 0;}else xml = $.parseXML( respuesta );
 

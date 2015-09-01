@@ -7,6 +7,7 @@ require_once("$RoutFile/php/DataBase.php");
 require_once("$RoutFile/php/Enterprise.php");
 require_once ("$RoutFile/php/Login.php");
 require_once ("$RoutFile/php/Repository.php");
+require_once ("$RoutFile/php/Catalog.php");
 
 function login($data)
 {
@@ -177,7 +178,6 @@ function getRepositories($data){
         $idUser = $userDetail['IdUsuario'];
         if($idGroup>0){
             $repositories = $Repository->GetRepositoriesList($instanceName, $enterpriseKey, $idGroup, $idUser);
-
         }else
             $repositoriesArray[] = array("error"=>"Id grupo no encontrado");
     }
@@ -191,4 +191,49 @@ function getRepositories($data){
     }
  
     return $repositoriesArray;
+}
+
+function getCatalogs($data){
+    
+    $Catalog = new Catalog();
+    
+    $catalogs = array();
+    $error = array();
+    
+    if(!isset($data['instanceName']))
+        $error[] = array('error'=>"No se encontró el parámetro instanceName");
+    if(!isset($data['userName']))
+        $error[] = array('error'=>'No se encontró el parámetro userName');
+    if(!isset($data['password']))
+        $error[] = array('error'=>'No se encontró el parámetro password');
+    if(!isset($data['idRepository']))
+        $error[] = array('error'=>'No se encontró el parámetro idRepository');
+    
+    if(count($error)>0)
+        return $error;
+    
+    $idRepository = $data['idRepository'];
+    $instanceName = $data['instanceName'];
+    
+    $catalogRequest = $Catalog->getCatalogsArray($instanceName, $idRepository);
+            
+    if(!is_array($catalogRequest)){
+        $error[] =  array('error'=>$catalogRequest);
+        return $error;
+    }
+    
+    for($cont = 0; $cont < count($catalogRequest); $cont++){
+        $catalogs[] = array('idCatalog'=>$catalogRequest[$cont]['IdCatalogo'], 
+            'catalogName'=>$catalogRequest[$cont]['NombreCatalogo']);
+    }
+    
+    if(count($catalogs)==0)
+        $catalogs[] = array('idCatalog'=>0, 'catalogName'=>'No existen catálogos asociados al repositorio');
+    
+//    $catalogs[] = array("message"=>"catalogResponse WS ");
+    
+//    $catalogs[] = array('idCatalog'=>0, 'catalogName'=>'No existen catálogos asociados al repositorio');
+    
+    return $catalogs;
+    
 }

@@ -35,7 +35,6 @@ class ContentManagement {
             case 'getListRepositorios': $this->getListRepositorios(); break;
             case 'UploadFile': $this->UploadFile(); break;             
             case 'UploadMetadatas':$this->UploadMetadatas(); break;
-            case 'GetListCatalogos':$this->GetListCatalogos();break;
             case 'getCatalogos':$this->getCatalogos();break;
             case 'EngineSearch':$this->EngineSearch();break;
             case 'GetFiles':$this->GetFiles();break;
@@ -1575,22 +1574,7 @@ class ContentManagement {
         $Log->Write("28", $IdUsuario, $NombreUsuario , " $Search", $DataBaseName);
     }
     
-    /***************************************************************************
-     *  Devuelve el listado de catalogos ordenado por empresa y repositorio
-     */
-    private function GetListCatalogos()
-    {
-        $XML=new XML();
-        $BD= new DataBase();
-        $DataBaseName=  filter_input(INPUT_POST, "DataBaseName");
-        $Consulta="select re.IdRepositorio, re.NombreRepositorio, re.ClaveEmpresa, em.IdEmpresa, em.NombreEmpresa,
-        em.ClaveEmpresa, ca.IdCatalogo, ca.NombreCatalogo from Repositorios re inner join Empresas em on em.ClaveEmpresa=re.ClaveEmpresa
-        inner join Catalogos ca on ca.IdRepositorio=re.IdRepositorio";
-        $Catalogos=$BD->ConsultaSelect($DataBaseName, $Consulta);
-       
-        if($Catalogos['Estado']!=true){$XML->ResponseXML("Error", 0, "<p>Ocurrió un error al consultar los usuarios ".$Consulta['Estado']."</p>"); return;}
-        $XML->ResponseXmlFromArray("Catalogos", "Empresas", $Catalogos['ArrayDatos']);
-    }    
+ 
     
     /***************************************************************************
      * Inserta en una carpeta seleccionada por el usuario (Publicador)

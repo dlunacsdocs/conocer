@@ -16,6 +16,7 @@ $RoutFile = dirname(getcwd());
 require_once 'XML.php';
 require_once 'DataBase.php';
 require_once 'Repository.php';
+require_once 'Session.php';
 
 class Enterprise {
 
@@ -24,21 +25,30 @@ class Enterprise {
     }
 
     private function Ajax() {
-        $option = filter_input(INPUT_POST, "option");
-        switch ($option) {
-            case 'GetEnterprises': $this->GetEnterprises();
-                break;
-            case 'NewField': $this->NewField();
-                break;
-            case 'DeleteField':$this->DeleteField();
-                break;
-            case 'AddNewRegister': $this->AddNewRegister();
-                break;
-            case 'DeleteEnterprise':$this->DeleteEnterprise();
-                break;
-            case 'ModifyEnterprise':$this->ModifyEnterprise();
-                break;
-            default : break;
+        if(filter_input(INPUT_POST, "option")!=NULL and filter_input(INPUT_POST, "option")!=FALSE){
+            
+            $idSession = Session::getIdSession()==null;
+        
+            if($idSession == null)
+                return XML::XMLReponse ("Error", 0, "No existe una sesión activa, por favor vuelva a iniciar sesión");
+
+            $userData = Session::getSessionParameters();
+            
+            switch (filter_input(INPUT_POST, "option")) {
+                case 'GetEnterprises': $this->GetEnterprises($userData);
+                    break;
+                case 'NewField': $this->NewField();
+                    break;
+                case 'DeleteField':$this->DeleteField();
+                    break;
+                case 'AddNewRegister': $this->AddNewRegister();
+                    break;
+                case 'DeleteEnterprise':$this->DeleteEnterprise();
+                    break;
+                case 'ModifyEnterprise':$this->ModifyEnterprise();
+                    break;
+                default : break;
+            }
         }
     }
     
@@ -317,10 +327,13 @@ class Enterprise {
         XML::XMLReponse("AddedField", 1, "Campo $FieldName agregado correctamente");
     }
 
-    private function GetEnterprises() {
-        $IdUser = filter_input(INPUT_POST, "IdUser");
-        $UserName = filter_input(INPUT_POST, "UserName");
-        $DataBaseName = filter_input(INPUT_POST, "DataBaseName");
+    private function GetEnterprises($userData) {
+       
+        $DataBaseName = $userData['dataBaseName'];
+        $IdUser = $userData['idUser'];
+        $idGroup = $userData['idGroup'];
+        $UserName = $userData['userName'];
+        
 
         $enterprises = $this->getEnterprisesArray($DataBaseName);
         

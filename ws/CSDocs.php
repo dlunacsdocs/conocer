@@ -214,6 +214,61 @@ $server->register(  'getRepositories', // nombre del metodo o funcion
                     'Retorna el listado de positorios relacionados a una empresa' // documentation
 );
 
+/*******************************************************************************
+ *                                CATALOGOS                                    *
+ *******************************************************************************/
+
+// Parametros de entrada
+$server->wsdl->addComplexType(  'catalogRequest', 
+                                'complexType', 
+                                'struct', 
+                                'all', 
+                                '',
+                                array('idSession'   => array('name' => 'idSession','type' => 'xsd:string'),
+                                      'userName'   => array('name' => 'userName','type' => 'xsd:string') ,   
+                                      'password'   => array('name' => 'password','type' => 'xsd:string') ,   
+                                      'instanceName'   => array('name' => 'instanceName','type' => 'xsd:string'),
+                                      'repositoryName'   => array('name' => 'repositoryName','type' => 'xsd:string'))
+);
+
+// Parametros de salida
+$server->wsdl->addComplexType(  'catalogResponse', 
+                                'complexType', 
+                                'struct', 
+                                'all', 
+                                '',
+                                array('idCatalog'   => array('name' => 'idCatalog','type' => 'xsd:integer'),
+                                      'catalogName'    => array('name' => 'catalogName','type' => 'xsd:String'),
+                                      'error'    => array('name' => 'error','type' => 'xsd:string'),
+                                      'message'    => array('name' => 'message','type' => 'xsd:string')
+                                )
+);
+
+// Complex Array ++++++++++++++++++++++++++++++++++++++++++
+$server->wsdl->addComplexType('catalogList',
+                              'complexType',
+                              'array',
+                              '',
+                              'SOAP-ENC:Array',
+                              array(),
+                              array(
+                                  array(
+                                      'ref' => 'SOAP-ENC:arrayType',
+                                      'wsdl:arrayType' => 'tns:catalogResponse[]'
+                                  )
+                              ),
+                              "tns:catalogResponse"
+);
+
+$server->register(  'getCatalogs', // nombre del metodo o funcion
+                    array('catalogRequest' => 'tns:catalogRequest'), // parametros de entrada
+                    array('catalogResponse' => 'tns:catalogList'), // parametros de salida
+                    'urn:ecm', // namespace
+                    'urn:getCatalogs', // soapaction debe ir asociado al nombre del metodo
+                    'rpc', // style
+                    'encoded', // use
+                    'Retorna el listado de catálogos asociados a un repositorio' // documentation
+);
 
 $HTTP_RAW_POST_DATA = isset($HTTP_RAW_POST_DATA) ? $HTTP_RAW_POST_DATA : '';
 $server->service($HTTP_RAW_POST_DATA);

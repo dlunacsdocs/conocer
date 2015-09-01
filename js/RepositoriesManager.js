@@ -1055,7 +1055,7 @@ ClassRepository.prototype.BuildRepositoriesManager = function()
 ClassRepository.prototype.GetRepositories = function(EnterpriseKey)
 {
     var RepositoriesXml = 0;
-    var data = {opcion:"GetListRepositories", DataBaseName:EnvironmentData.DataBaseName, IdGroup:EnvironmentData.IdGrupo, GroupName:EnvironmentData.NombreGrupo, IdUser:EnvironmentData.IdUsuario, UserName:EnvironmentData.NombreUsuario, EnterpriseKey:EnterpriseKey};
+    var data = {opcion:"GetListRepositories", EnterpriseKey:EnterpriseKey};
     $.ajax({
     async:false, 
     cache:false,

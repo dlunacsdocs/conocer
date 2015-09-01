@@ -908,7 +908,7 @@ ClassEnterprise.prototype.DisplayEnterprises = function ()
 ClassEnterprise.prototype.GetEnterprises = function ()
 {
     var RepositoriesXml = 0;
-    var data = {option: "GetEnterprises", DataBaseName: EnvironmentData.DataBaseName, IdUser: EnvironmentData.IdUsuario, UserName: EnvironmentData.NombreUsuario};
+    var data = {option: "GetEnterprises"};
     $.ajax({
         async: false,
         cache: false,

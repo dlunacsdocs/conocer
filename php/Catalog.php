@@ -14,9 +14,10 @@
  *-----------------------------------------------------------------------------*/
 $RoutFile = dirname(getcwd());        
 
-require_once './DataBase.php';
-require_once './Log.php';
-require_once './XML.php';
+require_once 'DataBase.php';
+require_once 'Log.php';
+require_once 'XML.php';
+require_once 'Session.php';
 
 class Catalog {
     public function __construct() {
@@ -25,16 +26,47 @@ class Catalog {
     
     private function Ajax()
     {
-        switch (filter_input(INPUT_POST, "opcion"))
-        {
-            case "GetCatalogRecordsInXml": $this->GetCatalogRecordsInXml(); break;
-            case 'AddCatalogoXML':$this->AddCatalogoXML();break;
-            case 'ModifyCatalogRecord':$this->ModifyCatalogRecord();break;
-            case 'AddNewRecord':$this->AddNewRecord();break;
-            case 'AddNewColumn': $this->AddNewColumn(); break;
-            default: echo "<p>Petición incorrecta</p>"; break;
+        if(filter_input(INPUT_POST, "opcion")!=NULL and filter_input(INPUT_POST, "opcion")!=FALSE){
+            
+            $idSession = Session::getIdSession()==null;
+        
+            if($idSession == null)
+                return XML::XMLReponse ("Error", 0, "No existe una sesión activa, por favor vuelva a iniciar sesión");
+            
+            $userData = Session::getSessionParameters();
+            
+            switch (filter_input(INPUT_POST, "opcion"))
+            {
+                case 'GetListCatalogos':$this->GetListCatalogos($userData);break;
+                case "GetCatalogRecordsInXml": $this->GetCatalogRecordsInXml($userData); break;
+                case 'AddCatalogoXML':$this->AddCatalogoXML();break;
+                case 'ModifyCatalogRecord':$this->ModifyCatalogRecord();break;
+                case 'AddNewRecord':$this->AddNewRecord();break;
+                case 'AddNewColumn': $this->AddNewColumn(); break;
+            }
         }
     }  
+    
+    /***************************************************************************
+     *  Devuelve el listado de catalogos ordenado por empresa y repositorio
+     */
+    private function GetListCatalogos($userData)
+    {
+        $BD= new DataBase();
+        
+        $DataBaseName = $userData['dataBaseName'];
+        
+        $Consulta = "select re.IdRepositorio, re.NombreRepositorio, re.ClaveEmpresa, em.IdEmpresa, em.NombreEmpresa,
+        em.ClaveEmpresa, ca.IdCatalogo, ca.NombreCatalogo from Repositorios re inner join Empresas em on em.ClaveEmpresa=re.ClaveEmpresa
+        inner join Catalogos ca on ca.IdRepositorio=re.IdRepositorio";
+        
+        $Catalogos = $BD->ConsultaSelect($DataBaseName, $Consulta);
+       
+        if($Catalogos['Estado']!=true)
+            return XML::XMLReponse("Error", 0, "<p>Ocurrió un error al consultar los usuarios ".$Consulta['Estado']."</p>"); 
+        
+        XML::XmlArrayResponse("Catalogos", "Empresas", $Catalogos['ArrayDatos']);
+    }   
     
     private function AddNewColumn()
     {
@@ -206,21 +238,27 @@ class Catalog {
         $Log->Write('10', $IdUser, $UserName, " '$CatalogName' que contiene la clave '$IdCatalog' su nuevo valor es '$NewValue'", $DataBaseName);
     }
     
-    private function GetCatalogRecordsInXml()
+    private function GetCatalogRecordsInXml($userData)
     {
-        $XML=new XML();
         $BD= new DataBase();
-        $DataBaseName=  filter_input(INPUT_POST, "DataBaseName");
-//        $IdUsuario=  filter_input(INPUT_POST, "IdUsuario");
+        
+        $DataBaseName = $userData['dataBaseName'];
+        $IdUsuario = $userData['idUser'];
 //        $IdRepositorio=  filter_input(INPUT_POST, "IdRepositorio");
-        $NombreCatalogo=  filter_input(INPUT_POST, "CatalogName");
-        $TipoCatalogo=  filter_input(INPUT_POST, "CatalogType");
+        $NombreCatalogo =  filter_input(INPUT_POST, "CatalogName");
+        $TipoCatalogo =  filter_input(INPUT_POST, "CatalogType");
         $ListSearch='';
+        
 //        if($TipoCatalogo=='ListSearch'){$ListSearch=' LIMIT 25';}
-        $Consulta="SELECT *FROM $NombreCatalogo $ListSearch";
-        $Catalogos=$BD->ConsultaSelect($DataBaseName, $Consulta);        
-        if($Catalogos['Estado']!=1){$XML->ResponseXML("Error", 0, "<p><b>Error</b> al consultar el Catálogo <b>$NombreCatalogo</b></p><br>Detalles:<br><br>".$Catalogos['Estado']); return;}
-        $XML->ResponseXmlFromArray("Catalog", "CatalogRecord", $Catalogos['ArrayDatos']); 
+        
+        $Consulta = "SELECT *FROM $NombreCatalogo $ListSearch";
+        
+        $Catalogos = $BD->ConsultaSelect($DataBaseName, $Consulta);    
+        
+        if($Catalogos['Estado']!=1)
+            return $XML->ResponseXML("Error", 0, "<p><b>Error</b> al consultar el Catálogo <b>$NombreCatalogo</b></p><br>Detalles:<br><br>".$Catalogos['Estado']); 
+            
+        XML::XmlArrayResponse("Catalog", "CatalogRecord", $Catalogos['ArrayDatos']); 
     }
     
         /***************************************************************************
@@ -347,6 +385,21 @@ class Catalog {
         }
         
         return 1;
+    }
+    
+    public function getCatalogsArray($dataBaseName ,$idRepository){
+        
+        $DB = new DataBase();
+                
+        $query = "SELECT IdCatalogo, NombreCatalogo FROM Catalogos WHERE IdRepositorio = $idRepository";
+        
+        $queryResult = $DB->ConsultaSelect($dataBaseName, $query);
+        
+        if($queryResult['Estado']!=1)
+            return $queryResult['Estado'];
+        
+        return $queryResult['ArrayDatos'];
+        
     }
 }
 

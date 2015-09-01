@@ -11,6 +11,7 @@ require_once 'DataBase.php';
 require_once 'XML.php';
 require_once 'Log.php';
 require_once 'DesignerForms.php';
+require_once 'Session.php';
 
 class Repository {
 
@@ -19,21 +20,31 @@ class Repository {
     }
 
     private function Ajax() {
-        switch (filter_input(INPUT_POST, "opcion")) {
-            case 'GetListRepositories': $this->GetListRepositories();
-                break;
-//            case 'GetRepositoriesDetail': $this->GetRepositoriesDetail();
-//                break;
-            case 'NewRepository': $this->NewRepository();
-                break;
-            case 'AddNewFieldToRepository': $this->AddNewFieldToRepository();
-                break;
-            case 'DeleteRepositoryField': $this->DeleteRepositoryField();
-                break;
-            case 'XMLInsertRepositorio': $this->XMLInsertRepositorio(); 
-                break;
-            case 'DeleteRepository': $this->DeletingRepository();
-                break;
+        if(filter_input(INPUT_POST, "opcion")!=NULL and filter_input(INPUT_POST, "opcion")!=FALSE){
+            
+            $idSession = Session::getIdSession()==null;
+        
+            if($idSession == null)
+                return XML::XMLReponse ("Error", 0, "No existe una sesión activa, por favor vuelva a iniciar sesión");
+
+            $userData = Session::getSessionParameters();
+            
+            switch (filter_input(INPUT_POST, "opcion")) {
+                case 'GetListRepositories': $this->GetListRepositories($userData);
+                    break;
+    //            case 'GetRepositoriesDetail': $this->GetRepositoriesDetail();
+    //                break;
+                case 'NewRepository': $this->NewRepository();
+                    break;
+                case 'AddNewFieldToRepository': $this->AddNewFieldToRepository();
+                    break;
+                case 'DeleteRepositoryField': $this->DeleteRepositoryField();
+                    break;
+                case 'XMLInsertRepositorio': $this->XMLInsertRepositorio(); 
+                    break;
+                case 'DeleteRepository': $this->DeletingRepository();
+                    break;
+            }
         }
     }
     
@@ -257,14 +268,13 @@ class Repository {
         echo "<p>$CreateRepository</p>";
     }
 
-    private function GetListRepositories() {
-//        $Log = new Log();
-
-        $DataBaseName = filter_input(INPUT_POST, "DataBaseName");
-        $IdRepositorio = filter_input(INPUT_POST, "IdRepositorio");
-        $IdGroup = filter_input(INPUT_POST, "IdGroup");
-        $idUser = filter_input(INPUT_POST, "IdUser");
-        $NombreUsuario = filter_input(INPUT_POST, "NombreUsuario");
+    private function GetListRepositories($userData) {
+        
+        $DataBaseName = $userData['dataBaseName'];
+        $IdGroup = $userData['idGroup'];
+        $idUser = $userData['idUser'];
+        $userName = $userData['userName'];
+        
         $EnterpriseKey = filter_input(INPUT_POST, "EnterpriseKey");
         
         $Repositories = $this->GetRepositoriesList($DataBaseName, $EnterpriseKey, $IdGroup, $idUser);
