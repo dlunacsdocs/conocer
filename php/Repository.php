@@ -12,6 +12,10 @@ require_once 'XML.php';
 require_once 'Log.php';
 require_once 'DesignerForms.php';
 require_once 'Session.php';
+require_once 'Catalog.php';
+
+if(!isset($_SESSION))
+    session_start();
 
 class Repository {
 
@@ -22,7 +26,7 @@ class Repository {
     private function Ajax() {
         if(filter_input(INPUT_POST, "opcion")!=NULL and filter_input(INPUT_POST, "opcion")!=FALSE){
             
-            $idSession = Session::getIdSession()==null;
+            $idSession = Session::getIdSession();
         
             if($idSession == null)
                 return XML::XMLReponse ("Error", 0, "No existe una sesión activa, por favor vuelva a iniciar sesión");
@@ -291,11 +295,11 @@ class Repository {
         $BD = new DataBase();
         
         if(strcasecmp($EnterpriseKey, 0)==0)
-            $query = "SELECT *FROM Repositorios";
+            $query = "SELECT *FROM CSDocs_Repositorios";
         else
-            $query = "SELECT  em.IdEmpresa, re.IdRepositorio, re.NombreRepositorio FROM Repositorios re "
+            $query = "SELECT  em.IdEmpresa, re.IdRepositorio, re.NombreRepositorio FROM CSDocs_Repositorios re "
                 . "INNER JOIN RepositoryControl rc ON rc.IdRepositorio = re.IdRepositorio "
-                . "INNER JOIN Empresas em on re.ClaveEmpresa=em.ClaveEmpresa "
+                . "INNER JOIN CSDocs_Empresas em on re.ClaveEmpresa=em.ClaveEmpresa "
                 . "WHERE rc.IdGrupo = $IdGroup AND re.ClaveEmpresa = '$EnterpriseKey'";
         
         $ResultSelect = $BD->ConsultaSelect($DataBaseName, $query);
@@ -319,7 +323,7 @@ class Repository {
         
         
         If(($DeletingResult = $this->DeleteRepository($DataBaseName, $IdEnterprise, $IdRepository, $RepositoryName))!=1)
-                echo $DeletingResult;
+             return XML::XMLReponse ("Error", 0, $DeletingResult);
         
         XML::XMLReponse("DeletedRepository", 1, "Repositorio eliminado con éxito");
     }
@@ -331,9 +335,25 @@ class Repository {
     public function DeleteRepository($DataBaseName, $IdEnterprise , $IdRepository, $RepositoryName, $DeleteForEnterprise = 0)
     {
         $DB = new DataBase();
+        $Catalog = new Catalog();
+        
         $RoutFile = dirname(getcwd());        
         $RepositoryPath = "$RoutFile/Estructuras/$DataBaseName/$RepositoryName";
         
+        /* Eliminando catálogos del repositorio */
+        $catalogs = $Catalog->getCatalogsArray($DataBaseName, $IdRepository);
+        
+        if(!is_array($catalogs))
+            return "Error al obtener el listado de catálogos. Detalles: $catalogs";
+ 
+        for($cont = 0; $cont < count($catalogs); $cont++){
+            if(($resultDeleteCatalog = $Catalog->deleteCatalog($DataBaseName, $IdRepository, $RepositoryName, $catalogs[$cont]['NombreCatalogo']))!=1)
+                return "$resultDeleteCatalog";
+        }
+        
+        if(!is_array($catalogs))
+            return  "<b>Error</b> al recuperar los catálogos del repositorio.<br><br>Detalles: $catalogs";
+                
         if(file_exists($RepositoryPath))
             exec("rm -R $RepositoryPath");
         
@@ -374,7 +394,7 @@ class Repository {
             if(($ResultDeletingOfGlobal = $DB->ConsultaQuery($DataBaseName, $DeletingOfGlobal))!=1)
                     return "<p><b>Error</b> al intentar eliminar los documentos del repositorio <b>$RepositoryName</b> localizados en Global</p><br>Detalles:<br><br>$ResultDeletingOfGlobal"; 
 
-            $DeletingOfRepository = "DELETE FROM Repositorios WHERE IdRepositorio = $IdRepository";
+            $DeletingOfRepository = "DELETE FROM CSDocs_Repositorios WHERE IdRepositorio = $IdRepository";
                 if(($ResultDeletingOfRepository = $DB->ConsultaQuery($DataBaseName, $DeletingOfRepository))!=1)
                     return "<p><b>Error</b> al intentar eliminar el repositorio <b>$RepositoryName</b> del registro de repositorios</p><br>Detalles:<br><br>$ResultDeletingOfRepository";
         } 

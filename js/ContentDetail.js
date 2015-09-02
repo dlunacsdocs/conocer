@@ -120,17 +120,17 @@ function GetDetalle(Source, IdGlobal, IdFile)
                  * la información que selecciono el usuario al cargar el archivo. Al pulsar se muestra el
                  * listado del mismo para hacer alguna modificación. */
                 
-                var EstructuraCatalogo = GeStructure("Catalogo_"+NombreCatalogo); 
+                var EstructuraCatalogo = GeStructure(DocumentEnvironment.RepositoryName+"_"+NombreCatalogo); 
                 if(Tipo=='ListSearch')/* Se introduce un botón para elegir un nuevo elemento del catálogo */
                 {
                     $('#tabla_DetalleArchivo tr:last').after('<tr><td><input type="button" value="Abrir '+NombreCatalogo+'" id="det_button_'+NombreCatalogo+'"></td><td><select id="det_select_'+NombreCatalogo+'" class="FormStandart"><option value="'+IdCatalogo+'">'+Cadena.slice(0,60)+'</select></td></tr>');                    
-                    DetailSetValuesToListSearch(EstructuraCatalogo,NombreCatalogo);                    
+                    DetailSetValuesToListSearch(DocumentEnvironment.RepositoryName, EstructuraCatalogo,NombreCatalogo);                    
                 }
                 $('#det_button_'+NombreCatalogo).button();
                 if(Tipo=='List')
                 {
                     $('#tabla_DetalleArchivo tr:last').after('<tr><td>'+NombreCatalogo+'</td><td><select class="FormStandart" id="det_select_'+NombreCatalogo+'"><option value="'+IdCatalogo+'">'+Cadena.slice(0,60)+'</select></td></tr>');                                       
-                    DetailSetValuesToList(EstructuraCatalogo,NombreCatalogo);
+                    DetailSetValuesToList(DocumentEnvironment.RepositoryName, EstructuraCatalogo,NombreCatalogo);
                 }
                 Cadena='';                
             });  
@@ -160,9 +160,9 @@ function GetDetalle(Source, IdGlobal, IdFile)
     * @param {type} NombreCatalogo
     * @returns {undefined}
     */
-   function DetailSetValuesToList(xmlStruct,NombreCatalogo)
+   function DetailSetValuesToList(repositoryName, xmlStruct,NombreCatalogo)
    {
-        var xml = CatalogContent.GetCatalogRecordsInXml(NombreCatalogo,'List');
+        var xml = CatalogContent.GetCatalogRecordsInXml(repositoryName, NombreCatalogo,'List');
 //        alert("List"+xml);
         var ArrayStruct=new Array();var cont=0;
         $(xmlStruct).find("Campo").each(function()
@@ -202,7 +202,8 @@ function GetDetalle(Source, IdGlobal, IdFile)
    {              
        var TableCatalogdT = undefined, TableCatalogDT = undefined;
        $('#div_CatalogoDetalle_'+NombreCatalogo).remove();
-       var IdRepositorio=$('#CM_select_repositorios').val();
+       var IdRepositorio = $('#CM_select_repositorios').val();
+       var repositoryName = $('#CM_select_repositorios option:selected').html();
        $('#div_detalle').append('<div id="div_CatalogoDetalle_'+NombreCatalogo+'" style="display:none">\n\
             <div class="titulo_ventana">Contenido en '+NombreCatalogo+'</div>\n\
             <table id="table_CatalogoDetalle_'+NombreCatalogo+'" class="display hover"></table>\n\
@@ -210,7 +211,7 @@ function GetDetalle(Source, IdGlobal, IdFile)
        
        /* Construcción de Tabla con registro de elementos del catálogo seleccionado (Al pulsar el botón con el nombre del catálogo en la vista con metadatos) */
         
-        var xml = CatalogContent.GetCatalogRecordsInXml(NombreCatalogo,'ListSearch');        
+        var xml = CatalogContent.GetCatalogRecordsInXml(repositoryName ,NombreCatalogo,'ListSearch');        
         var ArrayStruct = new Array();var cont=0;
         var thead='<thead><tr>';
         $(xmlStruct).find("Campo").each(function()
@@ -564,7 +565,7 @@ function SetSearchResult(IdRepository,xml)
  */
 function CM_CargarArchivo()
 {
-    var NombreRepositorio=$('#CM_select_repositorios option:selected').html();
+    var repositoryName=$('#CM_select_repositorios option:selected').html();
     var IdRepositorio=$('#CM_select_repositorios').val();
     
     $('#CM_Carga').empty();
@@ -573,10 +574,10 @@ function CM_CargarArchivo()
     $('#CM_TableMetadatasCarga').append('<tr><td><input type="file" id="CM_InputFileCarga" enctype="multipart/form-data"></td><td></td></tr>');
 
     
-    var xml=SetTableStructura(NombreRepositorio,"CM_TableMetadatasCarga",0);/* XML con la estructura de la tabla */
+    var xml=SetTableStructura(repositoryName,"CM_TableMetadatasCarga",0);/* XML con la estructura de la tabla */
     var Catalogos=new Array();
     
-    Catalogos = getCatalogs(IdRepositorio);
+    Catalogos = getCatalogs(IdRepositorio, repositoryName);
     
     var Forms = $('#CM_TableMetadatasCarga :text');
     var FieldsValidator = new ClassFieldsValidator();   
@@ -591,7 +592,7 @@ function CM_CargarArchivo()
    * @param {type} IdRepositorio
    * @returns {undefined}Recupera de la BD los catálogos asociados a un repositorio 
    */
-  function getCatalogs(IdRepositorio)
+  function getCatalogs(IdRepositorio, repositoryName)
   {
       var ArrayCatalogos=new Array();
       $.ajax({
@@ -610,7 +611,7 @@ function CM_CargarArchivo()
                var $Empresa=$(this);
                var IdCatalogo=$Empresa.find("IdCatalogo").text();               
                var NombreCatalogo=$Empresa.find("NombreCatalogo").text();
-               SetListProperties("Catalogo_"+NombreCatalogo,NombreCatalogo);
+               SetListProperties(repositoryName+"_"+NombreCatalogo, repositoryName ,NombreCatalogo);
                ArrayCatalogos[cont]=NombreCatalogo;
                cont++;
             });
@@ -634,7 +635,7 @@ function CM_CargarArchivo()
     * @param {type} NombreCatalogo
     * @returns {undefined}
     */
-   function SetListProperties(TypeStructure,NombreCatalogo)
+   function SetListProperties(TypeStructure, repositoryName ,NombreCatalogo)
    {
        var xml = GeStructure(TypeStructure);
 
@@ -644,8 +645,8 @@ function CM_CargarArchivo()
            var tipo=$Campo.find("tipo").text();
            if(tipo.length>0)
            {
-               if(tipo==="List"){SetValuesToList(xml,NombreCatalogo,tipo);} 
-               if(tipo==='ListSearch'){SetValuesToListSearch(xml,NombreCatalogo,tipo);}
+               if(tipo==="List"){SetValuesToList(xml,repositoryName, NombreCatalogo,tipo);} 
+               if(tipo==='ListSearch'){SetValuesToListSearch(xml, repositoryName, NombreCatalogo,tipo);}
                return;
            }
            var name=$Campo.find("name").text();
@@ -666,9 +667,10 @@ function CM_CargarArchivo()
    {
         $('#Catalogo_'+NombreCatalogo).remove();
         var IdRepositorio=$('#CM_select_repositorios').val();
+        var repositoryName = $('#CM_select_repositorios option:selected').html();
         $('#CM_Carga').append('<p>'+NombreCatalogo+'<select id="Catalogo_'+NombreCatalogo+'"></select></p>');              
 //       var xml=bringInformationCatalog(NombreCatalogo,'List'); 
-        var xml = CatalogContent.GetCatalogRecordsInXml(NombreCatalogo,'List');
+        var xml = CatalogContent.GetCatalogRecordsInXml(repositoryName ,NombreCatalogo,'List');
        var ArrayStruct=new Array();var cont=0;
        $(xmlStruct).find("Campo").each(function()
         {               
@@ -702,7 +704,7 @@ function CM_CargarArchivo()
     * @param {type} NombreCatalogo
     * @returns {undefined}
     ----------------------------------------------------------------------------*/
-   function SetValuesToListSearch(xmlStruct,NombreCatalogo)
+   function SetValuesToListSearch(xmlStruct, repositoryName ,NombreCatalogo)
    {
        var TableCatalogdT, TableCatalogDT;
        $('#Catalogo_'+NombreCatalogo).remove();
@@ -714,7 +716,7 @@ function CM_CargarArchivo()
        
   /* Construcción de Tabla con registro de elementos del catálogo seleccionado (Al pulsar el botón con el nombre del catálogo en la vista con metadatos) */
         
-        var xml = CatalogContent.GetCatalogRecordsInXml(NombreCatalogo,'ListSearch');        
+        var xml = CatalogContent.GetCatalogRecordsInXml(repositoryName ,NombreCatalogo,'ListSearch');        
         var ArrayStruct = new Array();var cont=0;
         var thead='<thead><tr>';
         $(xmlStruct).find("Campo").each(function()

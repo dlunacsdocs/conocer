@@ -1862,13 +1862,17 @@ class ContentManagement {
      */
     private function getCatalogos()
     {
-        $XML=new XML();
-        $BD= new DataBase();
-        $DataBaseName=  filter_input(INPUT_POST, "DataBaseName");
-        $IdRepositorio=  filter_input(INPUT_POST, "IdRepositorio");
-        $Consulta="SELECT IdRepositorio, NombreCatalogo FROM Catalogos WHERE IdRepositorio=$IdRepositorio";        
-        $Catalogos=$BD->ConsultaSelect($DataBaseName, $Consulta);
-        if($Catalogos['Estado']!=true){$XML->ResponseXML("Error", 0, "<p>Ocurrió un error al consultar los usuarios ".$Consulta['Estado']."</p>"); return;}
+        $XML = new XML();
+        $BD = new DataBase();
+        $DataBaseName = filter_input(INPUT_POST, "DataBaseName");
+        $IdRepositorio = filter_input(INPUT_POST, "IdRepositorio");
+        $Consulta ="SELECT IdRepositorio, NombreCatalogo FROM CSDocs_Catalogos WHERE IdRepositorio=$IdRepositorio";    
+        
+        $Catalogos = $BD->ConsultaSelect($DataBaseName, $Consulta);
+        
+        if($Catalogos['Estado']!=1)
+            return $XML->ResponseXML("Error", 0, "<p>Ocurrió un error al consultar los usuarios ".$Catalogos['Estado']."</p>");
+        
         $XML->ResponseXmlFromArray("Catalogos", "Empresa", $Catalogos['ArrayDatos']);
     }
     /***************************************************************************

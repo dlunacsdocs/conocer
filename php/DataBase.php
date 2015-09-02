@@ -255,7 +255,7 @@ class DataBase {
             return 0;
         }            
         
-        $TablaRepositorio="CREATE TABLE IF NOT EXISTS Repositorios "
+        $TablaRepositorio="CREATE TABLE IF NOT EXISTS CSDocs_Repositorios "
             . "(IdRepositorio INT(11) NOT NULL AUTO_INCREMENT,"
             . "ClaveEmpresa VARCHAR(50) NOT NULL,"
             . "NombreRepositorio VARCHAR(200) NOT NULL,"
@@ -272,7 +272,7 @@ class DataBase {
             
 //            echo $ResultPermissions = ($this->CreateTablePermissions($nombre_instancia))? "<p>Se construyo <b>Permissions</b></p>":"<p>Error al crear Permissions $ResultPermissions</p>";
             
-            $TablaCatalogos="CREATE TABLE IF NOT EXISTS Catalogos ("
+            $TablaCatalogos="CREATE TABLE IF NOT EXISTS CSDocs_Catalogos ("
                     . "IdCatalogo INT(11) NOT NULL AUTO_INCREMENT,"
                     . "IdRepositorio INT(11) NOT NULL,"
                     . "NombreCatalogo VARCHAR(100) NOT NULL,"
@@ -310,7 +310,7 @@ class DataBase {
                 return 0;
             }
             
-            $TablaNotas="CREATE TABLE IF NOT EXISTS Notes ("
+            $TablaNotas="CREATE TABLE IF NOT EXISTS CSDocs_Notes ("
                     . "IdNote INT NOT NULL AUTO_INCREMENT,"
                     . "IdUser INT NOT NULL,"
                     . "UserName VARCHAR(50) NOT NULL,"
@@ -330,7 +330,7 @@ class DataBase {
                 return 0;
             }         
             
-            $TablaSmtp="CREATE TABLE IF NOT EXISTS Correos ("
+            $TablaSmtp="CREATE TABLE IF NOT EXISTS CSDocs_Correos ("
                     . "IdCorreo INT(11) NOT NULL AUTO_INCREMENT,"
                     . "IdUsuario INT(11) NOT NULL,"
                     . "NombreCuenta VARCHAR(100) NOT NULL,"
@@ -547,7 +547,7 @@ class DataBase {
                 $DefinitionUser=$Empresa->DefinitionUsersProperties->children();                                           
             }            
             $DatabaseName=$Empresa['DataBaseName']; 
-            $TablaEmpresa="CREATE TABLE IF NOT EXISTS Empresas (IdEmpresa int(11) NOT NULL AUTO_INCREMENT, ";
+            $TablaEmpresa="CREATE TABLE IF NOT EXISTS CSDocs_Empresas (IdEmpresa int(11) NOT NULL AUTO_INCREMENT, ";
                         
             /*Almacenando Estructura para Archivo de Configuracion */
             $atributos=array();
@@ -620,7 +620,7 @@ class DataBase {
             foreach ($Empresa->children() as $InsertEmpresa)
             {
                 
-                if($InsertEmpresa=='ClaveEmpresa'){$CE=$InsertEmpresa;$ExistEmpresa=$this->ExistRegister($DataBase, 'Empresas', 'ClaveEmpresa', "'".$InsertEmpresa['Value']."'");
+                if($InsertEmpresa=='ClaveEmpresa'){$CE=$InsertEmpresa;$ExistEmpresa=$this->ExistRegister($DataBase, 'CSDocs_Empresas', 'ClaveEmpresa', "'".$InsertEmpresa['Value']."'");
                 if($ExistEmpresa['Peso']!=0){echo "<p>Error: La clave ".$InsertEmpresa['Value']." de empresa ya existe.</p>";continue 2;}}
                 
                 $Value=$InsertEmpresa['Value'];                                        
@@ -635,7 +635,7 @@ class DataBase {
             $cadena_valores_=trim($cadena_valores,',');  /* Quita la última Coma ( , ) */
             $CadenaCampos_=trim($CadenaCampos,',');
             
-            $query="INSERT INTO Empresas ($CadenaCampos_) VALUES ($cadena_valores_)";
+            $query="INSERT INTO CSDocs_Empresas ($CadenaCampos_) VALUES ($cadena_valores_)";
 //            echo "<p>$query</p>";
 //            echo "<br>";
             if(($Insert=$this->ConsultaInsert($DataBase,   $query)))
@@ -734,7 +734,7 @@ class DataBase {
                         
                         $NombreCatalogo= $list['name'];
                         $List=$list->children();/* Properties de un List */
-                        $TablaCatalogo="CREATE TABLE IF NOT EXISTS $NombreCatalogo (Id$NombreCatalogo int(11) NOT NULL AUTO_INCREMENT, ";
+                        $TablaCatalogo="CREATE TABLE IF NOT EXISTS $nombre_tabla"."_$NombreCatalogo (Id$NombreCatalogo int(11) NOT NULL AUTO_INCREMENT, ";
                         $atributosRepositorios = array("Tipo"=>$list->getName(),"Struct"=>$ListProperties);
                         foreach ($List as $valor)
                         {
@@ -752,7 +752,7 @@ class DataBase {
                         if($this->crear_tabla($DataBaseName,$TablaCatalogo))
                         {
                             $configStructure=array("TipoEstructura"=>"Empresa","DataBaseName"=>$DataBaseName,"Estructura"=>$atributosRepositorios);
-                            $this->WriteConfigCatalogo("Catalogo_$NombreCatalogo",$configStructure);
+                            $this->WriteConfigCatalogo("$nombre_tabla"."_$NombreCatalogo",$configStructure);
                         }
                         unset($atributosRepositorios);
                         
@@ -826,7 +826,7 @@ class DataBase {
 
             }
                         
-            $FKRepositorio.=' FOREIGN KEY (IdEmpresa) REFERENCES Empresas(IdEmpresa),'
+            $FKRepositorio.=' FOREIGN KEY (IdEmpresa) REFERENCES CSDocs_Empresas(IdEmpresa),'
                     . "FOREIGN KEY (IdDirectory) REFERENCES dir_$nombre_tabla(IdDirectory), ";
 
             /* Se crean los campos que guardan el Id de los catalogos */
@@ -847,7 +847,7 @@ class DataBase {
                 . ") ENGINE = MYISAM AUTO_INCREMENT=1 DEFAULT CHARSET=utf8 COLLATE=utf8_spanish_ci";
             
             /* Se busca que no exista el repositoria para registrarlo en la tabla de Repositorios */            
-            $query="SELECT *FROM Repositorios WHERE NombreRepositorio='$nombre_tabla'";
+            $query = "SELECT *FROM CSDocs_Repositorios WHERE NombreRepositorio='$nombre_tabla'";
     
             $ExistRepositorio=  $this->ConsultaSelect($DataBaseName, $query);            
             /* Sino existe un registro del repositorio este se crea y se registra */        
@@ -889,12 +889,12 @@ class DataBase {
                 }
                 
                 /* Registro del Repositorio */
-                $QueryRegistroRepositorio="INSERT INTO Repositorios (NombreRepositorio,ClaveEmpresa) VALUES ('$nombre_tabla','$ClaveEmpresa')";
+                $QueryRegistroRepositorio="INSERT INTO CSDocs_Repositorios (NombreRepositorio,ClaveEmpresa) VALUES ('$nombre_tabla','$ClaveEmpresa')";
 
                 if(($IdRepositorio=$this->ConsultaInsertReturnId($DataBaseName, $QueryRegistroRepositorio))>0)
                 {                    
                     /* El catálogo recién creado se registra en la tabla catálogos */
-                    $RegistroCatalogo="INSERT INTO Catalogos (IdRepositorio, NombreCatalogo) VALUES ";
+                    $RegistroCatalogo="INSERT INTO CSDocs_Catalogos (IdRepositorio, NombreCatalogo) VALUES ";
                     $CamposCatalogo='';
                     
                     for($cont=0; $cont<count($RepositorioIdCatalogo);$cont++)    
@@ -945,57 +945,8 @@ class DataBase {
             echo "<p>Repositorio Creado <b>$Repositorio->NombreRepositorio</b></p>";                                   
         }                                        
     }
-    
-    private function CreateCatalogs($DataBaseName, $Definition)
-    {
-        $DB = new DataBase();
-        
-        $RepositorioIdCatalogo = array();
-        /* Definiciones tipo List */
-        $ListProperties = $Definition->children();
-        foreach ($ListProperties as $list)
-        {
-            /************************CATALOGOS********************/
-            $TipoCatalogo=$list['TipoCatalogo'];
-
-            if($TipoCatalogo!=true)
-                continue;
-
-            $NombreCatalogo = $list['name'];
-            $List=$list->children();/* Properties de un List */
-            $TablaCatalogo="CREATE TABLE IF NOT EXISTS $NombreCatalogo (Id$NombreCatalogo int(11) NOT NULL AUTO_INCREMENT, ";
-            $atributosRepositorios = array("Tipo"=>$list->getName(),"Struct"=>$ListProperties);
-            foreach ($List as $valor)
-            {
-                if($valor['long']>0)
-                    $TablaCatalogo.=$valor['name']." ". $valor['type']."(".$valor['long']."), ";
-                else
-                    $TablaCatalogo.=$valor['name']." ". $valor['type'].", ";                                             
-            }
-
-            $TablaCatalogo.="PRIMARY KEY (`Id$NombreCatalogo`)" /* Al modificar, modificar también en la llave foranea del query de repositorio */
-                . ") ENGINE=InnoDB AUTO_INCREMENT=1 DEFAULT CHARSET=utf8";
-
-            if($this->crear_tabla($DataBaseName,$TablaCatalogo))
-            {
-                $configStructure=array("TipoEstructura"=>"Empresa","DataBaseName"=>$DataBaseName,"Estructura"=>$atributosRepositorios);
-                $this->WriteConfigCatalogo("Catalogo_$NombreCatalogo",$configStructure);
-            }
-            unset($atributosRepositorios);
-            
-//            $RegisterCatalog = "INSERT INTO Catalogos (NombreCatalogo) VALUES ('$NombreCatalogo')";
-//            if(($RegisterCatalogResult = $DB->ConsultaQuery($DataBaseName, $RegisterCatalog))!=1)
-//            {
-//                echo "<p><b>Error</b> al registrar el catálogo <b>$NombreCatalogo</b></p>";
-//                return 0;
-//            }
-            
-            $RepositorioIdCatalogo[]=$NombreCatalogo;
-        }
-        
-        return $RepositorioIdCatalogo;
-    }
-           
+  
+       
     /***************************************************************************
      *                              USUARIOS                                   *
      ***************************************************************************/

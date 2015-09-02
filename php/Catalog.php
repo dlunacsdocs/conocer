@@ -19,6 +19,9 @@ require_once 'Log.php';
 require_once 'XML.php';
 require_once 'Session.php';
 
+if(!isset($_SESSION))
+    session_start();
+
 class Catalog {
     public function __construct() {
         $this->Ajax();
@@ -28,7 +31,7 @@ class Catalog {
     {
         if(filter_input(INPUT_POST, "opcion")!=NULL and filter_input(INPUT_POST, "opcion")!=FALSE){
             
-            $idSession = Session::getIdSession()==null;
+            $idSession = Session::getIdSession();
         
             if($idSession == null)
                 return XML::XMLReponse ("Error", 0, "No existe una sesión activa, por favor vuelva a iniciar sesión");
@@ -41,8 +44,8 @@ class Catalog {
                 case "GetCatalogRecordsInXml": $this->GetCatalogRecordsInXml($userData); break;
                 case 'AddCatalogoXML':$this->AddCatalogoXML();break;
                 case 'ModifyCatalogRecord':$this->ModifyCatalogRecord();break;
-                case 'AddNewRecord':$this->AddNewRecord();break;
-                case 'AddNewColumn': $this->AddNewColumn(); break;
+                case 'AddNewRecord':$this->AddNewRecord($userData);break;
+                case 'AddNewColumn': $this->AddNewColumn($userData); break;
             }
         }
     }  
@@ -57,18 +60,18 @@ class Catalog {
         $DataBaseName = $userData['dataBaseName'];
         
         $Consulta = "select re.IdRepositorio, re.NombreRepositorio, re.ClaveEmpresa, em.IdEmpresa, em.NombreEmpresa,
-        em.ClaveEmpresa, ca.IdCatalogo, ca.NombreCatalogo from Repositorios re inner join Empresas em on em.ClaveEmpresa=re.ClaveEmpresa
-        inner join Catalogos ca on ca.IdRepositorio=re.IdRepositorio";
+        em.ClaveEmpresa, ca.IdCatalogo, ca.NombreCatalogo from CSDocs_Repositorios re inner join CSDocs_Empresas em on em.ClaveEmpresa=re.ClaveEmpresa
+        inner join CSDocs_Catalogos ca on ca.IdRepositorio=re.IdRepositorio";
         
         $Catalogos = $BD->ConsultaSelect($DataBaseName, $Consulta);
        
-        if($Catalogos['Estado']!=true)
-            return XML::XMLReponse("Error", 0, "<p>Ocurrió un error al consultar los usuarios ".$Consulta['Estado']."</p>"); 
+        if($Catalogos['Estado']!=1)
+            return XML::XMLReponse("Error", 0, "<p>Ocurrió un error al consultar el listado de catálogos ".$Catalogos['Estado']."</p>"); 
         
         XML::XmlArrayResponse("Catalogos", "Empresas", $Catalogos['ArrayDatos']);
     }   
     
-    private function AddNewColumn()
+    private function AddNewColumn($userData)
     {
         $BD= new DataBase();
         $XML=new XML();
@@ -81,9 +84,9 @@ class Catalog {
         $FieldLength = filter_input(INPUT_POST, "FieldLength");
         $FieldType = filter_input(INPUT_POST, "FieldType");
         $CatalogName = filter_input(INPUT_POST, "CatalogName");
-        $DataBaseName = filter_input(INPUT_POST, "DataBaseName");
-        $IdUser = filter_input(INPUT_POST, "IdUser");
-        $UserName = filter_input(INPUT_POST, "UserName");
+        $DataBaseName = $userData['dataBaseName'];
+        $IdUser = $userData['idUser'];
+        $UserName = $userData['userName'];
         
         if($FieldLength>0)
         {
@@ -97,7 +100,7 @@ class Catalog {
         }
         
         if(strcasecmp($FieldType, "TEXT")!=0)
-               $AddForeigKey =  ", ADD FOREIGN KEY ($NewFieldName) REFERENCES $CatalogName ($NewFieldName)";
+               $AddForeigKey =  ", ADD FOREIGN KEY ($NewFieldName) REFERENCES $RepositoryName"."_$CatalogName ($NewFieldName)";
         else
             $AddForeigKey = '';
         
@@ -105,7 +108,7 @@ class Catalog {
             $Null = "NOT NULL";
         else
             $Null = "";      
-        $AlterCatalog = "ALTER TABLE $CatalogName ADD COLUMN $NewFieldName $FieldType $FieldLength $Null";        
+        $AlterCatalog = "ALTER TABLE $RepositoryName"."_$CatalogName ADD COLUMN $NewFieldName $FieldType $FieldLength $Null";        
 //        echo "<br><br>$AlterCatalog<br>";
         if(($ResultAlterCatalog = $BD->ConsultaQuery($DataBaseName, $AlterCatalog))!=1)
         {
@@ -114,7 +117,7 @@ class Catalog {
         }  
         
         $NewProperty = "Properties###name $NewFieldName###type $FieldType###".$PropertyFieldLength."required $Required###";
-        $RegisterProperty = DesignerForms::AddPropertyIntoStructureConfig($DataBaseName, "Catalogo_$CatalogName", $NewProperty);       
+        $RegisterProperty = DesignerForms::AddPropertyIntoStructureConfig($DataBaseName, $RepositoryName."_$CatalogName", $NewProperty);       
         
         if(strcasecmp($RegisterProperty, 1)!=0)
         {
@@ -127,15 +130,14 @@ class Catalog {
         $XML->ResponseXML("AddNewColumn", 1, "Columna $NewFieldName agregada a $CatalogName");                
     }
     
-    private function AddNewRecord()
+    private function AddNewRecord($userData)
     {
-        $BD= new DataBase();
-        $XML=new XML();
-        $Log = new Log();
+        $BD = new DataBase();
         
-        $NombreCatalogo=filter_input(INPUT_POST, "CatalogName");
-        $xmlResponse=filter_input(INPUT_POST, "XmlReponse");
-        $DataBaseName=  filter_input(INPUT_POST, "DataBaseName");
+        $repositoryName = filter_input(INPUT_POST, "repositoryName");
+        $NombreCatalogo = filter_input(INPUT_POST, "CatalogName");
+        $xmlResponse = filter_input(INPUT_POST, "XmlReponse");
+        $DataBaseName = $userData['dataBaseName'];
         $RegistroCatalogo='';    /* Cadena que genera el registro de la fila insertada en ../Configuracion/NombreCatalogo.ini */
         
         /* Xml que contiene los campos a regresar al cliente para la inserción en la tabla que lista un catálogo */
@@ -185,15 +187,12 @@ class Catalog {
         $cadenaValores = trim($cadenaValores,',');  /* Quita la última Coma ( , ) */
         $cadenaCampos = trim($cadenaCampos,',');
         
-        $query="INSERT INTO $NombreCatalogo (".$cadenaCampos .") VALUES (".$cadenaValores.")";
+        $query="INSERT INTO $repositoryName"."_$NombreCatalogo (".$cadenaCampos .") VALUES (".$cadenaValores.")";
          
-        $IdNewRow=$BD->ConsultaInsertReturnId($DataBaseName, $query);
+        $IdNewRow = $BD->ConsultaInsertReturnId($DataBaseName, $query);
         
         if(!$IdNewRow>0)
-        {          
-            $XML->ResponseXML("Error", 0, "<p>Error al agregar los nuevos datos al catálogo $NombreCatalogo verifique sus datos. $IdNewRow</p>");
-            return;
-        }                                       
+            return XML::XMLReponse("Error", 0, "<p>Error al agregar los nuevos datos al catálogo $NombreCatalogo verifique sus datos. $IdNewRow</p>");
             
         $IdRow = $doc->createElement("IdCatalog", $IdNewRow);
         $root->appendChild($IdRow);
@@ -245,18 +244,19 @@ class Catalog {
         $DataBaseName = $userData['dataBaseName'];
         $IdUsuario = $userData['idUser'];
 //        $IdRepositorio=  filter_input(INPUT_POST, "IdRepositorio");
+        $repositoryName = filter_input(INPUT_POST, "repositoryName");
         $NombreCatalogo =  filter_input(INPUT_POST, "CatalogName");
         $TipoCatalogo =  filter_input(INPUT_POST, "CatalogType");
         $ListSearch='';
         
 //        if($TipoCatalogo=='ListSearch'){$ListSearch=' LIMIT 25';}
         
-        $Consulta = "SELECT *FROM $NombreCatalogo $ListSearch";
+        $Consulta = "SELECT *FROM $repositoryName"."_$NombreCatalogo $ListSearch";
         
         $Catalogos = $BD->ConsultaSelect($DataBaseName, $Consulta);    
         
         if($Catalogos['Estado']!=1)
-            return $XML->ResponseXML("Error", 0, "<p><b>Error</b> al consultar el Catálogo <b>$NombreCatalogo</b></p><br>Detalles:<br><br>".$Catalogos['Estado']); 
+            return XML::XMLReponse("Error", 0, "<p><b>Error</b> al consultar el Catálogo <b>$NombreCatalogo</b></p><br>Detalles:<br><br>".$Catalogos['Estado']); 
             
         XML::XmlArrayResponse("Catalog", "CatalogRecord", $Catalogos['ArrayDatos']); 
     }
@@ -338,7 +338,7 @@ class Catalog {
                 $List=$list->children();/* Properties de un List */
                 $CatalogAttr = array("Tipo"=>$list->getName(),"Struct"=>$ListProperties->children());
                 
-                $TablaCatalogo="CREATE TABLE IF NOT EXISTS $NombreCatalogo (Id$NombreCatalogo int(11) NOT NULL AUTO_INCREMENT, ";
+                $TablaCatalogo="CREATE TABLE IF NOT EXISTS $NombreRepositorio"."_$NombreCatalogo (Id$NombreCatalogo int(11) NOT NULL AUTO_INCREMENT, ";
 
                 foreach ($List as $valor)
                 {
@@ -359,24 +359,24 @@ class Catalog {
                 }
                 
                 /* Se registra el catálogo en la tabla catálogos */
-                $InsertCatalog = "INSERT INTO Catalogos (IdRepositorio, NombreCatalogo) VALUES ($IdRepository, '$NombreCatalogo')";
+                $InsertCatalog = "INSERT INTO CSDocs_Catalogos (IdRepositorio, NombreCatalogo) VALUES ($IdRepository, '$NombreCatalogo')";
                 if(($ResultInsertCatalog = $DB->ConsultaQuery($DataBaseName, $InsertCatalog))!=1)
                 {
                     echo "<p><b>Error</b> al registrar el catálogo</p><br>Detalles:<br><br>".$ResultInsertCatalog;
-                    $DeleteCatalog = "DROP TABLE $NombreCatalogo";
+                    $DeleteCatalog = "DROP TABLE $NombreRepositorio"."_$NombreCatalogo";
                     $DB->ConsultaQuery($DataBaseName, $DeleteCatalog);
                     return 0;
                 }
                 
-                $DB->WriteConfigCatalogo("Catalogo_$NombreCatalogo",$configStructure);
+                $DB->WriteConfigCatalogo("$NombreRepositorio"."_$NombreCatalogo",$configStructure);
 
-                $AlterTable="ALTER TABLE $NombreRepositorio ADD COLUMN $NombreCatalogo INT NOT NULL, ADD INDEX $NombreCatalogo ($NombreCatalogo), ADD FOREIGN KEY ($NombreCatalogo) REFERENCES $NombreCatalogo (Id$NombreCatalogo)";
+                $AlterTable="ALTER TABLE $NombreRepositorio ADD COLUMN $NombreCatalogo INT NOT NULL, ADD INDEX $NombreCatalogo ($NombreCatalogo), ADD FOREIGN KEY ($NombreCatalogo) REFERENCES $NombreRepositorio"."_$NombreCatalogo (Id$NombreCatalogo)";
 
                 if(($ResultAlterTable = $DB->ConsultaQuery($DataBaseName, $AlterTable))==1)
                     echo "<p>Relaciones del catálogo <b>$NombreCatalogo</b> construidas.</p>";
                 else
                 {
-                    $DeleteCatalog = "DROP TABLE $NombreCatalogo";
+                    $DeleteCatalog = "DROP TABLE $NombreRepositorio"."_$NombreCatalogo";
                     $DB->ConsultaQuery($DataBaseName, $DeleteCatalog);
                     echo  "<b>Error</b> al crear las relaciones del catálogo <b>$NombreCatalogo</b><br><br>Detalles:<br><br> $ResultAlterTable";
                 }
@@ -391,7 +391,7 @@ class Catalog {
         
         $DB = new DataBase();
                 
-        $query = "SELECT IdCatalogo, NombreCatalogo FROM Catalogos WHERE IdRepositorio = $idRepository";
+        $query = "SELECT IdCatalogo, NombreCatalogo FROM CSDocs_Catalogos WHERE IdRepositorio = $idRepository";
         
         $queryResult = $DB->ConsultaSelect($dataBaseName, $query);
         
@@ -400,6 +400,22 @@ class Catalog {
         
         return $queryResult['ArrayDatos'];
         
+    }
+    
+    public function deleteCatalog($dataBaseName, $idRepository, $repositoryName, $catalogName){
+        $DB = new DataBase();
+        
+        $query = "DROP TABLE $repositoryName"."_$catalogName";
+        
+        if(($queryResult = $DB->ConsultaQuery($dataBaseName, $query))!=1)
+                return "Error al intentar eliminar el catálogo $catalogName. $queryResult";
+        
+        $removeFromRegister = "DELETE FROM CSDocs_Catalogos WHERE IdRepositorio = $idRepository";
+        
+        if(($resultRemoveFromRegister = $DB->ConsultaQuery($dataBaseName, $removeFromRegister))!=1)
+                return "Error al intentar eliminar del registro el catálogo $catalogName. Detalles: $resultRemoveFromRegister";
+        
+        return 1;
     }
 }
 

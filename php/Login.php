@@ -136,7 +136,9 @@ class Login {
 //                return XML::XMLReponse ("Error", 0, "Ya hay una sesión iniciada.");
                 Session::$idSession = Session::createSession(DataBase::$dataBaseName ,DataBase::$dataBaseName, 
                         Usuarios::$idUser,  Usuarios::$userName, $Resultado['IdGrupo'], $Resultado['Nombre']);
-      
+            
+        Session::$idSession = Session::getIdSession();    
+            
         $this->loginResponse($Resultado);
     }
     

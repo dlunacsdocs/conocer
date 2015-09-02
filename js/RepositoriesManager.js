@@ -38,9 +38,10 @@ var ClassRepository = function()
         var FieldName = '<input type = "text" id = "FieldNameRM" class = "FormStandart required" FieldType = "varchar" FieldLength = "50">';
         var FieldType = '<select id = "FieldTypeRM" class = "FormStandart" FieldType = "varchar" FieldLenght = "50">\n\
                             <option value = "text">Texto</option>\n\
-                            <option value = "varchar">Varchar</option>\n\
-                            <option value = "int">Entero</option>\n\
-                            <option value = "float">Flotante</option>\n\
+                            <option value = "varchar">Texto limitado</option>\n\
+                            <option value = "int">Numérico</option>\n\
+                            <option value = "float">Entero con decimales</option>\n\\n\
+                            <option value = "date">Fecha</option>\n\
                         </select>';
         var RequiredCheck = '<input type = "checkbox" id = "CheckRequiredRM"></p>';
         var FieldLength = '<p><input type = "text" id = "FieldLengthRM" class = "FormStandart" FieldType = "int" FieldLength = "" disabled></p>';
@@ -267,23 +268,9 @@ var ClassRepository = function()
         url: "php/Repository.php",
         data: data, 
         success:  function(xml)
-        {            
-            if($.parseXML( xml )===null){Salida(xml); return 0;}else xml=$.parseXML( xml );
-
-            if($(xml).find('AddedNewRepository').length>0)
-            {
-                var Mensaje = $(xml).find('Mensaje').text();
-                Notificacion(Mensaje);
-                self.NewRepository();
-            }
+        {           
+            Salida(xml);
             
-            $(xml).find("Error").each(function()
-            {
-                var $Error=$(this);
-                var mensaje=$Error.find("Mensaje").text();
-                Salida(mensaje);
-            });                 
-
         },
         beforeSend:function(){},
         error: function(jqXHR, textStatus, errorThrown) {Error(textStatus +"<br>"+ errorThrown);}

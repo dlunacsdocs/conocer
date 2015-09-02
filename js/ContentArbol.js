@@ -33,7 +33,7 @@ function CM_getTree()
     var ajax=objetoAjax();
     ajax.open("POST", 'php/Tree.php',true);
     ajax.setRequestHeader("Content-Type", "application/x-www-form-urlencoded;charset=utf-8;");
-    ajax.send("opcion=getTree&IdRepositorio="+IdRepositorio+"&DataBaseName="+EnvironmentData.DataBaseName+'&NombreRepositorio='+NombreRepositorio);
+    ajax.send("opcion=getTree"+'&NombreRepositorio='+NombreRepositorio);
     ajax.onreadystatechange=function() 
     {
        if (ajax.readyState===4 && ajax.status===200) 

@@ -587,7 +587,8 @@ function DeleteFile()
     IdParent=IdParent.data.key;
     var IdRepositorio=$('#CM_select_repositorios').val();
     var NombreRepositorio=$('#CM_select_repositorios option:selected').html();
-    IdEmpresa = parseInt(IdEmpresa);
+    var IdEmpresa = $('#CM_select_empresas option:selected').attr('id');
+
     if(!(node.data.key>0)){return;}
         
     $.ajax({

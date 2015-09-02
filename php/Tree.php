@@ -15,19 +15,32 @@ require_once 'DataBase.php';
 require_once 'XML.php';
 require_once 'Fifo.php';
 require_once "Log.php";
+require_once 'Session.php';
+
 class Tree {
     public function __construct() {
         $this->ajax();
     }
     private function ajax()
     {
-        switch (filter_input(INPUT_POST, "opcion"))
-        {
-            case 'getTree': $this->get_tree(); break;
-            case 'InsertDir': $this->InsertDir(); break;      
-            case 'ModifyDir': $this->ModifyDir(); break;
-            case 'DeleteDir': $this->DeleteDir(); break; 
-            case 'GetListReposity': $this->GetListReposity(); break; 
+        
+        if(filter_input(INPUT_POST, "opcion")!=NULL and filter_input(INPUT_POST, "opcion")!=FALSE){
+            
+            $idSession = Session::getIdSession();
+        
+            if($idSession == null)
+                return XML::XMLReponse ("Error", 0, "No existe una sesión activa, por favor vuelva a iniciar sesión");
+            
+            $userData = Session::getSessionParameters();
+            
+            switch (filter_input(INPUT_POST, "opcion"))
+            {
+                case 'getTree': $this->get_tree($userData); break;
+                case 'InsertDir': $this->InsertDir(); break;      
+                case 'ModifyDir': $this->ModifyDir(); break;
+                case 'DeleteDir': $this->DeleteDir(); break; 
+                case 'GetListReposity': $this->GetListReposity(); break; 
+            }
         }
     }
     /****************************************************************************
@@ -46,7 +59,7 @@ class Tree {
             echo('No pudo conectarse: ' . mysql_error());
             return;
         }        
-        $query = "SELECT re.IdRepositorio, re.NombreRepositorio, em.IdEmpresa, em.NombreEmpresa, em.ClaveEmpresa from Repositorios re INNER JOIN Empresas em ON em.ClaveEmpresa = re.ClaveEmpresa";
+        $query = "SELECT re.IdRepositorio, re.NombreRepositorio, em.IdEmpresa, em.NombreEmpresa, em.ClaveEmpresa from CSDocs_Repositorios re INNER JOIN CSDocs_Empresas em ON em.ClaveEmpresa = re.ClaveEmpresa";
         mysql_select_db($DataBaseName,$conexion);
         $result = mysql_query($query);
         if(!$result)
@@ -97,38 +110,32 @@ class Tree {
 /***************************************************************************/
 /***************************************************************************/    
     
-//    function get_tree($id, $level = 0) 
-    function get_tree() 
+    function get_tree($userData) 
     {
-        $BD= new DataBase();
-//        $XML=new XML();
-//        $IdRepositorio=filter_input(INPUT_POST, "IdRepositorio");
-        $DataBaseName=filter_input(INPUT_POST, "DataBaseName");
-        $NombreRepositorio=  filter_input(INPUT_POST, "NombreRepositorio");       
-//        $IdDirectory=filter_input(INPUT_POST, "IdDirectory");      
+        $DataBaseName = $userData['dataBaseName'];
+        $NombreRepositorio = filter_input(INPUT_POST, "NombreRepositorio");       
         
-        $conexion=  $BD->Conexion();
-        if (!$conexion) {
-            echo('No pudo conectarse: ' . mysql_error());
-            return;
-        }                
-        mysql_select_db($DataBaseName,$conexion);
-        $query = "SELECT IdDirectory,parent_id,rgt,lft,title,access,path FROM dir_$NombreRepositorio ORDER BY parent_id";
-        if(!($result = mysql_query($query)))
-        {
-            echo $estado= mysql_error();
-            return $estado;
-        }
-                        
-        $right=array();
-        while ($Arbol = mysql_fetch_assoc($result))
-        {
-            $right[]=$Arbol;
-        }
-                                
+        $right = $this->getDirectoriesArray($DataBaseName, $NombreRepositorio);
+                       
+        if(!is_array($right))
+            return XML::XMLReponse ("Error", 0, "Error al intentar recuperar la estructura de directorios. $right");
+        
         $this->returnTreeXML($right);
                              
-        mysql_close($conexion);
+    }
+    
+    function getDirectoriesArray($dataBaseName, $repositoryName){
+        $DB = new DataBase();
+        
+        $query = "SELECT IdDirectory, parent_id, title FROM dir_$repositoryName";
+        
+        $queryResult = $DB->ConsultaSelect($dataBaseName, $query);
+        
+        if($queryResult['Estado']!=1)
+            return $queryResult['Estado'];
+        
+        return $queryResult['ArrayDatos'];
+        
     }
     
     function InsertDir()
@@ -219,13 +226,7 @@ class Tree {
             $Id=$doc->createElement("IdDirectory",$ArrayTree[$cont]['IdDirectory']);
             $Directorio->appendChild($Id);
             $IdParent=$doc->createElement("IdParent",$ArrayTree[$cont]['parent_id']);
-            $Directorio->appendChild($IdParent);
-            $Rgt=$doc->createElement("Rgt",$ArrayTree[$cont]['rgt']);
-            $Directorio->appendChild($Rgt);
-            $Lft=$doc->createElement("Lft",$ArrayTree[$cont]['lft']);
-            $Directorio->appendChild($Lft);
-            $Path=$doc->createElement("Path",$ArrayTree[$cont]['path']);
-            $Directorio->appendChild($Path);              
+            $Directorio->appendChild($IdParent);             
             $errors=libxml_get_errors();
             
             // Aquí se manejan los errores} 

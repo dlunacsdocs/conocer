@@ -12,6 +12,9 @@ require_once 'XML.php';
  *
  * @author daniel
  */
+if(!isset($_SESSION))
+    session_start();
+
 class DesignerForms {
     public function __construct() {
         $this->ajax();

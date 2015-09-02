@@ -18,6 +18,9 @@ require_once 'DataBase.php';
 require_once 'Repository.php';
 require_once 'Session.php';
 
+if(!isset($_SESSION))
+    session_start();
+
 class Enterprise {
 
     public function __construct() {
@@ -27,8 +30,8 @@ class Enterprise {
     private function Ajax() {
         if(filter_input(INPUT_POST, "option")!=NULL and filter_input(INPUT_POST, "option")!=FALSE){
             
-            $idSession = Session::getIdSession()==null;
-        
+            $idSession = Session::getIdSession();
+            
             if($idSession == null)
                 return XML::XMLReponse ("Error", 0, "No existe una sesión activa, por favor vuelva a iniciar sesión");
 
@@ -63,7 +66,7 @@ class Enterprise {
         $IdEnterprise = filter_input(INPUT_POST, "IdEnterprise");
         $Xml = filter_input(INPUT_POST, "Xml");
         $ValuesChain = '';
-        $UpdateEnterprise_ = "UPDATE Empresas SET ";
+        $UpdateEnterprise_ = "UPDATE CSDocs_Empresas SET ";
 
         
         if(!($xml =  simplexml_load_string($Xml)))
@@ -113,7 +116,7 @@ class Enterprise {
         
         if(strcasecmp($OldEnterpriseKey, $NewEnterpriseKey)!=0)
         {
-            $UpdateRepositories = "UPDATE Repositorios SET ClaveEmpresa = '$NewEnterpriseKey' WHERE ClaveEmpresa = '$OldEnterpriseKey'";
+            $UpdateRepositories = "UPDATE CSDocs_Repositorios SET ClaveEmpresa = '$NewEnterpriseKey' WHERE ClaveEmpresa = '$OldEnterpriseKey'";
             
             if(($ResultUpdateRepositories = $DB->ConsultaQuery($DataBaseName, $UpdateRepositories))!=1)
                 return XML::XMLReponse("Error", 0, "<p><b>Error</b> al intentar actualizar la clave de empresa en Repositorios</p><br>Detalles:<br><br>$ResultUpdateRepositories");
@@ -177,7 +180,7 @@ class Enterprise {
         $FieldsChain_ = trim($FieldsChain, ", ");
         
         /* Se comprueba que no exista la empresa */
-        $CheckIfExist = "SELECT *FROM Empresas WHERE ClaveEmpresa COLLATE utf8_bin = '$EnterpriseKey' ";
+        $CheckIfExist = "SELECT *FROM CSDocs_Empresas WHERE ClaveEmpresa COLLATE utf8_bin = '$EnterpriseKey' ";
         $CheckResult = $DB->ConsultaSelect($DataBaseName, $CheckIfExist);
         if($CheckResult['Estado']!=1)
             return XML::XMLReponse ("Error", 0, "<p><b>Error</b> al intentar comprobar disponibilidad de la nueva clave de empresa <b>$EnterpriseKey</b></p><br>Detalles:<br><br>".$CheckResult['Estado']);
@@ -185,7 +188,7 @@ class Enterprise {
         if(count($CheckResult['ArrayDatos'])>0)
             return XML::XMLReponse ("Error", 0, "<p><b>Notificación.</b> La clave de empresa seleccionada ya existe. Por favor seleccione una nueva</p>");
         
-        $InsertEnterprise = "Insert Into Empresas ($FieldsChain_) VALUES ($ValuesChain_)";
+        $InsertEnterprise = "Insert Into CSDocs_Empresas ($FieldsChain_) VALUES ($ValuesChain_)";
         
         $NewIdEnterprise = $DB->ConsultaInsertReturnId($DataBaseName, $InsertEnterprise);
         
@@ -222,7 +225,7 @@ class Enterprise {
         if($DeletedResult!=1)
             return;
         
-        $AlterTable = "ALTER TABLE Empresas DROP COLUMN $FieldName";
+        $AlterTable = "ALTER TABLE CSDocs_Empresas DROP COLUMN $FieldName";
         if(($AlterTableResult = $DB->ConsultaQuery($DataBaseName, $AlterTable))!=1)
                 return XML::XMLReponse ("Error", 0, "<p><b>Error</b> al eliminar la columna <b>$FieldName</b></p><br>Detalles:<br><br>$AlterTableResult");
         
@@ -244,7 +247,7 @@ class Enterprise {
         $IdEnterprise = filter_input(INPUT_POST, "IdEnterprise");
         $EnterpriseKey = filter_input(INPUT_POST, "EnterpriseKey");
         
-        $QueryGetRepositories = "SELECT IdRepositorio, ClaveEmpresa, NombreRepositorio FROM Repositorios WHERE ClaveEmpresa = '$EnterpriseKey'";
+        $QueryGetRepositories = "SELECT IdRepositorio, ClaveEmpresa, NombreRepositorio FROM CSDocs_Repositorios WHERE ClaveEmpresa = '$EnterpriseKey'";
         $ResultQueryGet = $DB->ConsultaSelect($DataBaseName, $QueryGetRepositories);
         
         if($ResultQueryGet['Estado']!=1)
@@ -280,14 +283,14 @@ class Enterprise {
         if(($ResultDeletingOfGlobal = $DB->ConsultaQuery($DataBaseName, $DeletingOfGlobal))!=1)
                 return XML::XMLReponse ("Error", 0, "<p><b>Error</b> al eliminar los registros desde Global</p><br>Detalles:<br><br>$ResultDeletingOfGlobal");
         
-        $DeletingOfRepository = "DELETE FROM Repositorios WHERE ClaveEmpresa = '$EnterpriseKey'";
+        $DeletingOfRepository = "DELETE FROM CSDocs_Repositorios WHERE ClaveEmpresa = '$EnterpriseKey'";
         
         if(($ResultDeletingOfRepository = $DB->ConsultaQuery($DataBaseName, $DeletingOfRepository))!=1)
             return XML::XMLReponse ("Error", 1, "<p><b>Error</b> al intentar eliminar los repositorios ligados a la empresa <b>$EnterpriseKey</b> del registro de Repositorios</p><br>Detalles:<br><br>$ResultDeletingOfRepository");
         
         /* Eliminado de la tabla Empresas */
         
-        $QForDeletetingEnterprise = "DELETE FROM  Empresas WHERE ClaveEmpresa = '$EnterpriseKey' ";
+        $QForDeletetingEnterprise = "DELETE FROM  CSDocs_Empresas WHERE ClaveEmpresa = '$EnterpriseKey' ";
         if(($ResultDeletingEnterprise = $DB->ConsultaQuery($DataBaseName, $QForDeletetingEnterprise))!=1)
                 return XML::XMLReponse ("Error", 0, "<p></b>Error</b/> al intentar eliminar la empresa con clave <b>$EnterpriseKey</b></p><br>Detalles:<br><br>$ResultDeletingEnterprise");
         
@@ -310,14 +313,14 @@ class Enterprise {
 
         $FieldDetail = DesignerForms::CreateProperty($FieldName, $FieldType, $FieldLength, $RequiredField);
 
-        $AlterTable = "ALTER TABLE Empresas ADD COLUMN $FieldName ".$FieldDetail['FieldMySql'];
+        $AlterTable = "ALTER TABLE CSDocs_Empresas ADD COLUMN $FieldName ".$FieldDetail['FieldMySql'];
 
         if (($AlterRes = $DB->ConsultaQuery($DataBaseName, $AlterTable)) != 1)
             return XML::XMLReponse("Error", 0, "<p><b>Error</b> al agregar el nuevo campo <b>$FieldName</b></p><br>Detalles:<br><br>$AlterRes");
 
 
         if (($AddField = DesignerForms::AddPropertyIntoStructureConfig($DataBaseName, "Empresa", $FieldDetail['FieldDetail'])) != 1) {
-            $DropColumn = "ALTER TABLE Empresas DROP COLUMN $FieldName";
+            $DropColumn = "ALTER TABLE CSDocs_Empresas DROP COLUMN $FieldName";
             if (($DropResult = $DB->ConsultaQuery($DataBaseName, $DropColumn)) != 1)
                 return XML::XMLReponse("Error", 0, "<p><b>Error</b> al agregar al registro de estructura el nuevo campo '$FieldName'. No fué posible eliminar la columna posteriormente, debe reportarlo a CSDocs</p><br>Detalles:<br><br>$DropResult");
             else
@@ -348,7 +351,7 @@ class Enterprise {
     {
         $BD = new DataBase();
 
-        $query = "SELECT *FROM Empresas";
+        $query = "SELECT *FROM CSDocs_Empresas";
 
         $ListEmpresas = $BD->ConsultaSelect($dataBaseName, $query);
 

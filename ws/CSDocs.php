@@ -270,5 +270,121 @@ $server->register(  'getCatalogs', // nombre del metodo o funcion
                     'Retorna el listado de catálogos asociados a un repositorio' // documentation
 );
 
+/*******************************************************************************
+ *                                    ÁRBOL                                    *
+ *******************************************************************************/
+
+// Parametros de entrada
+$server->wsdl->addComplexType(  'requestTreeStructure', 
+                                'complexType', 
+                                'struct', 
+                                'all', 
+                                '',
+                                array('idSession'   => array('name' => 'idSession','type' => 'xsd:string'),
+                                      'userName'   => array('name' => 'userName','type' => 'xsd:string') ,   
+                                      'password'   => array('name' => 'password','type' => 'xsd:string') ,   
+                                      'instanceName'   => array('name' => 'instanceName','type' => 'xsd:string'),
+                                      'repositoryName'   => array('name' => 'repositoryName','type' => 'xsd:string'))
+);
+
+// Parametros de salida
+$server->wsdl->addComplexType(  'responseTreeStructure', 
+                                'complexType', 
+                                'struct', 
+                                'all', 
+                                '',
+                                array('idDirectory'   => array('name' => 'idDirectory','type' => 'xsd:integer'),
+                                      'idParent'   => array('name' => 'idParent','type' => 'xsd:integer'),
+                                      'dirname'    => array('name' => 'dirname','type' => 'xsd:String'),
+                                      'error'    => array('name' => 'error','type' => 'xsd:string'),
+                                      'message'    => array('name' => 'message','type' => 'xsd:string')
+                                )
+);
+
+// Complex Array ++++++++++++++++++++++++++++++++++++++++++
+$server->wsdl->addComplexType('nodesTreeStructure',
+                              'complexType',
+                              'array',
+                              '',
+                              'SOAP-ENC:Array',
+                              array(),
+                              array(
+                                  array(
+                                      'ref' => 'SOAP-ENC:arrayType',
+                                      'wsdl:arrayType' => 'tns:responseTreeStructure[]'
+                                  )
+                              ),
+                              "tns:responseTreeStructure"
+);
+
+$server->register(  'getTreeStructure', // nombre del metodo o funcion
+                    array('requestTreeStructure' => 'tns:requestTreeStructure'), // parametros de entrada
+                    array('responseTreeStructure' => 'tns:nodesTreeStructure'), // parametros de salida
+                    'urn:ecm', // namespace
+                    'urn:getTreeStructure', // soapaction debe ir asociado al nombre del metodo
+                    'rpc', // style
+                    'encoded', // use
+                    'Retorna el listado de catálogos asociados a un repositorio' // documentation
+);
+
+/*******************************************************************************
+ *                             GET STRUCTURE DETAIL                            *
+ *******************************************************************************/
+
+// Parametros de entrada
+$server->wsdl->addComplexType(  'requestStructureDetail', 
+                                'complexType', 
+                                'struct', 
+                                'all', 
+                                '',
+                                array('idSession'   => array('name' => 'idSession','type' => 'xsd:string'),
+                                      'userName'   => array('name' => 'userName','type' => 'xsd:string') ,   
+                                      'password'   => array('name' => 'password','type' => 'xsd:string') ,   
+                                      'instanceName'   => array('name' => 'instanceName','type' => 'xsd:string'),
+                                      'repositoryName'   => array('name' => 'repositoryName','type' => 'xsd:string'))
+);
+
+// Parametros de salida
+$server->wsdl->addComplexType(  'responseTreeStructure', 
+                                'complexType', 
+                                'struct', 
+                                'all', 
+                                '',
+                                array('idDirectory'   => array('name' => 'idDirectory','type' => 'xsd:integer'),
+                                      'idParent'   => array('name' => 'idParent','type' => 'xsd:integer'),
+                                      'dirname'    => array('name' => 'dirname','type' => 'xsd:String'),
+                                      'error'    => array('name' => 'error','type' => 'xsd:string'),
+                                      'message'    => array('name' => 'message','type' => 'xsd:string')
+                                )
+);
+
+// Complex Array ++++++++++++++++++++++++++++++++++++++++++
+$server->wsdl->addComplexType('nodesTreeStructure',
+                              'complexType',
+                              'array',
+                              '',
+                              'SOAP-ENC:Array',
+                              array(),
+                              array(
+                                  array(
+                                      'ref' => 'SOAP-ENC:arrayType',
+                                      'wsdl:arrayType' => 'tns:responseTreeStructure[]'
+                                  )
+                              ),
+                              "tns:responseTreeStructure"
+);
+
+$server->register(  'getTreeStructure', // nombre del metodo o funcion
+                    array('requestTreeStructure' => 'tns:requestTreeStructure'), // parametros de entrada
+                    array('responseTreeStructure' => 'tns:nodesTreeStructure'), // parametros de salida
+                    'urn:ecm', // namespace
+                    'urn:getTreeStructure', // soapaction debe ir asociado al nombre del metodo
+                    'rpc', // style
+                    'encoded', // use
+                    'Retorna el listado de catálogos asociados a un repositorio' // documentation
+);
+
+
+
 $HTTP_RAW_POST_DATA = isset($HTTP_RAW_POST_DATA) ? $HTTP_RAW_POST_DATA : '';
 $server->service($HTTP_RAW_POST_DATA);

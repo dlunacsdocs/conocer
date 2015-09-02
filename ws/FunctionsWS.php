@@ -8,6 +8,7 @@ require_once("$RoutFile/php/Enterprise.php");
 require_once ("$RoutFile/php/Login.php");
 require_once ("$RoutFile/php/Repository.php");
 require_once ("$RoutFile/php/Catalog.php");
+require_once ("$RoutFile/php/Tree.php");
 
 function login($data)
 {
@@ -236,4 +237,43 @@ function getCatalogs($data){
     
     return $catalogs;
     
+}
+
+function getTreeStructure($data){
+    
+    $error = array();
+    $Tree = new Tree();
+    $treeStructure = array();
+    
+    if(!isset($data['instanceName']))
+        $error[] = array('error'=>"No se encontró el parámetro instanceName");
+    if(!isset($data['userName']))
+        $error[] = array('error'=>'No se encontró el parámetro userName');
+    if(!isset($data['password']))
+        $error[] = array('error'=>'No se encontró el parámetro password');
+    if(!isset($data['repositoryName']))
+        $error[] = array('error'=>'No se encontró el parámetro repositoryName');
+    
+    if(count($error)>0)
+        return $error;
+    
+    $instanceName = $data['instanceName'];
+    $repositoryName = $data['repositoryName'];
+    
+    $directories = $Tree->getDirectoriesArray($instanceName, $repositoryName);
+    
+    if(!is_array($directories)){
+        $error[] = array('error'=>'Error inesperado. '.$error);
+        return $error;
+    }
+    
+    for($cont = 0; $cont < count($directories); $cont++){
+        $treeStructure[] = array('idDirectory' => $directories[$cont]['IdDirectory'],
+            'idParent' => $directories[$cont]['parent_id'], 'dirname' => $directories[$cont]['title']);
+    }
+    
+    
+//    $error[] = array('message'=>'Respuesta desde WS Àrbol');
+    
+    return $treeStructure;
 }
