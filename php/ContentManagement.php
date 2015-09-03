@@ -19,6 +19,9 @@ require_once 'DesignerForms.php';
 require_once 'Tree.php';
 require_once '../apis/pclzip/pclzip.lib.php';
 require_once 'Log.php';
+require_once 'Catalog.php';
+require_once 'Notes.php';
+
 class ContentManagement {
     public function __construct() {
         $this->ajax();
@@ -29,21 +32,32 @@ class ContentManagement {
         {
             case 'DownloadZip':$this->DownloadZip();break;
         }
-        switch (filter_input(INPUT_POST, "opcion"))
-        {
-            case 'getListEmpresas': $this->getListEmpresas(); break;
-            case 'getListRepositorios': $this->getListRepositorios(); break;
-            case 'UploadFile': $this->UploadFile(); break;             
-            case 'UploadMetadatas':$this->UploadMetadatas(); break;
-            case 'getCatalogos':$this->getCatalogos();break;
-            case 'EngineSearch':$this->EngineSearch();break;
-            case 'GetFiles':$this->GetFiles();break;
-            case 'FileEdit':$this->FileEdit();break;
-            case 'GetDetalle':$this->GetDetalle();break;
-            case 'DetailModify':$this->DetailModify();break;
-            case 'CopyFile':$this->CopyFile(); break;
-            case 'CutFile':$this->CutFile(); break;
-            case 'DeleteFile':$this->DeleteFile(); break;                                                  
+        
+        if(filter_input(INPUT_POST, "opcion")!=NULL and filter_input(INPUT_POST, "opcion")!=FALSE){
+            
+            $idSession = Session::getIdSession();
+            
+            if($idSession == null)
+                return XML::XMLReponse ("Error", 0, "No existe una sesión activa, por favor vuelva a iniciar sesión");
+
+                $userData = Session::getSessionParameters();
+                
+                switch (filter_input(INPUT_POST, "opcion")) {
+
+                case 'getListEmpresas': $this->getListEmpresas(); break;
+                case 'getListRepositorios': $this->getListRepositorios(); break;
+                case 'UploadFile': $this->UploadFile(); break;             
+                case 'UploadMetadatas':$this->UploadMetadatas(); break;
+                case 'getCatalogos':$this->getCatalogos();break;
+                case 'EngineSearch':$this->EngineSearch();break;
+                case 'GetFiles':$this->GetFiles();break;
+                case 'FileEdit':$this->FileEdit($userData);break;
+                case 'GetDetalle':$this->GetDetalle($userData);break;
+                case 'DetailModify':$this->DetailModify($userData);break;
+                case 'CopyFile':$this->CopyFile(); break;
+                case 'CutFile':$this->CutFile(); break;
+                case 'DeleteFile':$this->DeleteFile(); break;                                                  
+            }
         }
     }
 
@@ -880,20 +894,21 @@ class ContentManagement {
         }                            
     }
     
-    private function DetailModify()
+    private function DetailModify($userData)
     {                
         $XML=new XML();
         $BD= new DataBase();
         $Log = new Log();
+        $Notes = new Notes();
         
-        $DataBaseName=  filter_input(INPUT_POST, "DataBaseName");
-        $NombreRepositorio=  filter_input(INPUT_POST, "NombreRepositorio");
-        $IdRepositorio=  filter_input(INPUT_POST, "IdRepositorio");
-        $NombreUsuario = filter_input(INPUT_POST,"nombre_usuario");
-        $IdUsuario=filter_input(INPUT_POST, "IdUsuario");
-        $IdFile=filter_input(INPUT_POST, "IdFile");
+        $DataBaseName = $userData['dataBaseName'];
+        $NombreRepositorio = filter_input(INPUT_POST, "NombreRepositorio");
+        $IdRepositorio = filter_input(INPUT_POST, "IdRepositorio");
+        $NombreUsuario = $userData['userName'];
+        $IdUsuario = $userData['idUser'];
+        $IdFile = filter_input(INPUT_POST, "IdFile");
         $IdGlobal = filter_input(INPUT_POST, "IdGlobal");
-        $XMLResponse=  filter_input(INPUT_POST, "XMLResponse");   
+        $XMLResponse = filter_input(INPUT_POST, "XMLResponse");   
         $NombreArchivo = filter_input(INPUT_POST,"NombreArchivo");
         
         $xml =  simplexml_load_string($XMLResponse);  
@@ -948,20 +963,16 @@ class ContentManagement {
       
         $campoFullReturn=  trim($campoFullReturn,' , ');
         
-        $QueryGetNotes = "SELECT *FROM Notes WHERE IdRepository = $IdRepositorio AND IdFile = $IdFile";
-
-        $ResultQueryGetNotes = $BD->ConsultaSelect($DataBaseName, $QueryGetNotes);
-        if($ResultQueryGetNotes['Estado']!=1)
-        {
-            $XML->ResponseXML("Error", 0, "<p><b>Error</b> al obtener el listado de Notas del Documento</p><br>Detalles:<br><br>".$ResultQueryGetNotes['Estado']);
-            return 0;
-        }
-
-        $Notes = $ResultQueryGetNotes['ArrayDatos'];
+        
+        $notes = $Notes->getNotesArray($DataBaseName, $IdRepositorio, $IdFile);
+        
+        if(!is_array($notes))
+            return XML::XMLReponse ("Error", 0, $notes);
+        
         $NewsNotesFields = '';
-        for($cont = 0; $cont < count($Notes); $cont++)
+        for($cont = 0; $cont < count($notes); $cont++)
         {
-            $NewsNotesFields.= "||Nota|| ".$Notes[$cont]['IdNote'].", ".$Notes[$cont]['Page'].", ".$Notes[$cont]['Text']." ";
+            $NewsNotesFields.= "||Nota|| ".$notes[$cont]['IdNote'].", ".$notes[$cont]['Page'].", ".$notes[$cont]['Text']." ";
         }
 
         $CampoFullText = "'".$CampoFullText.$NewsNotesFields."'";  /* Se cierra la comilla simple */
@@ -1008,64 +1019,65 @@ class ContentManagement {
      * por default para esta versión tales como Topografia, Clasificacion, Gestion, Expediente, ResumenEctract,
      * No se devuelven a la vista.
      */
-    private function GetDetalle()
+    private function GetDetalle($userData)
     {
-        $XML=new XML();
-        $BD= new DataBase();
         $designer=new DesignerForms();
-        $Log = new Log();
+        $Catalog = new Catalog();
                 
-        $DataBaseName=  filter_input(INPUT_POST, "DataBaseName");
-        $NombreRepositorio=  filter_input(INPUT_POST, "NombreRepositorio");
-        $IdRepositorio=  filter_input(INPUT_POST, "IdRepositorio");
-        $IdArchivo=  filter_input(INPUT_POST, "IdArchivo");
-        $IdUsuario = filter_input(INPUT_POST, "IdUsuario");
-        $NombreUsuario = filter_input(INPUT_POST, "nombre_usuario");
+        $DataBaseName = $userData['dataBaseName'];
+        $NombreRepositorio = filter_input(INPUT_POST, "NombreRepositorio");
+        $IdRepositorio = filter_input(INPUT_POST, "IdRepositorio");
+        $IdArchivo = filter_input(INPUT_POST, "IdArchivo");
+        $IdUsuario = $userData['idUser'];
+        $NombreUsuario = $userData['userName'];
         $NombreArchivo = filter_input(INPUT_POST, "NombreArchivo");
         
-        $catalogos=array();
-        $EstructuraCatalogos=array();
+        $catalogos = array();
+        $EstructuraCatalogos = array();
+        
+        $RoutFile = dirname(getcwd());        
+
         $query='SELECT ';
         $InnerJoin='';
         
         /* Se obtiene la lista de catálogos pertenecientes al repositorio 
        Y se prepara la consulta que devuelve el detalle de la información          */
         
-        if(!file_exists("../Configuracion/$DataBaseName.ini")){$XML->ResponseXML("Error", 0,"<p>No existe el archivo de configuración estructural.</p>");return;}
-        $EstructuraConfig=parse_ini_file ("../Configuracion/$DataBaseName.ini",true);
+        if(!file_exists("$RoutFile/Configuracion/$DataBaseName.ini"))
+            return XML::XMLReponse("Error", 0,"<p>No existe el archivo de configuración estructural.</p>");
+        
+        $EstructuraConfig = parse_ini_file ("../Configuracion/$DataBaseName.ini",true);
         
         /* Estructura del repositorio */
         $EstructuraRepositorio=$designer->ReturnStructure($NombreRepositorio,$EstructuraConfig[$NombreRepositorio]);
         $ArrayStructureDefault=$designer->ReturnStructureDefault($NombreRepositorio,$EstructuraConfig[$NombreRepositorio]);
         
-        $Consulta="select re.IdRepositorio, re.NombreRepositorio, re.ClaveEmpresa, em.IdEmpresa, em.NombreEmpresa,
-        em.ClaveEmpresa, ca.IdCatalogo, ca.NombreCatalogo from Repositorios re inner join Empresas em on em.ClaveEmpresa=re.ClaveEmpresa
-        inner join Catalogos ca on ca.IdRepositorio=re.IdRepositorio AND re.IdRepositorio=$IdRepositorio";
-
-        $ArrayCatalogos=$BD->ConsultaSelect($DataBaseName, $Consulta);
+        $ArrayCatalogos = $Catalog->getArrayCatalogsNames($DataBaseName, $IdRepositorio);
+        
+        if(!is_array($ArrayCatalogos))
+            return XML::XMLReponse ("Error", 0, "No pudo obtenerse el listado de catálogos del repositorio <b>$NombreRepositorio<b>");
 
         /*  Listado de Catálogos */
-        for($cont=0; $cont<count($ArrayCatalogos['ArrayDatos']);$cont++)
+        for($cont=0; $cont<count($ArrayCatalogos);$cont++)
         {
-            if(count($ArrayCatalogos['ArrayDatos'])>0)
+            if(count($ArrayCatalogos)>0)
             {
-                foreach ($ArrayCatalogos['ArrayDatos'] as $campo=>$valor)
+                foreach ($ArrayCatalogos as $campo=>$valor)
                 {
                     $catalogos[$campo]=$valor;
                 }
             }            
         }     
+        
         /* Estructura de cada catálogo */       
         for($cont=0; $cont<count($catalogos);$cont++)
         {
-            $EstructuraCatalogos[$catalogos[$cont]['NombreCatalogo']]=$designer->ReturnStructure($catalogos[$cont]['NombreCatalogo'], $EstructuraConfig["Catalogo_".$catalogos[$cont]['NombreCatalogo']]);
+            $EstructuraCatalogos[$catalogos[$cont]['NombreCatalogo']]=$designer->ReturnStructure($catalogos[$cont]['NombreCatalogo'], $EstructuraConfig[$NombreRepositorio."_".$catalogos[$cont]['NombreCatalogo']]);
         }
-                
+               
         /* Se genera el Query que realiza la consulta con el detalle del archivo a traves de las estructuras
          * del repositorio y de los catálogos */
-        
-        
-        
+                
          /* Campos de default en repositorio */
          for($cont=0; $cont<count($ArrayStructureDefault); $cont++)
          {             
@@ -1091,34 +1103,19 @@ class ContentManagement {
                  $query.= $NombreCatalogo.".".$EstructuraCatalogos[$catalogo][$aux]['name'].",";
              }                   
              /* substr obtiene el prrefijo de cada tabla pe. Rep.ClaveEmpresa, Rep.NombreArchivo, etct */
-             $InnerJoin.=" LEFT JOIN ".$NombreCatalogo." ".$NombreCatalogo ." ON ".$NombreRepositorio.".".$NombreCatalogo."=".  $NombreCatalogo.".Id".$NombreCatalogo;
+             $InnerJoin.=" LEFT JOIN $NombreRepositorio"."_".$NombreCatalogo." ".$NombreCatalogo ." ON ".$NombreRepositorio.".".$NombreCatalogo."=".  $NombreCatalogo.".Id".$NombreCatalogo;
          }       
 
-         $query=trim($query,',');
-         $InnerJoin=trim($InnerJoin,',');         
+         $query = trim($query,',');
+         $InnerJoin = trim($InnerJoin,',');         
          $query.=' FROM '.$NombreRepositorio." ".$NombreRepositorio;         
          $query= $query.$InnerJoin." WHERE ".$NombreRepositorio.".IdRepositorio=$IdArchivo";
-
-        $Resultado=array();
-        $conexion=  $BD->Conexion();
-        if (!$conexion) {
-            $estado= mysql_error();
-            $error=array("Estado"=>$estado, "ArrayDatos"=>0);
-            return $error;
-        }        
-        mysql_selectdb($DataBaseName, $conexion);
-        $select=mysql_query($query,  $conexion);
-        if(!$select)
-        {
-            $estado= mysql_error(); 
-            return;
-        }
-        else
-        {
-            while(($Resultado[] = mysql_fetch_assoc($select,MYSQL_NUM)) || array_pop($Resultado)); 
-        }                
-        mysql_close($conexion);
-
+         
+        $Resultado = $this->doDetailQuery($DataBaseName, $query);
+        
+        if(!is_array($Resultado))
+            return XML::XMLReponse ("Error", 0, "<b>Error</b> al consultar metadatos.<br><br>Detalles:$Resultado");
+        
          /* Se devuelve el valor obtenido */
       
          /*Se devuelve el xml dividido en la sección con los datos del repositorio y otra con los datos de catálogo*/
@@ -1238,22 +1235,46 @@ class ContentManagement {
         header ("Content-Type:text/xml");
         echo $doc->saveXML();         
         
-        $Log ->Write("40", $IdUsuario, $NombreUsuario, " \"$NombreArchivo\" ", $DataBaseName);
+        Log::WriteEvent("40", $IdUsuario, $NombreUsuario, " \"$NombreArchivo\" ", $DataBaseName);
         
     }
     
+    function doDetailQuery($dataBaseName, $query){
+        $DB = new DataBase();
+        $Resultado = array();
+        
+        $conexion=  $DB->Conexion();
+        
+        if (!$conexion) 
+            return mysql_error();
+        
+        mysql_selectdb($dataBaseName, $conexion);
+        $select=mysql_query($query,  $conexion);
+        
+        if(!$select)
+            return mysql_error();
+        else
+            while(($Resultado[] = mysql_fetch_assoc($select,MYSQL_NUM)) || array_pop($Resultado)); 
+        
+        mysql_close($conexion);
+
+        return $Resultado;
+    }
+    
     /*  Se modifica el nombre de un archivo  */
-    private function FileEdit()
+    private function FileEdit($userData)
     {
         $XML=new XML();
         $BD= new DataBase();
         $designer=new DesignerForms();
         $Log = new Log();
+        $Catalog = new Catalog();
+        $Notes = new Notes();
         
-        $DataBaseName=  filter_input(INPUT_POST, "DataBaseName");
-        $IdRepositorio=  filter_input(INPUT_POST, "IdRepositorio");
-        $IdUsuario=filter_input(INPUT_POST, "IdUsuario");
-        $NombreUsuario = filter_input(INPUT_POST, "nombre_usuario");
+        $DataBaseName = $userData['dataBaseName'];
+        $IdRepositorio = filter_input(INPUT_POST, "IdRepositorio");
+        $IdUsuario = $userData['idUser'];
+        $NombreUsuario = $userData['userName'];
         
         $ArchivoActual=  filter_input(INPUT_POST, "NombreArchivoActual");
         $NombreNuevo= filter_input(INPUT_POST, "NombreArchivoNuevo");
@@ -1265,7 +1286,9 @@ class ContentManagement {
         $query="SELECT ";
         $InnerJoin ='';
         $Full='';
-        $catalogos=array();
+        
+        $EstructuraCatalogos = array();
+        
         $NombreNuevo=$NombreNuevo.".".$extension;
                       
         if(file_exists(dirname($Ruta)."/".$NombreNuevo)){$XML->ResponseXML("Advertencia", 0, "El nuevo nombre <b>$NombreNuevo</b> ya existe en este directorio.");return;}
@@ -1274,42 +1297,26 @@ class ContentManagement {
         
         /* Se obtienen los campos del archivo para construir el campo Full con el nuevo nombre */
         if(!file_exists("../Configuracion/$DataBaseName.ini")){$XML->ResponseXML("Error", 0,"<p>No existe el archivo de configuración estructural.</p>");return;}
-        $EstructuraConfig=parse_ini_file ("../Configuracion/$DataBaseName.ini",true);
+        $EstructuraConfig = parse_ini_file ("../Configuracion/$DataBaseName.ini",true);
         
         /* Estructura del repositorio */
         $EstructuraRepositorio=$designer->ReturnStructure($NombreRepositorio,$EstructuraConfig[$NombreRepositorio]);
         $ArrayStructureDefault=$designer->ReturnStructureDefault($NombreRepositorio,$EstructuraConfig[$NombreRepositorio]);
         
-        $Consulta="select re.IdRepositorio, re.NombreRepositorio, re.ClaveEmpresa, em.IdEmpresa, em.NombreEmpresa,
-        em.ClaveEmpresa, ca.IdCatalogo, ca.NombreCatalogo from Repositorios re inner join Empresas em on em.ClaveEmpresa=re.ClaveEmpresa
-        inner join Catalogos ca on ca.IdRepositorio=re.IdRepositorio AND re.IdRepositorio=$IdRepositorio";
-
+        $catalogos = $Catalog->getFilteredArrayCatalogsDetail($DataBaseName, $IdRepositorio);
         
-        $ArrayCatalogos=$BD->ConsultaSelect($DataBaseName, $Consulta);
-        
-        /*  Listado de Catálogos */
-        for($cont=0; $cont<count($ArrayCatalogos['ArrayDatos']);$cont++)
-        {
-            if(count($ArrayCatalogos['ArrayDatos'])>0)
-            {
-                foreach ($ArrayCatalogos['ArrayDatos'] as $campo=>$valor)
-                {
-                    $catalogos[$campo]=$valor;
-                }
-            }            
-        }     
+        if(!is_array($catalogos))
+            return XML::XMLReponse ("Error", 0, "Error al intentar recuperar los catàlogos del repositorio <b>$NombreRepositorio</b>. Detalles:<br><br>$catalogos");
         
         /* Estructura de cada catálogo */       
         for($cont=0; $cont<count($catalogos);$cont++)
         {
-            $EstructuraCatalogos[$catalogos[$cont]['NombreCatalogo']]=$designer->ReturnStructure($catalogos[$cont]['NombreCatalogo'], $EstructuraConfig["Catalogo_".$catalogos[$cont]['NombreCatalogo']]);
+            $EstructuraCatalogos[$catalogos[$cont]['NombreCatalogo']]=$designer->ReturnStructure($catalogos[$cont]['NombreCatalogo'], $EstructuraConfig[$NombreRepositorio."_".$catalogos[$cont]['NombreCatalogo']]);
         }
-                
+        
         /* Se genera el Query que realiza la consulta con el detalle del archivo a traves de las estructuras
          * del repositorio y de los catálogos */
-        
-        
-        
+                
          /* Campos de default en repositorio */
          for($cont=0; $cont<count($ArrayStructureDefault); $cont++)
          {             
@@ -1335,39 +1342,34 @@ class ContentManagement {
                  $query.= $NombreCatalogo.".".$EstructuraCatalogos[$catalogo][$aux]['name'].",";
              }                   
              /* substr obtiene el prrefijo de cada tabla pe. Rep.ClaveEmpresa, Rep.NombreArchivo, etct */
-             $InnerJoin.=" LEFT JOIN ".$NombreCatalogo." ".$NombreCatalogo ." ON ".$NombreRepositorio.".".$NombreCatalogo."=".  $NombreCatalogo.".Id".$NombreCatalogo;
+             $InnerJoin.=" LEFT JOIN $NombreRepositorio"."_".$NombreCatalogo." ".$NombreCatalogo ." ON ".$NombreRepositorio.".".$NombreCatalogo."=".  $NombreCatalogo.".Id".$NombreCatalogo;
          }       
                            
          $query=trim($query,',');
-         $InnerJoin=trim($InnerJoin,',');         
+         $InnerJoin=trim($InnerJoin,',');        
+         
          $query.=' FROM '.$NombreRepositorio." ".$NombreRepositorio;         
          $query= $query.$InnerJoin." WHERE ".$NombreRepositorio.".IdRepositorio=$IdFile";
-         
+                  
         $File=array();
+        
         $conexion=  $BD->Conexion();
-        if (!$conexion) {
-            $estado= mysql_error();
-            $error=array("Estado"=>$estado, "ArrayDatos"=>0);
-            return $error;
-        }
-
+        
+        if (!$conexion) 
+            return XML::XMLReponse("Error", 0, "Error al obtener metadatos. ".  mysql_error());
+         
         mysql_selectdb($DataBaseName, $conexion);
         $select=mysql_query($query,  $conexion);
-        if(!$select)
-            {
-                $estado= mysql_error(); 
-                $error=array("Estado"=>$estado, "ArrayDatos"=>0);
-                return $error;
-            }
-            else
-            {
-                while(($File[] = mysql_fetch_assoc($select,MYSQL_NUM)) || array_pop($File)); 
-            }
         
+        if(!$select)
+            return XML::XMLReponse("Error", 0, "Error al obtener metadatos. ".  mysql_error());
+        else
+        {
+            while(($File[] = mysql_fetch_assoc($select,MYSQL_NUM)) || array_pop($File)); 
+        }
         
         mysql_close($conexion);
         
-        $copy='INSERT INTO '.$NombreRepositorio." (";
         $cadena_campos='';
         $cadena_valores='';
         
@@ -1395,18 +1397,13 @@ class ContentManagement {
             if(strcasecmp($type,"int")==0 or strcasecmp($type,"integer")==0 or strcasecmp($type,"float")==0 || strcasecmp($type,"double")==0) /* Si detecta un tipo numerico */
             {                
                 if(!(is_numeric($value)))
-                {                    
                     $cadena_valores.="0,";                   
-                }else
-                {
+                else
                     $cadena_valores.=$value.",";
-                }
 
             }
             else    /* Demás tipos de datos llevan ' ' */
-            {
                 $cadena_valores.="'".$value."'".",";
-            }                 
          }
          
          $Full=  trim($Full,' , ');
@@ -1446,9 +1443,7 @@ class ContentManagement {
          
          /*  Match con Campos de Catálogo  */
         for($cont=0; $cont<count($catalogos);$cont++)
-        {
-            $IdCatalogo=$File[0][$AuxCont];
-                        
+        {                        
             $NombreCatalogo=$catalogos[$cont]['NombreCatalogo'];
             $cadena_campos.=$NombreCatalogo.",";
             $cadena_valores.=$File[0][$AuxCont].",";   
@@ -1456,13 +1451,26 @@ class ContentManagement {
             for($aux=1; $aux<count($EstructuraCatalogos[$NombreCatalogo]); $aux++)  /* 1 es el tipo */
              {
                  $value=$File[0][$AuxCont];
-                 $Full.=$value.", ";
+                 $Full.=" , ".$value;
                  $AuxCont++;
              }     
         }
         
         $Full=  trim($Full,' , ');
+        
+        /* Se concatenan las notas  */
+        $notes = $Notes->getNotesArray($DataBaseName, $IdRepositorio, $IdFile);
+        
+        if(!is_array($notes))
+            return XML::XMLReponse ("Error", 0, $notes);
+        
+        $NewsNotesFields = '';
+        for($cont = 0; $cont < count($notes); $cont++)
+        {
+            $NewsNotesFields.= "||Nota|| ".$notes[$cont]['IdNote'].", ".$notes[$cont]['Page'].", ".$notes[$cont]['Text']." ";
+        }
                                       
+        $Full = $Full." ".$NewsNotesFields;
         
         if(rename($Ruta,  dirname($Ruta)."/".$NombreNuevo))
         {            

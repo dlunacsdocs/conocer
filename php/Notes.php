@@ -23,9 +23,7 @@ class Notes {
             case 'ObtainXmlNotes': $this->ObtainXmlNotes(); break;
             case 'GetNote': $this->GetNote(); break;
             case 'ModifyNote': $this->ModifyNote(); break;
-            case 'DeleteNote': $this->DeleteNote(); break;
-        
-            default : echo "<p>Petición Inválida</p>"; break;
+            case 'DeleteNote': $this->DeleteNote(); break;        
         }
     }
             
@@ -46,7 +44,7 @@ class Notes {
 //        $NombreUsuario=  filter_input(INPUT_POST, "nombre_usuario");
         $IdFile=filter_input(INPUT_POST,"IdFile");                
                 
-        $ConsultaNotas="SELECT note.IdNote, note.Page FROM Notes note WHERE note.IdFile=$IdFile AND IdRepository = $IdRepositorio";
+        $ConsultaNotas="SELECT note.IdNote, note.Page FROM CSDocs_Notes note WHERE note.IdFile=$IdFile AND IdRepository = $IdRepositorio";
         $ArrayNotas=$BD->ConsultaSelect($DataBaseName, $ConsultaNotas);
 
         /* Se comprueba si tuvo éxito la consulta */
@@ -77,18 +75,29 @@ class Notes {
 //        $IdDirectory=  filter_input(INPUT_POST, "IdDirectory");
         $IdFile=filter_input(INPUT_POST,"IdFile");                
         
+        $notesArray = $this->getNotesArray($DataBaseName, $IdRepositorio, $IdFile);
         
-        $ConsultaNotas="SELECT note.IdNote, note.IdUser, note.UserName, note.IdFile, note.CreationDate,"
-        . "note.Text, note.Page FROM Notes note WHERE note.IdFile = $IdFile AND note.IdRepository = $IdRepositorio";
-        
-        $ArrayNotas=$BD->ConsultaSelect($DataBaseName, $ConsultaNotas);
-
-        /* Se comprueba si tuvo éxito la consulta */
-        if($ArrayNotas['Estado']!=1){$XML->ResponseXML("Error", 0, "Error al consultar las notas. ".$ArrayNotas['Estado']); return;}
-        
+        if(!is_array($notesArray))
+            return XML::XMLReponse ("Error", 0, "<b<Error</b> al consultar las notas.<br><br>Detalles:<br><br>$notesArray");
+                
         /* Sí la consulta no generó errores, se devuelve el listado de notas en un XML */
-        $XML->ResponseXmlFromArray("Notes", "Note", $ArrayNotas['ArrayDatos']);
+        $XML->ResponseXmlFromArray("Notes", "Note", $notesArray);
         
+    }
+    
+    public function getNotesArray($dataBaseName, $idRepository, $idFile){
+        
+        $DB = new DataBase();
+        
+        $query =" SELECT note.IdNote, note.IdUser, note.UserName, note.IdFile, note.CreationDate,"
+        . "note.Text, note.Page FROM CSDocs_Notes note WHERE note.IdFile = $idFile AND note.IdRepository = $idRepository";
+        
+        $queryResult = $DB->ConsultaSelect($dataBaseName, $query);
+        
+        if($queryResult['Estado']!=1)
+            return $queryResult['Estado'];
+        
+        return $queryResult['ArrayDatos'];
     }
     
     private function AddNote()
@@ -133,7 +142,7 @@ class Notes {
             return 0;
         }
                         
-        $ConsultaInsert="INSERT INTO Notes (IdUser, UserName, IdRepository, IdFile, CreationDate, Text, Page) "
+        $ConsultaInsert="INSERT INTO CSDocs_Notes (IdUser, UserName, IdRepository, IdFile, CreationDate, Text, Page) "
                 . "VALUES ($IdUsuario, '$NombreUsuario', $IdRepositorio, $IdFile, '$FechaCreacion','$TextNote', $NoPagina )";             
         
         $ConsultaCampoFull = "SELECT Full FROM $NombreRepositorio WHERE IdRepositorio=$IdFile";    
@@ -204,7 +213,7 @@ class Notes {
         $NombreDocumento = filter_input(INPUT_POST, "FileName");
         $Page = filter_input(INPUT_POST, "Page");
         
-        $QueryGetNote = "SELECT *FROM Notes WHERE IdNote = $IdNota AND IdRepository = $IdRepository";  
+        $QueryGetNote = "SELECT *FROM CSDocs_Notes WHERE IdNote = $IdNota AND IdRepository = $IdRepository";  
         $ResultQueryGetNote = $BD->ConsultaSelect($DataBaseName, $QueryGetNote);
         if($ResultQueryGetNote['Estado']!=1)
         {
@@ -241,7 +250,7 @@ class Notes {
         if($FullWithoutNotes === 0)
             return;
                 
-        $UpdateNote = "UPDATE Notes SET Text = '$Text' WHERE IdNote = $IdNote";
+        $UpdateNote = "UPDATE CSDocs_Notes SET Text = '$Text' WHERE IdNote = $IdNote";
 
         if(($ResultUpdateNote = $BD->ConsultaQuery($DataBaseName, $UpdateNote))!=1)
         {
@@ -319,7 +328,7 @@ class Notes {
         
         $FullWithoutNotes = $this->RemoveNotesOfFull($DataBaseName, $IdGlobal, $IdFile, $IdRepository);
         
-        $DeleteNote = "DELETE FROM Notes WHERE IdNote = $IdNote";
+        $DeleteNote = "DELETE FROM CSDocs_Notes WHERE IdNote = $IdNote";
         if(($ResultDeleteNote = $BD->ConsultaQuery($DataBaseName, $DeleteNote))!=1)
         {
             $XML->ResponseXML("Error", 0, "<p><b>Error</b> al intentar eliminar la nota</p><br>Detalles:<br><br>$ResultDeleteNote");
@@ -353,7 +362,7 @@ class Notes {
         $XML=new XML();
         $BD= new DataBase();
         
-        $QueryGetNotes = "SELECT *FROM Notes WHERE IdRepository = $IdRepository AND IdFile = $IdFile";
+        $QueryGetNotes = "SELECT *FROM CSDocs_Notes WHERE IdRepository = $IdRepository AND IdFile = $IdFile";
 
         $ResultQueryGetNotes = $BD->ConsultaSelect($DataBaseName, $QueryGetNotes);
         if($ResultQueryGetNotes['Estado']!=1)

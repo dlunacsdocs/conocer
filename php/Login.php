@@ -131,13 +131,16 @@ class Login {
         if(isset($Resultado['NombreGrupo']))
             Usuarios::$groupName = $Resultado['NombreGrupo'];
         
-        if($Resultado['IdUsuario']>0)
-            if($idSession==null)
+        if($Resultado['IdUsuario']>0){
+//            if($idSession==null)
 //                return XML::XMLReponse ("Error", 0, "Ya hay una sesión iniciada.");
-                Session::$idSession = Session::createSession(DataBase::$dataBaseName ,DataBase::$dataBaseName, 
-                        Usuarios::$idUser,  Usuarios::$userName, $Resultado['IdGrupo'], $Resultado['Nombre']);
+            Session::$idSession = Session::createSession(DataBase::$dataBaseName ,DataBase::$dataBaseName, 
+                    Usuarios::$idUser,  Usuarios::$userName, $Resultado['IdGrupo'], $Resultado['Nombre']);
             
-        Session::$idSession = Session::getIdSession();    
+            Session::$idSession = Session::getIdSession(); 
+        }
+        else
+            Session::$idSession = null;
             
         $this->loginResponse($Resultado);
     }

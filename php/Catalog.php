@@ -55,7 +55,7 @@ class Catalog {
      */
     private function GetListCatalogos($userData)
     {
-        $BD= new DataBase();
+        $BD = new DataBase();
         
         $DataBaseName = $userData['dataBaseName'];
         
@@ -400,6 +400,39 @@ class Catalog {
         
         return $queryResult['ArrayDatos'];
         
+    }
+    /*
+     * Devuelve los catálogos filtrados por permisos de grupo o usuario
+     */
+    public function getFilteredArrayCatalogsDetail($dataBaseName, $idRepository, $idGroup = 0, $idUser = 0){
+        
+        $DB = new DataBase();
+                
+        $query = "select re.IdRepositorio, re.NombreRepositorio, re.ClaveEmpresa, em.IdEmpresa, em.NombreEmpresa,
+        em.ClaveEmpresa, ca.IdCatalogo, ca.NombreCatalogo from CSDocs_Repositorios re inner join CSDocs_Empresas em on em.ClaveEmpresa=re.ClaveEmpresa
+        inner join CSDocs_Catalogos ca on ca.IdRepositorio=re.IdRepositorio AND re.IdRepositorio=$idRepository";
+        
+        $queryResult = $DB->ConsultaSelect($dataBaseName, $query);
+        
+        if($queryResult['Estado']!=1)
+            return $queryResult['Estado'];
+        
+        return $queryResult['ArrayDatos'];
+        
+        
+    }
+
+    public function getArrayCatalogsNames($dataBaseName, $idRepository){
+        $DB = new DataBase();
+                
+        $query = "SELECT IdCatalogo, NombreCatalogo FROM CSDocs_Catalogos WHERE IdRepositorio = $idRepository";
+        
+        $queryResult = $DB->ConsultaSelect($dataBaseName, $query);
+        
+        if($queryResult['Estado']!=1)
+            return $queryResult['Estado'];
+        
+        return $queryResult['ArrayDatos'];
     }
     
     public function deleteCatalog($dataBaseName, $idRepository, $repositoryName, $catalogName){

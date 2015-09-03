@@ -684,7 +684,7 @@ function FileEditPhp()
       dataType:'html', 
       type: 'POST',   
       url: "php/ContentManagement.php",
-      data: 'opcion=FileEdit&DataBaseName='+EnvironmentData.DataBaseName+'&IdUsuario='+EnvironmentData.IdUsuario+'&IdRepositorio='+IdRepositorio+'&NombreRepositorio='+NombreRepositorio+"&Ruta="+Ruta+"&NombreArchivoNuevo="+NombreArchivoNuevo+"&IdFile="+IdFile+"&NombreArchivoActual="+NombreArchivoActual+'&nombre_usuario='+EnvironmentData.NombreUsuario, 
+      data: 'opcion=FileEdit&IdRepositorio='+IdRepositorio+'&NombreRepositorio='+NombreRepositorio+"&Ruta="+Ruta+"&NombreArchivoNuevo="+NombreArchivoNuevo+"&IdFile="+IdFile+"&NombreArchivoActual="+NombreArchivoActual, 
       success:  function(xml){   
           $('#Loading').dialog('close');
           if($.parseXML( xml )===null){Error(xml);return 0;}else xml=$.parseXML( xml );

@@ -41,7 +41,7 @@ function GetDetalle(Source, IdGlobal, IdFile)
       dataType:"html", 
       type: 'POST',   
       url: "php/ContentManagement.php",
-      data: "opcion=GetDetalle&DataBaseName="+EnvironmentData.DataBaseName+'&IdUsuario='+EnvironmentData.IdUsuario+'&IdRepositorio='+DocumentEnvironment.IdRepository+'&NombreRepositorio='+DocumentEnvironment.RepositoryName+"&IdArchivo="+IdFile+'&nombre_usuario='+EnvironmentData.NombreUsuario+'&NombreArchivo='+DocumentEnvironment.FileName, 
+      data: 'opcion=GetDetalle&IdRepositorio='+DocumentEnvironment.IdRepository+'&NombreRepositorio='+DocumentEnvironment.RepositoryName+"&IdArchivo="+IdFile+'&NombreArchivo='+DocumentEnvironment.FileName, 
       success:  function(xml)
       {                
           $('#Loading').dialog('close');       
@@ -123,10 +123,13 @@ function GetDetalle(Source, IdGlobal, IdFile)
                 var EstructuraCatalogo = GeStructure(DocumentEnvironment.RepositoryName+"_"+NombreCatalogo); 
                 if(Tipo=='ListSearch')/* Se introduce un botón para elegir un nuevo elemento del catálogo */
                 {
+                    console.log("ListSearch::"+NombreCatalogo);
                     $('#tabla_DetalleArchivo tr:last').after('<tr><td><input type="button" value="Abrir '+NombreCatalogo+'" id="det_button_'+NombreCatalogo+'"></td><td><select id="det_select_'+NombreCatalogo+'" class="FormStandart"><option value="'+IdCatalogo+'">'+Cadena.slice(0,60)+'</select></td></tr>');                    
                     DetailSetValuesToListSearch(DocumentEnvironment.RepositoryName, EstructuraCatalogo,NombreCatalogo);                    
                 }
+                
                 $('#det_button_'+NombreCatalogo).button();
+                
                 if(Tipo=='List')
                 {
                     $('#tabla_DetalleArchivo tr:last').after('<tr><td>'+NombreCatalogo+'</td><td><select class="FormStandart" id="det_select_'+NombreCatalogo+'"><option value="'+IdCatalogo+'">'+Cadena.slice(0,60)+'</select></td></tr>');                                       
@@ -198,12 +201,12 @@ function GetDetalle(Source, IdGlobal, IdFile)
     * @param {type} NombreCatalogo
     * @returns {undefined}
     */
-   function DetailSetValuesToListSearch(xmlStruct,NombreCatalogo)
+   function DetailSetValuesToListSearch(repositoryName, xmlStruct,NombreCatalogo)
    {              
        var TableCatalogdT = undefined, TableCatalogDT = undefined;
+       
        $('#div_CatalogoDetalle_'+NombreCatalogo).remove();
-       var IdRepositorio = $('#CM_select_repositorios').val();
-       var repositoryName = $('#CM_select_repositorios option:selected').html();
+              
        $('#div_detalle').append('<div id="div_CatalogoDetalle_'+NombreCatalogo+'" style="display:none">\n\
             <div class="titulo_ventana">Contenido en '+NombreCatalogo+'</div>\n\
             <table id="table_CatalogoDetalle_'+NombreCatalogo+'" class="display hover"></table>\n\
@@ -369,7 +372,7 @@ function DetailModify(XmlDetalle,DocumentEnvironment)
     dataType:"html", 
     type: 'POST',   
     url: "php/ContentManagement.php",
-    data: 'opcion=DetailModify&DataBaseName='+EnvironmentData.DataBaseName+'&IdUsuario='+EnvironmentData.IdUsuario+'&IdRepositorio='+DocumentEnvironment.IdRepository+ '&IdEmpresa = '+DocumentEnvironment.IdEnterprise+ '&NombreEmpresa = '+ DocumentEnvironment.EnterpriseName +'&NombreRepositorio='+DocumentEnvironment.RepositoryName+"&IdFile="+DocumentEnvironment.IdFile+'&XMLResponse='+XMLResponse+'&nombre_usuario='+EnvironmentData.NombreUsuario+'&NombreArchivo='+DocumentEnvironment.FileName+'&IdGlobal='+DocumentEnvironment.IdGlobal, 
+    data: 'opcion=DetailModify&'+'&IdRepositorio='+DocumentEnvironment.IdRepository+ '&IdEmpresa = '+DocumentEnvironment.IdEnterprise+ '&NombreEmpresa = '+ DocumentEnvironment.EnterpriseName +'&NombreRepositorio='+DocumentEnvironment.RepositoryName+"&IdFile="+DocumentEnvironment.IdFile+'&XMLResponse='+XMLResponse+'&NombreArchivo='+DocumentEnvironment.FileName+'&IdGlobal='+DocumentEnvironment.IdGlobal, 
     success:  function(xml){
         
         $('#CMModifyDetail').remove();
