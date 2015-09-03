@@ -1486,6 +1486,7 @@ class Trash {
         $Fifo= new Fifo();
         $Catalog = new Catalog();
         
+        
         $Parametros=$_SERVER['argv'];      
         $KeyProcess=$Parametros[1];        
         $Path=$Parametros[2];  
@@ -1537,7 +1538,7 @@ class Trash {
             }
         }                
         
-                
+            
         /* Se recorren los directorios padre que serán restaurados junto a sus subdirectorios.
            Los directorios restaurados son eliminados del Array TempDirectories         */                        
         
