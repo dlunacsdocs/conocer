@@ -970,6 +970,7 @@ class Trash {
         $designer=new DesignerForms();
         $Fifo= new Fifo();
         $Log = new Log();
+        $Catalog = new Catalog();
         
         $Parametros=$_SERVER['argv'];      
         $KeyProcess=$Parametros[1];        
@@ -998,13 +999,12 @@ class Trash {
         $ArrayStructureUser=$designer->ReturnStructure($NombreRepositorio,$EstructuraConfig[$NombreRepositorio]);
         $ArrayStructureDefault=$designer->ReturnStructureDefault($NombreRepositorio,$EstructuraConfig[$NombreRepositorio]);
         
-        $ConsultaCatalogos="select re.IdRepositorio, re.NombreRepositorio, re.ClaveEmpresa, em.IdEmpresa, em.NombreEmpresa,
-        em.ClaveEmpresa, ca.IdCatalogo, ca.NombreCatalogo from Repositorios re inner join Empresas em on em.ClaveEmpresa=re.ClaveEmpresa
-        inner join Catalogos ca on ca.IdRepositorio=re.IdRepositorio AND re.IdRepositorio=$IdRepositorio";
+        $ArrayCatalogos = $Catalog->getFilteredArrayCatalogsDetail($DataBaseName, $IdRepositorio);
         
-        $ArrayCatalogos=$BD->ConsultaSelect($DataBaseName, $ConsultaCatalogos);
-        
-        if($ArrayCatalogos['Estado']!=1){echo "Error al obtener los catálogos. Mysql: ".$ArrayCatalogos['Esatdo'].PHP_EOL; return 0;} 
+        if(!is_array($ArrayCatalogos)){
+            echo  "Error al consulta catálogos. $ArrayCatalogos".PHP_EOL;
+            return 0;
+        }
         
         
         /* Archivo de status del servicio (Permite deter el servicio ) */
@@ -1033,7 +1033,7 @@ class Trash {
             
             echo "Restaurando el Documento $Key".PHP_EOL;
             
-            if($this->MoveFileToRepository($ArrayStructureDefault, $ArrayStructureUser, $ArrayCatalogos['ArrayDatos'], $DataBaseName, $IdRepositorio, $NombreRepositorio, $value, $RouteFileAdvancing,$KeyProcess))
+            if($this->MoveFileToRepository($ArrayStructureDefault, $ArrayStructureUser, $ArrayCatalogos, $DataBaseName, $IdRepositorio, $NombreRepositorio, $value, $RouteFileAdvancing,$KeyProcess))
             {
                  echo "Se restauró a $Key".PHP_EOL;    
                  $Log ->Write("27", $IdUsuario, $NombreUsuario, $Key, $DataBaseName);

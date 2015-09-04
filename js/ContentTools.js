@@ -94,13 +94,7 @@ var ClassTools = function()
         data: 'opcion=NewMassiveUpload&IdRepository='+IdRepositorio+'&DataBaseName='+EnvironmentData.DataBaseName+'&IdUser='+EnvironmentData.IdUsuario+'&UserName='+EnvironmentData.NombreUsuario+'&RepositoryName='+NombreRepositorio+'&Path='+Path+'&IdParent='+IdParent+'&IdDirectory='+IdDirectory+'&IdEnterprise='+IdEmpresa+"&Random="+Random+"&EnterpriseName="+NombreEmpresa+'&SourceMassiveUpload='+SourceMassiveUpload, 
         success:  function(xml){
             $('#div_MassiveLoad').remove();
-            if($.parseXML( xml )===null){ Salida(xml); return 0;}else xml=$.parseXML( xml );
-
-            $(xml).find("Error").each(function()
-            {
-                var mensaje=$(this).find("Mensaje").text();
-                Error(mensaje);
-            });       
+            Salida(xml);
         },
         beforeSend:function(){},
         error: function(jqXHR, textStatus, errorThrown) {Error(textStatus +"<br>"+ errorThrown);}
@@ -160,20 +154,8 @@ var ClassTools = function()
         data: 'opcion=ResumeMassiveUpload&DataBaseName='+EnvironmentData.DataBaseName+'&IdUser='+EnvironmentData.IdUsuario+'&UserName='+EnvironmentData.NombreUsuario, 
         success:  function(xml){
             $('#div_MassiveLoad').remove();
-            if($.parseXML( xml )===null){ Salida(xml); return 0;}else xml=$.parseXML( xml );
-
-            $(xml).find("FisnishedMassiveUpload").each(function()/* Sí existen archivos pendientes */ 
-            {                                   
-                var $Carga=$(this);
-                var Mensaje=$Carga.find("Mensaje").text();
-            });
-            $(xml).find("Error").each(function()
-            {
-                var $Error=$(this);
-                var estado=$Error.find("Estado").text();
-                var mensaje=$Error.find("Mensaje").text();
-                Error(mensaje);
-            });       
+            
+            Salida(xml);
         },
         beforeSend:function(){},
         error: function(jqXHR, textStatus, errorThrown) {Error(textStatus +"<br>"+ errorThrown);}
@@ -471,7 +453,7 @@ function PasteFile()
     dataType:'html', 
     type: 'POST',   
     url: "php/ContentManagement.php",
-    data: opcion+'&IdRepositorio='+IdRepositorio+'&DataBaseName='+EnvironmentData.DataBaseName+'&id_usuario='+EnvironmentData.IdUsuario+'&nombre_usuario='+EnvironmentData.NombreUsuario+'&NombreRepositorio='+NombreRepositorio+'&Path='+Path+'&IdParent='+IdParent+'&IdDirectory='+IdDirectory+'&IdEmpresa='+IdEmpresa+"&NombreDirectorio="+NombreDirectorio+'&NombreEmpresa='+NombreEmpresa, 
+    data: opcion+'&IdRepositorio='+IdRepositorio+'&NombreRepositorio='+NombreRepositorio+'&Path='+Path+'&IdParent='+IdParent+'&IdDirectory='+IdDirectory+'&IdEmpresa='+IdEmpresa+"&NombreDirectorio="+NombreDirectorio+'&NombreEmpresa='+NombreEmpresa, 
     success:  function(xml){   
       $('#Loading').dialog('close');
       if($.parseXML( xml )===null){Error(xml);return 0;}else xml=$.parseXML( xml );
@@ -597,7 +579,7 @@ function DeleteFile()
       dataType:'html', 
       type: 'POST',   
       url: "php/ContentManagement.php",
-      data: "opcion=DeleteFile&IdRepositorio="+IdRepositorio+'&DataBaseName='+EnvironmentData.DataBaseName+'&id_usuario='+EnvironmentData.IdUsuario+'&nombre_usuario='+EnvironmentData.NombreUsuario+'&NombreRepositorio='+NombreRepositorio+'&Path='+Path+'&IdParent='+IdParent+'&IdDirectory='+IdDirectory+'&IdEmpresa='+IdEmpresa+'&IdFile='+IdFile, 
+      data: "opcion=DeleteFile&IdRepositorio="+IdRepositorio+'&NombreRepositorio='+NombreRepositorio+'&Path='+Path+'&IdParent='+IdParent+'&IdDirectory='+IdDirectory+'&IdEmpresa='+IdEmpresa+'&IdFile='+IdFile, 
       success:  function(xml){   
           $('#Loading').dialog('close');
           if($.parseXML( xml )===null){Error(xml);return 0;}else xml=$.parseXML( xml );

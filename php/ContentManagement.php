@@ -54,9 +54,9 @@ class ContentManagement {
                 case 'FileEdit':$this->FileEdit($userData);break;
                 case 'GetDetalle':$this->GetDetalle($userData);break;
                 case 'DetailModify':$this->DetailModify($userData);break;
-                case 'CopyFile':$this->CopyFile(); break;
-                case 'CutFile':$this->CutFile(); break;
-                case 'DeleteFile':$this->DeleteFile(); break;                                                  
+                case 'CopyFile':$this->CopyFile($userData); break;
+                case 'CutFile':$this->CutFile($userData); break;
+                case 'DeleteFile':$this->DeleteFile($userData); break;                                                  
             }
         }
     }
@@ -66,55 +66,54 @@ class ContentManagement {
     /****************************************************************************
      * Los archivos eliminados de un repositorio se envian a la tabla temp_nombreRepositorio
      */
-    private function DeleteFile()
+    private function DeleteFile($userData)
     {
         $XML=new XML();
         $BD= new DataBase();
         $Log = new Log();        
         $designer=new DesignerForms();
+        $Catalog = new Catalog();
         
-        $DataBaseName=  filter_input(INPUT_POST, "DataBaseName");
+        $DataBaseName = $userData['dataBaseName'];
         $NombreRepositorio=  filter_input(INPUT_POST, "NombreRepositorio");
         $IdRepositorio=  filter_input(INPUT_POST, "IdRepositorio");
-        $IdUsuario=filter_input(INPUT_POST, "id_usuario");
-        $NombreUsuario = filter_input(INPUT_POST, "nombre_usuario");
+        $IdUsuario = $userData['idUser'];
+        $NombreUsuario = $userData['userName'];
         $IdFile=filter_input(INPUT_POST, "IdFile");
 //        $Path=filter_input(INPUT_POST, "Path");
         $NombreArchivo=  filter_input(INPUT_POST, "NombreArchivo");
 //        $RutaArchivo=  filter_input(INPUT_POST, "RutaArchivo");   /* Archivo que será copiado */
         $IdDirectory=  filter_input(INPUT_POST, "IdDirectory");
         $IdEmpresa=  filter_input(INPUT_POST, "IdEmpresa");
-        $catalogos=array();
-        if(!file_exists("../Configuracion/$DataBaseName.ini")){$XML->ResponseXML("Error", 0,"<p>No existe el archivo de configuración estructural.</p>");return;}
-        $EstructuraConfig=parse_ini_file ("../Configuracion/$DataBaseName.ini",true);
+        
+        if(!file_exists("../Configuracion/$DataBaseName.ini"))
+            return XML::XMLReponse("Error", 0,"<p>No existe el archivo de configuración estructural.</p>");
+           
+        
+        if(!($EstructuraConfig = parse_ini_file ("../Configuracion/$DataBaseName.ini",true)))
+                return XML::XMLReponse ("Error", 0, "<b>Error</b> al abrir el archivo de configuración del repositorio <b>$NombreRepositorio</b><br><br>$EstructuraConfig");
+        
         $ArrayStructureDefault=$designer->ReturnStructureDefault($NombreRepositorio,$EstructuraConfig[$NombreRepositorio]);        
+        
         $Full='';
-        /* Se obtiene la información del registro a copiar */
+        
         $GetFile='SELECT *FROM '.$NombreRepositorio." WHERE IdRepositorio=$IdFile";
-        $File=$BD->ConsultaSelect($DataBaseName, $GetFile);
+        
+        $File = $BD->ConsultaSelect($DataBaseName, $GetFile);
+        
         $delete='INSERT INTO temp_rep_'.$NombreRepositorio." (IdRepositorio,";
+        
         $cadena_campos='';
         $cadena_valores=$IdFile.",";
         
         /* Estructura del repositorio */
         $EstructuraRepositorio=$designer->ReturnStructure($NombreRepositorio,$EstructuraConfig[$NombreRepositorio]);
         
-        $Consulta="select re.IdRepositorio, re.NombreRepositorio, re.ClaveEmpresa, em.IdEmpresa, em.NombreEmpresa,
-        em.ClaveEmpresa, ca.IdCatalogo, ca.NombreCatalogo from Repositorios re inner join Empresas em on em.ClaveEmpresa=re.ClaveEmpresa
-        inner join Catalogos ca on ca.IdRepositorio=re.IdRepositorio AND re.IdRepositorio=$IdRepositorio";
-        $ArrayCatalogos=$BD->ConsultaSelect($DataBaseName, $Consulta);
+        $catalogos = $Catalog->getFilteredArrayCatalogsDetail($DataBaseName, $IdRepositorio);   
         
-        /*  Listado de Información de cada catálogo */
-        for($cont=0; $cont<count($ArrayCatalogos['ArrayDatos']);$cont++)
-        {
-            if(count($ArrayCatalogos['ArrayDatos'])>0)
-            {
-                foreach ($ArrayCatalogos['ArrayDatos'] as $campo=>$valor)
-                {
-                    $catalogos[$campo]=$valor;                    
-                }
-            }            
-        }                                  
+        if(!is_array($catalogos))
+            return XML::XMLReponse ("Error", 0, "Error al consultar catálogos del repositorio <b>$NombreRepositorio</b>");
+        
         /* Campos del repositorio */
          for($cont=0; $cont<count($EstructuraRepositorio); $cont++)       
          {
@@ -182,37 +181,35 @@ class ContentManagement {
                     $DeleteFromGlobal = "UPDATE RepositorioGlobal SET Full = '' WHERE IdFile = $IdFile AND IdRepositorio = $IdRepositorio";
                     if(($ResultDeleteFromGlobal = $BD->ConsultaQuery($DataBaseName, $DeleteFromGlobal)==1))
                     {
-                        $XML->ResponseXML("DeleteFile", 1, "Archivo Eliminado con éxito.");
                         $Log ->Write("25", $IdUsuario, $NombreUsuario, $File['ArrayDatos'][0]["NombreArchivo"], $DataBaseName);
+                        $XML->ResponseXML("DeleteFile", 1, "Archivo Eliminado con éxito.");
+
                     }                    
                 }
                 else
                 {
-                    $XML->ResponseXML("Error", 0, "Error al eliminar el archivo. ".$ResultDelete);
                     $BD->ConsultaQuery($DataBaseName, "DELETE FROM temp_rep_$NombreRepositorio WHERE IdRepositorio = $IdFile");
+                    return $XML->ResponseXML("Error", 0, "Error al eliminar el archivo. ".$ResultDelete);
                 }
             }  
             else
-            {
-                $XML->ResponseXML("Error", 0, "Error al eliminar el archivo. ".$ResultTempDelete);
-            }
+                return $XML->ResponseXML("Error", 0, "Error al eliminar el archivo. ".$ResultTempDelete);
     }
     
-    private function CutFile()
+    private function CutFile($userData)
     {
-        /*************************************************************************
-         *       
-         *                    Variables                                    */                         
+                      
         $XML=new XML();
         $BD= new DataBase();
         $Log = new Log();
         $designer = new DesignerForms();
+        $Catalog = new Catalog();
         
-        $DataBaseName =  filter_input(INPUT_POST, "DataBaseName");
+        $DataBaseName =  $userData['dataBaseName'];
         $NombreRepositorio =  filter_input(INPUT_POST, "NombreRepositorio");
         $IdRepositorio =  filter_input(INPUT_POST, "IdRepositorio");
-        $IdUsuario = filter_input(INPUT_POST, "id_usuario");
-        $NombreUsuario = filter_input(INPUT_POST, "nombre_usuario");
+        $IdUsuario = $userData['idUser'];
+        $NombreUsuario = $userData['userName'];
         $IdFile = filter_input(INPUT_POST, "IdFile");
         $Path = filter_input(INPUT_POST, "Path");
         $NombreArchivo =  filter_input(INPUT_POST, "NombreArchivo");
@@ -224,15 +221,18 @@ class ContentManagement {
         $PathPrincipal = "Estructuras/".$DataBaseName."/";
         $RutaDestino = '../'.$PathPrincipal.$NombreRepositorio.$Path."/";
         $Full = '';   /* Campo FullText */
-        $catalogos = array();
         $InnerJoin = '';
         $FechaIngreso = 0;
         $TipoArchivo = 0;
          /********************* Estructura del repositorio********************** */
         
-        if(!file_exists("../Configuracion/$DataBaseName.ini")){$XML->ResponseXML("Error", 0,"<p>No existe el archivo de configuración estructural.</p>");return;}
+        if(!file_exists("../Configuracion/$DataBaseName.ini"))
+            return XML::XMLReponseResponseXML("Error", 0,"<p>No existe el archivo de configuración estructural.</p>");
+        
         $EstructuraConfig=parse_ini_file ("../Configuracion/$DataBaseName.ini",true);
+        
         $ArrayStructureDefault=$designer->ReturnStructureDefault($NombreRepositorio,$EstructuraConfig[$NombreRepositorio]);
+        
         $EstructuraRepositorio=$designer->ReturnStructure($NombreRepositorio,$EstructuraConfig[$NombreRepositorio]);
                         
         $query='SELECT ';
@@ -265,30 +265,15 @@ class ContentManagement {
          * 
          */
              
+        $catalogos = $Catalog->getArrayCatalogsNames($DataBaseName, $IdRepositorio);
         
-        $Consulta="select re.IdRepositorio, re.NombreRepositorio, re.ClaveEmpresa, em.IdEmpresa, em.NombreEmpresa,
-        em.ClaveEmpresa, ca.IdCatalogo, ca.NombreCatalogo from Repositorios re inner join Empresas em on em.ClaveEmpresa=re.ClaveEmpresa
-        inner join Catalogos ca on ca.IdRepositorio=re.IdRepositorio AND re.IdRepositorio=$IdRepositorio";
-
-        
-        $ArrayCatalogos=$BD->ConsultaSelect($DataBaseName, $Consulta);
-        
-        /*  Listado de Catálogos */
-        for($cont=0; $cont<count($ArrayCatalogos['ArrayDatos']);$cont++)
-        {
-            if(count($ArrayCatalogos['ArrayDatos'])>0)
-            {
-                foreach ($ArrayCatalogos['ArrayDatos'] as $campo=>$valor)
-                {
-                    $catalogos[$campo]=$valor;
-                }
-            }            
-        }     
+        if(!is_array($catalogos))
+            return XML::XMLReponse ("Error", 0, "<b>Error</b> al obtener el listado de catálogos del repositorio <b>$NombreRepositorio</b><br>Detalles:<br><br>$catalogos");
         
         /* Estructura de cada catálogo */       
         for($cont=0; $cont<count($catalogos);$cont++)
         {
-            $EstructuraCatalogos[$catalogos[$cont]['NombreCatalogo']]=$designer->ReturnStructure($catalogos[$cont]['NombreCatalogo'], $EstructuraConfig["Catalogo_".$catalogos[$cont]['NombreCatalogo']]);
+            $EstructuraCatalogos[$catalogos[$cont]['NombreCatalogo']] = $designer->ReturnStructure($catalogos[$cont]['NombreCatalogo'], $EstructuraConfig[$NombreRepositorio."_".$catalogos[$cont]['NombreCatalogo']]);
         }
                 
         /* Se genera el Query que realiza la consulta con el detalle del archivo a traves de las estructuras
@@ -319,7 +304,7 @@ class ContentManagement {
                  $query.= $NombreCatalogo.".".$EstructuraCatalogos[$catalogo][$aux]['name'].",";
              }                   
              /* substr obtiene el prrefijo de cada tabla pe. Rep.ClaveEmpresa, Rep.NombreArchivo, etct */
-             $InnerJoin.=" LEFT JOIN ".$NombreCatalogo." ".$NombreCatalogo ." ON ".$NombreRepositorio.".".$NombreCatalogo."=".  $NombreCatalogo.".Id".$NombreCatalogo;
+             $InnerJoin.=" LEFT JOIN $NombreRepositorio"."_".$NombreCatalogo." ".$NombreCatalogo ." ON ".$NombreRepositorio.".".$NombreCatalogo."=".  $NombreCatalogo.".Id".$NombreCatalogo;
          }       
                            
          $query=trim($query,',');
@@ -327,27 +312,10 @@ class ContentManagement {
          $query.=' FROM '.$NombreRepositorio." ".$NombreRepositorio;         
          $query= $query.$InnerJoin." WHERE ".$NombreRepositorio.".IdRepositorio=$IdFile";
          
-        $File=array();
-        $conexion=  $BD->Conexion();
-        if (!$conexion) {
-            $estado= mysql_error();
-            $error=array("Estado"=>$estado, "ArrayDatos"=>0);
-            return $error;
-        }
-
-        mysql_selectdb($DataBaseName, $conexion);
-        $select=mysql_query($query,  $conexion);
+        $File = $this->doDetailQuery($DataBaseName, $query);
         
-        if(!$select)
-            {
-                $estado= mysql_error(); 
-                $error=array("Estado"=>$estado, "ArrayDatos"=>0);
-                return $error;
-            }
-            else
-                while(($File[] = mysql_fetch_assoc($select,MYSQL_NUM)) || array_pop($File)); 
-        
-        mysql_close($conexion);
+        if(!is_array($File))
+            return XML::XMLReponse ("Error", 0, "<b>Error</b> al obtener metadatos del repositorio <b>$NombreRepositorio</b><br>Detalles:<br><br>$File");
                       
         $cadena_campos='';
         $cadena_valores='';
@@ -409,21 +377,17 @@ class ContentManagement {
              $type=$EstructuraRepositorio[$cont]['type'];
              $cadena_campos.=" ".$CampoRepositorio.",";
 
-            if(strcasecmp($type,"int")==0 or strcasecmp($type,"float")==0 || strcasecmp($type,"integer")==0) /* Si detecta un tipo numerico */
+            if(strcasecmp($type,"int")==0 or strcasecmp($type,"integer")==0 or strcasecmp($type,"float")==0 or strcasecmp($type,"double")==0) /* Si detecta un tipo numerico */
             {                 
                 if(!(is_numeric($File[0][$AuxCont])))
-                {                    
                     $cadena_valores.=" 0,";                   
-                }else
-                {
+                else
                     $cadena_valores.=$File[0][$AuxCont].",";
-                }
 
             }
             else    /* Demás tipos de datos llevan ' ' */
-            {
                 $cadena_valores.="'".$File[0][$AuxCont]."'".",";
-            }  
+            
             $Full.=" , ".$File[0][$AuxCont]." ";      
             
             $AuxCont++;
@@ -434,18 +398,20 @@ class ContentManagement {
          /*  Match con Campos de Catálogo  */
         for($cont=0; $cont<count($catalogos);$cont++)
         {
-            $IdCatalogo=$File[0][$AuxCont];
+//            $IdCatalogo=$File[0][$AuxCont];
                         
             $NombreCatalogo=$catalogos[$cont]['NombreCatalogo'];
             $cadena_campos.=$NombreCatalogo.",";
             $cadena_valores.=$File[0][$AuxCont].",";   
             $AuxCont++;
+            
             for($aux=1; $aux<count($EstructuraCatalogos[$NombreCatalogo]); $aux++)  /* 1 es el tipo */
              {
                  $value=$File[0][$AuxCont];
-                 $Full.=$value.", ";
+                 $Full.=" ".$value." , ";
                  $AuxCont++;
              }     
+             
         }
         
         $Full=  trim($Full,' , ');
@@ -507,8 +473,6 @@ class ContentManagement {
 
                         $Log ->Write("34", $IdUsuario, $NombreUsuario, " '$NombreArchivo' al directorio '$NombreDirectorio'", $DataBaseName);
                     }
-                    
-                    
                 }
                 else
                 {
@@ -519,47 +483,36 @@ class ContentManagement {
                 }
             }
             else
-            {
                 $XML->ResponseXML("Error", 0, "No fué posible mover el archivo a la ruta seleccionada.");
-            }
         }
         else
-        {
             $XML->ResponseXML("Error", 0, "No existe la ruta destino.");
-        }
 
-            
-        /* Se hace update de la ruta del archivo  */
-            
-            
     }
-    private function CopyFile()
+    private function CopyFile($userData)
     {
-        /*************************************************************************
-         *       
-         *                    Variables                                    */                         
+                     
         $XML=new XML();
         $BD= new DataBase();
         $designer=new DesignerForms();
         $Log = new Log();
+        $Catalog = new Catalog();
         
-        $DataBaseName=  filter_input(INPUT_POST, "DataBaseName");
-        $NombreRepositorio=  filter_input(INPUT_POST, "NombreRepositorio");
+        $DataBaseName = $userData['dataBaseName'];
+        $NombreRepositorio = filter_input(INPUT_POST, "NombreRepositorio");
         $IdRepositorio=  filter_input(INPUT_POST, "IdRepositorio");
-        $IdUsuario=filter_input(INPUT_POST, "id_usuario");
-        $NombreUsuario = filter_input(INPUT_POST,"nombre_usuario");
-        $IdFile=filter_input(INPUT_POST, "IdFile");
-        $Path=filter_input(INPUT_POST, "Path");
+        $IdUsuario = $userData['idUser'];
+        $NombreUsuario = $userData['userName'];
+        $IdFile = filter_input(INPUT_POST, "IdFile");
+        $Path = filter_input(INPUT_POST, "Path");
         $DirectorioOrigen = filter_input(INPUT_POST, "DirectorioOrigen");
         $DirectorioDestino = filter_input(INPUT_POST, "DirectorioDestino");
         $NombreEmpresa = filter_input(INPUT_POST,"NombreEmpresa");
-        
-        $RutaArchivo=  filter_input(INPUT_POST, "RutaArchivo");   /* Archivo que será copiado */
-        $IdDirectory=  filter_input(INPUT_POST, "IdDirectory");
-        $IdEmpresa=  filter_input(INPUT_POST, "IdEmpresa");
+        $RutaArchivo = filter_input(INPUT_POST, "RutaArchivo");   /* Archivo que será copiado */
+        $IdDirectory = filter_input(INPUT_POST, "IdDirectory");
+        $IdEmpresa = filter_input(INPUT_POST, "IdEmpresa");
         $PathPrincipal="Estructuras/".$DataBaseName."/";
                 
-        $catalogos=array();
         $EstructuraCatalogos=array();
         
         $InnerJoin='';
@@ -574,9 +527,13 @@ class ContentManagement {
         
         /********************* Estructura del repositorio********************** */
         
-        if(!file_exists("../Configuracion/$DataBaseName.ini")){$XML->ResponseXML("Error", 0,"<p>No existe el archivo de configuración estructural.</p>");return;}
-        $EstructuraConfig=parse_ini_file ("../Configuracion/$DataBaseName.ini",true);
+        if(!file_exists("../Configuracion/$DataBaseName.ini"))
+            return XML::XMLReponse("Error", 0,"<p>No existe el archivo de configuración estructural.</p>");
+        
+        $EstructuraConfig = parse_ini_file ("../Configuracion/$DataBaseName.ini",true); 
+        
         $ArrayStructureDefault=$designer->ReturnStructureDefault($NombreRepositorio,$EstructuraConfig[$NombreRepositorio]);
+        
         $EstructuraRepositorio=$designer->ReturnStructure($NombreRepositorio,$EstructuraConfig[$NombreRepositorio]);
                         
         $query='SELECT ';
@@ -596,43 +553,28 @@ class ContentManagement {
             } 
             
             
-        /* Los datos que pueden cambiar de un archivo copiado son
-         * IdDirectory
-         * IdRepositorio (Ya que es consecutivo)
-         * Path  
+        /* Los datos que pueden cambiar de un archivo copiado son:
+         *      IdDirectory
+         *      IdRepositorio (Ya que es consecutivo)
+         *      Path  
          
          * Se obtiene el archivo de configuración de cada sección:
          *      Campos Default Repositorio
          *      Campos de Usuario Repositorio
          *      Catálogos (Sí existen)
-         * 
-         * 
          */
              
+         
+        $catalogos = $Catalog->getArrayCatalogsNames($DataBaseName, $IdRepositorio);
         
-        $Consulta="select re.IdRepositorio, re.NombreRepositorio, re.ClaveEmpresa, em.IdEmpresa, em.NombreEmpresa,
-        em.ClaveEmpresa, ca.IdCatalogo, ca.NombreCatalogo from Repositorios re inner join Empresas em on em.ClaveEmpresa=re.ClaveEmpresa
-        inner join Catalogos ca on ca.IdRepositorio=re.IdRepositorio AND re.IdRepositorio=$IdRepositorio";
-
-        
-        $ArrayCatalogos=$BD->ConsultaSelect($DataBaseName, $Consulta);
-        
-        /*  Listado de Catálogos */
-        for($cont=0; $cont<count($ArrayCatalogos['ArrayDatos']);$cont++)
-        {
-            if(count($ArrayCatalogos['ArrayDatos'])>0)
-            {
-                foreach ($ArrayCatalogos['ArrayDatos'] as $campo=>$valor)
-                {
-                    $catalogos[$campo]=$valor;
-                }
-            }            
-        }     
-        
+        if(!is_array($catalogos))
+            return XML::XMLReponse ("Error", 0, "Error al consultar los catálogos del repositorio <b>$NombreRepositorio</b><br>Detalles:<br><br>$catalogos");
+           
+       
         /* Estructura de cada catálogo */       
         for($cont=0; $cont<count($catalogos);$cont++)
         {
-            $EstructuraCatalogos[$catalogos[$cont]['NombreCatalogo']]=$designer->ReturnStructure($catalogos[$cont]['NombreCatalogo'], $EstructuraConfig["Catalogo_".$catalogos[$cont]['NombreCatalogo']]);
+            $EstructuraCatalogos[$catalogos[$cont]['NombreCatalogo']]=$designer->ReturnStructure($catalogos[$cont]['NombreCatalogo'], $EstructuraConfig[$NombreRepositorio."_".$catalogos[$cont]['NombreCatalogo']]);
         }
                 
         /* Se genera el Query que realiza la consulta con el detalle del archivo a traves de las estructuras
@@ -663,7 +605,7 @@ class ContentManagement {
                  $query.= $NombreCatalogo.".".$EstructuraCatalogos[$catalogo][$aux]['name'].",";
              }                   
              /* substr obtiene el prrefijo de cada tabla pe. Rep.ClaveEmpresa, Rep.NombreArchivo, etct */
-             $InnerJoin.=" LEFT JOIN ".$NombreCatalogo." ".$NombreCatalogo ." ON ".$NombreRepositorio.".".$NombreCatalogo."=".  $NombreCatalogo.".Id".$NombreCatalogo;
+             $InnerJoin.=" LEFT JOIN $NombreRepositorio"."_".$NombreCatalogo." ".$NombreCatalogo ." ON ".$NombreRepositorio.".".$NombreCatalogo."=".  $NombreCatalogo.".Id".$NombreCatalogo;
          }       
                            
          $query=trim($query,',');
@@ -671,31 +613,11 @@ class ContentManagement {
          $query.=' FROM '.$NombreRepositorio." ".$NombreRepositorio;         
          $query= $query.$InnerJoin." WHERE ".$NombreRepositorio.".IdRepositorio=$IdFile";
          
-        $File=array();
-        $conexion=  $BD->Conexion();
-        if (!$conexion) {
-            $estado= mysql_error();
-            $error=array("Estado"=>$estado, "ArrayDatos"=>0);
-            return $error;
-        }
+        $File = $this->doDetailQuery($DataBaseName, $query);
+        
+        if(!is_array($File))
+            return XML::XMLReponse ("Error", 0, "<b>Error</b> al consultar metadatos. <br><br>Detalles:<br><br>$File");
 
-        mysql_selectdb($DataBaseName, $conexion);
-        $select=mysql_query($query,  $conexion);
-        if(!$select)
-            {
-                $estado= mysql_error(); 
-                $error=array("Estado"=>$estado, "ArrayDatos"=>0);
-                return $error;
-            }
-            else
-            {
-                while(($File[] = mysql_fetch_assoc($select,MYSQL_NUM)) || array_pop($File)); 
-            }
-        
-        
-        mysql_close($conexion);
-               
-        
         $copy='INSERT INTO '.$NombreRepositorio." (";
         $cadena_campos='';
         $cadena_valores='';
@@ -757,20 +679,17 @@ class ContentManagement {
              $cadena_campos.=" ".$CampoRepositorio.",";
 
             if(strcasecmp($type,"int")==0 or strcasecmp($type,"float")==0 || strcasecmp($type,"integer")==0) /* Si detecta un tipo numerico */
-            {                 
+            {         
+                
                 if(!(is_numeric($File[0][$AuxCont])))
-                {                    
                     $cadena_valores.=" 0,";                   
-                }else
-                {
+                else
                     $cadena_valores.=$File[0][$AuxCont].",";
-                }
 
             }
             else    /* Demás tipos de datos llevan ' ' */
-            {
                 $cadena_valores.="'".$File[0][$AuxCont]."'".",";
-            }  
+            
             $Full.=" , ".$File[0][$AuxCont]." ";      
             
             $AuxCont++;
@@ -819,7 +738,7 @@ class ContentManagement {
             $copy=  trim($copy,',');
 
             $copy=$copy.$cadena_campos.",NombreArchivo,IdDirectory,IdEmpresa,Full) VALUES ($cadena_valores,'$NombreArchivo',$IdDirectory,$IdEmpresa,'$Full')";
-          
+            
             $IdNewFile=$BD->ConsultaInsertReturnId($DataBaseName, $copy);
             
             if(!($IdNewFile>0)){$XML->ResponseXML("Error", 0, "Error de mysql. $IdNewFile"); return;}

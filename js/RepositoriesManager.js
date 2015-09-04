@@ -100,19 +100,21 @@ var ClassRepository = function()
         if(validation===0)
             return;             
                         
-        if(!RegularExpresion.test(FieldName))
-        {
-            FieldsValidator.AddClassRequiredActive($('#FieldNameRM'));
-            $('#FieldNameRM').attr('title','Nombre de campo invÃ¡lido');
-            return 0;
-        }                          
         
-        self.AutoincrementId++;
         
         var FieldName = $('#FieldNameRM').val();
         var FieldLength = $('#FieldLengthRM').val();
         var FieldType = $('#FieldTypeRM').val();  
         var RequiredChecValue = $('#CheckRequiredRM').is(':checked');    
+        
+        if(!RegularExpresion.test(FieldName) && FieldName.length<=20)
+        {
+            FieldsValidator.AddClassRequiredActive($('#FieldNameRM'));
+            $('#FieldNameRM').attr('title','Nombre de campo inválido, debe ser una cadena alfanumérica (A-A, a-z, _, -) menor a 20 caracteres');
+            return 0;
+        }                          
+        
+        self.AutoincrementId++;
         
         /* Se comprueba si no se repitan los campos */
         var RepeatedField = 0;
@@ -854,10 +856,10 @@ ClassRepository.prototype.NewRepository = function()
        "dom": 'lfTrtip',
         "tableTools": {
             "aButtons": [
-                {"sExtends":"text", "sButtonText": "Agregar", "fnClick" :function(){_FormsNewField();}},
-                {"sExtends":"text", "sButtonText": "Editar", "fnClick" :function(){_EditNewRepositoryField();}},
-                {"sExtends":"text", "sButtonText": "Eliminar", "fnClick" :function(){_ConfirmDeleteNewRepositoryField();}},                    
-                {"sExtends":"text", "sButtonText": "Agregar Repositorio con XML", "fnClick" :function(){_FormAddNewRepositoryXml();}},
+                {"sExtends":"text", "sButtonText": "Agregar Campo", "fnClick" :function(){_FormsNewField();}},
+                {"sExtends":"text", "sButtonText": "Editar Campo", "fnClick" :function(){_EditNewRepositoryField();}},
+                {"sExtends":"text", "sButtonText": "Eliminar Campo", "fnClick" :function(){_ConfirmDeleteNewRepositoryField();}},                    
+                {"sExtends":"text", "sButtonText": "Agregar Repositorio desde un XML", "fnClick" :function(){_FormAddNewRepositoryXml();}},
                 {"sExtends": "copy","sButtonText": "Copiar al portapapeles"}                  
             ]
         },

@@ -239,7 +239,6 @@ class Catalog {
     
     private function GetCatalogRecordsInXml($userData)
     {
-        $BD= new DataBase();
         
         $DataBaseName = $userData['dataBaseName'];
         $IdUsuario = $userData['idUser'];
@@ -250,15 +249,25 @@ class Catalog {
         $ListSearch='';
         
 //        if($TipoCatalogo=='ListSearch'){$ListSearch=' LIMIT 25';}
+        $catalogs = $this->getCatalogRecords($DataBaseName, $repositoryName, $NombreCatalogo);
         
-        $Consulta = "SELECT *FROM $repositoryName"."_$NombreCatalogo $ListSearch";
+        if(!is_array($catalogs))
+            return XML::XMLReponse ("Error", 0, $catalogs);
         
-        $Catalogos = $BD->ConsultaSelect($DataBaseName, $Consulta);    
+        XML::XmlArrayResponse("Catalog", "CatalogRecord", $catalogs); 
+    }
+    
+    public function getCatalogRecords($dataBaseName, $repositoryName, $catalogName){
+        $BD= new DataBase();
+        
+        $Consulta = "SELECT *FROM $repositoryName"."_"."$catalogName";
+        
+        $Catalogos = $BD->ConsultaSelect($dataBaseName, $Consulta);    
         
         if($Catalogos['Estado']!=1)
-            return XML::XMLReponse("Error", 0, "<p><b>Error</b> al consultar el Catálogo <b>$NombreCatalogo</b></p><br>Detalles:<br><br>".$Catalogos['Estado']); 
-            
-        XML::XmlArrayResponse("Catalog", "CatalogRecord", $Catalogos['ArrayDatos']); 
+            return $Catalogos['Estado'];
+        
+        return $Catalogos['ArrayDatos'];
     }
     
         /***************************************************************************

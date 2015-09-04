@@ -588,10 +588,10 @@ ClassFieldsValidator.prototype.InspectCharacters = function(Object)
     $(Object).each(function()
     {        
         
-        $(this).on("cut paste",function(e) {
-//             console.log('cut paste');
-            e.preventDefault();
-          });
+//        $(this).on("cut paste",function(e) {
+////             console.log('cut paste');
+//            e.preventDefault();
+//          });
         
         $(this).keyup(function()
         {
