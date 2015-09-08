@@ -421,7 +421,7 @@ class Usuarios {
 
     /**************************************************************************
      * function: @SearchRoot
-     * Comprueba que exista el usuario root al momento de 
+     * Comprueba que exista el usuario root al momento de iniciar sesión
      **************************************************************************/
 
     private function ExisteRoot()

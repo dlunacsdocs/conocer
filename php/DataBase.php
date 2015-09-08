@@ -11,7 +11,6 @@
 
 $RoutFile = dirname(getcwd());        
 
-require_once 'DesignerForms.php';
 class DataBase {
     public static $idDataBaseName = 0;
     public static $dataBaseName = null;
@@ -1115,6 +1114,8 @@ class DataBase {
     
     function insertar_usuario($detalle_usuario)
     {
+        require_once 'DesignerForms.php';
+
         $designer = new DesignerForms();     
         
         $GetTotalRegistros = $this->ConsultaSelect("cs-docs", "SELECT COUNT(*) FROM Usuarios");

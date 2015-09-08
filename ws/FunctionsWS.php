@@ -10,6 +10,7 @@ require_once ("$RoutFile/php/Repository.php");
 require_once ("$RoutFile/php/Catalog.php");
 require_once ("$RoutFile/php/Tree.php");
 require_once ("$RoutFile/php/DesignerForms.php");
+require_once ("$RoutFile/php/Catalog.php");
 
 function login($data)
 {
@@ -366,4 +367,47 @@ function getStructureDetails($data){
         $properties[] = array('message'=>'No existen propiedades definidas para la estructura solicitada');
         
     return $properties;
+}
+
+function getCatalogValues($data){
+    $Catalog = new Catalog();
+    
+    $error = array();
+
+    if(!isset($data['idSession']))
+        $error[] = array('error'=>'No se encontró el parámetro idSession');
+    if(!isset($data['instanceName']))
+        $error[] = array('error'=>"No se encontró el parámetro instanceName");
+    if(!isset($data['userName']))
+        $error[] = array('error'=>'No se encontró el parámetro userName');
+    if(!isset($data['password']))
+        $error[] = array('error'=>'No se encontró el parámetro password');
+    if(!isset($data['repositoryName']))
+        $error[] = array('error'=>'No se encontró el parámetro repositoryName');
+    if(!isset($data['catalogName']))
+        $error[] = array('error'=>'No se encontró el parámetro catalogName');
+    
+    if(count($error)>0)
+        return $error;
+    
+    $instanceName = $data['instanceName'];
+    $repositoryName = $data['repositoryName'];
+    $catalogName = $data['catalogName'];
+    $valuesRow = array();
+    
+    $catalogValues = $Catalog->getCatalogRecords($instanceName, $repositoryName, $catalogName);
+    
+    if(!is_array($catalogValues)){
+        $error[] = array('error'=>$catalogValues);
+        return $error;
+    }
+    
+    for($cont = 0; $cont < count($catalogValues); $cont++){
+        $valuesRow[] = array('valuesRow'=>  implode('||', $catalogValues[$cont]));
+    }
+    
+    if(count($valuesRow)==0)
+        $valuesRow[] = array('message'=>'No se encontraron valores en el catálogo '.$catalogName);    
+    
+    return $valuesRow;
 }

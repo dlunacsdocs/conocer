@@ -38,7 +38,7 @@ class ContentManagement {
             $idSession = Session::getIdSession();
             
             if($idSession == null)
-                return XML::XMLReponse ("Error", 0, "No existe una sesión activa, por favor vuelva a iniciar sesión");
+                return XML::XMLReponse ("Error", 0, "ContentManagement::No existe una sesión activa, por favor vuelva a iniciar sesión");
 
                 $userData = Session::getSessionParameters();
                 

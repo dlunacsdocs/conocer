@@ -27,7 +27,6 @@
  */
 
 
-require_once 'DataBase.php';
 require_once 'XML.php';
 require_once 'Session.php';
 
@@ -44,10 +43,10 @@ class DesignerForms {
     {
         if(filter_input(INPUT_POST, "opcion")!=NULL and filter_input(INPUT_POST, "opcion")!=FALSE){
             
-            $idSession = Session::getIdSession();
+//            $idSession = Session::getIdSession();
             
-            if($idSession == null)
-                return XML::XMLReponse ("Error", 0, "No existe una sesión activa, por favor vuelva a iniciar sesión");
+//            if($idSession == null)
+//                return XML::XMLReponse ("Error", 0, "DesignerForms::No existe una sesión activa, por favor vuelva a iniciar sesión");
 
             $userData = Session::getSessionParameters();
             switch (filter_input(INPUT_POST, "opcion"))

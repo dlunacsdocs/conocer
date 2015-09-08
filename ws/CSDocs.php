@@ -17,7 +17,8 @@ $server = new nusoap_server();
 
 $server->configureWSDL('Servicios Web de CSDocs', 'urn:ecm');
 
-
+$server->soap_defencoding = 'UTF-8';
+$server->decode_utf8 = false;
 /*******************************************************************************
  *                                  LOGIN                                      *
  *******************************************************************************/
@@ -385,6 +386,62 @@ $server->register(  'getStructureDetails', // nombre del metodo o funcion
                     'rpc', // style
                     'encoded', // use
                     'Retorna los campos que constituyen una empresa, repositorio o un catálogo' // documentation
+);
+
+/*******************************************************************************
+ *                             GET CATALOG VALUES                              *
+ *******************************************************************************/
+
+// Parametros de entrada
+$server->wsdl->addComplexType(  'requestCatalogValues', 
+                                'complexType', 
+                                'struct', 
+                                'all', 
+                                '',
+                                array('idSession'       => array('name' => 'idSession','type' => 'xsd:string'),
+                                      'userName'        => array('name' => 'userName','type' => 'xsd:string') ,   
+                                      'password'        => array('name' => 'password','type' => 'xsd:string') ,   
+                                      'instanceName'    => array('name' => 'instanceName','type' => 'xsd:string'),
+                                      'repositoryName'  => array('name' => 'repositoryName','type' => 'xsd:string'),
+                                      'catalogName'   => array('name' => 'catalogName','type' => 'xsd:string'))
+);
+
+// Parametros de salida
+$server->wsdl->addComplexType(  'responseCatalogValues', 
+                                'complexType', 
+                                'struct', 
+                                'all', 
+                                '',
+                                array('valuesRow'   => array('name' => 'valuesRow','type' => 'xsd:string'),
+                                      'error'    => array('name' => 'error','type' => 'xsd:string'),
+                                      'message'    => array('name' => 'message','type' => 'xsd:string')
+                                )
+);
+
+// Complex Array ++++++++++++++++++++++++++++++++++++++++++
+$server->wsdl->addComplexType('catalorRow',
+                              'complexType',
+                              'array',
+                              '',
+                              'SOAP-ENC:Array',
+                              array(),
+                              array(
+                                  array(
+                                      'ref' => 'SOAP-ENC:arrayType',
+                                      'wsdl:arrayType' => 'tns:responseCatalogValues[]'
+                                  )
+                              ),
+                              "tns:responseCatalogValues"
+);
+
+$server->register(  'getCatalogValues', // nombre del metodo o funcion
+                    array('requestCatalogValues' => 'tns:requestCatalogValues'), // parametros de entrada
+                    array('responseCatalogValues' => 'tns:catalorRow'), // parametros de salida
+                    'urn:ecm', // namespace
+                    'urn:getCatalogValues', // soapaction debe ir asociado al nombre del metodo
+                    'rpc', // style
+                    'encoded', // use
+                    'Retorna los valores de un catálogo seleccionado, cada campo obtenido de la fila se devuelve separada por ||.' // documentation
 );
 
 

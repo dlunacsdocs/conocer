@@ -3,6 +3,9 @@
 /*
  * @author Daniel Luna
  */
+if(!isset($_SESSION))
+            session_start();
+
 class Session {
     static $idSession = null;
     

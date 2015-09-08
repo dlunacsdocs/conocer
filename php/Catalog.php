@@ -18,6 +18,7 @@ require_once 'DataBase.php';
 require_once 'Log.php';
 require_once 'XML.php';
 require_once 'Session.php';
+require_once 'DesignerForms.php';
 
 if(!isset($_SESSION))
     session_start();
@@ -34,7 +35,7 @@ class Catalog {
             $idSession = Session::getIdSession();
         
             if($idSession == null)
-                return XML::XMLReponse ("Error", 0, "No existe una sesión activa, por favor vuelva a iniciar sesión");
+                return XML::XMLReponse ("Error", 0, "Catalog::No existe una sesión activa, por favor vuelva a iniciar sesión");
             
             $userData = Session::getSessionParameters();
             
