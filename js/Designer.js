@@ -23,7 +23,7 @@ function GeStructure(TypeStructure)
           dataType:"html", 
           type: 'POST',   
           url: "php/DesignerForms.php",
-          data: "opcion=GetStructure&DataBaseName="+EnvironmentData.DataBaseName+"&TypeStructure="+TypeStructure, 
+          data: "opcion=GetStructure&TypeStructure="+TypeStructure, 
           success:  function(respuesta){
               if($.parseXML( respuesta )===null){Error(respuesta); return 0;}else xml=$.parseXML( respuesta );  
               
@@ -51,7 +51,7 @@ function GetAllStructure(TypeStructure)
           dataType:"html", 
           type: 'POST',   
           url: "php/DesignerForms.php",
-          data: "opcion=GetAllStructure&DataBaseName="+EnvironmentData.DataBaseName+"&TypeStructure="+TypeStructure, 
+          data: "opcion=GetAllStructure&TypeStructure="+TypeStructure, 
           success:  function(respuesta){
               if($.parseXML( respuesta )===null){Error(respuesta); return 0;}else xml=$.parseXML( respuesta );                         
           },

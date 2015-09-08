@@ -9,6 +9,7 @@ require_once ("$RoutFile/php/Login.php");
 require_once ("$RoutFile/php/Repository.php");
 require_once ("$RoutFile/php/Catalog.php");
 require_once ("$RoutFile/php/Tree.php");
+require_once ("$RoutFile/php/DesignerForms.php");
 
 function login($data)
 {
@@ -201,6 +202,8 @@ function getCatalogs($data){
     $catalogs = array();
     $error = array();
     
+    if(!isset($data['idSession']))
+        $error[] = array('error'=>'No se encontró el parámetro idSession');
     if(!isset($data['instanceName']))
         $error[] = array('error'=>"No se encontró el parámetro instanceName");
     if(!isset($data['userName']))
@@ -245,6 +248,8 @@ function getTreeStructure($data){
     $Tree = new Tree();
     $treeStructure = array();
     
+    if(!isset($data['idSession']))
+        $error[] = array('error'=>'No se encontró el parámetro idSession');
     if(!isset($data['instanceName']))
         $error[] = array('error'=>"No se encontró el parámetro instanceName");
     if(!isset($data['userName']))
@@ -276,4 +281,89 @@ function getTreeStructure($data){
 //    $error[] = array('message'=>'Respuesta desde WS Àrbol');
     
     return $treeStructure;
+}
+
+function getStructureDetails($data){
+    
+    $Designer = new DesignerForms();
+    $error = array();
+    $message = array();
+    
+    $properties = array();
+    
+    if(!isset($data['idSession']))
+        $error[] = array('error'=>'No se encontró el parámetro idSession');
+    if(!isset($data['instanceName']))
+        $error[] = array('error'=>"No se encontró el parámetro instanceName");
+    if(!isset($data['userName']))
+        $error[] = array('error'=>'No se encontró el parámetro userName');
+    if(!isset($data['password']))
+        $error[] = array('error'=>'No se encontró el parámetro password');
+    if(!isset($data['repositoryName']))
+        $error[] = array('error'=>'No se encontró el parámetro repositoryName');
+    if(!isset($data['structureName']))
+        $error[] = array('error'=>'No se encontró el parámetro structureName');
+    if(!isset($data['structureType']))
+        $error[] = array('error'=>'No se encontró el parámetro structureType');
+    
+    $instanceName = $data['instanceName'];
+    $repositoryName = $data['repositoryName'];
+    $structureType = $data['structureType'];
+    $structureName = $data['structureName'];
+    $unrecognisedStructureType = 0;
+    $StructureDetail = array();
+    
+    switch ($structureType){
+        case 'catalog':
+            $unrecognisedStructureType = 1;
+            $message[] = array('message'=>'Devolviendo estructura de catálogo');
+            $structureName = $repositoryName."_".$structureName;
+        case 'repository':
+            $unrecognisedStructureType = 1;
+            $message[] = array('message'=>'Devolviendo estructura de repositorio');   
+    }
+    
+    if($unrecognisedStructureType == 0)
+        $error[] = array('error'=>'Estructura solicitada no reconocida');
+    
+    if(count($error)>0)
+        return $error;
+    
+    $generalStructure = $Designer->getArrayStructureFile($instanceName);
+    
+    if(!is_array($generalStructure)){
+        $error[] = array('error'=>$generalStructure);
+        return $error;
+    }
+            
+    $structureProperties = $Designer->getPropertiesFromStructure($structureType, $generalStructure["$structureName"]);
+        
+    if(!is_array($structureProperties)){
+        $error[] = array('error'=>$structureProperties);
+        return $error;
+    }
+    else
+        $structureProperties = $structureProperties['structure'];
+    
+    for($cont = 0; $cont < count($structureProperties); $cont++){
+        
+        $fieldLenght = 0;
+        $requiredField = "false";
+        
+        if(isset($structureProperties[$cont]['long']))
+                $fieldLenght = $structureProperties[$cont]['long'];
+        
+        if(isset($structureProperties[$cont]['required']))
+            $requiredField = $structureProperties[$cont]['required'];
+        
+        $properties[] = array('fieldName'=>$structureProperties[$cont]['name'], 
+            'fieldType'=>$structureProperties[$cont]['type'],
+            'fieldLenght'=>$fieldLenght, 'requiredField'=>$requiredField);        
+    }
+    
+    
+    if(count($structureProperties)==0)
+        $properties[] = array('message'=>'No existen propiedades definidas para la estructura solicitada');
+        
+    return $properties;
 }
