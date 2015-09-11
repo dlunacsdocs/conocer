@@ -444,7 +444,39 @@ $server->register(  'getCatalogValues', // nombre del metodo o funcion
                     'Retorna los valores de un catálogo seleccionado, cada campo obtenido de la fila se devuelve separada por ||.' // documentation
 );
 
+/*******************************************************************************
+ *                             UPLOAD DOCUMENT                                 *
+ *******************************************************************************/
 
+// Parametros de entrada
+$server->wsdl->addComplexType(  'parametersUploadDocument', 
+                                'complexType', 
+                                'struct', 
+                                'all', 
+                                '',
+                                array('idSession'       => array('name' => 'idSession','type' => 'xsd:string'),
+                                      'userName'        => array('name' => 'userName','type' => 'xsd:string') ,   
+                                      'password'        => array('name' => 'password','type' => 'xsd:string') ,   
+                                      'instanceName'    => array('name' => 'instanceName','type' => 'xsd:string'),
+                                      'repositoryName'  => array('name' => 'repositoryName','type' => 'xsd:string'),
+                                      'fieldsChain'   => array('name' => 'fieldsChain','type' => 'xsd:string'),
+                                      'valuesChain'   => array('name' => 'valuesChain','type' => 'xsd:string'),
+                                      'documentEncoded' =>array('name'=>'documentEncoded', 'type'=>'xsd:string'),
+                                      'documentLocation'        =>array('name'=>'documentLocation', 'type'=>'xsd:string'))
+);
+
+// Register the method to expose
+    $server->register('uploadDocument',                                 // method
+        array('parametersUploadDocument'=>'tns:parametersUploadDocument'),    // input parameters
+        array('response' => 'xsd:string'),                             // output parameters
+        'urn:ecm',                                            // namespace
+        'urn:uploadDocument',                                // soapaction
+        'rpc',                                                       // style
+        'encoded',                                                   // use
+        'Carga de un documento a CSDocs'                                // documentation
+    );
+
+    
 
 $HTTP_RAW_POST_DATA = isset($HTTP_RAW_POST_DATA) ? $HTTP_RAW_POST_DATA : '';
 $server->service($HTTP_RAW_POST_DATA);

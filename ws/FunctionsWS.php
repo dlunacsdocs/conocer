@@ -411,3 +411,57 @@ function getCatalogValues($data){
     
     return $valuesRow;
 }
+
+// Define the method as a PHP function
+
+function uploadDocument($data) {
+        try{
+             if(!isset($data['idSession']))
+            $error[] = array('error'=>'No se encontró el parámetro idSession');
+        if(!isset($data['instanceName']))
+            $error[] = array('error'=>"No se encontró el parámetro instanceName");
+        if(!isset($data['userName']))
+            $error[] = array('error'=>'No se encontró el parámetro userName');
+        if(!isset($data['password']))
+            $error[] = array('error'=>'No se encontró el parámetro password');
+        if(!isset($data['repositoryName']))
+            $error[] = array('error'=>'No se encontró el parámetro repositoryName');
+        if(!isset($data['documentEncoded']))
+            $error[] = array('error'=>'No se encontró el parámetro documentEncoded');
+        if(!isset($data['documentLocation']))
+            $error[] = array('error'=>'No se encontró el parámetro documentLocation');
+
+        $instanceName = $data['instanceName'];
+        $repositoryName = $data['repositoryName'];
+        $documentEncoded = $data['documentEncoded'];
+
+        $location = $data['documentLocation'];
+
+        $RoutFile = dirname(getcwd());       
+
+        $location = "$RoutFile/$location";                               // Mention where to upload the file
+
+
+    //    $current = file_get_contents($location);                     // Get the file content. This will create an empty file if the file does not exist     
+        $current = base64_decode($documentEncoded);                          // Now decode the content which was sent by the client     
+        if(!$current)
+            return "La cadena codificada contiene carácteres que no estan dentro del alfabeto base64";
+
+        file_put_contents($location, $current);                      // Write the decoded content in the file mentioned at particular location      
+
+        return "Documento almacena en $location  ". strlen($documentEncoded);
+
+
+    //    
+    //    if($name!="")
+    //        return "File Uploaded successfully...";                      // Output success message                              
+    //    else        
+    //        return "Please upload a file...";    
+    //    
+    //        return "repsuesta obtenida del WS uploadDocument: $RoutFile  $instanceName $repositoryName $documentEncoded $location";
+
+        } catch (Exception $ex) {
+            return "".$ex;
+        }
+   
+}
