@@ -1,10 +1,13 @@
 <?php
+//ini_set('memory_limit', '1024M');
+
 /*
  *  Script que da de alta los web services para la interpolación de información
  *  con el sistema CSDocs.
  */
 
-
+ini_set('memory_limit', '-1');
+//ini_set('post_max_size', '500M');
 
 $RoutFile = dirname(getcwd());        
 

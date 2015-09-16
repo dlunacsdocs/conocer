@@ -440,7 +440,7 @@ function uploadDocument($data) {
         $RoutFile = dirname(getcwd());       
 
         $location = "$RoutFile/$location";                               // Mention where to upload the file
-
+       
 
     //    $current = file_get_contents($location);                     // Get the file content. This will create an empty file if the file does not exist     
         $current = base64_decode($documentEncoded);                          // Now decode the content which was sent by the client     
@@ -449,7 +449,7 @@ function uploadDocument($data) {
 
         file_put_contents($location, $current);                      // Write the decoded content in the file mentioned at particular location      
 
-        return "Documento almacena en $location  ". strlen($documentEncoded);
+        return "Documento almacena en $location  ". mb_strlen($documentEncoded, '8bit'). " limite: ". ini_get("memory_limit")." post_max_size: ".  ini_get('post_max_size');
 
 
     //    
@@ -461,7 +461,7 @@ function uploadDocument($data) {
     //        return "repsuesta obtenida del WS uploadDocument: $RoutFile  $instanceName $repositoryName $documentEncoded $location";
 
         } catch (Exception $ex) {
-            return "".$ex;
+            return "Error en el WS: ".$ex;
         }
    
 }
