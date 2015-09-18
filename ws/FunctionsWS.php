@@ -14,19 +14,22 @@ require_once ("$RoutFile/php/Catalog.php");
 
 function login($data)
 {
-    
     if(!isset($_SESSION))
         session_start();
     
     $login = new Login();
     $session = new Session();
-      
+    $error = array();  
+    
     if(!isset($data['idInstance']))
-        return array("error"=>"idInstance no encontrado.");
+        $error[] =  array("error"=>"idInstance no encontrado.");
     if(!isset($data['instanceName']))
-        return array('error'=>'instanceName no encontrado.');
+        $error[] = array('error'=>'instanceName no encontrado.');
     if(!isset($data['userName']))
-        return array('error'=>'userName no encontrado.');
+        $error[] = array('error'=>'userName no encontrado.');
+    
+    if(count($error)>0)
+        return $error;
     
     /*Se comprueba si existía una sesión activa  */
     $idSession = $session->getIdSession();
@@ -50,7 +53,6 @@ function login($data)
         if(count($userData)==0)
             return array("noAccess" => "Acceso denegado. Compruebe que tiene permisos para entrar al sistema al igual que su usuario o contraseña sean correctos");
 
-
     if(is_array($userData)){
         $text = '';
         if(isset($userData['IdUsuario']))
@@ -62,7 +64,6 @@ function login($data)
         if(isset($userData['Nombre']))
             $text.= $userData['Nombre'];
        
-//        return array('error'=>"($idInstance, $instanceName,". $text);
         $idSession = $session->createSession($idInstance, $instanceName, $userData['IdUsuario'], $userData['Login'], $userData['IdGrupo'], $userData['Nombre']);
         return array('idSession'=>$idSession);
         
