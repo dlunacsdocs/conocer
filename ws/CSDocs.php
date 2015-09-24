@@ -479,7 +479,30 @@ $server->wsdl->addComplexType(  'parametersUploadDocument',
         'Carga de un documento a CSDocs'                                // documentation
     );
 
+   
+    /*******************************************************************************
+    *                                                      MIME                                                                 *
+    *******************************************************************************/
+   // Parametros de entrada
+   $server->wsdl->addComplexType(  'requestMime', 
+                                   'complexType', 
+                                   'struct', 
+                                   'all', 
+                                   '',
+                                   array('greeting'       => array('name' => 'greeting','type' => 'xsd:string'),
+                                            'mimeText' => array('name'=>'mimeText','type' => 'xsd:string')
+                                       )
+   );
     
+    $server->register('mime',                                 // method
+        array('requestMime'=>'tns:requestMime'),    // input parameters              
+        array('response' => 'xsd:string'),                             // output parameters
+        'urn:ecm',                                            // namespace
+        'urn:mime',                                // soapaction
+        'rpc',                                                       // style
+        'encoded',                                                   // use
+        'Carga de un documento a CSDocs'                                // documentation
+    );
 
 $HTTP_RAW_POST_DATA = isset($HTTP_RAW_POST_DATA) ? $HTTP_RAW_POST_DATA : '';
 $server->service($HTTP_RAW_POST_DATA);

@@ -466,3 +466,7 @@ function uploadDocument($data) {
         }
    
 }
+
+//function mime($data){
+//    return "Saludando desde MIME. Me saludaste ";
+//}
