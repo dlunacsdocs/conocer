@@ -1,5 +1,4 @@
 <?php
-//ini_set('memory_limit', '1024M');
 
 /*
  *  Script que da de alta los web services para la interpolación de información
@@ -7,16 +6,18 @@
  */
 
 ini_set('memory_limit', '-1');
-//ini_set('post_max_size', '500M');
 
 $RoutFile = dirname(getcwd());        
 
 require_once("$RoutFile/apis/soap/lib/nusoap.php");
+require_once $RoutFile.'/apis/soap/lib/nusoapmime.php';
+
 require_once("FunctionsWS.php");
+
 
 session_start(); 
   
-$server = new nusoap_server();
+$server = new nusoapservermime();
 
 $server->configureWSDL('Servicios Web de CSDocs', 'urn:ecm');
 
@@ -464,7 +465,6 @@ $server->wsdl->addComplexType(  'parametersUploadDocument',
                                       'repositoryName'  => array('name' => 'repositoryName','type' => 'xsd:string'),
                                       'fieldsChain'   => array('name' => 'fieldsChain','type' => 'xsd:string'),
                                       'valuesChain'   => array('name' => 'valuesChain','type' => 'xsd:string'),
-                                      'documentEncoded' =>array('name'=>'documentEncoded', 'type'=>'xsd:string'),
                                       'documentLocation'        =>array('name'=>'documentLocation', 'type'=>'xsd:string'))
 );
 
@@ -479,30 +479,6 @@ $server->wsdl->addComplexType(  'parametersUploadDocument',
         'Carga de un documento a CSDocs'                                // documentation
     );
 
-   
-    /*******************************************************************************
-    *                                                      MIME                                                                 *
-    *******************************************************************************/
-   // Parametros de entrada
-   $server->wsdl->addComplexType(  'requestMime', 
-                                   'complexType', 
-                                   'struct', 
-                                   'all', 
-                                   '',
-                                   array('greeting'       => array('name' => 'greeting','type' => 'xsd:string'),
-                                            'mimeText' => array('name'=>'mimeText','type' => 'xsd:string')
-                                       )
-   );
-    
-    $server->register('mime',                                 // method
-        array('requestMime'=>'tns:requestMime'),    // input parameters              
-        array('response' => 'xsd:string'),                             // output parameters
-        'urn:ecm',                                            // namespace
-        'urn:mime',                                // soapaction
-        'rpc',                                                       // style
-        'encoded',                                                   // use
-        'Carga de un documento a CSDocs'                                // documentation
-    );
 
 $HTTP_RAW_POST_DATA = isset($HTTP_RAW_POST_DATA) ? $HTTP_RAW_POST_DATA : '';
 $server->service($HTTP_RAW_POST_DATA);

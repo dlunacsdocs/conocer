@@ -432,10 +432,15 @@ class Catalog {
         
     }
 
-    public function getArrayCatalogsNames($dataBaseName, $idRepository){
+    public function getArrayCatalogsNames($dataBaseName, $idRepository, $repositoryName = null){
         $DB = new DataBase();
-                
-        $query = "SELECT IdCatalogo, NombreCatalogo FROM CSDocs_Catalogos WHERE IdRepositorio = $idRepository";
+        
+        $query = "";
+        
+        if($repositoryName==null)
+            $query = "SELECT IdCatalogo, NombreCatalogo FROM CSDocs_Catalogos WHERE IdRepositorio = $idRepository";
+        else
+            $query = "SELECT ca.NombreCatalogo FROM CSDocs_Catalogos ca RIGHT JOIN CSDocs_Repositorios re ON ca.IdRepositorio = re.IdRepositorio WHERE re.NombreRepositorio = '$repositoryName'";
         
         $queryResult = $DB->ConsultaSelect($dataBaseName, $query);
         
