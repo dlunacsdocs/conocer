@@ -468,10 +468,21 @@ $server->wsdl->addComplexType(  'parametersUploadDocument',
                                       'documentLocation'        =>array('name'=>'documentLocation', 'type'=>'xsd:string'))
 );
 
+// Parametros de salida
+$server->wsdl->addComplexType(  'outputUploadDocument', 
+                                'complexType', 
+                                'struct', 
+                                'all', 
+                                '',
+                                array('error'       => array('name' => 'error','type' => 'xsd:string'),
+                                      'message'     =>array('name'=>'message', 'type'=>'xsd:string'),
+                                    'idDocument'    =>array('name'=>'idDocument', 'type'=>'xsd:integer'))
+);
+
 // Register the method to expose
     $server->register('uploadDocument',                                 // method
         array('parametersUploadDocument'=>'tns:parametersUploadDocument'),    // input parameters
-        array('response' => 'xsd:string'),                             // output parameters
+        array('outputUploadDocument' => 'tns:outputUploadDocument'),                             // output parameters
         'urn:ecm',                                            // namespace
         'urn:uploadDocument',                                // soapaction
         'rpc',                                                       // style

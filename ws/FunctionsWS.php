@@ -11,6 +11,7 @@ require_once ("$RoutFile/php/Catalog.php");
 require_once ("$RoutFile/php/Tree.php");
 require_once ("$RoutFile/php/DesignerForms.php");
 require_once ("$RoutFile/php/Catalog.php");
+require_once ("$RoutFile/php/ContentManagement.php");
 
 function login($data) {
     if (!isset($_SESSION))
@@ -403,108 +404,188 @@ function getCatalogValues($data) {
 // Define the method as a PHP function
 
 function uploadDocument($data) {
-    try {
-        if (!isset($data['idSession']))
-            $error[] = array('error' => 'No se encontró el parámetro idSession');
-        if (!isset($data['instanceName']))
-            $error[] = array('error' => "No se encontró el parámetro instanceName");
-        if (!isset($data['userName']))
-            $error[] = array('error' => 'No se encontró el parámetro userName');
-        if (!isset($data['password']))
-            $error[] = array('error' => 'No se encontró el parámetro password');
-        if (!isset($data['repositoryName']))
-            $error[] = array('error' => 'No se encontró el parámetro repositoryName');
-        if (!isset($data['documentLocation']))
-            $error[] = array('error' => 'No se encontró el parámetro documentLocation');
-        if (!isset($data['fieldsChain']))
-            $error[] = array('error' => "No se encontró el parámetro fieldsChain");
-        if (!isset($data['valuesChain']))
-            $error[] = array('error' => "No se encontró el parámetro valuesChain");
 
-        $server = $GLOBALS['server'];
-        $Catalog = new Catalog();
-        $Designer = new DesignerForms();
+    if (!isset($data['idSession']))
+        $error[] = array('error' => 'No se encontró el parámetro idSession');
+    if (!isset($data['instanceName']))
+        $error[] = array('error' => "No se encontró el parámetro instanceName");
+    if (!isset($data['userName']))
+        $error[] = array('error' => 'No se encontró el parámetro userName');
+    if (!isset($data['password']))
+        $error[] = array('error' => 'No se encontró el parámetro password');
+    if (!isset($data['repositoryName']))
+        $error[] = array('error' => 'No se encontró el parámetro repositoryName');
+    if (!isset($data['documentLocation']))
+        $error[] = array('error' => 'No se encontró el parámetro documentLocation');
+    if (!isset($data['fieldsChain']))
+        $error[] = array('error' => "No se encontró el parámetro fieldsChain");
+    if (!isset($data['valuesChain']))
+        $error[] = array('error' => "No se encontró el parámetro valuesChain");
 
-        $instanceName = $data['instanceName'];
-        $repositoryName = $data['repositoryName'];
-        $fieldsBlock = explode("||", $data['fieldsChain']);
-        $fields = array();
-        $valuesBlock = explode('||', $data['valuesChain']);
-        $fieldsChain = "";
-        $valuesChain = "";
-        $RoutFile = dirname(getcwd());
-        $Full = "";
-        $location = "$RoutFile/" . $data['documentLocation'];                               // Mention where to upload the file
-        $userName = $data['userName'];
+    $server = $GLOBALS['server'];
+    $Catalog = new Catalog();
+    $Designer = new DesignerForms();
+    $DB = new DataBase();
 
-        if(count($fieldsBlock) != count($valuesBlock))
-            return "No coincide el número de campos con el número de valores ".  count($fieldsBlock)." ".count($valuesBlock);
-        
-        for($cont = 0; $cont < count($fieldsBlock); $cont++){
-            $fields[$fieldsBlock[$cont]] = $valuesBlock[$cont];
-        }
-        
-        $catalogs = $Catalog->getArrayCatalogsNames($instanceName, 0, $repositoryName);
+    $instanceName = $data['instanceName'];
+    $repositoryName = $data['repositoryName'];
+    $fieldsBlock = explode("||", $data['fieldsChain']);
+    $fields = array();
+    $valuesBlock = explode('||', $data['valuesChain']);
+    $fieldsChain = "";
+    $valuesChain = "";
+    $RoutFile = dirname(getcwd());
+    $Full = "";
+    $location = "$RoutFile/Estructuras/$instanceName/$repositoryName/" . $data['documentLocation'];                               // Mention where to upload the file
+    $pathDocumentDB = "Estructuras/$instanceName/$repositoryName/" . $data['documentLocation'];
+    $fileName = basename($data['documentLocation']);
+    $idDirectory = basename(dirname($location));
+    $enterpriseKey = 0;
+    $userName = $data['userName'];
+    $extension = $extension = pathinfo(basename($location), PATHINFO_EXTENSION);
+    $idEnterprise = 0;
+    $idRepository = 0;
+    $attachments = $server->getAttachments();
 
-        IF (!is_array($catalogs))
-            return "Error al recuperar los catálogos ligados al repositorio $repositoryName. $catalogs";
 
-        if (!file_exists("$RoutFile/Configuracion/$instanceName.ini"))
-            return "No existe el registro de estructura de la instancia $instanceName";
+    if (!file_exists(dirname($location)))
+        return array("error" => "El destino del documento " . dirname($data['documentLocation']) . " no existe",
+            "message" => "Confirme que la ruta la ha generado correctamente a partir del árbol del directorios"
+            . " del repositorio $repositoryName");
 
-        $EstructuraConfig = parse_ini_file("$RoutFile/Configuracion/$instanceName.ini", true);
+    if (count($fieldsBlock) != count($valuesBlock))
+        return array("error" => "No coincide el número de campos con el número de valores " . count($fieldsBlock) . " " . count($valuesBlock));
 
-        $ArrayStructureUser = $Designer->ReturnStructure($repositoryName, $EstructuraConfig[$repositoryName]);
-
-        if (!is_array($ArrayStructureUser))
-            return "No se obtuvo el registro de estructura del repositorio $repositoryName";
-
-        /* Match con los campos definidos por el usuario */
-
-        for ($cont = 0; $cont < count($ArrayStructureUser); $cont++) {
-            $Field = preg_replace('/\s+/', ' ', $ArrayStructureUser[$cont]['name']);
-            $type = $ArrayStructureUser[$cont]['type'];
-
-            if (isset($fields[$Field])) {
-                $valor = trim($fields[$Field]);
-                
-                if(isset($ArrayStructureUser[$cont]['required']))
-                    if(strlen($valor)==0 and (strcasecmp($ArrayStructureUser[$cont]['required'], 'true')==0))
-                        return "El campo $Field es obligatorio";
-
-                if (strcasecmp($type, "INT") == 0 or strcasecmp($type, "FLOAT") == 0 or strcasecmp($type, "INTEGER") == 0 or strcasecmp($type, "DOUBLE") == 0) /* Si detecta un tipo numerico */ {
-                    if (intval($valor) != 0)
-                        $valuesChain.=$valor . ",";
-                    else
-                        $valuesChain.=" 0,";
-                } else /* Demás tipos de datos llevan ' ' */
-                    $valuesChain.="'" . $valor . "'" . ",";
-
-                $Full.=$valor . " , ";
-                $fieldsChain.=$Field . ",";
-            } else
-                return "No existe el Campo $Field ";
-        }/* Fin For */
-
-        /* Match con los catálogos */
-
-        for ($cont = 0; $cont < count($catalogs); $cont++) {
-            
-        }
-
-        $attachments = $server->getAttachments();
-
-        foreach ($attachments as $attach) {
-            $documentData = $attach['data'];
-
-            file_put_contents($location, $documentData);
-
-//            return "Documento almacena en $location  ". " limite: ". ini_get("memory_limit")." post_max_size: ".  ini_get('post_max_size');
-            return "$fieldsChain     $valuesChain";
-        }
-
-        return "No se encontraron attachments";
-    } catch (Exception $ex) {
-        return "Error en el WS: " . $ex;
+    for ($cont = 0; $cont < count($fieldsBlock); $cont++) {
+        $fields[$fieldsBlock[$cont]] = $valuesBlock[$cont];
     }
+    
+
+    if (count($attachments) ==0) 
+        return array("error"=>"No se encontraron attachments", "message"=>"El sistema no detecta ningún documento adjunto");
+    
+    $documentData = $attachments[0]['data'];
+
+    if (file_exists($location)) {
+        $location = ContentManagement::RenameFile($location);
+        $pathDocumentDB = dirname($pathDocumentDB)."/".basename($location);
+        $fileName = basename($location);
+    }
+
+    file_put_contents($location, $documentData);
+
+    $catalogs = $Catalog->getArrayCatalogsNames($instanceName, 0, $repositoryName);
+
+    IF (!is_array($catalogs))
+        return array("error" => "Error al recuperar los catálogos ligados al repositorio $repositoryName. $catalogs");
+
+    if (!file_exists("$RoutFile/Configuracion/$instanceName.ini"))
+        return array("error" => "No existe el registro de estructura de la instancia $instanceName");
+
+    $EstructuraConfig = parse_ini_file("$RoutFile/Configuracion/$instanceName.ini", true);
+
+    $ArrayStructureUser = $Designer->ReturnStructure($repositoryName, $EstructuraConfig[$repositoryName]);
+
+    if (!is_array($ArrayStructureUser))
+        return array("error" => "No se obtuvo el registro de estructura del repositorio $repositoryName");
+
+    /* Match con los campos definidos por el usuario */
+
+    for ($cont = 0; $cont < count($ArrayStructureUser); $cont++) {
+        $Field = preg_replace('/\s+/', ' ', $ArrayStructureUser[$cont]['name']);
+        $type = $ArrayStructureUser[$cont]['type'];
+
+        if (isset($fields[$Field])) {
+            $valor = trim($fields[$Field]);
+
+            if (isset($ArrayStructureUser[$cont]['required']))
+                if (strlen($valor) == 0 and ( strcasecmp($ArrayStructureUser[$cont]['required'], 'true') == 0))
+                    return array("error" => "El campo $Field es obligatorio",
+                        "message" => "El campo $Field no puede quedar vacio");
+
+            if (strcasecmp($type, "INT") == 0 or strcasecmp($type, "FLOAT") == 0 or strcasecmp($type, "INTEGER") == 0 or strcasecmp($type, "DOUBLE") == 0) /* Si detecta un tipo numerico */ {
+                if (intval($valor) != 0)
+                    $valuesChain.=$valor . ",";
+                else
+                    $valuesChain.=" 0,";
+            } else /* Demás tipos de datos llevan ' ' */
+                $valuesChain.="'" . $valor . "'" . ",";
+
+            $Full.=$valor . " , ";
+            $fieldsChain.=$Field . ",";
+        } else
+            return array("error" => "No existe el Campo $Field", "message" => "Debe ser "
+                . "agregado el campo $Field en la cadena de campos y en la de valores");
+    }
+
+    /* Match con los catálogos */
+
+    for ($cont = 0; $cont < count($catalogs); $cont++) {
+        $catalogName = $catalogs[$cont]['NombreCatalogo'];
+
+        if (!isset($fields[$catalogName]))
+            return array("error" => "No existe el catálogo " . $catalogName,
+                "message" => "Debe anexar el catálogo $catalogName a la "
+                . "cadena de campos y a la de valores");
+
+        $idCatalogOption = $fields[$catalogName];
+
+        if (!is_numeric($idCatalogOption))
+            return array("error" => "El valor del catálogo $catalogName debe ser numérico");
+
+        $fieldsChain.=$catalogName . ",";
+        $valuesChain.=$fields[$catalogName] . ",";
+
+        $catalogRecords = $Catalog->getCatalogRecords($instanceName, $repositoryName, $catalogName, $idCatalogOption);
+
+        if (!is_array($catalogRecords))
+            return array("error" => "Error interno al intentar recuperar el contenido del catálogo $catalogName");
+
+        for ($cont = 0; $cont < count($catalogRecords); $cont++) {
+            $Full.=" " . implode(", ", $catalogRecords[$cont]);
+        }
+    }
+
+    if (count($catalogs) > 0) {
+        $idEnterprise = $catalogs[0]['IdEmpresa'];
+        $idRepository = $catalogs[0]['IdRepositorio'];
+        $enterpriseKey = $catalogs[0]['ClaveEmpresa'];
+    } else {
+
+        $Repository = new Repository();
+        $EnterpriseRepositoryDetail = $Repository->getEnterprisesAndRepositoriesDetail($instanceName, $repositoryName);
+        if (!is_array($EnterpriseRepositoryDetail))
+            return array("error" => "Error interno. No fué posible recuperar el detalle del repositorio y la empresa.");
+
+        if (count($EnterpriseRepositoryDetail) == 0)
+            return array("error" => "El repositorio $repositoryName no cuenta con una empresa de relación");
+
+        $idEnterprise = $EnterpriseRepositoryDetail[0]['IdEmpresa'];
+        $idRepository = $EnterpriseRepositoryDetail[0]['IdRepositorio'];
+        $enterpriseKey = $EnterpriseRepositoryDetail[0]['ClaveEmpresa'];
+    }
+    
+    $myFormatForView = date("Y-m-d H:i:s");
+
+    $Full.=" $userName, $extension, $myFormatForView, $fileName";
+    $fieldsChain.="idDirectory, IdEmpresa, TipoArchivo, RutaArchivo, UsuarioPublicador, FechaIngreso, NombreArchivo, Full";
+    $valuesChain.= "$idDirectory , $idEnterprise, '$extension', '$pathDocumentDB', '$userName', '$myFormatForView', '$fileName', '$Full'";
+
+    $insertIntoRepositorio = "INSERT INTO $repositoryName ($fieldsChain) VALUES ($valuesChain)";
+
+    if (!(($idDocument = $DB->ConsultaInsertReturnId($instanceName, $insertIntoRepositorio)) > 0))
+        return array("error" => "1: Error de consulta, no pudo cargarse el documento");
+
+    $insertIntoGlobal = "INSERT INTO RepositorioGlobal "
+            . "(IdFile, IdEmpresa, IdRepositorio, IdDirectory, NombreEmpresa,"
+            . "NombreRepositorio, NombreArchivo, TipoArchivo, RutaArchivo, UsuarioPublicador,"
+            . "FechaIngreso, Full) VALUES ($idDocument, $idEnterprise, $idRepository,"
+            . "$idDirectory, '$enterpriseKey', '$repositoryName', '$fileName', "
+            . "'$extension', '$pathDocumentDB', '$userName', '$myFormatForView', '$Full')";
+
+    if (!(($idGlobal = $DB->ConsultaInsertReturnId($instanceName, $insertIntoGlobal)) > 0))
+        return array("error" => "2: Error al ingresar el documento a Global");
+
+    return array("idDocument"=>"$idDocument", "message"=>"$myFormatForView Documento $fileName almacenado con éxito en el repositorio $repositoryName ");
+    
 }

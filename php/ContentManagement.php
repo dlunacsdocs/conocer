@@ -1865,6 +1865,21 @@ class ContentManagement {
         header ("Content-Type:text/xml");
         echo $doc->saveXML();
     }
+    
+    public static function RenameFile($filePath)
+    {
+        $increment = 1; //start with no suffix
+        $name = pathinfo($filePath, PATHINFO_FILENAME);
+        $extension = pathinfo($filePath, PATHINFO_EXTENSION);
+        $path = dirname($filePath);
+        while(file_exists($path."/".$name . $increment . '.' . $extension)) {
+            $increment++;
+        }
+
+        $finalPath = $path."/".$name . $increment . '.' . $extension;
+        
+        return $finalPath;
+    }
         
 }
 $content=new ContentManagement();

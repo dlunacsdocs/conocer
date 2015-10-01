@@ -162,7 +162,7 @@ ClassCatalogAdministrator = function()
             "autoWidth" : false, 
             "sSwfPath": "../apis/DataTables/extensions/TableTools/swf/copy_csv_xls_pdf.swf",
             "fnCreatedRow": function( nRow, aData, iDataIndex ) {
-                _Jedit(nRow, IdRepository);    /* Función que se invoca para editar una celda de la tabla catálogo */
+                _Jedit(nRow, IdRepository, RepositoryName);    /* Función que se invoca para editar una celda de la tabla catálogo */
             }
         });    
         
@@ -208,7 +208,7 @@ ClassCatalogAdministrator = function()
     * @returns {undefined}
     * 
     ----------------------------------------------------------------------------*/
-   _Jedit = function(nRow, IdRepository)
+   _Jedit = function(nRow, IdRepository, repositoryName)
    {
        var row = undefined;
         $(nRow).children().each(function()
@@ -230,10 +230,7 @@ ClassCatalogAdministrator = function()
                 submitdata: 
                 {
                     opcion:"ModifyCatalogRecord",
-                    IdUser: EnvironmentData.IdUsuario, 
-                    UserName:EnvironmentData.NombreUsuario, 
-                    DataBaseName:EnvironmentData.DataBaseName,                     
-                    IdRepositorio:IdRepository, 
+                    repositoryName: repositoryName, 
                     CatalogName:function(){return self.getCatalogName();},
                     IdCatalog:function(){return $(row).parent().attr('id');}, 
                     "FieldName":function()

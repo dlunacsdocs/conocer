@@ -398,10 +398,25 @@ class Repository {
                 if(($ResultDeletingOfRepository = $DB->ConsultaQuery($DataBaseName, $DeletingOfRepository))!=1)
                     return "<p><b>Error</b> al intentar eliminar el repositorio <b>$RepositoryName</b> del registro de repositorios</p><br>Detalles:<br><br>$ResultDeletingOfRepository";
         } 
-        
-        
-        
+
         return 1;
+    }
+    
+        /* Devuelve el detalle de empresas y repositorios a partir del nombre de un repositorio */
+    function getEnterprisesAndRepositoriesDetail($instanceName,$repositoryName){
+        $DB = new DataBase();
+        
+        $query = "SELECT em.IdEmpresa, em.ClaveEmpresa, re.IdRepositorio, re.NombreRepositorio FROM CSDocs_Repositorios re
+            RIGHT JOIN CSDocs_Empresas em ON re.ClaveEmpresa = em.ClaveEmpresa
+            WHERE re.NombreRepositorio = '$repositoryName' ";
+        
+        $resultQuery = $DB->ConsultaSelect($instanceName, $query);
+        
+        if($resultQuery['Estado']!=1)
+            return $resultQuery['Estado'];
+        else
+            return $resultQuery['ArrayDatos'];
+        
     }
 
 }

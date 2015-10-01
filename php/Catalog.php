@@ -44,7 +44,7 @@ class Catalog {
                 case 'GetListCatalogos':$this->GetListCatalogos($userData);break;
                 case "GetCatalogRecordsInXml": $this->GetCatalogRecordsInXml($userData); break;
                 case 'AddCatalogoXML':$this->AddCatalogoXML();break;
-                case 'ModifyCatalogRecord':$this->ModifyCatalogRecord();break;
+                case 'ModifyCatalogRecord':$this->ModifyCatalogRecord($userData);break;
                 case 'AddNewRecord':$this->AddNewRecord($userData);break;
                 case 'AddNewColumn': $this->AddNewColumn($userData); break;
             }
@@ -204,16 +204,15 @@ class Catalog {
             
     }
     
-    private function ModifyCatalogRecord()
+    private function ModifyCatalogRecord($user)
     {
-        $XML=new XML();
-        $BD= new DataBase();
+        $BD = new DataBase();
         $Log = new Log();
         
-        $DataBaseName=  filter_input(INPUT_POST, "DataBaseName");
-        $IdUser = filter_input(INPUT_POST, "IdUser");
-        $UserName = filter_input(INPUT_POST, "UserName");
-        $IdRepository = filter_input(INPUT_POST, "IdRepository");
+        $DataBaseName = $user['dataBaseName'];
+        $IdUser = $user['idUser'];
+        $UserName = $user['userName'];
+        $repositoryName = filter_input(INPUT_POST, "repositoryName");
         $IdCatalog = filter_input(INPUT_POST, "IdCatalog");
         $CatalogName = filter_input(INPUT_POST, "CatalogName");
         $FieldName = filter_input(INPUT_POST, "FieldName");                        
@@ -225,11 +224,11 @@ class Catalog {
         else
             $NewField = "$FieldName = '$NewValue'";
         
-        $UpdateCatalog = "UPDATE $CatalogName SET $NewField WHERE Id$CatalogName = $IdCatalog";
+        $UpdateCatalog = "UPDATE $repositoryName"."_"."$CatalogName SET $NewField WHERE Id$CatalogName = $IdCatalog";
                
         if(($ResultUpdate = $BD->ConsultaQuery($DataBaseName, $UpdateCatalog))!=1)
         {
-            $XML->ResponseXML("Error", 0, "<p><b>Error</b> al actualizar el catálogo</p><br>Detalles:<br><br>$ResultUpdate");
+            XML::XMLReponse("Error", 0, "<p><b>Error</b> al actualizar el catálogo</p><br>Detalles:<br><br>$ResultUpdate");
             return 0;
         }
         
@@ -258,10 +257,14 @@ class Catalog {
         XML::XmlArrayResponse("Catalog", "CatalogRecord", $catalogs); 
     }
     
-    public function getCatalogRecords($dataBaseName, $repositoryName, $catalogName){
+    public function getCatalogRecords($dataBaseName, $repositoryName, $catalogName, $idRow = null){
         $BD= new DataBase();
         
-        $Consulta = "SELECT *FROM $repositoryName"."_"."$catalogName";
+        $Consulta = "";
+        if($idRow==null)
+            $Consulta = "SELECT *FROM $repositoryName"."_"."$catalogName";
+        else
+            $Consulta = "SELECT *FROM $repositoryName"."_"."$catalogName WHERE Id$catalogName = $idRow";
         
         $Catalogos = $BD->ConsultaSelect($dataBaseName, $Consulta);    
         
@@ -440,7 +443,11 @@ class Catalog {
         if($repositoryName==null)
             $query = "SELECT IdCatalogo, NombreCatalogo FROM CSDocs_Catalogos WHERE IdRepositorio = $idRepository";
         else
-            $query = "SELECT ca.NombreCatalogo FROM CSDocs_Catalogos ca RIGHT JOIN CSDocs_Repositorios re ON ca.IdRepositorio = re.IdRepositorio WHERE re.NombreRepositorio = '$repositoryName'";
+            $query = "SELECT ca.NombreCatalogo, re.IdRepositorio, em.IdEmpresa, em.ClaveEmpresa
+                    FROM CSDocs_Catalogos ca 
+                    RIGHT JOIN CSDocs_Repositorios re ON ca.IdRepositorio = re.IdRepositorio  
+                    RIGHT JOIN CSDocs_Empresas em ON re.ClaveEmpresa = em.ClaveEmpresa 
+                    WHERE re.NombreRepositorio = '$repositoryName'";
         
         $queryResult = $DB->ConsultaSelect($dataBaseName, $query);
         
