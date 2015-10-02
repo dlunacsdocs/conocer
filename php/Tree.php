@@ -142,14 +142,10 @@ class Tree {
     {
         $estado = 1;
         $BD = new DataBase();
-//        $XML = new XML();
         $Log = new Log();
         
-//        $IdRepositorio=filter_input(INPUT_POST, "IdRepositorio");
         $DataBaseName=filter_input(INPUT_POST, "DataBaseName");
         $NombreRepositorio=  filter_input(INPUT_POST, "NombreRepositorio");       
-//        $IdDirectory=filter_input(INPUT_POST, "IdDirectory");
-//        $IdEmpresa=filter_input(INPUT_POST, "IdEmpresa");
         $NameDirectory=filter_input(INPUT_POST, "NameDirectory");
         $conexion=  $BD->Conexion();
         $IdParentDirectory=filter_input(INPUT_POST, "IdParentDirectory");   
@@ -206,6 +202,14 @@ class Tree {
         
         return $estado;
     }
+    
+    function addNewDirectory($dataBaseMame, $repositoryName, $dirname, $idParent){
+        
+        
+        
+        
+    }
+    
    function returnTreeXML($ArrayTree)
    {
        /* Devuelve un XML con la estructura de directorios obtenida de la BD */

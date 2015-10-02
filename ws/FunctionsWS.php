@@ -268,10 +268,35 @@ function getTreeStructure($data) {
             'idParent' => $directories[$cont]['parent_id'], 'dirname' => $directories[$cont]['title']);
     }
 
-
-//    $error[] = array('message'=>'Respuesta desde WS Àrbol');
-
     return $treeStructure;
+}
+
+function newDirectory($data){
+    
+    $error = "";
+    
+    if (!isset($data['idSession']))
+        $error.= 'No se encontró el parámetro idSession. ';
+    if (!isset($data['instanceName']))
+        $error.=  "No se encontró el parámetro instanceName. ";
+    if (!isset($data['userName']))
+        $error.= 'No se encontró el parámetro userName. ';
+    if (!isset($data['password']))
+        $error.= 'No se encontró el parámetro password. ';
+    if (!isset($data['repositoryName']))
+        $error.= 'No se encontró el parámetro repositoryName. ';
+    if(!isset($data['directoryTitle']))
+        $error.= "No se encontró el parámetro directoryTitle";
+    if(!isset($data['directoryPath']))
+        $error.= "No se encontró el parámetro directoryPath";
+    
+    if(strlen($error)>0)
+        return array("error"=>$error);
+    
+    
+    
+    
+    return array("message"=>"Saludando desde el WS NewDirectory");
 }
 
 function getStructureDetails($data) {
@@ -406,24 +431,28 @@ function getCatalogValues($data) {
  ------------------------------------------------------------------------------*/
 
 function uploadDocument($data) {
-
+    $error = "";
+    
     if (!isset($data['idSession']))
-        $error[] = array('error' => 'No se encontró el parámetro idSession');
+        $error.= 'No se encontró el parámetro idSession. ';
     if (!isset($data['instanceName']))
-        $error[] = array('error' => "No se encontró el parámetro instanceName");
+        $error.=  "No se encontró el parámetro instanceName. ";
     if (!isset($data['userName']))
-        $error[] = array('error' => 'No se encontró el parámetro userName');
+        $error.= 'No se encontró el parámetro userName. ';
     if (!isset($data['password']))
-        $error[] = array('error' => 'No se encontró el parámetro password');
+        $error.= 'No se encontró el parámetro password. ';
     if (!isset($data['repositoryName']))
-        $error[] = array('error' => 'No se encontró el parámetro repositoryName');
+        $error.= 'No se encontró el parámetro repositoryName. ';
     if (!isset($data['documentLocation']))
-        $error[] = array('error' => 'No se encontró el parámetro documentLocation');
+        $error.= 'No se encontró el parámetro documentLocation. ';
     if (!isset($data['fieldsChain']))
-        $error[] = array('error' => "No se encontró el parámetro fieldsChain");
+        $error.= 'No se encontró el parámetro fieldsChain. ';
     if (!isset($data['valuesChain']))
-        $error[] = array('error' => "No se encontró el parámetro valuesChain");
+        $error.= 'No se encontró el parámetro valuesChain. ';
 
+    if(strlen($error)>0)
+        return array("error"=>$error);
+    
     $server = $GLOBALS['server'];
     $Catalog = new Catalog();
     $Designer = new DesignerForms();
@@ -509,24 +538,24 @@ function uploadDocument($data) {
                 else
                     $valuesChain.=" 0,";
             } else if (strcasecmp($type, "datetime") == 0) {
-
-                if (!validateDate($valor, "Y-d-m H:i:s") and !validateDate($valor, "Y/d/m H:i:s")
-                        and ! validateDate($valor, "d-m-Y H:i:s") and !validateDate($valor, "m/d/Y H:i:s"))
-                    return array("error" => "La fecha especificada en el campo $Field es incorrecta",
-                        "message" => "La fecha puede ser incongruente o el formato no es válido Y-d-m H:i:s, "
-                        . "Y/d/m H:i:s, d-m-Y H:i:s ó m/d/Y H:i:s");
+                if(strlen($valor)>0)
+                    if (!validateDate($valor, "Y-d-m H:i:s") and !validateDate($valor, "Y/d/m H:i:s")
+                            and ! validateDate($valor, "d-m-Y H:i:s") and !validateDate($valor, "m/d/Y H:i:s"))
+                        return array("error" => "La fecha especificada en el campo $Field es incorrecta",
+                            "message" => "La fecha puede ser incongruente o el formato no es válido Y-d-m H:i:s, "
+                            . "Y/d/m H:i:s, d-m-Y H:i:s ó m/d/Y H:i:s");
 
                 $date = "$valor";
                 $newDate = date("Y-m-d H:i:s", strtotime($date));
 +               $valor = $newDate;
                 $valuesChain.="'" . $valor . "'" . ",";
             } else if (strcasecmp($type, "date") == 0) {
-
-                if (!validateDate($valor, "Y-d-m") and !validateDate($valor, "Y/m/d") and 
-                        !validateDate($valor, "d-m-Y") and !validateDate($valor, "m/d/Y"))
-                    return array("error" => "La fecha especificada en el campo $Field es incorrecta",
-                        "message" => "La fecha puede ser incongruente o el formato no es válido Y-m-d, Y/m/d,"
-                        . " d-m-Y ó m/d/Y");
+                if(strlen($valor)>0)
+                    if (!validateDate($valor, "Y-d-m") and !validateDate($valor, "Y/m/d") and 
+                            !validateDate($valor, "d-m-Y") and !validateDate($valor, "m/d/Y"))
+                        return array("error" => "La fecha especificada en el campo $Field es incorrecta",
+                            "message" => "La fecha puede ser incongruente o el formato no es válido Y-m-d, Y/m/d,"
+                            . " d-m-Y ó m/d/Y");
                 
                 $date = "$valor";
                 $newDate = date("Y-m-d", strtotime($date));

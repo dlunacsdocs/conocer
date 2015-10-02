@@ -333,6 +333,51 @@ $server->register(  'getTreeStructure', // nombre del metodo o funcion
 );
 
 /*******************************************************************************
+ *                            Nuevo Directorio                                  *
+ *******************************************************************************/
+
+// Parametros de entrada
+$server->wsdl->addComplexType(  'requestNewDirectory', 
+                                'complexType', 
+                                'struct', 
+                                'all', 
+                                '',
+                                array('idSession'   => array('name' => 'idSession','type' => 'xsd:string'),
+                                      'userName'   => array('name' => 'userName','type' => 'xsd:string') ,   
+                                      'password'   => array('name' => 'password','type' => 'xsd:string') ,   
+                                      'instanceName'   => array('name' => 'instanceName','type' => 'xsd:string'),
+                                      'repositoryName'   => array('name' => 'repositoryName','type' => 'xsd:string'),
+                                      'directoryTitle'   => array('name' => 'directoryTitle','type' => 'xsd:string'),
+                                      'pathDirectory'   => array('name' => 'pathDirectory','type' => 'xsd:string')
+                                )
+);
+
+// Parametros de salida
+$server->wsdl->addComplexType(  'responseNewDirectory', 
+                                'complexType', 
+                                'struct', 
+                                'all', 
+                                '',
+                                array('idDirectory'   => array('name' => 'idDirectory','type' => 'xsd:integer'),
+                                      'idParent'   => array('name' => 'idParent','type' => 'xsd:integer'),
+                                      'dirname'    => array('name' => 'dirname','type' => 'xsd:String'),
+                                      'error'    => array('name' => 'error','type' => 'xsd:string'),
+                                      'message'    => array('name' => 'message','type' => 'xsd:string')
+                                )
+);
+
+
+$server->register(  'newDirectory', // nombre del metodo o funcion
+                    array('requestNewDirectory' => 'tns:requestNewDirectory'), // parametros de entrada
+                    array('responseNewDirectory' => 'tns:responseNewDirectory'), // parametros de salida
+                    'urn:ecm', // namespace
+                    'urn:newDirectory', // soapaction debe ir asociado al nombre del metodo
+                    'rpc', // style
+                    'encoded', // use
+                    'Creación de un nuevo directorio en un repositorio.' // documentation
+);
+
+/*******************************************************************************
  *                             GET STRUCTURE DETAIL                            *
  *******************************************************************************/
 
