@@ -40,7 +40,7 @@ class Repository {
     //                break;
                 case 'NewRepository': $this->NewRepository();
                     break;
-                case 'AddNewFieldToRepository': $this->AddNewFieldToRepository();
+                case 'AddNewFieldToRepository': $this->AddNewFieldToRepository($userData);
                     break;
                 case 'DeleteRepositoryField': $this->DeleteRepositoryField();
                     break;
@@ -136,43 +136,29 @@ class Repository {
         
         XML::XMLReponse("DeletedField", 1, "Campo $FieldName eliminado con éxito");
     }
-    private function AddNewFieldToRepository()
+    private function AddNewFieldToRepository($user)
     {
         $DB = new DataBase();
         
-        $DataBaseName = filter_input(INPUT_POST, "DataBaseName");
+        $DataBaseName = $user['dataBaseName'];
 //        $IdUser = filter_input(INPUT_POST, "IdUser");
 //        $UserName = filter_input(INPUT_POST, "UserName");
 //        $IdRepository = filter_input(INPUT_POST, "IdRepository");
         $RepositoryName = filter_input(INPUT_POST, "RepositoryName");
-        $XMLResponse = filter_input(INPUT_POST, "Xml");
+        $FieldName = filter_input(INPUT_POST, "FieldName");
+        $FieldType = filter_input(INPUT_POST, "FieldType");
+        $FieldTypeMysql= filter_input(INPUT_POST, "FieldType");
+        $FieldLength = filter_input(INPUT_POST, "FieldLength");
+        $Required = filter_input(INPUT_POST, "RequiredField");
         
-        if(!($xml = simplexml_load_string($XMLResponse)))
-                XML::XMLReponse ("Error", 0, "<p><b>Error</b> el xml no pudo ser leÃ­do</p><br>Detalles:<br><br>Es posible que no se haya formado correctamente");
-           
-        $FieldName = ''; $FieldType = ''; $FieldTypeMysql= ''; $FieldLength = ''; $Required = '';
-        
-        foreach ($xml as $value)
-        {
-            $FieldName = $value->Name;
-            $FieldType = $value->Type;
-            $FieldTypeMysql = $value->Type;           
-            if(isset($value->Required))
-                $Required = $value->Required;     
-            
-            if(isset($value->Length))
-            {
-                if((int)($value->Length)>0)
-                {
-                    $FieldType.="($value->Length)";
-                    $FieldTypeMysql = "$value->Type($value->Length)";
-                    $FieldLength = "long ".$value->Length."###";
-                }              
-            }
-        }   
+
+        if((int)($FieldLength)>0)
+            $FieldLength = "long ".$FieldLength."###";
+        else 
+            $FieldLength = "";
         
         $NewProperty = "Properties###name $FieldName###type $FieldType###".$FieldLength."required $Required###";
-       
+               
         if(strcasecmp($Required, "true")==0)
                 $Required = "NOT NULL";
         else

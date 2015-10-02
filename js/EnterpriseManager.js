@@ -18,10 +18,10 @@ var ClassEnterprise = function ()
 {
     var self = this;
 
-    _DisplayWindowFields = function ()
+    _DisplayWindowNewField = function ()
     {
         var fieldsManager = new FieldsManager();
-        fieldsManager.BuildWindow();
+        fieldsManager.windowNewField();
 
         var buttons = {"Cancelar": function () {
                 $(this).remove();
@@ -70,7 +70,7 @@ var ClassEnterprise = function ()
 
                     /*  Se reconstruye la ventana para agregar un nuevo campo y se selecciona el campo agregado sobre la tabla */
                     var fieldsManager = new FieldsManager();
-                    fieldsManager.BuildWindow();
+                    fieldsManager.windowNewField();
 
                     var buttons = {"Cancelar": function () {
                             $(this).remove();
@@ -745,7 +745,7 @@ ClassEnterprise.prototype.AdminStructure = function ()
                 "tableTools": {
                     "aButtons": [
                         {"sExtends": "text", "sButtonText": "Agregar Campo", "fnClick": function () {
-                                _DisplayWindowFields();
+                                _DisplayWindowNewField();
                             }},
                         {"sExtends": "text", "sButtonText": "Eliminar Campo", "fnClick": function () {
                                 _ConfirmDeleteField();

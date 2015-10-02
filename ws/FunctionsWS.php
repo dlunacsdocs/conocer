@@ -401,7 +401,9 @@ function getCatalogValues($data) {
     return $valuesRow;
 }
 
-// Define the method as a PHP function
+/*------------------------------------------------------------------------------
+ * Método implementado por NuSoap para cargar un documento a CSDocs
+ ------------------------------------------------------------------------------*/
 
 function uploadDocument($data) {
 
@@ -447,6 +449,11 @@ function uploadDocument($data) {
     $idRepository = 0;
     $attachments = $server->getAttachments();
 
+    if(!file_exists($RoutFile."/Estructuras/$instanceName"))
+        return array("error"=>"No existe la instancia $instanceName en el sistema");
+    
+    if(!file_exists("$RoutFile/Estructuras/$instanceName/$repositoryName"))
+        return array("error"=>"No existe el repositorio $repositoryName en el sistema");
 
     if (!file_exists(dirname($location)))
         return array("error" => "El destino del documento " . dirname($data['documentLocation']) . " no existe",
@@ -459,20 +466,10 @@ function uploadDocument($data) {
     for ($cont = 0; $cont < count($fieldsBlock); $cont++) {
         $fields[$fieldsBlock[$cont]] = $valuesBlock[$cont];
     }
-    
 
-    if (count($attachments) ==0) 
-        return array("error"=>"No se encontraron attachments", "message"=>"El sistema no detecta ningún documento adjunto");
-    
-    $documentData = $attachments[0]['data'];
 
-    if (file_exists($location)) {
-        $location = ContentManagement::RenameFile($location);
-        $pathDocumentDB = dirname($pathDocumentDB)."/".basename($location);
-        $fileName = basename($location);
-    }
-
-    file_put_contents($location, $documentData);
+    if (count($attachments) == 0)
+        return array("error" => "No se encontraron attachments", "message" => "El sistema no detecta ningún documento adjunto");
 
     $catalogs = $Catalog->getArrayCatalogsNames($instanceName, 0, $repositoryName);
 
@@ -489,7 +486,9 @@ function uploadDocument($data) {
     if (!is_array($ArrayStructureUser))
         return array("error" => "No se obtuvo el registro de estructura del repositorio $repositoryName");
 
-    /* Match con los campos definidos por el usuario */
+    /***************************************************************************
+     *  Se analiza cada campo y se realiza el MATCH con el registro de estructura
+     ***************************************************************************/
 
     for ($cont = 0; $cont < count($ArrayStructureUser); $cont++) {
         $Field = preg_replace('/\s+/', ' ', $ArrayStructureUser[$cont]['name']);
@@ -504,11 +503,36 @@ function uploadDocument($data) {
                         "message" => "El campo $Field no puede quedar vacio");
 
             if (strcasecmp($type, "INT") == 0 or strcasecmp($type, "FLOAT") == 0 or strcasecmp($type, "INTEGER") == 0 or strcasecmp($type, "DOUBLE") == 0) /* Si detecta un tipo numerico */ {
+
                 if (intval($valor) != 0)
                     $valuesChain.=$valor . ",";
                 else
                     $valuesChain.=" 0,";
-            } else /* Demás tipos de datos llevan ' ' */
+            } else if (strcasecmp($type, "datetime") == 0) {
+
+                if (!validateDate($valor, "Y-d-m H:i:s") and !validateDate($valor, "Y/d/m H:i:s")
+                        and ! validateDate($valor, "d-m-Y H:i:s") and !validateDate($valor, "m/d/Y H:i:s"))
+                    return array("error" => "La fecha especificada en el campo $Field es incorrecta",
+                        "message" => "La fecha puede ser incongruente o el formato no es válido Y-d-m H:i:s, "
+                        . "Y/d/m H:i:s, d-m-Y H:i:s ó m/d/Y H:i:s");
+
+                $date = "$valor";
+                $newDate = date("Y-m-d H:i:s", strtotime($date));
++               $valor = $newDate;
+                $valuesChain.="'" . $valor . "'" . ",";
+            } else if (strcasecmp($type, "date") == 0) {
+
+                if (!validateDate($valor, "Y-d-m") and !validateDate($valor, "Y/m/d") and 
+                        !validateDate($valor, "d-m-Y") and !validateDate($valor, "m/d/Y"))
+                    return array("error" => "La fecha especificada en el campo $Field es incorrecta",
+                        "message" => "La fecha puede ser incongruente o el formato no es válido Y-m-d, Y/m/d,"
+                        . " d-m-Y ó m/d/Y");
+                
+                $date = "$valor";
+                $newDate = date("Y-m-d", strtotime($date));
++                $valor = $newDate;
+                $valuesChain.="'" . $valor . "'" . ",";
+            } else /* TEXT, VARCHAR */
                 $valuesChain.="'" . $valor . "'" . ",";
 
             $Full.=$valor . " , ";
@@ -518,7 +542,7 @@ function uploadDocument($data) {
                 . "agregado el campo $Field en la cadena de campos y en la de valores");
     }
 
-    /* Match con los catálogos */
+    /* --------------------    Match con los catálogos ------------------------- */
 
     for ($cont = 0; $cont < count($catalogs); $cont++) {
         $catalogName = $catalogs[$cont]['NombreCatalogo'];
@@ -565,16 +589,34 @@ function uploadDocument($data) {
         $enterpriseKey = $EnterpriseRepositoryDetail[0]['ClaveEmpresa'];
     }
     
-    $myFormatForView = date("Y-m-d H:i:s");
+    /***************************************************************************
+     *  Almacenamiento fisico y lógico del documento
+     ***************************************************************************/
+    
+    $documentData = $attachments[0]['data'];
 
+    
+    if (file_exists($location)) {
+        $location = ContentManagement::RenameFile($location);
+        $pathDocumentDB = dirname($pathDocumentDB) . "/" . basename($location);
+        $fileName = basename($location);
+    }
+
+    file_put_contents($location, $documentData);
+    
+    $myFormatForView = date("Y-m-d H:i:s");
+    
     $Full.=" $userName, $extension, $myFormatForView, $fileName";
     $fieldsChain.="idDirectory, IdEmpresa, TipoArchivo, RutaArchivo, UsuarioPublicador, FechaIngreso, NombreArchivo, Full";
     $valuesChain.= "$idDirectory , $idEnterprise, '$extension', '$pathDocumentDB', '$userName', '$myFormatForView', '$fileName', '$Full'";
 
     $insertIntoRepositorio = "INSERT INTO $repositoryName ($fieldsChain) VALUES ($valuesChain)";
 
-    if (!(($idDocument = $DB->ConsultaInsertReturnId($instanceName, $insertIntoRepositorio)) > 0))
+    if (!(($idDocument = $DB->ConsultaInsertReturnId($instanceName, $insertIntoRepositorio)) > 0)){
+        if(file_exists($location))
+            unlink($location);
         return array("error" => "1: Error de consulta, no pudo cargarse el documento");
+    }
 
     $insertIntoGlobal = "INSERT INTO RepositorioGlobal "
             . "(IdFile, IdEmpresa, IdRepositorio, IdDirectory, NombreEmpresa,"
@@ -583,9 +625,19 @@ function uploadDocument($data) {
             . "$idDirectory, '$enterpriseKey', '$repositoryName', '$fileName', "
             . "'$extension', '$pathDocumentDB', '$userName', '$myFormatForView', '$Full')";
 
-    if (!(($idGlobal = $DB->ConsultaInsertReturnId($instanceName, $insertIntoGlobal)) > 0))
+    if (!(($idGlobal = $DB->ConsultaInsertReturnId($instanceName, $insertIntoGlobal)) > 0)){
+        if(file_exists($location))
+            unlink($location);
+        
+        $DeleteFromRepository = "DELETE FROM $instanceName"."_"."$repositoryName WHERE IdRepositorio = $idDocument";
+        $DB->ConsultaQuery($instanceName, $DeleteFromRepository);
         return array("error" => "2: Error al ingresar el documento a Global");
+    }
 
-    return array("idDocument"=>"$idDocument", "message"=>"$myFormatForView Documento $fileName almacenado con éxito en el repositorio $repositoryName ");
-    
+    return array("idDocument" => "$idDocument", "message" => "$myFormatForView Documento $fileName almacenado con éxito en el repositorio $repositoryName ");
+}
+
+function validateDate($date, $format = 'Y-m-d H:i:s') {
+    $d = DateTime::createFromFormat($format, $date);
+    return $d && $d->format($format) == $date;
 }

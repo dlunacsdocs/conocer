@@ -642,93 +642,32 @@ var ClassRepository = function()
     _FormsAddNewField = function()
     {
         console.log('_AddFieldToRepository');
+        var fieldsManager = new FieldsManager();
+        fieldsManager.windowNewField();
         
-        _FormsNewField();   /* Mismos formularios utilizados en esta funcion */
-        
-        var buttons = {"Cancelar":function(){$(this).remove();},
-        "Agregar":{text:"Agregar", click:function(){_AddNewFieldToRepository();}}};
-        
+        var buttons = {"Cancelar": function () {
+                $(this).remove();
+            },
+            "Agregar": {text: "Agregar", click: function () {
+            _AddNewFieldToRepository();
+        }}};
+                
         $('#DivFormsNewField').dialog('option','buttons',buttons);
     };
     
     /* Agrega un nuevo campo a un repositorio existente  */
     _AddNewFieldToRepository = function()
     {
-        console.log('DivFormsNewField');
+        console.log('AddNewFieldToRepository:::');
         
-        var RegularExpresion = /^([a-zA-Z0-9\_])+$/g;
-        var Forms = $('#DivFormsNewRepository input.FormStandart');
-        var FieldsValidator = new ClassFieldsValidator();   
-        var validation = FieldsValidator.ValidateFields(Forms);
-        
-        $('#FieldNameRM').tooltip();
-        
-        console.log("_AddNewFieldToRepository::"+validation);
-        
-        if(validation===0)
-            return;             
-                        
-        if(!RegularExpresion.test(FieldName))
-        {
-            FieldsValidator.AddClassRequiredActive($('#FieldNameRM'));
-            $('#FieldNameRM').attr('title','Nombre de campo invÃ¡lido');
+        var fieldsManager = new FieldsManager();
+        var FieldsValues = fieldsManager.GetFieldsValues(RepositoryDetaildT, RepositoryDetailDT);
+        if (!$.isPlainObject(FieldsValues))
             return 0;
-        }                          
-            
-        var IdRepository = $('#RMSelectRepositories').val();  
-        var RepositoryName = $('#RMSelectRepositories option:selected').text();
-        var FieldName = $('#FieldNameRM').val();
-        var FieldLength = $('#FieldLengthRM').val();
-        var FieldType = $('#FieldTypeRM').val();  
-        var RequiredChecValue = $('#CheckRequiredRM').is(':checked');    
-        
-        /* Se comprueba si no se repitan los campos */
-        var RepeatedField = 0;
-        RepositoryDetailDT.column(0).data().each(function(value, index)
-        {
-            if(value===FieldName)
-                RepeatedField = 1;
-        });     
-        
-        if(RepeatedField)
-        {
-            FieldsValidator.AddClassRequiredActive($('#FieldNameRM'));
-            $('#FieldNameRM').attr('title','El nombre de este campo ya existe');            
-            return;
-        }
-        else
-            $('#FieldNameRM').attr('title','');
-        
-        /* Validaciones en el campo de longitud */
-        if(FieldType==='varchar')
-        {
-            FieldLength = parseInt(FieldLength);
-
-            if($.isNumeric(FieldLength))
-            {
-                if(FieldLength>=256 || FieldLength<=0)
-                {
-                    FieldsValidator.AddClassRequiredActive($('#FieldLengthRM'));
-                    return;
-                }            
-            }
-            else
-            {
-                FieldsValidator.AddClassRequiredActive($('#FieldLengthRM'));
-                    return;
-            }
-        }  
-        
-        var Xml = "<NewRepositoryField version='1.0' encoding='UTF-8'>\n\
-                        <Field>\n\
-                            <Name>"+FieldName+"</Name>\n\
-                            <Type>"+FieldType+"</Type>\n\
-                            <Length>"+FieldLength+"</Length>\n\
-                            <Required>"+RequiredChecValue+"</Required>\n\
-                        </Field>\n\
-                   </NewRepositoryField>";
-        
-        var data = {opcion:"AddNewFieldToRepository", DataBaseName: EnvironmentData.DataBaseName, IdRepository:IdRepository, RepositoryName:RepositoryName, IdUser:EnvironmentData.IdUsuario, UserName: EnvironmentData.NombreUsuario, Xml:Xml};
+                    
+        var RepositoryName = $('#RMSelectRepositories option:selected').text();  
+           
+        var data = {opcion:"AddNewFieldToRepository", RepositoryName:RepositoryName, FieldName: FieldsValues.FieldName, FieldType: FieldsValues.FieldType, FieldLength: FieldsValues.FieldLength, RequiredField: FieldsValues.RequiredField};
         
         $.ajax({
         async:false, 
@@ -744,9 +683,16 @@ var ClassRepository = function()
             if($(xml).find('AddedField').length>0)
             {
                 var Mensaje = $(xml).find('Mensaje').text();
-                Notificacion(Mensaje);
                 
-                var data = [FieldName, FieldType, FieldLength, RequiredChecValue];
+                Notificacion(Mensaje);
+                console.log(FieldsValues.RequiredField);
+                FieldsValues.RequiredField = FieldsValues.RequiredField.toString();
+                if(FieldsValues.RequiredField == "false") 
+                    FieldsValues.RequiredField = "No";
+                else
+                    FieldsValues.RequiredField = "Si";
+                
+                var data = [FieldsValues.FieldName, FieldsValues.FieldType, FieldsValues.FieldLength, FieldsValues.RequiredField];
 
                 var ai = RepositoryDetailDT.row.add(data).draw();
                 var n = RepositoryDetaildT.fnSettings().aoData[ ai[0] ].nTr;

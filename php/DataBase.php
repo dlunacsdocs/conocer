@@ -297,7 +297,7 @@ class DataBase {
                     . "TipoArchivo VARCHAR(10) NOT NULL, "
                     . "RutaArchivo TEXT NOT NULL,"
                     . "UsuarioPublicador VARCHAR(50) NOT NULL,"
-                    . "FechaIngreso DATE NOT NULL,"
+                    . "FechaIngreso DATETIME NOT NULL,"
                     . "Full TEXT NOT NULL,"
                     . "PRIMARY KEY (IdGlobal),"
                     . "FULLTEXT (Full)"
