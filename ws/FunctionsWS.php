@@ -285,18 +285,36 @@ function newDirectory($data){
         $error.= 'No se encontró el parámetro password. ';
     if (!isset($data['repositoryName']))
         $error.= 'No se encontró el parámetro repositoryName. ';
-    if(!isset($data['directoryTitle']))
+    if(!isset($data['directoryName']))
         $error.= "No se encontró el parámetro directoryTitle";
     if(!isset($data['directoryPath']))
         $error.= "No se encontró el parámetro directoryPath";
-    
+        
     if(strlen($error)>0)
         return array("error"=>$error);
+        
+    $RoutFile = dirname(getcwd());
+
+    $Tree = new Tree();
     
+    $instanceName = $data['instanceName'];
+    $repositoryName = $data['repositoryName'];
+    $path = $data['directoryPath'];
+    $directoryName = $data['directoryName'];
+    $idParent = basename($path);
     
+    if(!file_exists("$RoutFile/Estructuras/$instanceName/$repositoryName/$path"))
+        return array("error"=>"No existe la ruta destino para crear el directorio $directoryName");
     
+    if(!(($idDirectory = $Tree->addNewDirectory($instanceName, $repositoryName, $directoryName, $idParent, $path))>0))
+            return array("error"=>"No pudo ser ingresado el nuevo directorio al repositorio $repositoryName");
     
-    return array("message"=>"Saludando desde el WS NewDirectory");
+    mkdir("$RoutFile/Estructuras/$instanceName/$repositoryName/$path/$idDirectory", 0777);
+      
+    
+    return array("message"=>"Directorio creado correctamente", "idDirectory"=>$idDirectory, 
+        "idParent"=>$idParent, "directoryName"=>$directoryName);
+    
 }
 
 function getStructureDetails($data) {
@@ -432,7 +450,7 @@ function getCatalogValues($data) {
 
 function uploadDocument($data) {
     $error = "";
-    
+
     if (!isset($data['idSession']))
         $error.= 'No se encontró el parámetro idSession. ';
     if (!isset($data['instanceName']))
@@ -453,6 +471,7 @@ function uploadDocument($data) {
     if(strlen($error)>0)
         return array("error"=>$error);
     
+
     $server = $GLOBALS['server'];
     $Catalog = new Catalog();
     $Designer = new DesignerForms();

@@ -411,7 +411,7 @@ function CancelDeleteDir(PathStatus,PathAdvancing)
 }
 
 function CM_InsertDir(IdParentDirectory,NameDirectory,Path)
-{
+{    
     var node = $("#contentTree").dynatree("getActiveNode");
     node.data.unselectable = true; 
     $(".contentDetailTools").attr('disabled', 'disabled');
@@ -423,35 +423,34 @@ function CM_InsertDir(IdParentDirectory,NameDirectory,Path)
    $.ajax({
       async:false, 
       cache:false,
-      dataType:"xml", 
+      dataType:"html", 
       type: 'POST',   
       url: "php/Tree.php",
-      data: "opcion=InsertDir&IdRepositorio="+IdRepositorio+"&DataBaseName="+EnvironmentData.DataBaseName+'&NombreRepositorio='+NombreRepositorio+"&IdParentDirectory="+IdParentDirectory+"&NameDirectory="+NameDirectory+"&$IdEmpresa="+IdEmpresa+"&Path="+Path+'&nombre_usuario='+EnvironmentData.NombreUsuario+'&id_usuario='+EnvironmentData.IdUsuario, 
+      data: "opcion=InsertDir&NombreRepositorio="+NombreRepositorio+"&NameDirectory="+NameDirectory+"&Path="+Path, 
       success:  function(xml){
-//          $("#CM_directorio_nuevo").attr('disabled', '');/* Opción agregar directorio desactivada */           
+          node.remove();
+           if($.parseXML( xml )===null){  alert(error); return 0;}else xml=$.parseXML( xml );
+         
            $(xml).find("NewDirectory").each(function()
             {               
                 var $NewDirectory=$(this);
-                var id=$NewDirectory.find("IdNewDir").text();                               
+                var id = $NewDirectory.find("IdNewDir").text();                               
                
-               var estado=$NewDirectory.find("Estado").text();
-               /*  */
-               if(estado!=1)
-               {
-                   Error(estado);
-                   node.remove();}
-               else
-               {
-                   var newNode_ = { title:NameDirectory,isFolder: true, key:id};
-                   var newNode=node.getParent().addChild(newNode_);    
-                   node.remove();
-                   newNode.activate(true);
-                   newNode.focus(true);
-               }               
+                var newNode_ = { title:NameDirectory,isFolder: true, key:id};
+                var newNode = node.getParent().addChild(newNode_);    
+                newNode.activate(true);
+                newNode.focus(true);
+                           
             });
+            
+            $(xml).find("Error").each(function()
+            {
+                var mensaje=$(this).find("Mensaje").text();
+                errorMessage(mensaje);
+            });
+            
       },
-      beforeSend:function(){},
-      error:function(objXMLHttpRequest){Error(objXMLHttpRequest)}
+      error:function(objXMLHttpRequest){node.remove(); errorMessage(objXMLHttpRequest);}
     });
 }
 /* Agrega un directorio Nuevo */

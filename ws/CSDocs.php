@@ -347,7 +347,7 @@ $server->wsdl->addComplexType(  'requestNewDirectory',
                                       'password'   => array('name' => 'password','type' => 'xsd:string') ,   
                                       'instanceName'   => array('name' => 'instanceName','type' => 'xsd:string'),
                                       'repositoryName'   => array('name' => 'repositoryName','type' => 'xsd:string'),
-                                      'directoryTitle'   => array('name' => 'directoryTitle','type' => 'xsd:string'),
+                                      'directoryName'   => array('name' => 'directoryName','type' => 'xsd:string'),
                                       'pathDirectory'   => array('name' => 'pathDirectory','type' => 'xsd:string')
                                 )
 );
@@ -360,7 +360,7 @@ $server->wsdl->addComplexType(  'responseNewDirectory',
                                 '',
                                 array('idDirectory'   => array('name' => 'idDirectory','type' => 'xsd:integer'),
                                       'idParent'   => array('name' => 'idParent','type' => 'xsd:integer'),
-                                      'dirname'    => array('name' => 'dirname','type' => 'xsd:String'),
+                                      'directoryName'    => array('name' => 'directoryName','type' => 'xsd:String'),
                                       'error'    => array('name' => 'error','type' => 'xsd:string'),
                                       'message'    => array('name' => 'message','type' => 'xsd:string')
                                 )

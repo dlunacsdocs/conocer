@@ -35,6 +35,16 @@ function Error(mensaje)
     $('#MensajeError').append(mensaje);
 }
 
+function errorMessage(mensaje)
+{
+    alert("ErrorMessage"+" "+$('#MensajeError').length);
+
+    $('#MensajeError').dialog();
+    $('#MensajeError').empty();
+    $('#MensajeError').append('<center><img src="img/fallo.png"></center>');
+    $('#MensajeError').append(mensaje);
+}
+
 function Advertencia(mensaje)
 {
     $('#MensajeAdvertencia').dialog(WindowAdvertencia);

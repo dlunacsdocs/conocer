@@ -36,7 +36,7 @@ class Tree {
             switch (filter_input(INPUT_POST, "opcion"))
             {
                 case 'getTree': $this->get_tree($userData); break;
-                case 'InsertDir': $this->InsertDir(); break;      
+                case 'InsertDir': $this->InsertDir($userData); break;      
                 case 'ModifyDir': $this->ModifyDir(); break;
                 case 'DeleteDir': $this->DeleteDir(); break; 
                 case 'GetListReposity': $this->GetListReposity(); break; 
@@ -138,75 +138,57 @@ class Tree {
         
     }
     
-    function InsertDir()
+    function InsertDir($userData)
     {
-        $estado = 1;
-        $BD = new DataBase();
-        $Log = new Log();
-        
-        $DataBaseName=filter_input(INPUT_POST, "DataBaseName");
-        $NombreRepositorio=  filter_input(INPUT_POST, "NombreRepositorio");       
-        $NameDirectory=filter_input(INPUT_POST, "NameDirectory");
-        $conexion=  $BD->Conexion();
-        $IdParentDirectory=filter_input(INPUT_POST, "IdParentDirectory");   
-        $NombreUsuario=  filter_input(INPUT_POST, "nombre_usuario");
-        $IdUsuario=filter_input(INPUT_POST, "IdUsuario");
-        $Path=filter_input(INPUT_POST, "Path");   
+               
+        $DataBaseName = $userData['dataBaseName'];
+        $NombreRepositorio = filter_input(INPUT_POST, "NombreRepositorio");       
+        $NameDirectory = filter_input(INPUT_POST, "NameDirectory");
+        $NombreUsuario = $userData['userName'];
+        $IdUsuario = $userData['idUser'];
+        $Path = filter_input(INPUT_POST, "Path");   
+        $RoutFile = dirname(getcwd());
 
-        $PathBase=  explode('/', $Path);
-        $PathFinal='';
-        array_pop($PathBase);            
-        foreach ($PathBase as $valor)
-        {
-            if($valor!=''){$PathFinal.=$valor."/";}
-        }      
+        $PathFinal = dirname($Path)."/";
+        $IdParentDirectory = basename($PathFinal);
+            
+        $ultimo_id = $this->addNewDirectory($DataBaseName, $NombreRepositorio, $NameDirectory, $IdParentDirectory, $PathFinal);    
+           
+        if(is_numeric($ultimo_id))
+            $PathFinal.=$ultimo_id;
+        else
+            return XML::XMLReponse ("Error", 0, $ultimo_id);
         
-        if (!$conexion) {
-            echo('No pudo conectarse: ' . mysql_error());
-            return;
-        }
-        mysql_select_db($DataBaseName);
-                   
-        $Insert="INSERT INTO dir_$NombreRepositorio(parent_id,title, path) VALUES ($IdParentDirectory,'$NameDirectory','$PathFinal')";            
-        if(!($result=mysql_query($Insert)))
-        {
-            echo $estado= mysql_error();
-            mysql_close($conexion);
-            return;
-        }
-        $ultimo_id=mysql_insert_id();        
-        mysql_close($conexion);
-                
-        $PathFinal.=$ultimo_id;
-        
-        $RutaBase="../Estructuras/$DataBaseName/$NombreRepositorio/$PathFinal";
+        $RutaBase = "$RoutFile/Estructuras/$DataBaseName/$NombreRepositorio/$PathFinal";
         
         mkdir("$RutaBase",0777,true);
-                        
+                                
         $doc  = new DOMDocument('1.0','utf-8');
         $doc->formatOutput = true;
         $root = $doc->createElement("Tree");
         $doc->appendChild($root); 
         $NuevoDir=$doc->createElement("NewDirectory");
-        $Resultado=$doc->createElement("Estado",$estado);
-        $NuevoDir->appendChild($Resultado);
         $IdNewDir=$doc->createElement("IdNewDir",$ultimo_id);
         $NuevoDir->appendChild($IdNewDir);
         $root->appendChild($NuevoDir);
         header ("Content-Type:text/xml");
         echo $doc->saveXML();
-
-        flush();
         
-        $Log->Write("18", $IdUsuario, $NombreUsuario, $NameDirectory, $DataBaseName);
+        Log::WriteEvent("18", $IdUsuario, $NombreUsuario, $NameDirectory, $DataBaseName);
         
-        return $estado;
     }
     
-    function addNewDirectory($dataBaseMame, $repositoryName, $dirname, $idParent){
+    function addNewDirectory($dataBaseMame, $repositoryName, $dirname, $idParent, $path){
         
+        $DB = new DataBase();
         
+        $Insert = "INSERT INTO dir_$repositoryName(parent_id,title, path) VALUES "
+                . "($idParent,'$dirname','$path')";            
         
+        if(!(($resultInsert = $DB->ConsultaInsertReturnId($dataBaseMame, $Insert))>0))
+                return $resultInsert;
+        
+        return (int)$resultInsert;    
         
     }
     
