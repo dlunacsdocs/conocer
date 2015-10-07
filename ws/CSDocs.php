@@ -535,6 +535,72 @@ $server->wsdl->addComplexType(  'outputUploadDocument',
         'Carga de un documento a CSDocs'                                // documentation
     );
 
+/*******************************************************************************
+ *                           GET DOCUMENT METADATAS                           
+ *  Devuelve metadatos de un documento
+ * @parameters: idDocument, idDirectory
+ * 
+ *******************************************************************************/
+
+// Parametros de entrada
+$server->wsdl->addComplexType(  'parametersGetDocumentMetadata', 
+                                'complexType', 
+                                'struct', 
+                                'all', 
+                                '',
+                                array('idSession'       => array('name' => 'idSession','type' => 'xsd:string'),
+                                      'userName'        => array('name' => 'userName','type' => 'xsd:string') ,   
+                                      'password'        => array('name' => 'password','type' => 'xsd:string') ,   
+                                      'instanceName'    => array('name' => 'instanceName','type' => 'xsd:string'),
+                                      'repositoryName'  => array('name' => 'repositoryName','type' => 'xsd:string'),
+                                      'idDocument'      => array('name' => 'idDocument','type' => 'xsd:integer'),
+                                      'idDirectory'     => array('name' => 'idDirectory','type' => 'xsd:integer')
+                                    )
+);
+
+// Parametros de salida
+$server->wsdl->addComplexType(  'Metadata', 
+                                'complexType', 
+                                'struct', 
+                                'all', 
+                                '',
+                                array('error'         => array('name' => 'error','type' => 'xsd:string'),
+                                      'message'       =>array('name'=>'message', 'type'=>'xsd:string'),
+                                      'fieldName'     =>array('name'=>'fieldName', 'type'=>'xsd:integer'),
+                                      'fieldType'     =>array('name'=>'fieldType', 'type'=>'xsd:string'),
+                                      'requiredField' =>array('name'=>'requiredField', 'type'=>'xsd:string'),
+                                      'fieldValue'    =>array('name'=>'fieldValue', 'type'=>'xsd:string'),
+                                      'fieldLength'   =>array('name'=>'fieldLength', 'type'=>'xsd:integer'),
+                                      'fieldClass'    =>array('name'=>'fieldClass', 'type'=>'xsd:string')
+                                    )
+);
+
+// Complex Array ++++++++++++++++++++++++++++++++++++++++++
+$server->wsdl->addComplexType('DocumentMetadata',
+                              'complexType',
+                              'array',
+                              '',
+                              'SOAP-ENC:Array',
+                              array(),
+                              array(
+                                  array(
+                                      'ref' => 'SOAP-ENC:arrayType',
+                                      'wsdl:arrayType' => 'tns:Metadata[]'
+                                  )
+                              ),
+                              "tns:Metadata"
+);
+
+// Register the method to expose
+    $server->register('getDocumentMetadata',                                 // method
+        array('parametersGetDocumentMetadata'=>'tns:parametersGetDocumentMetadata'),    // input parameters
+        array('metadata' => 'tns:DocumentMetadata'),                             // output parameters
+        'urn:ecm',                                            // namespace
+        'urn:getDocumentMetadata',                                // soapaction
+        'rpc',                                                       // style
+        'encoded',                                                   // use
+        'Devuelve los metadatos de un documento'                                // documentation
+    );
 
 $HTTP_RAW_POST_DATA = isset($HTTP_RAW_POST_DATA) ? $HTTP_RAW_POST_DATA : '';
 $server->service($HTTP_RAW_POST_DATA);

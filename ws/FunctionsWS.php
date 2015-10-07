@@ -689,3 +689,124 @@ function validateDate($date, $format = 'Y-m-d H:i:s') {
     $d = DateTime::createFromFormat($format, $date);
     return $d && $d->format($format) == $date;
 }
+
+function getDocumentMetadata($data){
+    $error = array();
+    
+    if (!isset($data['idSession']))
+        $error[] = array('error' => 'No se encontró el parámetro idSession');
+    if (!isset($data['instanceName']))
+        $error[] = array('error' => "No se encontró el parámetro instanceName");
+    if (!isset($data['userName']))
+        $error[] = array('error' => 'No se encontró el parámetro userName');
+    if (!isset($data['password']))
+        $error[] = array('error' => 'No se encontró el parámetro password');
+    if (!isset($data['repositoryName']))
+        $error[] = array('error' => 'No se encontró el parámetro repositoryName');
+    if (!isset($data['idDirectory']))
+        $error[] = array('error' => 'No se encontró el parámetro idDirectory');
+    if (!isset($data['idDocument']))
+        $error[] = array('error' => 'No se encontró el parámetro idDocument');
+    
+    $Catalog = new Catalog();
+    $Designer = new DesignerForms();
+    $DB = new DataBase();
+    
+    $instanceName = $data['instanceName'];
+    $repositoryName = $data['repositoryName'];
+    $idDocument = $data[$idDocument];
+    $idDirectory = $data['idDirectory'];
+    $RoutFile = dirname(getcwd());
+    $message = array();
+    $fieldsChain = "";
+    $fields = array();
+    
+    if(!file_exists("$RoutFile/Estructuras/$instanceName"))
+        $error[] = array("error"=>"No existe la instancia especificada \"$instanceName\"");
+    
+    if(!file_exists("$RoutFile/Estructuras/$instanceName/$repositoryName"))
+        $error[] = array("error"=>"No existe el repositorio especificado o puede que la instancia"
+            . "sea incorrecta");
+    
+    if(((int)$idDirectory < 0))
+        $error[] = array("error"=>"El idDirectory no puede ser menor a 0");
+    
+    if(((int) $idDocument < 0))
+        $error[] = array("error"=>"El idDocument no puede ser menor a 0");
+    
+    if(count($error)>0)
+        return $error;
+    
+    $catalogs = $Catalog->getArrayCatalogsNames($instanceName, 0, $repositoryName);
+
+    IF (!is_array($catalogs))
+        return array("error" => "Error al recuperar los catálogos ligados al repositorio $repositoryName. $catalogs");
+
+    if (!file_exists("$RoutFile/Configuracion/$instanceName.ini"))
+        return array("error" => "No existe el registro de estructura de la instancia $instanceName");
+
+    $EstructuraConfig = parse_ini_file("$RoutFile/Configuracion/$instanceName.ini", true);
+
+    $ArrayStructureUser = $Designer->ReturnStructure($repositoryName, $EstructuraConfig[$repositoryName]);
+    
+    for($cont = 0; $cont < count($ArrayStructureUser); $cont++){
+        
+        $requiredField = "false";
+        $fieldLength = "";
+        
+        if(isset($ArrayStructureUser[$cont]['required']))
+            if(strcasecmp($ArrayStructureUser[$cont]['required'], "true")==0)
+                $requiredField = "true";
+        
+        if(isset($ArrayStructureUser[$cont]['long']))
+            $fieldLength = $ArrayStructureUser[$cont]['long'];
+        
+        $fields[$ArrayStructureUser[$cont]['name']] = array("fieldType"=>$ArrayStructureUser[$cont]['type'],
+            "fieldLength"=>$fieldLength, "requiredField"=>$requiredField,
+            "fieldName"=>$ArrayStructureUser[$cont]['name'], "fieldClass"=>"metadata");
+        
+    }
+    
+    for($cont = 0; $cont < count($catalogs); $cont++){
+        $fields[$catalogs[$cont]["NombreCatalogo"]] = array("fieldType"=>"integer",
+            "requiredField"=>"true", "fieldName"=>$catalogs[$cont]["NombreCatalogo"], 
+            "fieldLength"=>"" ,"fieldClass"=>"catalog");
+    }
+    
+    if((int)$idDocument>0)
+        $getDocumentQuery = "SELECT ". trim(implode(",", array_keys($fields)), ",")." FROM $repositoryName WHERE IdRepositorio = $idDocument";
+    else
+        $getDocumentQuery = "SELECT ". trim(implode(",", array_keys($fields)), ",")." FROM $repositoryName WHERE IdDirectory = $idDirectory LIMIT 1";
+       
+    $resultGetDocument = $DB->ConsultaSelect($instanceName, $getDocumentQuery);
+    
+    if($resultGetDocument['Estado']!=1)
+        return $error[] = "No se pudieron recuperar los metadatos. Error en la consulta ".$resultGetDocument['Estado'];
+    
+    if((int)$idDocument > 0 and count($resultGetDocument['ArrayDatos'])==0){
+        $error[] = array("error"=>"No se encontró el documento solicitado");
+        return $error;
+    }
+    else
+        if(count($resultGetDocument['ArrayDatos']) == 0){
+            $message[] = array("message" => "No existen documentos en el directorio solicitado");
+            return $message;
+        }
+    
+//    if(count($resultGetDocument['ArrayDatos'])==0){
+//        $message[] = array("message"=>"No existen documentos en el directorio");
+//        return $message;
+//    }
+    
+    foreach ($fields as $field => $value){
+        if(!isset($resultGetDocument['ArrayDatos'][0][$field]))
+            $error[] = array("error"=>"No existe el campo \"$field\"");
+        
+        $fields[$field]["fieldValue"] = $resultGetDocument['ArrayDatos'][0][$field];
+     }
+    
+    if(count($error) > 0)
+        return $error;
+    
+    return $fields;
+}
