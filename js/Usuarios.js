@@ -51,6 +51,11 @@ $(document).ready(function(){
    $('#tr_UsersList').click(function(){Users.CM_UsersList();});
    
    $('#tr_GroupsUsers').click(function(){UsersGroups.ShowsGroupsUsers();});
+   
+   $('#LinkCloseSession').click(function(){
+       Users.closeUserSession();
+   });
+   
 });
 
 /*******************************************************************************
@@ -482,20 +487,20 @@ ClassUsers = function()
 
         $('#page').append('\
             <div id="userLoggedPopupOptions" class="popover">\n\
-                        <div class="arrow"></div>\n\
-                        <h3 class="popover-title"><span id = "closeUserLoggedPopupOptions" class="close pull-right" data-dismiss="popover-x">&times;</span>Enter credentials</h3>\n\
-                        <div class="popover-content">\n\
-                            <div class="form-group">\n\
-                                <label>Cambiar Password</label>\n\
-                                <input type="password" id = "firstUserLoggedPass" class="form-control" placeholder="Cambiar Contraseña">\n\
-                            </div>\n\
-                            <div class="form-group">\n\
-                                <input type="password" id = "secondUserLoggedPass" class="form-control" placeholder="Confirmar Contraseña">\n\
-                            </div>\n\
-                        </div>\n\
-                        <div class="popover-footer">\n\
-                            <input type = "button" id = "btnChangeUserLoggedPassword" value = "Cambiar Contraseña" class="btn btn-sm btn-primary">\n\
-                        </div>\n\
+                <div class="arrow"></div>\n\
+                <h3 class="popover-title"><span id = "closeUserLoggedPopupOptions" class="close pull-right" data-dismiss="popover-x">&times;</span><span class = "glyphicon glyphicon-user">  '+EnvironmentData.NombreUsuario+'</span></h3>\n\
+                <div class="popover-content">\n\
+                    <div class="form-group">\n\
+                        <label>Cambiar Password</label>\n\
+                        <input type="password" id = "firstUserLoggedPass" class="form-control" placeholder="Cambiar Contraseña">\n\
+                    </div>\n\
+                    <div class="form-group">\n\
+                        <input type="password" id = "secondUserLoggedPass" class="form-control" placeholder="Confirmar Contraseña">\n\
+                    </div>\n\
+                </div>\n\
+                <div class="popover-footer">\n\
+                    <input type = "button" id = "btnChangeUserLoggedPassword" value = "Cambiar Contraseña" class="btn btn-sm btn-primary">\n\
+                </div>\n\
             </div>');
 
     
@@ -556,13 +561,39 @@ ClassUsers = function()
         $('#secondUserLoggedPass').attr('title', '');
     };
     
+    _closeUserSession = function(){
+        
+        $.ajax({
+        async:false, 
+        cache:false,
+        dataType:"html", 
+        type: 'POST',   
+        url: "php/Usuarios.php",
+        data: {opcion:"closeUserSession"}, 
+        success:  function(xml)
+        {            
+            if($.parseXML( xml )===null){ Error(xml); return 0;}else xml=$.parseXML( xml );         
+            
+            $(xml).find('userSessionClosed').each(function()
+            {
+                location.reload();
+            });
+
+            $(xml).find("Error").each(function()
+            {
+                var mensaje=$(this).find("Mensaje").text();
+                Error(mensaje);
+            });                 
+
+        },
+        beforeSend:function(){},
+        error: function(jqXHR, textStatus, errorThrown){ Error(textStatus +"<br>"+ errorThrown);}
+        });    
+    };
+    
 };   
 
-ClassUsers.prototype.changeUserLoggedPassword = function(){
-    var fieldsValidator = new ClassFieldsValidator();
-    var password1 = $('#firstUserLoggedPass').val();
-    var password2 = $('#secondUserLoggedPass').val();
-    
+ClassUsers.prototype.checkNewPasswordPuted = function(){
     if(password1.length < 5){
         fieldsValidator.AddClassRequiredActive($('#firstUserLoggedPass'));
         $('#firstUserLoggedPass').attr('title', 'La contraseña debe ser mayor a 5 caracteres');
@@ -595,6 +626,43 @@ ClassUsers.prototype.changeUserLoggedPassword = function(){
         $('#secondUserLoggedPass').attr('title', 'Las contraseñas no coinciden');
         
     }
+};
+
+ClassUsers.prototype.changeUserLoggedPassword = function(){
+    var fieldsValidator = new ClassFieldsValidator();
+    var password1 = $('#firstUserLoggedPass').val();
+    var password2 = $('#secondUserLoggedPass').val();
+    
+    $.ajax({
+        async:true, 
+        cache:false,
+        dataType:"html", 
+        type: 'POST',   
+        url: "php/Usuarios.php",
+        data: {opcion:"changeUserPassword", newPassword : password1}, 
+        success:  function(xml)
+        {            
+            if($.parseXML( xml )===null){$('#UsersPlaceWaiting').remove(); Error(xml); return 0;}else xml=$.parseXML( xml );         
+
+            $(xml).find("passwordChanged").each(function(){
+                var mensaje = $(this).find("Mensaje").text();
+                Notificacion(mensaje);
+                $('#userLoggedPopupOptions').hide();        /* Se cierra el Popover de Usuario*/
+            });
+
+            $(xml).find("Error").each(function()
+            {
+                var $Error=$(this);
+                var estado=$Error.find("Estado").text();
+                var mensaje=$Error.find("Mensaje").text();
+                Error(mensaje);
+                $('#UsersPlaceWaiting').remove();
+            });                 
+
+        },
+        beforeSend:function(){},
+        error: function(jqXHR, textStatus, errorThrown){$('#UsersPlaceWaiting').remove(); Error(textStatus +"<br>"+ errorThrown);}
+        });    
     
 };
 
@@ -728,12 +796,16 @@ ClassUsers.prototype.changeUserLoggedPassword = function(){
         return ClassUsers.PasswordColumn;
     };    
     
-    
-    /* POPOVER información del usuario que se logueó al sistema */
-    
-    ClassUsers.prototype.showUserLoggedOptions = function(){
-      
+    ClassUsers.prototype.closeUserSession = function(){
         
+        $('#closeSessionConfirm').remove();
+        $('body').append('<div id = "closeSessionConfirm"></div>');
+        $('#closeSessionConfirm').append("¿Realmente desea salir del sistema?");
+        $('#closeSessionConfirm').dialog({title:"Mensaje de confirmación",
+        width: 300, heigth:250, modal:true, resizable:false, buttons:{
+            "Cancelar": function(){$(this).remove();},
+            "Cerrar Sesión": function(){_closeUserSession(); $(this).remove();}
+        } });
         
     };
     

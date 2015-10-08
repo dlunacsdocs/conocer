@@ -147,17 +147,6 @@ and open the template in the editor.
 
     </head>
     <body>
-        <!-- FAIL -->
-        <div id="fail">
-            <div class="fail-browser-logo">
-                <img src="img/apple-logo-login.png" alt="Mac OS X" />
-            </div>
-            <div class="fail-browser">
-                <p><strong>Lo sentimos, nuestro sistema requiere de un navegador que soporte animaciones CSS3!</strong></p> 
-                <p>Le recomendamos descargar <a href="http://www.google.com/intl/es-419/chrome/browser/" target="_blank" title="Google Chrome">Google Chrome</a> </p>
-            </div>
-        </div>
-
         <!-- BOOT -->
 
         <div id="pageLoading">
@@ -193,19 +182,16 @@ and open the template in the editor.
                         <a href="#show" class="show" id="show"></a>
                         <div id="cover"></div>
                         <div class="ava-css">
-                            <img src="img/Lion.gif" />
+                            <img src="img/CSDocs.png" />
                         </div>
                         <div class="logName">
                         </div>
                         <div id="switch">
                             <div class="validate">
                                 <form action="#page">
-                                    <select id="select_login_instancias">
-                                    </select>
-                                    <input type="text" id="form_user" placeholder="Usuario" onkeyup="if (event.keyCode === 13)
-                    login();">                   
-                                    <input type="password" id="form_password" onkeyup="if (event.keyCode === 13)
-                                                login();" placeholder="Password" />
+                                    <select id="select_login_instancias"></select>
+                                    <input type="text" id="form_user" placeholder="Usuario" onkeyup="if (event.keyCode === 13) login();">                   
+                                    <input type="password" id="form_password" onkeyup="if (event.keyCode === 13) login();" placeholder="Password" />
                                     <input type="button" class="submit" id="boton_login">
                                 </form>
                             </div>
@@ -304,8 +290,6 @@ and open the template in the editor.
                                 <!-- <li>Software Updates...</li> -->            
                                 <!--<li class="divider"></li>              -->
                                 <!--<li id="li_consola_admin"><a href="#consola_administracion">Consola de Administración</a></li>-->
-                                <li class="divider"></li>                
-                                <li id="li_exit"><a href="#">Salir</a></li>
                             </ul>
                         </li>
                         <li class="here SystemMenuLink">
@@ -313,7 +297,7 @@ and open the template in the editor.
                             <ul class="sublist">
                                 <li class="LinkRegisters"><a href="#">Registros</a></li>
                                 <li class="divider"></li>
-                                <li id = "LinkCloseSession"><a href="#">Salir</a></li>
+                                <li id = "LinkCloseSession"><a href="#">Cerrar Sesión</a></li>
                             </ul>
                         </li>
                         <li class="here LinkInstanceMenu">

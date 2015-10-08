@@ -52,7 +52,7 @@ html, body {
 	top:50%;
 	margin-left:-60px;
 	margin-top:-60px;
-	background:url(../img/cubo2.png) center no-repeat;
+	background:url(../img/CuboCSDocs.png) center no-repeat;
 	visibility:hidden;
 	-webkit-animation:initApple 0s 1s linear forwards;
 	-moz-animation:initApple 0s 1s linear forwards;
@@ -221,7 +221,7 @@ fra1_form{
 	top:50%;
 	margin-left:-60px;
 	margin-top:-60px;
-	background:url(../img/cubo1.png) center no-repeat;
+	background:url(../img/CuboCSDocs.png) center no-repeat;
 	-webkit-animation:initAppleLoginWindow 0.5s 7.5s linear forwards;
 	-moz-animation:initAppleLoginWindow 0.5s 7.5s linear forwards;
 }
@@ -240,33 +240,33 @@ fra1_form{
 	margin-top:-49px;
 }
 .ava-css {
-	height:90px;
-    width:90px;
+	height:99px;
+    width:99px;
 	left: 50%;
 	top: 50%;
-    margin-left: -49px;
-    margin-top: -49px;
+    margin-left: -89px;
+    margin-top: -59px;
     display: block;
     border-radius: 100%;
     padding: 4px;
-    background: -moz-linear-gradient(#fdfdfd, #c9c9c9);
-	background: -webkit-linear-gradient(#fdfdfd, #c9c9c9);
-	border:1px solid #434448;
+    /*background: -moz-linear-gradient(#fdfdfd, #c9c9c9);*/
+	/*background: -webkit-linear-gradient(#fdfdfd, #c9c9c9);*/
+	/*border:1px solid #434448;*/
 	position:absolute;
 }
 .ava-css img {
     display: block;
-    border-radius: 100%;
+    /*border-radius: 100%;*/
 	position:relative;
-	width:91px;
-	height:91px;
+	width:200px;
+	height:100px;
 	left:-1px;
 	top:-1px;
 }
 .ava-css:before, .ava-css:after {
     width: 90px;
     height: 90px;
-    content: '';
+    /*content: '';*/
     display: block;
     position: absolute;
     top: 3px;
@@ -357,8 +357,8 @@ fra1_form{
 #form_password {
       position: absolute;
       top: 100%;
-	width:154px;
-	height:24px;
+	width:190px;
+	height:28px;
 	box-shadow:0 0 2px 3px #4189c3;
 	border-radius:3px;
 	border:1px solid rgba(0,0,0,0);
@@ -388,8 +388,8 @@ fra1_form{
 #form_user {
         position: absolute;
         top: 10%;
-	width:154px;
-	height:24px;
+	width:190px;
+	height:28px;
 	box-shadow:0 0 2px 3px #4189c3;
 	border-radius:3px;
 	border:1px solid rgba(0,0,0,0);

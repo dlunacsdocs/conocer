@@ -975,7 +975,7 @@ class DataBase {
         $DefaultEstruct=$StructUsuario->DefaultStructProperties->children();
         $DefinitionUser=$StructUsuario->DefinitionUsersProperties->children();                           
         $DatabaseName=$StructUsuario['DataBaseName']; 
-        $TablaUsuarios = "CREATE TABLE IF NOT EXISTS Usuarios (IdUsuario int(11) NOT NULL AUTO_INCREMENT,"
+        $TablaUsuarios = "CREATE TABLE IF NOT EXISTS CSDocs_Usuarios (IdUsuario int(11) NOT NULL AUTO_INCREMENT,"
                         . "estatus INT NOT NULL DEFAULT '1', ";
 //                        . "IdRol INT NOT NULL DEFAULT '1', ";  /* El rol 1 = sin grupo */
                         
@@ -1305,7 +1305,7 @@ class DataBase {
                 continue;
             }
             
-            $query="INSERT INTO Usuarios ($CadenaCamposProcessed) VALUES ($cadena_valores_processed)";
+            $query="INSERT INTO CSDocs_Usuarios ($CadenaCamposProcessed) VALUES ($cadena_valores_processed)";
             $InsertUserIntoCsDocs = "INSERT INTO Usuarios (Login, Password) VALUES ('$login', '$password')";            
             if(($IdUsuario=$this->ConsultaInsertReturnId($DataBaseName,   $query))>0)
             {

@@ -37,7 +37,7 @@ function login()
                 var NombreUsuario = $(this).find("Login").text();
                 var NombreGrupo = $(this).find("NombreGrupo").text();
                 var IdGrupo = $(this).find("IdGrupo").text();
-                var idInstance = $(this).find('idInstance').tetx();
+                var idInstance = $(this).find('idInstance').text();
                 var NombreInstancia = $("#select_login_instancias option:selected").html();
                 if (IdUsuario > 0)
                 {

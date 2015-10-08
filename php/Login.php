@@ -1,12 +1,13 @@
 <?php
 /*******************************************************************************
  *  Clase para buscar al usuario en la BD y acceso al sistema                  *
- *                                                                             *
+ *            
+ *  @author daniel                                                                 *
  *******************************************************************************/
-require_once 'DataBase.php';
+//require_once 'DataBase.php';
 require_once "Log.php";
 require_once "XML.php";
-require_once 'Usuarios.php';
+//require_once 'Usuarios.php';
 require_once 'Session.php';
 
 if(!isset($_SESSION))
@@ -46,7 +47,7 @@ class Login {
         $sessionParameters = array('IdUsuario'=>$userParameters['idUser'] ,'Login'=>$userParameters['userName'], 
             'IdGrupo'=>$userParameters['idGroup'], 'Nombre'=>$userParameters['groupName'], 
             'idSession'=>$userParameters['idSession'], 'dataBaseName'=>$userParameters['dataBaseName'],
-            'idInstance'=>$idInstance);
+            'idDataBase'=>$idInstance);
         
         Session::$idSession = $userParameters['idSession'];
         
@@ -99,16 +100,17 @@ class Login {
     
     private function login()
     {        
-        $user = filter_input(INPUT_POST, "UserName");
-        $pass = filter_input(INPUT_POST, "Password");
+        $user = trim(filter_input(INPUT_POST, "UserName"));
+        $pass = trim(filter_input(INPUT_POST, "Password"));
         $DataBaseName = filter_input(INPUT_POST, "DataBaseName");
         $IdDataBase = filter_input(INPUT_POST, "IdDataBase");
         
         $idSession = Session::getIdSession();
 //        var_dump($idSession);
-
+        $ResultSelect = array();
         
-        $ResultSelect = $this->searchRegisterUser($DataBaseName, $user, $pass);
+        if(strlen($user)>0)
+            $ResultSelect = $this->searchRegisterUser($DataBaseName, $user, $pass);
         
         if(!is_array($ResultSelect))
             return XML::XMLReponse("Error", 0, "<p><b>Error</b> de inicio de sesión.</p><br>Detalles:<br><p> ". $ResultSelect ."</p>");
@@ -128,20 +130,14 @@ class Login {
                 $Resultado['dataBaseName'] = $DataBaseName;
         }
          
-        if(isset($Resultado['IdUsuario']))
-            Usuarios::$idUser = $Resultado['IdUsuario'];
-        if(isset($Resultado['Login']))
-            Usuarios::$userName = $Resultado['Login'];
-        if(isset($Resultado['IdGrupo']))
-            Usuarios::$idGroup = $Resultado['IdGrupo'];
-        if(isset($Resultado['NombreGrupo']))
-            Usuarios::$groupName = $Resultado['NombreGrupo'];
+        
+        $Resultado['idDataBase'] = $IdDataBase;
         
         if($Resultado['IdUsuario']>0){
 //            if($idSession==null)
 //                return XML::XMLReponse ("Error", 0, "Ya hay una sesión iniciada.");
-            Session::$idSession = Session::createSession(DataBase::$dataBaseName ,DataBase::$dataBaseName, 
-                    Usuarios::$idUser,  Usuarios::$userName, $Resultado['IdGrupo'], $Resultado['Nombre']);
+            Session::$idSession = Session::createSession($IdDataBase ,$DataBaseName, 
+                    $Resultado['IdUsuario'], $Resultado['Login'], $Resultado['IdGrupo'], $Resultado['Nombre']);
             
             Session::$idSession = Session::getIdSession(); 
         }

@@ -3,19 +3,19 @@
 /*
  * @author Daniel Luna
  */
-if(!isset($_SESSION))
-            session_start();
+if (!isset($_SESSION))
+    session_start();
 
 class Session {
+
     static $idSession = null;
-    
-    public static function createSession($idDataBase,$dataBaseName, $idUser, $userName, $idGroup, $groupName)
-    {
-        if(!isset($_SESSION))
+
+    public static function createSession($idDataBase, $dataBaseName, $idUser, $userName, $idGroup, $groupName) {
+        if (!isset($_SESSION))
             session_start();
 
         $sessionId = session_id();
-        
+
         $_SESSION['idSession'] = $sessionId;
         $_SESSION['idDataBase'] = $idDataBase;
         $_SESSION['dataBaseName'] = $dataBaseName;
@@ -23,35 +23,29 @@ class Session {
         $_SESSION['userName'] = $userName;
         $_SESSION['idGroup'] = $idGroup;
         $_SESSION['groupName'] = $groupName;
-        
+
         return $sessionId;
-        
     }
-    
-    public static function getSessionParameters()
-    {
-        if(!isset($_SESSION))
+
+    public static function getSessionParameters() {
+        if (!isset($_SESSION))
             session_start();
-       
-        return array('idSession'=>$_SESSION['idSession'], "dataBaseName"=>$_SESSION['dataBaseName'], 
-            "userName"=>$_SESSION['userName'], 'idUser'=>$_SESSION['idUser'] , 
-            'idGroup'=>$_SESSION['idGroup'],'groupName'=>$_SESSION['groupName']);
-        
+
+        return array('idSession' => $_SESSION['idSession'], "dataBaseName" => $_SESSION['dataBaseName'],
+            "userName" => $_SESSION['userName'], 'idUser' => $_SESSION['idUser'],
+            'idGroup' => $_SESSION['idGroup'], 'groupName' => $_SESSION['groupName']);
     }
-    
-    public static function getIdSession()
-    {
-        if(isset($_SESSION['userName']) and isset($_SESSION['dataBaseName']))
+
+    public static function getIdSession() {
+        if (isset($_SESSION['userName']) and isset($_SESSION['dataBaseName']))
             return $_SESSION['idSession'];
-        else 
+        else
             return null;
-        
     }
-    
-    public static function checkTimeOut()
-    {
+
+    public static function checkTimeOut() {
         if (isset($_SESSION["lastActivity"])) {
-            if(time() - $_SESSION["lastActivity"] > 1800) {
+            if (time() - $_SESSION["lastActivity"] > 1800) {
                 // last request was more than 30 minutes ago
                 session_unset();     // unset $_SESSION variable for the run-time 
                 session_destroy();   // destroy session data in storage
@@ -60,9 +54,18 @@ class Session {
             }
         }
     }
-    
-    public static function destroySession()
-    {
-        
+
+    public static function destroySession() {
+        // Si se desea destruir la sesión completamente, borre también la cookie de sesión.
+        // Nota: ¡Esto destruirá la sesión, y no la información de la sesión!
+        if (ini_get("session.use_cookies")) {
+            $params = session_get_cookie_params();
+            setcookie(session_name(), '', time() - 42000, $params["path"], $params["domain"], $params["secure"], $params["httponly"]
+            );
+        }
+
+        // Finalmente, destruir la sesión.
+        session_destroy();
     }
+
 }
