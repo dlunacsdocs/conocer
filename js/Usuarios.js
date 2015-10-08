@@ -468,7 +468,111 @@ ClassUsers = function()
         error: function(jqXHR, textStatus, errorThrown){$('#UsersPlaceWaiting').remove(); Error(textStatus +"<br>"+ errorThrown);}
         });    
     };
+    
+    dan = function(){
+        alert("dan");
+    };
+       
+    /************** Popover Usuario (Icono Usuario  Menú superior) *************/
+    
+    self.addUserLoggedPopover = function(){
+
+        if($('#userLoggedPopupOptions').length > 0)
+        return 0;
+
+        $('#page').append('\
+            <div id="userLoggedPopupOptions" class="popover">\n\
+                        <div class="arrow"></div>\n\
+                        <h3 class="popover-title">JavaScript Access</h3>\n\
+                        <div class="popover-content">\n\
+                            <div class="form-group">\n\
+                                <label>Cambiar Password</label>\n\
+                                <input type="password" id = "firstUserLoggedPass" class="form-control" placeholder="Cambiar Contraseña">\n\
+                            </div>\n\
+                            <div class="form-group">\n\
+                                <input type="password" id = "secondUserLoggedPass" class="form-control" placeholder="Confirmar Contraseña">\n\
+                            </div>\n\
+                            <input type = "button" id = "btnChangeUserLoggedPassword" value = "Cambiar Contraseña" class="btn btn-default btn-block">\n\
+                        </div>\n\
+            </div>');
+
+    
+    $('#userLoggedPopupOptions').modalPopover({
+        target: '#mainMenuUserIcon',
+        placement: 'bottom'
+    });
+    
+        $('#mainMenuUserIcon').click(function(){
+            console.log("Modal iniciado");
+            if(!$('#userLoggedPopupOptions').is(':visible')){
+                _resetUserLoggedPopover();
+                $('#userLoggedPopupOptions').modalPopover('show');
+            }
+            else
+                $('#userLoggedPopupOptions').hide();
+        });
+//    $('#mainMenuUserIcon').click(function(){
+//        $('#userLoggedPopupOptions').popoverX('toggle');
+//    });
+        
+        $('#btnChangeUserLoggedPassword').click(function(){
+            self.changeUserLoggedPassword();
+        });
+    
+    };
+    
+    _resetUserLoggedPopover = function(){
+        var fieldsValidator = new ClassFieldsValidator();
+
+        $('#firstUserLoggedPass').val("");
+        $('#secondUserLoggedPass').val("");
+        fieldsValidator.RemoveClassRequiredActive($('#firstUserLoggedPass'));
+        fieldsValidator.RemoveClassRequiredActive($('#secondUserLoggedPass'));
+        $('#firstUserLoggedPass').attr('title', '');
+        $('#secondUserLoggedPass').attr('title', '');
+    };
+    
 };   
+
+ClassUsers.prototype.changeUserLoggedPassword = function(){
+    var fieldsValidator = new ClassFieldsValidator();
+    var password1 = $('#firstUserLoggedPass').val();
+    var password2 = $('#secondUserLoggedPass').val();
+    
+    if(password1.length < 5){
+        fieldsValidator.AddClassRequiredActive($('#firstUserLoggedPass'));
+        $('#firstUserLoggedPass').attr('title', 'La contraseña debe ser mayor a 5 caracteres');
+        return 0;
+    }
+    else
+        $('#firstUserLoggedPass').attr('title', '');
+    
+    if(password2.length < 5){
+        fieldsValidator.AddClassRequiredActive($('#secondUserLoggedPass'));
+        $('#secondUserLoggedPass').attr('title', 'La contraseña debe ser mayor a 5 caracteres');
+        return 0;
+    }
+    else
+        $('#secondUserLoggedPass').attr('title', '');
+    
+    if(password1  === password2){     
+        fieldsValidator.RemoveClassRequiredActive($('#firstUserLoggedPass'));
+        fieldsValidator.RemoveClassRequiredActive($('#secondUserLoggedPass'));
+        $('#firstUserLoggedPass').attr('title', '');
+        $('#secondUserLoggedPass').attr('title', '');
+        
+        /* Cambio de contraseña */
+        
+    }
+    else{
+        fieldsValidator.AddClassRequiredActive($('#firstUserLoggedPass'));
+        fieldsValidator.AddClassRequiredActive($('#secondUserLoggedPass'));
+        $('#firstUserLoggedPass').attr('title', 'Las contraseñas no coinciden');
+        $('#secondUserLoggedPass').attr('title', 'Las contraseñas no coinciden');
+        
+    }
+    
+};
 
 
     /*******************************************************************************
@@ -599,6 +703,17 @@ ClassUsers = function()
     {
         return ClassUsers.PasswordColumn;
     };    
+    
+    
+    /* POPOVER información del usuario que se logueó al sistema */
+    
+    ClassUsers.prototype.showUserLoggedOptions = function(){
+      
+        
+        
+    };
+    
+    
 
 
 

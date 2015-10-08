@@ -14,6 +14,12 @@ and open the template in the editor.
         <script type="text/javascript" src="apis/js/jquery-2.0.0.min.js"></script>           
         <link rel="stylesheet" type="text/css" media="screen" href="css/style.css"/>
 
+        <link rel="stylesheet" href="apis/bootstrap-3.3.5/css/bootstrap.min.css" />
+        <link rel="stylesheet" href="apis/bootstrap-3.3.5/css/bootstrap-popover-x.min.css" />
+        <script src="apis/bootstrap-3.3.5/js/bootstrap.min.js"></script>
+        <script src="apis/bootstrap-3.3.5/js/bootstrap-modal-popover.js"></script>
+        <script src="apis/bootstrap-3.3.5/js/bootstrap-popover-x.min.js"></script>
+        
         <!--*****************************Dialogos modales******************************* -->
         <link rel="stylesheet" href="apis/jquery-ui/jquery-ui.css" />
         <script src="apis/jquery-ui/jquery-ui.min.js"></script>
@@ -54,6 +60,7 @@ and open the template in the editor.
         <script type="text/javascript" src="js/FieldsManager.js"></script>
         <script type="text/javascript" src="js/Permissions.js"></script>
         <script type="text/javascript" src="js/Designer.js"></script>
+        <script type="text/javascript" src="js/SystemManager.js"></script>
         <script type="text/javascript" src="js/ContentArbol.js"></script>
         <script type="text/javascript" src="js/RepositoriesManager.js"></script>
         <script type="text/javascript" src="js/CatalogManagement.js"></script>
@@ -66,7 +73,7 @@ and open the template in the editor.
         <script type="text/javascript" src="js/ContentTools.js"></script>
         <script type="text/javascript" src="js/EnterpriseManager.js"></script>
         <script type="text/javascript" src="js/InstanciaBD.js"></script>
-        <script type="text/javascript" src="js/ConsolaAdministracion.js"></script>
+        <!--<script type="text/javascript" src="js/ConsolaAdministracion.js"></script>-->
         <script type="text/javascript" src="js/Viewers.js"></script>
         <script type="text/javascript" src="js/Notes.js"></script>
         <script type="text/javascript" src="js/Mail.js"></script>
@@ -281,13 +288,6 @@ and open the template in the editor.
                         </a>
                     </li> 
 
-                    <li class="link_FollowUp">
-                        <a href="#" data-rel="show">
-                            <em><span>Seguimiento</span></em>
-                            <img src="img/ContendProveedor.png" alt="Facetime" width="200" height="200"/>
-                        </a>
-                    </li> 
-
                     <li id="Help_info">
                         <a href="#ayuda_csdocs" data-rel="show">
                             <em><span>Ayuda CSDocs</span></em>
@@ -313,45 +313,47 @@ and open the template in the editor.
                             </ul>
                         </li>
                         <li class="here SystemMenuLink">
-                            <a href="#all">Sistema</a>
+                            <a href="#Sistema">Sistema</a>
                             <ul class="sublist">
-                                <li class="LinkNewInstance"><a href="#">Nueva Instancia</a></li>
+                                <li class="LinkRegisters"><a href="#">Registros</a></li>
                                 <li class="divider"></li>
+                                <li id = "LinkCloseSession"><a href="#">Salir</a></li>
+                            </ul>
+                        </li>
+                        <li class="here LinkInstanceMenu">
+                            <a href="#Instancias">Instancias</a>
+                            <ul class="sublist">
+                                <li class = "LinkInstancesManager"><a href="#">Administración</a></li>
                                 <li class="LinkDeleteInstance"><a href="#">Eliminar Instancia</a></li>
                                 <li class="divider"></li>
-                                <li class="LinkRegisters"><a href="#">Registros</a></li>
+                                <li class="LinkNewInstance"><a href="#">Nueva Instancia</a></li>
                             </ul>
                         </li>
                         <li class="here LinkEnterpriseMenu">
-                            <a href="#all">Empresa</a>
+                            <a href="#Empresas">Empresa</a>
                             <ul class="sublist">
                                 <li class = "LinkEnterprise"><a href="#">Administración</a></li>
                             </ul>
                         </li>
                         <li class="here LinkRepositoriesMenu">
-                            <a href="#all">Repositorios</a>
+                            <a href="#Repositorios">Repositorios</a>
                             <ul class="sublist">
                                 <li class = "LinkRepositories"><a href="#">Administración</a></li>
                             </ul>
                         </li>
                         <li class="here LinkCatalogsMenu">
-                            <a href="#all">Catalogos</a>
+                            <a href="#Catalogos">Catalogos</a>
                             <ul class = "sublist">
                                 <li class = "LinkCatalogs"><a href="#">Administración</a></li>
                             </ul>
                         </li>
                         <li class="here LinkUsersMenu">
-                            <a href="#all">Usuarios</a>
+                            <a href="#Usuarios">Usuarios</a>
                             <ul class="sublist">
                                 <li class="LinkUsers"><a href="#">Administración</a></li>
                             </ul>
                         </li>
-                        <li class="here LinkContainerMenu">
-                            <a href="#all">Contenedores</a>
-                            <ul class="sublist">
-                                <li class="LinkContainer"><a href="#">Content</a></li>
-                            </ul>
-                        </li>
+
                     </ul>
                 </nav>
                 <nav id="menu-dx">

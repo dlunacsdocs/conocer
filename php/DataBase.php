@@ -141,6 +141,7 @@ class DataBase {
         {
             $this->DeleteInstance($nombre_instancia);
             echo "<p>No fué posible crear el control de CSDocs</p>";
+            echo "<p>La instancia <b>$nombre_instancia</b> no se pudo construir</p>";
             return 0;
         }            
             
@@ -416,7 +417,21 @@ class DataBase {
         if(($ResultInsertIntoSistema = $this->ConsultaQuery($DataBaseName, $InsertIntoSistema))!=1)
         {
             echo "<p><b>Error</b> al insertar registros del <b>Menú Sistema</b>. $ResultInsertIntoSistema</p>";
+            return 0;
         }
+        
+        $insertInstances = "INSERT INTO SystemMenu (Nombre, IdParent) VALUES ('Instancias', $IdMenuAdministracion)";
+        if(!($idInstances = $this->ConsultaInsertReturnId($DataBaseName, $insertInstances))>0){
+            echo "<p><b>Error/<b> al crear el <b>Menú Instancias</b> $idInstances</p>";
+            return 0;
+        }
+                
+        $insertIntoInstances = "INSERT INTO SystemMenu (Nombre, IdParent) VALUES ('Administración', $idInstances)";
+        if(!($resultInsertIntoInstances = $this->ConsultaInsert($DataBaseName, $insertIntoInstances))>0){
+            echo "<p>Error</p> al insertar el menú Administración dentro de <b>Instancias</b>. $resultInsertIntoInstances";
+            return 0;
+        }
+        
         
         $InsertEmpresa = "INSERT INTO SystemMenu (Nombre, IdParent) VALUES ('Empresas', $IdMenuAdministracion)";
         if(!(($IdEmpresa = $this->ConsultaInsertReturnId($DataBaseName, $InsertEmpresa))>0))
@@ -1032,8 +1047,8 @@ class DataBase {
             $estado= mysql_error();            
             return $estado;
         }
-       
-        $sql="SELECT *FROM Usuarios WHERE Login='root'";
+        $rootPass = md5("root");
+        $sql="SELECT *FROM Usuarios WHERE Login='$rootPass'";
         
         mysql_select_db("cs-docs",  $conexion);  
         $resultado=mysql_query($sql,  $conexion);
@@ -1069,8 +1084,8 @@ class DataBase {
             $estado= mysql_error();            
             return $estado;
         }
-       
-        $sql="INSERT INTO Usuarios (Login, Password) VALUES('root','root')";
+        $rootPass = md5("root");
+        $sql="INSERT INTO Usuarios (IdUsuario, Login, Password) VALUES(1,'root','$rootPass')";
         mysql_select_db("cs-docs",  $conexion);  
         $resultado=mysql_query($sql,  $conexion);
         if(!$resultado)

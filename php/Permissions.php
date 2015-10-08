@@ -9,6 +9,9 @@
 require_once 'DataBase.php';
 require_once "Log.php";
 require_once "XML.php";
+
+$RoutFile = dirname(getcwd());        
+
 class Permissions {
     public function __construct() {
         $this->ajax();
@@ -88,10 +91,15 @@ class Permissions {
         $IdGrupo = filter_input(INPUT_POST, "IdGrupo");
         $NombreGrupo = filter_input(INPUT_POST, "nNombreGrupo");
         $IdRepositorio = filter_input(INPUT_POST, "IdRepositorio");
-        
+        $RoutFile = dirname(getcwd());        
+
         $ArrayAccessPermissions = array(); $ArraySystemMenus = array(); 
         
         $IfComeplement_= '';
+        
+        if(!file_exists("$RoutFile/Estructuras/$DataBaseName"))
+            return XML::XMLReponse ("limitedAccess", 1, "Acceso a Diseñador de Formas");
+        
         if($IdGrupo>0)
             $IfComeplement_.=" smc.IdGrupo = $IdGrupo AND";
         if($IdRepositorio > 0)

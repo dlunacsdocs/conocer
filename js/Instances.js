@@ -16,3 +16,4 @@ var Notes;
 var DocumentEnvironment;    /* Guarda el entorno donde fué consultado un documento p.e. IdRepository, RepositoryName, IdEnterprise, EnterpriseName */
 var CatalogAdmin = new ClassCatalogAdministrator();  /* Instancia utilizada para la administración de los catálogos (CatalogAdministrator.js) */
 var CatalogContent = new ClassCatalogAdministrator();  /* Clase utilizada para operaciones del Content p.e. Visualizar metadatos de un documento */
+var SystemManager = new ClassSystemManager();

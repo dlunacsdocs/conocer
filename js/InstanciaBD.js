@@ -95,39 +95,11 @@ function CreateInstancia()
            $('#Loading').dialog('close');   
            mostrar_crear_instanciaBD();
            Salida(ajax.responseText);
-//           if(ajax.responseXML===null){Salida(ajax.responseText);return;}                  
-//            var xml=ajax.responseXML;           
+    
 
         }
     };
-
-//        $.ajax({
-//        async:true, 
-//        cache:false,
-////        dataType:"html", 
-//        contentType: false,
-//        processData: false,
-//        type: 'POST',   
-//        url: "php/XML.php",
-//        data: data, 
-//        success:  function(xml)
-//        {     
-//            $('#Loading').dialog('close');
-//            if($.parseXML( xml )===null){Salida(xml); return 0;}else xml=$.parseXML( xml );         
-//
-//            $(xml).find("Error").each(function()
-//            {
-//                var $Error=$(this);
-//                var estado=$Error.find("Estado").text();
-//                var mensaje=$Error.find("Mensaje").text();
-//                Error(mensaje);
-//
-//            });                 
-//
-//        },
-//        beforeSend:function(){},
-//        error: function(jqXHR, textStatus, errorThrown){$('#Loading').dialog('close'); Error(textStatus +"<br>"+ errorThrown);}
-//        });    
+  
    };
 
 var Instances = function()

@@ -38,9 +38,15 @@ class Login {
         
         $userParameters = Session::getSessionParameters();
    
+        $idInstance = $userParameters['idDataBase'];
+        
+        if(!((int) $idInstance > 0))
+            $idInstance = 0;
+        
         $sessionParameters = array('IdUsuario'=>$userParameters['idUser'] ,'Login'=>$userParameters['userName'], 
             'IdGrupo'=>$userParameters['idGroup'], 'Nombre'=>$userParameters['groupName'], 
-            'idSession'=>$userParameters['idSession']);
+            'idSession'=>$userParameters['idSession'], 'dataBaseName'=>$userParameters['dataBaseName'],
+            'idInstance'=>$idInstance);
         
         Session::$idSession = $userParameters['idSession'];
         
@@ -151,6 +157,10 @@ class Login {
         $doc->formatOutput = true;
         $root = $doc->createElement('StartSession');
         $doc->appendChild($root); 
+        $idInstance = $doc->createElement("idInstance", $Resultado['idDataBase']);
+        $root->appendChild($idInstance);
+        $instance = $doc->createElement("instanceName", $Resultado['dataBaseName']);
+        $root->appendChild($instance);
         $Estado=$doc->createElement("Estado",1);
         $root->appendChild($Estado);
         $Login = $doc->createElement("Login",$Resultado['Login']);
@@ -177,7 +187,7 @@ class Login {
         
         if(strcasecmp($userName, 'root')==0)
         {
-            $SelectUsuario = "SELECT *FROM Usuarios WHERE Login COLLATE utf8_bin ='root' and Password COLLATE utf8_bin ='$password'";      
+            $SelectUsuario = "SELECT *FROM Usuarios WHERE Login COLLATE utf8_bin ='root' and Password COLLATE utf8_bin ='".md5(trim($password))."'";      
             
             $ResultSelect = $bd ->ConsultaSelect("cs-docs", $SelectUsuario);
         }
@@ -186,7 +196,7 @@ class Login {
             $SelectUsuario = "SELECT usu.IdUsuario, usu.Login, gc.IdGrupo, gu.Nombre FROM Usuarios usu 
             INNER JOIN GruposControl gc ON gc.IdUsuario=usu.IdUsuario
             LEFT JOIN GruposUsuario gu ON gu.IdGrupo = gc.IdGrupo
-            WHERE usu.Login  COLLATE utf8_bin ='$userName' AND usu.Password  COLLATE utf8_bin ='$password'";
+            WHERE usu.Login  COLLATE utf8_bin ='$userName' AND usu.Password  COLLATE utf8_bin ='".md5(trim($password))."'";
             
             $ResultSelect = $bd ->ConsultaSelect($instanceName, $SelectUsuario);
         }

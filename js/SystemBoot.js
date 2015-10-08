@@ -29,7 +29,9 @@ $(document).ready(function() {
     
     
     ExistRoot();    
-    getListInstances();
+    
+    if(!checkSessionExistance())
+        getListInstances();
 
 //-----------------------------------------------------------------------------------
 //	2.	Fix Classes after Validate Login
@@ -72,5 +74,4 @@ function DeniedSystemStart()
     $('.validate').addClass('error').delay(210).queue(function() { $(this).removeClass('error'); $(this).dequeue();});
 }
 
-//checkSessionExistance();
 
