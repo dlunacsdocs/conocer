@@ -483,7 +483,7 @@ ClassUsers = function()
         $('#page').append('\
             <div id="userLoggedPopupOptions" class="popover">\n\
                         <div class="arrow"></div>\n\
-                        <h3 class="popover-title">JavaScript Access</h3>\n\
+                        <h3 class="popover-title"><span id = "closeUserLoggedPopupOptions" class="close pull-right" data-dismiss="popover-x">&times;</span>Enter credentials</h3>\n\
                         <div class="popover-content">\n\
                             <div class="form-group">\n\
                                 <label>Cambiar Password</label>\n\
@@ -492,7 +492,9 @@ ClassUsers = function()
                             <div class="form-group">\n\
                                 <input type="password" id = "secondUserLoggedPass" class="form-control" placeholder="Confirmar Contraseña">\n\
                             </div>\n\
-                            <input type = "button" id = "btnChangeUserLoggedPassword" value = "Cambiar Contraseña" class="btn btn-default btn-block">\n\
+                        </div>\n\
+                        <div class="popover-footer">\n\
+                            <input type = "button" id = "btnChangeUserLoggedPassword" value = "Cambiar Contraseña" class="btn btn-sm btn-primary">\n\
                         </div>\n\
             </div>');
 
@@ -503,13 +505,15 @@ ClassUsers = function()
     });
     
         $('#mainMenuUserIcon').click(function(){
-            console.log("Modal iniciado");
             if(!$('#userLoggedPopupOptions').is(':visible')){
                 _resetUserLoggedPopover();
                 $('#userLoggedPopupOptions').modalPopover('show');
             }
             else
                 $('#userLoggedPopupOptions').hide();
+        });
+        $('#closeUserLoggedPopupOptions').click(function(){
+            $('#userLoggedPopupOptions').hide();
         });
 //    $('#mainMenuUserIcon').click(function(){
 //        $('#userLoggedPopupOptions').popoverX('toggle');
@@ -518,6 +522,26 @@ ClassUsers = function()
         $('#btnChangeUserLoggedPassword').click(function(){
             self.changeUserLoggedPassword();
         });
+//    /* Version del api de bootstrap "popoverX" */ 
+//    
+//    $('<li><a href="#" id = "mainMenuUserIcon" >' + NombreUsuario + '</a></li>').insertAfter('#barra_sup_username');
+//    $('#page').append('\
+//            <div id="myPopover1b" class="popover popover-default">\n\
+//                <div class="arrow"></div>\n\
+//                <h3 class="popover-title"><span class="close pull-right" data-dismiss="popover-x">&times;</span>Enter credentials</h3>\n\
+//                <div class="popover-content">\n\
+//                    <p>Lorem ipsum dolor sit amet, consectetuer adipiscing elit. Aenean commodo ligula eget dolor.</p>\n\
+//                    <form class="form-vertical">\n\
+//                        <div class="form-group">\n\
+//                            <input class="form-control" placeholder="Username">\n\
+//                        </div>\n\
+//                        <input type="password" class="form-control" placeholder="Password">\n\
+//                    </form>\n\
+//                </div>\n\
+//                <div class="popover-footer">\n\
+//                    <button type="submit" class="btn btn-sm btn-primary">Submit</button><button type="reset" class="btn btn-sm btn-default">Reset</button>\n\
+//                </div>\n\
+//            </div>');
     
     };
     

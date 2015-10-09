@@ -116,7 +116,7 @@ function checkSessionExistance()
                     activeSession = true;
                     $('<li><a href="#" id = "mainMenuUserIcon">' + NombreUsuario + '</a></li>').insertAfter('#barra_sup_username');
                     $($('<li/>').html('<a href="#all" title = "Usted se encuentra en la instancia ' + instanceName + '">' + instanceName + '</a>')).insertAfter('#barra_sup_username');
-                    
+
                     EnvironmentData.NombreUsuario = NombreUsuario;
                     EnvironmentData.DataBaseName = instanceName;
                     EnvironmentData.IdUsuario = IdUsuario;
@@ -135,7 +135,8 @@ function checkSessionExistance()
                             removeLoginInterface();
                     }
                     else
-                        removeLoginInterface();
+                        StartSystem();
+//                        removeLoginInterface();
 
                 }
                 else
