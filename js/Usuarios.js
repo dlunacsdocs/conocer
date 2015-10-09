@@ -805,7 +805,7 @@ ClassUsers.prototype.changeUserLoggedPassword = function(){
         width: 300, heigth:250, modal:true, resizable:false, buttons:{
             "Cancelar": function(){$(this).remove();},
             "Cerrar Sesión": function(){_closeUserSession(); $(this).remove();}
-        } });
+        } }).dialogExtend(BotonesWindow);
         
     };
     

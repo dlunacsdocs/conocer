@@ -49,7 +49,7 @@ function Advertencia(mensaje)
 {
     $('#MensajeAdvertencia').dialog(WindowAdvertencia);
     $('#MensajeAdvertencia').empty();
-    $('#MensajeAdvertencia').append('<center><img src="img/caution.png"></center>');
+    $('#MensajeAdvertencia').append('<center><img src="img/Caution.png"></center>');
     $('#MensajeAdvertencia').append(mensaje);
 }
 

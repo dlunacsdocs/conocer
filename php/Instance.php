@@ -16,7 +16,12 @@ class Instance {
         {
             case 'GetInstances': $this->GetInstances(); break;
             case "DeleteInstance": $this->DeleteInstance(); break;
+            case 'buildNewInstance': $this->buildNewInstance(); break;
         }
+    }
+    
+    private function buildNewInstance(){
+        var_dump($_POST);
     }
     
     private function DeleteInstance()

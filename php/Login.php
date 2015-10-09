@@ -13,6 +13,7 @@ require_once 'Session.php';
 if(!isset($_SESSION))
     session_start();
 
+$RoutFile = dirname(getcwd());
 
 class Login {
     public function __construct() {
@@ -100,6 +101,8 @@ class Login {
     
     private function login()
     {        
+        $RoutFile = dirname(getcwd());
+        
         $user = trim(filter_input(INPUT_POST, "UserName"));
         $pass = trim(filter_input(INPUT_POST, "Password"));
         $DataBaseName = filter_input(INPUT_POST, "DataBaseName");
@@ -133,7 +136,7 @@ class Login {
         
         $Resultado['idDataBase'] = $IdDataBase;
         
-        if($Resultado['IdUsuario']>0){
+        if($Resultado['IdUsuario']>0 and file_exists("$RoutFile/web/Estructuras/$DataBaseName")){
 //            if($idSession==null)
 //                return XML::XMLReponse ("Error", 0, "Ya hay una sesión iniciada.");
             Session::$idSession = Session::createSession($IdDataBase ,$DataBaseName, 
@@ -177,6 +180,8 @@ class Login {
     
     public function searchRegisterUser($instanceName ,$userName, $password)
     {
+        $RoutFile = dirname(getcwd());
+
         $bd = new DataBase();
         
         $ResultSelect = array();
@@ -194,7 +199,12 @@ class Login {
             LEFT JOIN GruposUsuario gu ON gu.IdGrupo = gc.IdGrupo
             WHERE usu.Login  COLLATE utf8_bin ='$userName' AND usu.Password  COLLATE utf8_bin ='".md5(trim($password))."'";
             
-            $ResultSelect = $bd ->ConsultaSelect($instanceName, $SelectUsuario);
+            if(!file_exists("$RoutFile/web/Estructuras/$instanceName")){
+                $ResultSelect['Estado'] = 1;
+                $ResultSelect['ArrayDatos'] = array();
+            }
+            else
+                $ResultSelect = $bd ->ConsultaSelect($instanceName, $SelectUsuario);
         }
         
         if($ResultSelect['Estado']!=1)
