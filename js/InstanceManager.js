@@ -4,7 +4,7 @@
  * and open the template in the editor.
  */
 
-/* global DimensionsDialogMetadatas, ConsoleSettings */
+/* global DimensionsDialogMetadatas, ConsoleSettings, EnvironmentData */
 
 $(document).ready(function(){
     $('.LinkInstancesManager').click(function(){
@@ -19,21 +19,65 @@ var ClassInstanceManager = function(){
         $('#WSInstance').append('<div class = "titulo_ventana">Nueva Instancia</div>');
         $('#WSInstance').append('\
                  <div class = "form-inline">\n\
-                    <div class = "form-group has-feedback">\n\
-                        <label> Nombre </label>\n\
+                    <div class = "form-group has-feedback text-muted">\n\
+                         Nombre \n\
                         <input type = "text" class = "form-control" id = "newInstanceName" placeholder = "Nombre instancia">\n\
                     </div>\n\
                 </div>\n\
                 <br><br>\n\
-            <p class = "bg-info infoTextBox">Una instancia es un ambiente reservado y aislado dentro de su equipo NAS la cuál podrá administrar \n\
+            <p class = "well">Una instancia es un ambiente reservado y aislado dentro de su equipo NAS el cual podrá administrar \n\
             con nuevas empresas y repositorios para el almacenamiento y distribución de sus documentos.</p>\n\
         ');
         _addNewInstanceButtons();
     };
     
-    _buildNewInstance = function(){
-        
+    _checkNewInstanceName = function(){
+        var validator = new ClassFieldsValidator();
         var instanceName = $('#newInstanceName').val();
+        instanceName = $.trim(instanceName);
+        var find = ' ';
+        var re = new RegExp(find, 'g');
+        instanceName = instanceName.replace(re, '_');
+        var regularExpression = /^([A-Za-z0-9 _]+$)/g;       /* Comprueba validez del nombre de la intancia */
+        var patt = RegExp(regularExpression);
+        var testResult = null;
+        
+        if(instanceName.length < 4){
+            $('#newInstanceName').attr("title", "El nombre de la instancia debe ser amyor a 4 caracteres.");
+            validator.AddClassRequiredActive($('#newInstanceName'));
+            return false;
+        }
+        else
+        {
+            $('#newInstanceName').attr("title", "");
+            validator.RemoveClassRequiredActive($('#newInstanceName'));
+        }
+        
+        testResult = patt.test(instanceName);
+        
+        console.log("resultado de test:: "+testResult+" "+instanceName);
+        
+        if(testResult === false){
+            $('#newInstanceName').attr("title", "El nombre no es válido. Únicamente se aceptan caracteres alfanuméricos. Evitar '´`}$%&#@!?¿¡.. etc");
+            validator.AddClassRequiredActive($('#newInstanceName'));
+            return false;
+        }
+        else{
+            $('#newInstanceName').attr("title", "");
+            validator.RemoveClassRequiredActive($('#newInstanceName'));
+            return true;
+        }
+    };
+    
+    _buildNewInstance = function(){
+        var instanceName = $('#newInstanceName').val();
+        instanceName = $.trim(instanceName);
+        var find = ' ';
+        var re = new RegExp(find, 'g');
+        instanceName = instanceName.replace(re, '_');
+        
+        if(!_checkNewInstanceName())
+            return 0;
         
         _removeConsoleButtons();
         
@@ -45,7 +89,7 @@ var ClassInstanceManager = function(){
         dataType:"html", 
         type: 'POST',   
         url: "php/Instance.php",
-        data: {option:"buildNewInstance", instanceName:instanceName}, 
+        data: {option:"buildNewInstance", instanceName:instanceName, userName:EnvironmentData.NombreUsuario}, 
         success:  function(xml)
         {        
             $('#newInstancePlaceWaiting').remove();
@@ -54,6 +98,7 @@ var ClassInstanceManager = function(){
             $(xml).find('newInstanceBuilded').each(function(){
                 var mensaje = $(this).find("Mensaje").text();
                 Notificacion(mensaje);
+                _newInstanceInterface();
             });
 
             $(xml).find("Error").each(function()
@@ -69,7 +114,7 @@ var ClassInstanceManager = function(){
     };
     
     _addNewInstanceButtons = function(){
-        var buttons = {"Crear":{click:function(){_buildNewInstance();}, text: "Crear"}};
+        var buttons = {"Crear":{click:function(){_buildNewInstance();}, text: "Crear Instancia"}};
         $('#divInstanceManager').dialog("option", "buttons", buttons);
     };
     
@@ -95,8 +140,8 @@ ClassInstanceManager.prototype.buildManager = function(){
                                 <td>Nueva Instancia</td>\n\
                             </tr>\n\
                             <tr id = "linkInstanceManager">\n\
-                                <td><img src="img/users.png"></td>\n\
-                                <td>Usuarios</td>\n\
+                                <td><img src="img/Storage.png"></td>\n\
+                                <td>Administrar</td>\n\
                             </tr>\n\
                         </table>\n\
                     </div>\n\

@@ -21,7 +21,44 @@ class Instance {
     }
     
     private function buildNewInstance(){
-        var_dump($_POST);
+        $DB = new DataBase();
+        $instanceName = filter_input(INPUT_POST, "instanceName");
+        $userName = filter_input(INPUT_POST, "userName");
+        
+        $RoutFile = dirname(getcwd());
+        
+        $createSchema = "CREATE DATABASE $instanceName 
+                        DEFAULT CHARACTER SET utf8
+                        DEFAULT COLLATE utf8_general_ci";
+        
+        if(file_exists("$RoutFile/Estructuras/$instanceName"))
+                return XML::XMLReponse("Error", 0, "La instancia ingresada ya existe.");
+        
+        if(($result = $DB->ConsultaQuery("", $createSchema))!=1)
+                return XML::XMLReponse ("Error", 0, "<b>Error</b> al intentar crear la instancia $instanceName.<br>Detalles:<br>$result" );
+        
+        if(($resultBuildInstanceControl = $DB->CreateCSDocsControl($instanceName))!=1){
+                $DB->ConsultaQuery("", "DROP DATABASE IF EXISTS $instanceName");
+                return XML::XMLReponse ("Error", 0, "<b>Error</b> al crear la estructura de control de la instancia <b>$instanceName</b>. $resultBuildInstanceControl");
+        }
+        if($resultBuildInstanceControl == 0){
+            $DB->ConsultaQuery("", "DROP DATABASE IF EXISTS $instanceName");
+        }
+        
+        $InsertInstance = "INSERT INTO instancias (NombreInstancia, fechaCreacion, usuarioCreador) VALUES ('$instanceName', 'NOW()', '$userName')";
+        
+        if(($resultInsert = $DB->ConsultaQuery("cs-docs", $InsertInstance))!=1){
+            $DB->ConsultaQuery("", "DROP DATABASE IF EXISTS $instanceName");
+            return XML::XMLReponse("Error", 0, "<b>Error</b> al intentar registrar la instancia. <br>Detalles:<br>$resultInsert");
+        }
+        
+        mkdir("$RoutFile/Estructuras/$instanceName", 0777);
+        
+        
+            
+        
+        return XML::XMLReponse("newInstanceBuilded", 1, "Instancia construida con éxito.");
+        
     }
     
     private function DeleteInstance()

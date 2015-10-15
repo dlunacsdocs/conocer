@@ -655,9 +655,3 @@ table tr.TableInsideAccordionActive
     color:white;
 }
 
-/* Cuadros que contienen texto con detalles o información */
-
-.infoTextBox{
-    padding: 15px;
-    line-height: 15px;
-}

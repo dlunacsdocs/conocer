@@ -46,6 +46,8 @@ class DataBase {
             
        $CreateInstances="CREATE TABLE IF NOT EXISTS `instancias` (IdInstancia INT(11) NOT NULL AUTO_INCREMENT,"
                . "NombreInstancia VARCHAR(50) NOT NULL,"
+               . "fechaCreacion DATETIME NOT NULL DEFAULT 0,"
+               . "usuarioCreador VARCHAR(50) DEFAULT 'root',"
                . "PRIMARY KEY (`IdInstancia`)) ENGINE=InnoDB AUTO_INCREMENT=1 DEFAULT CHARSET=utf8";
        
        if(($ResultCreateInstances = $this->crear_tabla("cs-docs",  $CreateInstances))!=1)
@@ -105,8 +107,6 @@ class DataBase {
        
         echo "<p>Creando Instancia $nombre_instancia y estructuras de control del sistema CSDocs...</p>";
         
-        flush();
-        
         $query="SELECT NombreInstancia FROM instancias WHERE NombreInstancia='$nombre_instancia'"; 
         
         $CheckNuevaInstancia = $this->ConsultaSelect("cs-docs", $query);  
@@ -127,7 +127,7 @@ class DataBase {
         
         $InsertInstancia = "INSERT INTO instancias (NombreInstancia) VALUES ('$nombre_instancia')";                
         
-        if($this->CreateCSDocsControl($nombre_instancia))
+        if($this->CreateCSDocsControl($nombre_instancia) == 1)
         {
             echo "<p>Proceso de construcción del control de CSDocs terminado...</p>";
             
@@ -150,7 +150,7 @@ class DataBase {
     
     /* Crea la tablas de control de Menús, Repositorios y Usuarios  */
     
-    private function CreateCSDocsControl($DataBaseName)
+    function CreateCSDocsControl($DataBaseName)
     {
         $CreateGroupsUsers = "CREATE TABLE IF NOT EXISTS GruposUsuario ("
                 . "IdGrupo INT NOT NULL AUTO_INCREMENT,"
@@ -160,10 +160,7 @@ class DataBase {
                 . ")ENGINE=InnoDB AUTO_INCREMENT=5 DEFAULT CHARSET=utf8";
         
         if(($ResultCreateGroupsUsers = $this->ConsultaQuery($DataBaseName, $CreateGroupsUsers))!=1)
-        {
-            echo "<p><b>Error</b> al crear <b>Grupos de Usuario</b> en $DataBaseName. $ResultCreateGroupsUsers</p>";
-            return 0;
-        }                
+            return "<p><b>Error</b> al crear <b>Grupos de Usuario</b> en $DataBaseName. $ResultCreateGroupsUsers</p>";
         
         $CreateGruposControl = "CREATE TABLE IF NOT EXISTS GruposControl ("
                 . "IdGrupoControl INT AUTO_INCREMENT,"
@@ -173,26 +170,18 @@ class DataBase {
                 . ")ENGINE=InnoDB AUTO_INCREMENT=0 DEFAULT CHARSET=utf8";       
         
         if(($ResultCreateGruposControl = $this->ConsultaQuery($DataBaseName, $CreateGruposControl))!=1)
-        {
-            echo "<p><b>Error</b> al crearl <b>Grupos de Control</b>. $ResultCreateGruposControl</p>";
-            return 0;
-        }
+            return "<p><b>Error</b> al crearl <b>Grupos de Control</b>. $ResultCreateGruposControl</p>";
         
         $InsertGrupoAdmin = "INSERT INTO GruposUsuario (IdGrupo, Nombre, Descripcion) VALUES (1,'Administradores','Grupo de Administradores del Sistema (Con todos los privilegios)')";
         $IdGroupAdmin = $this->ConsultaInsertReturnId($DataBaseName, $InsertGrupoAdmin);
         
         if(!($IdGroupAdmin>0))
-        {
-            echo "<p><b>Error</b> al crear el Grupo <b>Admisnitradores</b>. $IdGroupAdmin</p>";
-            return ;
-        }
+            return "<p><b>Error</b> al crear el Grupo <b>Admisnitradores</b>. $IdGroupAdmin</p>";
         
         $InsertIntoGruposControl = "INSERT INTO GruposControl (IdGrupo, IdUsuario) VALUES ($IdGroupAdmin, 1)";
+        
         if(($ResultInsertIntoGruposControl = $this->ConsultaQuery($DataBaseName, $InsertIntoGruposControl))!=1)
-        {
-            echo "<p><b>Error</b> al insert el usuario <b>root</b> al <b>Control de Grupos</b></p>";
-            return 0;
-        }        
+            return "<p><b>Error</b> al insert el usuario <b>root</b> al <b>Control de Grupos</b></p>";
         
         $CreateMenu = "CREATE TABLE IF NOT EXISTS SystemMenu ("
                 . "IdMenu INT NOT NULL AUTO_INCREMENT,"
@@ -203,10 +192,7 @@ class DataBase {
                 . ")ENGINE=InnoDB AUTO_INCREMENT=0 DEFAULT CHARSET=utf8";
         
         if(($ResultCreateMenu = $this->ConsultaQuery($DataBaseName, $CreateMenu))!=1)
-        {
-            echo "<p><b>Error</b> al crear <b>Menú</b> en $DataBaseName. $ResultCreateMenu</p>";
-            return 0;
-        }
+            return "<p><b>Error</b> al crear <b>Menú</b> en $DataBaseName. $ResultCreateMenu</p>";
         
         if($this->InsertMenuRecords($DataBaseName)!=1)
             return 0;
@@ -221,24 +207,17 @@ class DataBase {
                 . ")ENGINE=InnoDB AUTO_INCREMENT=0 DEFAULT CHARSET=utf8";
         
         if(($ResultCreateControlMenu = $this->ConsultaQuery($DataBaseName, $CreateControlMenu))!=1)
-        {
-            echo "<p><b>Error</b> al crear <b>Control de Ménu</b> $ResultCreateControlMenu en $DataBaseName. $ResultCreateControlMenu</p>";
-            return 0;
-        }
+            return "<p><b>Error</b> al crear <b>Control de Ménu</b> $ResultCreateControlMenu en $DataBaseName. $ResultCreateControlMenu</p>";
+
         
         $InsertAdminIntoMenuControl = "INSERT INTO SystemMenuControl (IdMenu) SELECT IdMenu FROM SystemMenu";
         if(($ResultInsertAdminIntoMenuControl = $this->ConsultaQuery($DataBaseName, $InsertAdminIntoMenuControl))!=1)
-        {
-            echo "<p><b>Error</b> al asignar permisos al grupo <b>Administradores</b></p>. <br>Detalles:<br><br>$ResultInsertAdminIntoMenuControl";
-            return 0;
-        }
+            return "<p><b>Error</b> al asignar permisos al grupo <b>Administradores</b></p>. <br>Detalles:<br><br>$ResultInsertAdminIntoMenuControl";
         
         $UpdateAdminPermissions = "UPDATE SystemMenuControl SET IdGrupo = 1";
         if(($ResultUpdateAdminsPermissions = $this->ConsultaQuery($DataBaseName, $UpdateAdminPermissions))!=1)
-        {
-            echo "<p><b<Error</b> al asignar permisos al grupo <b>Administradores</b>. <br>Detalles:<br><br>$ResultUpdateAdminsPermissions</p>";
-            return 0;
-        }
+            return "<p><b<Error</b> al asignar permisos al grupo <b>Administradores</b>. <br>Detalles:<br><br>$ResultUpdateAdminsPermissions</p>";
+
                         
         
         $CreateRepositoryControl = "CREATE TABLE IF NOT EXISTS RepositoryControl ("
@@ -250,10 +229,8 @@ class DataBase {
                 . ")ENGINE=InnoDB AUTO_INCREMENT=0 DEFAULT CHARSET=utf8";
         
         if(($ResultCreateRepositoryControl = $this->ConsultaQuery($DataBaseName, $CreateRepositoryControl))!=1)
-        {
-            echo "<p><b>Error</b> al crear el <b>Control de Repositorios</b> en $DataBaseName. $ResultCreateRepositoryControl</p>";
-            return 0;
-        }            
+            return "<p><b>Error</b> al crear el <b>Control de Repositorios</b> en $DataBaseName. $ResultCreateRepositoryControl</p>";
+         
         
         $TablaRepositorio="CREATE TABLE IF NOT EXISTS CSDocs_Repositorios "
             . "(IdRepositorio INT(11) NOT NULL AUTO_INCREMENT,"
@@ -263,10 +240,7 @@ class DataBase {
             . ")DEFAULT CHARSET=utf8";
             
             if(($estado=$this->ConsultaQuery($DataBaseName, $TablaRepositorio))!=1)
-            {
-                echo "<p><b>Error</b> al crear <b>Repositorios</b> en $DataBaseName. $TablaRepositorio</p>";
-                return 0;
-            }
+                return "<p><b>Error</b> al crear <b>Repositorios</b> en $DataBaseName. $TablaRepositorio</p>";
                                 
 //            echo $ResulTRoles=($this->CreateTableRoles($nombre_instancia)) ? "<p>Se construyó <b>Roles</b> </p>" : "<p><b>Error</b> al crear la tabla Roles de Usuario</p>";
             
@@ -280,10 +254,7 @@ class DataBase {
                     . ")DEFAULT CHARSET=utf8";
             
             if(($catalogos=$this->ConsultaQuery($DataBaseName, $TablaCatalogos))!=1)
-            {
-                echo "<p><b>Error</b> al crear <b>Catálogos</b></p>";
-                return 0;
-            }
+                return "<p><b>Error</b> al crear <b>Catálogos</b></p>";
             
             $TablaGlobalRepositorios="CREATE TABLE IF NOT EXISTS RepositorioGlobal ("
                     . "IdGlobal INT NOT NULL AUTO_INCREMENT,"
@@ -305,10 +276,7 @@ class DataBase {
                     . ")ENGINE = MYISAM DEFAULT CHARSET=utf8 COLLATE=utf8_spanish_ci";
             
             if(($EstadoTablaGlobal=$this->ConsultaQuery($DataBaseName, $TablaGlobalRepositorios))!=1)
-            {
-                echo "<p><b>Error</b> al crear <b>Global</b></p>";
-                return 0;
-            }
+                return "<p><b>Error</b> al crear <b>Global</b></p>";
             
             $TablaNotas="CREATE TABLE IF NOT EXISTS CSDocs_Notes ("
                     . "IdNote INT NOT NULL AUTO_INCREMENT,"
@@ -325,10 +293,7 @@ class DataBase {
                     . ")DEFAULT CHARSET=utf8";
             
             if(($EstadoTablaNotas = $this->ConsultaQuery($DataBaseName, $TablaNotas))!=1)
-            {
-                echo "<p><b>Error al crear <b>Notas</p> en $DataBaseName. $EstadoTablaNotas</p>";   
-                return 0;
-            }         
+                return "<p><b>Error al crear <b>Notas</p> en $DataBaseName. $EstadoTablaNotas</p>";        
             
             $TablaSmtp="CREATE TABLE IF NOT EXISTS CSDocs_Correos ("
                     . "IdCorreo INT(11) NOT NULL AUTO_INCREMENT,"
@@ -346,10 +311,7 @@ class DataBase {
                     . ")DEFAULT CHARSET=utf8";
             
             if(($EstadoTablaCorreos=$this->ConsultaQuery($DataBaseName, $TablaSmtp))!=1)
-            {
-                echo "<p><b>Error</b> al crear <b>Correo</b> en $DataBaseName. $EstadoTablaCorreos</p>";
-                    return 0;
-            }
+                return "<p><b>Error</b> al crear <b>Correo</b> en $DataBaseName. $EstadoTablaCorreos</p>";
         
         return 1;
     }
@@ -357,7 +319,7 @@ class DataBase {
     function DeleteInstance($InstanceName)
     {
         $IdInstance = filter_input(INPUT_POST, "IdInstance");
-        $RoutFile = filter_input(INPUT_SERVER, "DOCUMENT_ROOT"); /* /var/services/web */
+        $RoutFile = dirname(getcwd());
         
         $QueryDrop = "DROP DATABASE IF EXISTS $InstanceName";
         if(($Result = $this->ConsultaQuery("cs-docs", $QueryDrop))!=1)
