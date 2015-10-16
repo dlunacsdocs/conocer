@@ -63,9 +63,14 @@ class Session {
             setcookie(session_name(), '', time() - 42000, $params["path"], $params["domain"], $params["secure"], $params["httponly"]
             );
         }
+        
+        if(!isset($_SESSION))
+            session_start();
 
         // Finalmente, destruir la sesión.
-        session_destroy();
+        if (isset($_SESSION['dataBaseName']))
+            session_destroy();
+        
     }
 
 }

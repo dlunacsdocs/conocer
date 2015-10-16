@@ -135,10 +135,9 @@ class Login {
          
         
         $Resultado['idDataBase'] = $IdDataBase;
-        
-        if($Resultado['IdUsuario']>0 and file_exists("$RoutFile/web/Estructuras/$DataBaseName")){
-//            if($idSession==null)
-//                return XML::XMLReponse ("Error", 0, "Ya hay una sesión iniciada.");
+
+        if((int)$Resultado['IdUsuario']>0 and file_exists("$RoutFile/Estructuras/$DataBaseName")){
+
             Session::$idSession = Session::createSession($IdDataBase ,$DataBaseName, 
                     $Resultado['IdUsuario'], $Resultado['Login'], $Resultado['IdGrupo'], $Resultado['Nombre']);
             
@@ -146,6 +145,9 @@ class Login {
         }
         else
             Session::$idSession = null;
+        
+        
+        
             
         $this->loginResponse($Resultado);
     }

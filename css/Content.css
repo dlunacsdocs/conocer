@@ -1,12 +1,21 @@
-/*
-To change this license header, choose License Headers in Project Properties.
-To change this template file, choose Tools | Templates
-and open the template in the editor.
-*/
+
 /* 
     Created on : 24/09/2014, 11:46:30 AM
     Author     : daniel
+
+ 
+    Small devices (tablets, 768px and up) 
+    @media (min-width: @screen-sm-min) { ... }
+
+    /* Medium devices (desktops, 992px and up) 
+    @media (min-width: @screen-md-min) { ... }
+
+    /* Large devices (large desktops, 1200px and up)
+    @media (min-width: @screen-lg-min) { ... }
+
 */
+
+
 .no-close .ui-dialog-titlebar-close {display: none }
 
 .TreeSpace
@@ -655,9 +664,3 @@ table tr.TableInsideAccordionActive
     color:white;
 }
 
-/* Cuadros que contienen texto con detalles o información */
-
-.infoTextBox{
-    padding: 15px;
-    line-height: 15px;
-}

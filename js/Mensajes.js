@@ -47,10 +47,28 @@ function errorMessage(mensaje)
 
 function Advertencia(mensaje)
 {
-    $('#MensajeAdvertencia').dialog(WindowAdvertencia);
-    $('#MensajeAdvertencia').empty();
-    $('#MensajeAdvertencia').append('<center><img src="img/Caution.png"></center>');
-    $('#MensajeAdvertencia').append(mensaje);
+//    $('body').append('\n\
+//        <div id = "warningMessage" class="modal fade bs-example-modal-sm" tabindex="-1" role="dialog">\n\
+//            <div class="modal-dialog modal-sm">\n\
+//                <div class="modal-content">\n\
+//                    <center><img src="img/Caution.png"></center>\n\
+//                    '+mensaje+'\n\
+//                </div>\n\
+//            </div>\n\
+//        </div>\n\
+//    ');
+    
+    $('body').append('\n\
+        <div id = "warningMessage" class="modal fade bs-example-modal-sm" tabindex="-1" role="dialog" aria-labelledby="mySmallModalLabel">\n\
+            <div class="modal-dialog modal-sm">\n\
+              <div class="modal-content">\n\
+                ...\n\
+              </div>\n\
+            </div>\n\
+        </div>\n\
+    ');
+    
+    $('#warningMessage').modal("show");
 }
 
 function Exito(mensaje)
