@@ -58,12 +58,32 @@ function Advertencia(mensaje)
 //        </div>\n\
 //    ');
     
+//    $('body').append('\n\
+//        <div id = "warningMessage" class="modal fade bs-example-modal-sm" tabindex="-1" role="dialog" aria-labelledby="mySmallModalLabel">\n\
+//            <div class="modal-dialog modal-sm">\n\
+//              <div class="modal-content">\n\
+//                ...\n\
+//              </div>\n\
+//            </div>\n\
+//        </div>\n\
+//    ');
+
     $('body').append('\n\
-        <div id = "warningMessage" class="modal fade bs-example-modal-sm" tabindex="-1" role="dialog" aria-labelledby="mySmallModalLabel">\n\
+        <div class="modal fade" id="warningMessage" tabindex="-1" role="dialog" aria-labelledby="smallModal" aria-hidden="true">\n\
             <div class="modal-dialog modal-sm">\n\
-              <div class="modal-content">\n\
-                ...\n\
-              </div>\n\
+                <div class="modal-content">\n\
+                    <div class="modal-header">\n\
+                        <button type="button" class="close" data-dismiss="modal" aria-hidden="true">&times;</button>\n\
+                        <h4 class="modal-title" id="myModalLabel">Small Modal</h4>\n\
+                    </div>\n\
+                    <div class="modal-body">\n\
+                        <h3>Modal Body</h3>\n\
+                    </div>\n\
+                    <div class="modal-footer">\n\
+                        <button type="button" class="btn btn-default" data-dismiss="modal">Close</button>\n\
+                        <button type="button" class="btn btn-primary">Save changes</button>\n\
+                    </div>\n\
+                </div>\n\
             </div>\n\
         </div>\n\
     ');
