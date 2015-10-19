@@ -143,10 +143,10 @@ var ClassInstanceManager = function(){
             "bInfo":false, "autoWidth" : false, "oLanguage":LanguajeDataTable,"dom": 'lfTrtip',
             "tableTools": {
                 "aButtons": [
-                    {"sExtends": "copy","sButtonText": "Copiar al portapapeles"},
+                    {"sExtends": "copy","sButtonText": "Copiar Tabla"},
                     {
                         "sExtends":    "collection",
-                        "sButtonText": "Guardar como...",
+                        "sButtonText": "Exportar...",
                         "aButtons":    [ "csv", "xls", "pdf" ]
                     }                          
                 ]
@@ -168,7 +168,7 @@ var ClassInstanceManager = function(){
         
         
         $(instances).find("Instance").each(function(){
-            
+            console.log($(this));
             var instanceName = $(this).find("NombreInstancia").text();
             var IdInstance = $(this).find("IdInstancia").text();
             var creationDate = $(this).find("fechaCreacion").text();
@@ -317,9 +317,7 @@ ClassInstanceManager.prototype.instanceManagerInterface = function(){
     
     
     var instances = _getInstances();
-    
-    console.log(instances);
-    
+        
     _buildInstancesTableDetail(instances);
     
     _removeConsoleButtons();
