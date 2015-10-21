@@ -184,7 +184,7 @@ Instances.prototype.GetInstances = function()
     dataType:"html", 
     type: 'POST',   
     url: "php/Instance.php",
-    data: 'option=GetInstances&IdUser='+EnvironmentData.IdUsuario+'&UserName='+EnvironmentData.NombreUsuario, 
+    data: 'option=getInstances&IdUser='+EnvironmentData.IdUsuario+'&UserName='+EnvironmentData.NombreUsuario, 
     success:  function(response)
     {     
         if($.parseXML( response )===null){Salida(response); return 0;}else xml=$.parseXML( response );         
