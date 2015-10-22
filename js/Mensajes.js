@@ -4,6 +4,8 @@
  * and open the template in the editor.
  */
 
+/* global BootstrapDialog */
+
 var HideClose={show: { effect: "blind", duration: 800 },
               hide: { effect: "fade", duration: 500 }};
 
@@ -47,47 +49,20 @@ function errorMessage(mensaje)
 
 function Advertencia(mensaje)
 {
-//    $('body').append('\n\
-//        <div id = "warningMessage" class="modal fade bs-example-modal-sm" tabindex="-1" role="dialog">\n\
-//            <div class="modal-dialog modal-sm">\n\
-//                <div class="modal-content">\n\
-//                    <center><img src="img/Caution.png"></center>\n\
-//                    '+mensaje+'\n\
-//                </div>\n\
-//            </div>\n\
-//        </div>\n\
-//    ');
-    
-//    $('body').append('\n\
-//        <div id = "warningMessage" class="modal fade bs-example-modal-sm" tabindex="-1" role="dialog" aria-labelledby="mySmallModalLabel">\n\
-//            <div class="modal-dialog modal-sm">\n\
-//              <div class="modal-content">\n\
-//                ...\n\
-//              </div>\n\
-//            </div>\n\
-//        </div>\n\
-//    ');
 
-    $('body').append('\n\
-        <div class="modal fade" id="warningMessage" tabindex="-1" role="dialog" aria-labelledby="smallModal" aria-hidden="true">\n\
-            <div class="modal-dialog modal-sm">\n\
-                <div class="modal-content panel-warning">\n\
-                    <div class="modal-header">\n\
-                        <button type="button" class="close" data-dismiss="modal" aria-hidden="true">&times;</button>\n\
-                        <h4 class="modal-title" id="myModalLabel">Advertencia</h4>\n\
-                    </div>\n\
-                    <div class="modal-body">\n\
-                        '+mensaje+'\n\
-                    </div>\n\
-                    <div class="modal-footer">\n\
-                        <button type="button" class="btn btn-primary" data-dismiss="modal">Aceptar</button>\n\
-                    </div>\n\
-                </div>\n\
-            </div>\n\
-        </div>\n\
-    ');
-    
-    $('#warningMessage').modal("show");
+        BootstrapDialog.show({
+            title: 'Advertencia',
+            message: mensaje,
+            type: BootstrapDialog.TYPE_WARNING,
+            size: BootstrapDialog.SIZE_SMALL,
+            buttons: [{
+                    label:"Aceptar",
+                    action:function(dialog){
+                        dialog.close();
+                    }
+            }]
+        });
+
 }
 
 

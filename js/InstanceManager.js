@@ -4,7 +4,7 @@
  * and open the template in the editor.
  */
 
-/* global DimensionsDialogMetadatas, ConsoleSettings, EnvironmentData, InstanceManager, LanguajeDataTable */
+/* global DimensionsDialogMetadatas, ConsoleSettings, EnvironmentData, InstanceManager, LanguajeDataTable, BootstrapDialog */
 var instancesTableDetaildT, instancesTableDetailDT;
 $(document).ready(function(){
     $('.LinkInstancesManager').click(function(){
@@ -211,35 +211,55 @@ var ClassInstanceManager = function(){
         if(!(idInstance>0))
             return Advertencia("Debe seleccionar una instancia");
         
-        console.log("ConfirmDeleteInstance:::");
+        console.log("ConfirmDeleteInstance:::Modifed");
         
-        $('#deleteInstanceConfirmation').remove();    
-                  
-        $('body').append('\n\
-            <div class="modal fade" id="deleteInstanceConfirmation" tabindex="-1" role="dialog" aria-labelledby="smallModal" aria-hidden="true">\n\
-                <div class="modal-dialog modal-sm">\n\
-                    <div class="modal-header panel-danger">\n\
-                        <div class="modal-header">\n\
-                            <button type="button" class="close" data-dismiss="modal" aria-hidden="true">&times;</button>\n\
-                            <h4 class="modal-title" id="myModalLabel">Alerta</h4>\n\
-                        </div>\n\
-                        <div class="modal-body">\n\
-                            ¿Esta acción no puede revertirse, realmente desea continuar y eliminar la instancia <b>'+instanceName+'?\n\
-                        </div>\n\
-                        <div class="modal-footer">\n\
-                            <button type="button" class="btn btn-default" data-dismiss="modal">Cancelar</button>\n\
-                            <button type="button" id = "btnAcceptDeleteInstance" class="btn btn-danger">Aceptar</button>\n\
-                        </div>\n\
-                    </div>\n\
-                </div>\n\
-            </div>\n\
-        ');
-    
-        $('#deleteInstanceConfirmation').modal("show");
-        
-        $('#btnAcceptDeleteInstance').click(function(){
-            _deleteInstance(idInstance, instanceName);
+//        $('#deleteInstanceConfirmation').remove();    
+               
+        BootstrapDialog.confirm({
+            title: 'Peligro',
+            message: '¿Esta acción no puede revertirse, realmente desea continuar y eliminar la instancia <b>'+instanceName+'?',
+            type: BootstrapDialog.TYPE_DANGER, // <-- Default value is BootstrapDialog.TYPE_PRIMARY
+            size:BootstrapDialog.SIZE_SMALL ,
+            closable: true, // <-- Default value is false
+            draggable: false, // <-- Default value is false
+            btnCancelLabel: 'Cancelar', // <-- Default value is 'Cancel',
+            btnOKLabel: 'Deseo continuar', // <-- Default value is 'OK',
+            btnOKClass: 'btn-danger', // <-- If you didn't specify it, dialog type will be used,
+            callback: function(result) {
+                // result will be true if button was click, while it will be false if users close the dialog directly.
+                if(result) {
+                    _deleteInstance(idInstance, instanceName);
+                }else {
+                    
+                }
+            }
         });
+        
+//        $('body').append('\n\
+//            <div class="modal fade" id="deleteInstanceConfirmation" tabindex="-1" role="dialog" aria-labelledby="smallModal" aria-hidden="true">\n\
+//                <div class="modal-dialog modal-sm">\n\
+//                    <div class="modal-header panel-danger">\n\
+//                        <div class="modal-header">\n\
+//                            <button type="button" class="close" data-dismiss="modal" aria-hidden="true">&times;</button>\n\
+//                            <h4 class="modal-title" id="myModalLabel">Alerta</h4>\n\
+//                        </div>\n\
+//                        <div class="modal-body">\n\
+//                            ¿Esta acción no puede revertirse, realmente desea continuar y eliminar la instancia <b>'+instanceName+'?\n\
+//                        </div>\n\
+//                        <div class="modal-footer">\n\
+//                            <button type="button" class="btn btn-default" data-dismiss="modal">Cancelar</button>\n\
+//                            <button type="button" id = "btnAcceptDeleteInstance" class="btn btn-danger">Aceptar</button>\n\
+//                        </div>\n\
+//                    </div>\n\
+//                </div>\n\
+//            </div>\n\
+//        ');
+//    
+//        $('#deleteInstanceConfirmation').modal("show");
+//        
+//        $('#btnAcceptDeleteInstance').click(function(){
+//            _deleteInstance(idInstance, instanceName);
+//        });
         
     };
     
