@@ -138,9 +138,12 @@ var ClassInstanceManager = function(){
                 </thead>\n\
             </table>');
         
+        $('body').append('<div id = "instancesTableDetailToolBar"></div>');
+        
         instancesTableDetaildT = $('#instancesTableDetail').dataTable(
         {
-            "bInfo":false, "autoWidth" : false, "oLanguage":LanguajeDataTable,"dom": 'lfTrtip',
+            "sDom": '<"instancesTableDetailToolBar">lfTrtip',
+            "bInfo":false, "autoWidth" : false, "oLanguage":LanguajeDataTable,
             "tableTools": {
                 "aButtons": [
                     {"sExtends": "copy","sButtonText": "Copiar Tabla"},
@@ -152,6 +155,8 @@ var ClassInstanceManager = function(){
                 ]
             }                              
         });  
+        
+        $("#instancesTableDetail_wrapper .DTTT_container").append('<input type = "button" value = "boton personalizado">');
 
         $('div.DTTT_container').css({"margin-top":"1em"});
         $('div.DTTT_container').css({"float":"left"});
@@ -163,12 +168,10 @@ var ClassInstanceManager = function(){
             instancesTableDetailDT.$('tr.selected').removeClass('selected');
             $(this).addClass('selected');
         } ); 
-        
-        $('#instancesTableDetail tr:eq(0)').click();
-        
+                
         
         $(instances).find("Instance").each(function(){
-            console.log($(this));
+  
             var instanceName = $(this).find("NombreInstancia").text();
             var IdInstance = $(this).find("IdInstancia").text();
             var creationDate = $(this).find("fechaCreacion").text();
@@ -181,6 +184,7 @@ var ClassInstanceManager = function(){
             
         });
         
+        $('#instancesTableDetail tbody tr:eq(0)').click();
         
     };
     
@@ -189,42 +193,54 @@ var ClassInstanceManager = function(){
         if(!(idInstanceSelected > 0))
             return Advertencia("Debe seleccionar una instancia");
         
+        alert("Eliminando instancia "+idInstanceSelected);
+        
     };
     
     _ConfirmDeleteInstance = function()
     {
-        var InstanceName = $('#DeleteInstanceForm option:selected').html();
-        var IdInstance = $('#DeleteInstanceForm').val();
+        var instanceName;
+        var idInstance = $('#instancesTableDetail tr.selected').attr('id');
         
-        if(!(IdInstance>0))
+        $('#instancesTableDetail tr.selected').each(function()
+        {
+            var position = instancesTableDetaildT.fnGetPosition(this); // getting the clicked row position
+            instanceName = instancesTableDetaildT.fnGetData(position)[0];
+        });
+        
+        if(!(idInstance>0))
             return Advertencia("Debe seleccionar una instancia");
-
+        
+        console.log("ConfirmDeleteInstance:::");
+        
         $('#deleteInstanceConfirmation').remove();    
-            
-        $('#page').append('\
-            <div id = "deleteInstanceConfirmation" class = "modal fade" tabindex="-1" role="dialog">\n\
-                <div class="modal-dialog" role="document">\n\
-                    <div class="modal-content">\n\
-                      <div class="modal-header">\n\
-                        <button type="button" class="close" data-dismiss="modal" aria-label="Close"><span aria-hidden="true">&times;</span></button>\n\
-                        <h4 class="modal-title">Mensaje de confirmación</h4>\n\
-                      </div>\n\
-                      <div class="modal-body">\n\
-                        Usted esta apunto de eliminar la instancia\n\
-                      </div>\n\
-                      <div class="modal-footer">\n\
-                        <button type="button" class="btn btn-default" data-dismiss="modal">Cancelar</button>\n\
-                        <button type="button" class="btn btn-primary">Eliminar</button>\n\
-                      </div>\n\
+                  
+        $('body').append('\n\
+            <div class="modal fade" id="deleteInstanceConfirmation" tabindex="-1" role="dialog" aria-labelledby="smallModal" aria-hidden="true">\n\
+                <div class="modal-dialog modal-sm">\n\
+                    <div class="modal-header panel-danger">\n\
+                        <div class="modal-header">\n\
+                            <button type="button" class="close" data-dismiss="modal" aria-hidden="true">&times;</button>\n\
+                            <h4 class="modal-title" id="myModalLabel">Alerta</h4>\n\
+                        </div>\n\
+                        <div class="modal-body">\n\
+                            ¿Esta acción no puede revertirse, realmente desea continuar y eliminar la instancia <b>'+instanceName+'?\n\
+                        </div>\n\
+                        <div class="modal-footer">\n\
+                            <button type="button" class="btn btn-default" data-dismiss="modal">Cancelar</button>\n\
+                            <button type="button" id = "btnAcceptDeleteInstance" class="btn btn-danger">Aceptar</button>\n\
+                        </div>\n\
                     </div>\n\
-                  </div>\n\
                 </div>\n\
-            </div>');
+            </div>\n\
+        ');
+    
+        $('#deleteInstanceConfirmation').modal("show");
         
+        $('#btnAcceptDeleteInstance').click(function(){
+            _deleteInstance(idInstance, instanceName);
+        });
         
-        $('#DivConfirmDeleteInstance').dialog({title:'Mensaje de confirmacion', width:300, minWidth:300, height:300, minHeight:300, modal:true, closeOnEscape:false, 
-            buttons:{Aceptar:{text:'Aceptar', click:function(){_DeleteInstance(IdInstance, InstanceName);$(this).dialog('destroy');}}}});
-        $('#DivConfirmDeleteInstance').append('<p>¿Realmente desea eliminar la instancia <b>'+InstanceName+'? El proceso no puede revertirse.</b></p>');
     };
     
     
@@ -310,7 +326,7 @@ ClassInstanceManager.prototype.instanceManagerInterface = function(){
     var self = this;
     
     $('#WSInstance').empty();
-    $('#WSInstance').append('<input type = "button" id = "btnDeleteInstance" data-toggle="modal" data-target="#deleteInstanceConfirmation" class = "btn btn-danger btn-sm" value = "Eliminar Instancia">');
+    $('#WSInstance').append('<input type = "button" id = "btnDeleteInstance" data-toggle="modal" class = "btn btn-danger btn-sm" value = "Eliminar Instancia">');
     
     $('#WSInstance').append('<div class="PlaceWaiting" id = "newInstancePlaceWaiting"><img src="../img/loadinfologin.gif"></div>');
     $('#btnDeleteInstance').on("click",_ConfirmDeleteInstance);

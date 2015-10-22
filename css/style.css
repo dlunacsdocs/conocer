@@ -12,7 +12,7 @@ html, body, div, span, applet, object, iframe, h1, h2, h3, h4, h5, h6, p, blockq
 ::-moz-selection { background:rgba(124,196,255,0.7); }
 ::selection      { background:rgba(124,196,255,0.7); }
 
-html, body {
+/*html, body {
     font-family: "Lucida Grande", "Lucida Sans Unicode", sans-serif;
     font-size:13px;
     width:100%;
@@ -21,10 +21,10 @@ html, body {
     margin:0;
     padding:0;
     background:#000;
-    /*	-webkit-user-select:none;
+    	-webkit-user-select:none;
             -moz-user-select:none;
-            user-select:none;*/
-}
+            user-select:none;
+}*/
 
 /*-----------------------------------------------------------------------------------*/
 /*	01.	Boot
