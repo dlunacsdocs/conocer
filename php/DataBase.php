@@ -1186,7 +1186,7 @@ class DataBase {
                         continue 2;
                         
                     }                    
-                    $ExistUser = $this->ConsultaSelect($DataBaseName, "SELECT *FROM Usuarios WHERE Login = '$login'"); 
+                    $ExistUser = $this->ConsultaSelect($DataBaseName, "SELECT *FROM CSDocs_Usuarios WHERE Login = '$login'"); 
                     if($ExistUser['Estado']!=1)
                     {
                         echo "<p>Error al comprobar existencia del usuario en el sistema. ". $ExistUser['Estado'] ."</p>";
