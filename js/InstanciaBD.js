@@ -104,52 +104,8 @@ function CreateInstancia()
 
 var Instances = function()
 {
-    _ConfirmDeleteInstance = function()
-    {
-        var InstanceName = $('#DeleteInstanceForm option:selected').html();
-        var IdInstance = $('#DeleteInstanceForm').val();
-        
-        if(!(IdInstance>0))
-            return 0;
 
-        $('body').append('<div id = "DivConfirmDeleteInstance"></div>');
-        $('#DivConfirmDeleteInstance').dialog({title:'Mensaje de confirmacion', width:300, minWidth:300, height:300, minHeight:300, modal:true, closeOnEscape:false, 
-            buttons:{Aceptar:{text:'Aceptar', click:function(){_DeleteInstance(IdInstance, InstanceName);$(this).dialog('destroy');}}}});
-        $('#DivConfirmDeleteInstance').append('<p>¿Realmente desea eliminar la instancia <b>'+InstanceName+'? El proceso no puede revertirse.</b></p>');
-    };
     
-    _DeleteInstance = function(IdInstance, InstanceName)
-    {
-        
-        $.ajax({
-        async:false, 
-        cache:false,
-        dataType:"html", 
-        type: 'POST',   
-        url: "php/Instance.php",
-        data: 'option=DeleteInstance&IdUser='+EnvironmentData.IdUsuario+'&UserName='+EnvironmentData.NombreUsuario+'&IdInstance='+IdInstance+'&InstanceName='+InstanceName,
-        success:  function(xml)
-        {     
-            if($.parseXML( xml )===null){Salida(xml); return 0;}else xml=$.parseXML( xml );         
-
-            $(xml).find('DeleteInstance').each(function()
-            {
-                var Mensaje = $(this).find('Mensaje').text();
-                Notificacion(Mensaje);
-                $('#DivDeleteInstance').dialog('destroy');
-            });
-            
-            $(xml).find("Error").each(function()
-            {
-                var mensaje = $(this).find("Mensaje").text();
-                Error(mensaje);
-            });                   
-
-        },
-        beforeSend:function(){},
-        error: function(jqXHR, textStatus, errorThrown){Error(textStatus +"<br>"+ errorThrown);}
-        });    
-    };
 };
 
 Instances.prototype.DeleteInstance = function()

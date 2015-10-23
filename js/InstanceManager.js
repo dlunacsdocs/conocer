@@ -4,7 +4,7 @@
  * and open the template in the editor.
  */
 
-/* global DimensionsDialogMetadatas, ConsoleSettings, EnvironmentData, InstanceManager, LanguajeDataTable, BootstrapDialog */
+/* global DimensionsDialogMetadatas, ConsoleSettings, EnvironmentData, InstanceManager, LanguajeDataTable, BootstrapDialog, BotonesWindow */
 var instancesTableDetaildT, instancesTableDetailDT;
 $(document).ready(function(){
     $('.LinkInstancesManager').click(function(){
@@ -16,22 +16,7 @@ $(document).ready(function(){
 var ClassInstanceManager = function(){
     var self = this;
     /* Genera interfaz para agregar una nueva instancia en el espacio de trabajo WS */
-    _newInstanceInterface = function(){
-        $('#WSInstance').empty();
-        $('#WSInstance').append('<div class = "titulo_ventana">Nueva Instancia</div>');
-        $('#WSInstance').append('\
-                 <div class = "form-inline">\n\
-                    <div class = "form-group has-feedback text-muted">\n\
-                         Nombre \n\
-                        <input type = "text" class = "form-control" id = "newInstanceName" placeholder = "Nombre instancia">\n\
-                    </div>\n\
-                </div>\n\
-                <br><br>\n\
-            <p class = "well">Una instancia es un ambiente reservado y aislado dentro de su equipo NAS el cual podrá administrar \n\
-            con nuevas empresas y repositorios para el almacenamiento y distribución de sus documentos.</p>\n\
-        ');
-        _addNewInstanceButtons();
-    };
+
     
     _checkNewInstanceName = function(){
         var validator = new ClassFieldsValidator();
@@ -71,66 +56,16 @@ var ClassInstanceManager = function(){
         }
     };
     
-    _buildNewInstance = function(){
-        var instanceName = $('#newInstanceName').val();
-        instanceName = $.trim(instanceName);
-        var find = ' ';
-        var re = new RegExp(find, 'g');
-        instanceName = instanceName.replace(re, '_');
-        
-        if(!_checkNewInstanceName())
-            return 0;
-        
-        _removeConsoleButtons();
-        
-        $('#WSInstance').append('<div class="PlaceWaiting" id = "newInstancePlaceWaiting"><img src="../img/loadinfologin.gif"></div>');
-        
-        $.ajax({
-        async:true, 
-        cache:false,
-        dataType:"html", 
-        type: 'POST',   
-        url: "php/Instance.php",
-        data: {option:"buildNewInstance", instanceName:instanceName, userName:EnvironmentData.NombreUsuario}, 
-        success:  function(xml)
-        {        
-            $('#newInstancePlaceWaiting').remove();
-            if($.parseXML( xml )===null){Error(xml); return 0;}else xml=$.parseXML( xml );         
-
-            $(xml).find('newInstanceBuilded').each(function(){
-                var mensaje = $(this).find("Mensaje").text();
-                Notificacion(mensaje);
-                _newInstanceInterface();
-            });
-
-            $(xml).find("Error").each(function()
-            {
-                var mensaje = $(this).find("Mensaje").text();
-                Error(mensaje);
-            });                    
-
-        },
-        beforeSend:function(){},
-        error: function(jqXHR, textStatus, errorThrown){$('#newInstancePlaceWaiting').remove(); Error(textStatus +"<br>"+ errorThrown);}
-        });    
-    };
     
-    _addNewInstanceButtons = function(){
-        var buttons = {"Crear":{click:function(){_buildNewInstance();}, text: "Crear Instancia"}};
-        $('#divInstanceManager').dialog("option", "buttons", buttons);
-    };
+
     
-    _removeConsoleButtons = function(){
-        var buttons = {};
-        $('#divInstanceManager').dialog("option", "buttons", buttons);
-    };
     
     
     /* Construye tabla con detalle de instancias */
     _buildInstancesTableDetail = function(instances){
         $('#instancesTableDetail').remove();
         $('#WSInstance').append('\
-            <table id = "instancesTableDetail">\n\
+            <table id = "instancesTableDetail" class = "table table-striped table-bordered table-hover table-condensed display hover">\n\
                 <thead>\n\
                     <th>Nombre Instancia</th>\n\
                     <th>Fecha Creación</th>\n\
@@ -142,10 +77,12 @@ var ClassInstanceManager = function(){
         
         instancesTableDetaildT = $('#instancesTableDetail').dataTable(
         {
-            "sDom": '<"instancesTableDetailToolBar">lfTrtip',
+            "sDom": 'lfTrtip',
             "bInfo":false, "autoWidth" : false, "oLanguage":LanguajeDataTable,
             "tableTools": {
                 "aButtons": [
+                    {"sExtends":"text", "sButtonText": "Nueva Instancia", "fnClick" :function(){_newInstanceModal();}},
+                    {"sExtends":"text", "sButtonText": "Eliminar Instancia", "fnClick" :function(){_confirmDeleteInstance();}},
                     {"sExtends": "copy","sButtonText": "Copiar Tabla"},
                     {
                         "sExtends":    "collection",
@@ -156,10 +93,6 @@ var ClassInstanceManager = function(){
             }                              
         });  
         
-        $("#instancesTableDetail_wrapper .DTTT_container").append('<input type = "button" value = "boton personalizado">');
-
-        $('div.DTTT_container').css({"margin-top":"1em"});
-        $('div.DTTT_container').css({"float":"left"});
 
         instancesTableDetailDT = new $.fn.dataTable.Api('#instancesTableDetail');
         
@@ -188,16 +121,107 @@ var ClassInstanceManager = function(){
         
     };
     
-    _deleteInstance = function(){
-        var idInstanceSelected = $('#instancesTableDetail tr.selected').attr('id');
-        if(!(idInstanceSelected > 0))
-            return Advertencia("Debe seleccionar una instancia");
+    /* Modal que se abre para ingresar una nueva instancia */
+    _newInstanceModal = function(){
+        var $text = $('<div></div>');
         
-        alert("Eliminando instancia "+idInstanceSelected);
+        $text.append('<div class = "form-inline">\n\
+                    <div class = "form-group has-feedback text-muted">\n\
+                         Nombre \n\
+                        <input type = "text" class = "form-control" id = "newInstanceName" placeholder = "Nombre instancia">\n\
+                    </div>\n\
+                </div>');
+        $text.append('<br>');   
+        $text.append('<p class = "well">Una instancia es un ambiente reservado y aislado dentro de su equipo NAS el cual podrá administrar \n\
+            con nuevas empresas y repositorios para el almacenamiento y distribución de sus documentos.</p>');
         
+        BootstrapDialog.show({
+            title: 'Nueva instancia',
+            message: $text,
+            closable: true,
+            closeByBackdrop: false,
+            closeByKeyboard: false,
+            buttons: [{
+                label: 'Cancelar',
+                action: function(dialogRef){
+                    dialogRef.close();
+                }
+            }, {
+                label: 'Construir',
+                id: 'btnNewInstance',
+                action: function(dialogRef){
+                    var $button = this; // 'this' here is a jQuery object that wrapping the <button> DOM element.
+                    
+                    _buildNewInstance(dialogRef);
+                }
+            }]
+        });
     };
     
-    _ConfirmDeleteInstance = function()
+    _buildNewInstance = function(dialogRef){        
+        var instanceName = $('#newInstanceName').val();
+        instanceName = $.trim(instanceName);
+        var find = ' ';
+        var re = new RegExp(find, 'g');
+        instanceName = instanceName.replace(re, '_');
+        
+        if(!_checkNewInstanceName())
+            return 0;
+        
+        /* Se desactivan funciones de la ventana de dialogo */
+        
+        dialogRef.enableButtons(false);
+        var buttonNewInstance = dialogRef.getButton('btnNewInstance');
+        buttonNewInstance.disable();
+        buttonNewInstance.spin();
+        dialogRef.setClosable(false);
+                
+        
+        $.ajax({
+        async:true, 
+        cache:false,
+        dataType:"html", 
+        type: 'POST',   
+        url: "php/Instance.php",
+        data: {option:"buildNewInstance", instanceName:instanceName, userName:EnvironmentData.NombreUsuario}, 
+        success:  function(xml)
+        {        
+            dialogRef.close();
+
+            if($.parseXML( xml )===null){Error(xml); return 0;}else xml=$.parseXML( xml );         
+            $(xml).find('newInstanceBuilded').each(function(){
+                instancesTableDetailDT.$('tr.selected').removeClass('selected');
+
+                var mensaje = $(this).find("Mensaje").text();
+                var idInstance = $(this).find("idInstance").text();
+                
+                Notificacion(mensaje);
+                
+                var d = new Date(); 
+                var now = d.getFullYear()+ "-" + (d.getMonth() +1) + "-" +d.getDate() + ' '+d.getHours()+':'+d.getMinutes()+':'+d.getSeconds();
+                
+                var data = [instanceName, now, EnvironmentData.NombreUsuario];                
+                var ai = instancesTableDetailDT.row.add(data).draw();
+                var n = instancesTableDetaildT.fnSettings().aoData[ ai[0] ].nTr;
+                
+                n.setAttribute("id", idInstance);
+                n.setAttribute('class', "selected");
+                
+            });
+
+            $(xml).find("Error").each(function()
+            {
+                var mensaje = $(this).find("Mensaje").text();
+                Error(mensaje);
+            });                    
+
+        },
+        beforeSend:function(){},
+        error: function(jqXHR, textStatus, errorThrown){ Error(textStatus +"<br>"+ errorThrown);}
+        });    
+    };
+    
+    _confirmDeleteInstance = function()
     {
         var instanceName;
         var idInstance = $('#instancesTableDetail tr.selected').attr('id');
@@ -212,9 +236,7 @@ var ClassInstanceManager = function(){
             return Advertencia("Debe seleccionar una instancia");
         
         console.log("ConfirmDeleteInstance:::Modifed");
-        
-//        $('#deleteInstanceConfirmation').remove();    
-               
+                       
         BootstrapDialog.confirm({
             title: 'Peligro',
             message: '¿Esta acción no puede revertirse, realmente desea continuar y eliminar la instancia <b>'+instanceName+'?',
@@ -235,32 +257,39 @@ var ClassInstanceManager = function(){
             }
         });
         
-//        $('body').append('\n\
-//            <div class="modal fade" id="deleteInstanceConfirmation" tabindex="-1" role="dialog" aria-labelledby="smallModal" aria-hidden="true">\n\
-//                <div class="modal-dialog modal-sm">\n\
-//                    <div class="modal-header panel-danger">\n\
-//                        <div class="modal-header">\n\
-//                            <button type="button" class="close" data-dismiss="modal" aria-hidden="true">&times;</button>\n\
-//                            <h4 class="modal-title" id="myModalLabel">Alerta</h4>\n\
-//                        </div>\n\
-//                        <div class="modal-body">\n\
-//                            ¿Esta acción no puede revertirse, realmente desea continuar y eliminar la instancia <b>'+instanceName+'?\n\
-//                        </div>\n\
-//                        <div class="modal-footer">\n\
-//                            <button type="button" class="btn btn-default" data-dismiss="modal">Cancelar</button>\n\
-//                            <button type="button" id = "btnAcceptDeleteInstance" class="btn btn-danger">Aceptar</button>\n\
-//                        </div>\n\
-//                    </div>\n\
-//                </div>\n\
-//            </div>\n\
-//        ');
-//    
-//        $('#deleteInstanceConfirmation').modal("show");
-//        
-//        $('#btnAcceptDeleteInstance').click(function(){
-//            _deleteInstance(idInstance, instanceName);
-//        });
-        
+    };
+    
+    _deleteInstance = function(IdInstance, InstanceName)
+    {
+                
+        $.ajax({
+        async:false, 
+        cache:false,
+        dataType:"html", 
+        type: 'POST',   
+        url: "php/Instance.php",
+        data: 'option=DeleteInstance&IdUser='+EnvironmentData.IdUsuario+'&UserName='+EnvironmentData.NombreUsuario+'&IdInstance='+IdInstance+'&InstanceName='+InstanceName,
+        success:  function(xml)
+        {     
+            if($.parseXML( xml )===null){Salida(xml); return 0;}else xml=$.parseXML( xml );         
+
+            $(xml).find('DeleteInstance').each(function()
+            {
+                var Mensaje = $(this).find('Mensaje').text();
+                Notificacion(Mensaje);
+                instancesTableDetailDT.row('tr[id='+IdInstance+']').remove().draw( false );                
+            });
+            
+            $(xml).find("Error").each(function()
+            {
+                var mensaje = $(this).find("Mensaje").text();
+                Error(mensaje);
+            });                   
+
+        },
+        beforeSend:function(){},
+        error: function(jqXHR, textStatus, errorThrown){Error(textStatus +"<br>"+ errorThrown);}
+        });    
     };
     
     
@@ -280,10 +309,6 @@ ClassInstanceManager.prototype.buildManager = function(){
                     <h3><a href="#">Instancias</a></h3>\n\
                     <div>\n\
                         <table id = "instanceManagerTable" class="TableInsideAccordion">\n\
-                            <tr id = "linkNewInstance">\n\
-                                <td><img src="img/newInstance.png"></td>\n\
-                                <td>Nueva Instancia</td>\n\
-                            </tr>\n\
                             <tr id = "linkInstanceManager">\n\
                                 <td><img src="img/Storage.png"></td>\n\
                                 <td>Administrar</td>\n\
@@ -294,8 +319,8 @@ ClassInstanceManager.prototype.buildManager = function(){
             </div>\n\
         </div>\n\
         <div class="work_space" id="WSInstance"></div>\n\
-');
-    
+    ');
+            
     /********* Efectos sobre tabla dentro de acordeón ***********/
     $('#instanceManagerTable').on( 'click', 'tr', function ()
     {
@@ -324,7 +349,6 @@ ClassInstanceManager.prototype.buildManager = function(){
     /* Generación del acordeón (Panel izquierdo de la consola) */
     $("#instanceAccordion").accordion({ header: "h3", collapsible: true,heightStyle: "content" });
         
-    $('#linkNewInstance').on("click", _newInstanceInterface);
     
     $('#linkInstanceManager').on("click", InstanceManager.instanceManagerInterface);
     
@@ -332,32 +356,24 @@ ClassInstanceManager.prototype.buildManager = function(){
     $('#divInstanceManager').dialog(ConsoleSettings, {title: "Administración de instancias"}).dialogExtend(BotonesWindow);
 
     
-    $('#linkNewInstance').click();
+    $('#linkInstanceManager').click();
     
     
 };
 
-ClassInstanceManager.prototype.newInstanceInterface = function(){
-    _newInstanceInterface();
-};
 
 /* Construye la interfaz de administración de instancias */
 ClassInstanceManager.prototype.instanceManagerInterface = function(){
     var self = this;
     
     $('#WSInstance').empty();
-    $('#WSInstance').append('<input type = "button" id = "btnDeleteInstance" data-toggle="modal" class = "btn btn-danger btn-sm" value = "Eliminar Instancia">');
     
-    $('#WSInstance').append('<div class="PlaceWaiting" id = "newInstancePlaceWaiting"><img src="../img/loadinfologin.gif"></div>');
-    $('#btnDeleteInstance').on("click",_ConfirmDeleteInstance);
-    
+    $('#WSInstance').append('<div class="PlaceWaiting" id = "newInstancePlaceWaiting"><img src="../img/loadinfologin.gif"></div>');    
     
     var instances = _getInstances();
         
     _buildInstancesTableDetail(instances);
-    
-    _removeConsoleButtons();
-    
+        
     $('#newInstancePlaceWaiting').remove();
 };
 

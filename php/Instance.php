@@ -8,6 +8,7 @@
 require_once 'DataBase.php';
 require_once 'XML.php';
 require_once 'Session.php';
+require_once 'Encrypter.php';
 
 if (!isset($_SESSION))
     session_start();
@@ -23,12 +24,17 @@ class Instance {
         }
     }
     
+    /* Construye una nueva instancia */
     private function buildNewInstance(){
         $DB = new DataBase();
         $instanceName = filter_input(INPUT_POST, "instanceName");
         $userName = filter_input(INPUT_POST, "userName");
         
         $RoutFile = dirname(getcwd());
+        
+        
+        if(($checkTotalInstances = $this->checkTotalInstances()) != 1)
+            return XML::XMLReponse ("Error", 0, $checkTotalInstances);
         
         $createSchema = "CREATE DATABASE $instanceName 
                         DEFAULT CHARACTER SET utf8
@@ -48,9 +54,9 @@ class Instance {
             $DB->ConsultaQuery("", "DROP DATABASE IF EXISTS $instanceName");
         }
         
-        $InsertInstance = "INSERT INTO instancias (NombreInstancia, fechaCreacion, usuarioCreador) VALUES ('$instanceName', 'now()', '$userName')";
+        $InsertInstance = "INSERT INTO instancias (NombreInstancia, fechaCreacion, usuarioCreador) VALUES ('$instanceName', '".date('Y-m-d H:i:s')."', '$userName')";
         
-        if(($resultInsert = $DB->ConsultaQuery("cs-docs", $InsertInstance))!=1){
+        if(!(($idInstance = $DB->ConsultaInsertReturnId("cs-docs", $InsertInstance))>0)){
             $DB->ConsultaQuery("", "DROP DATABASE IF EXISTS $instanceName");
             return XML::XMLReponse("Error", 0, "<b>Error</b> al intentar registrar la instancia. <br>Detalles:<br>$resultInsert");
         }
@@ -60,8 +66,66 @@ class Instance {
         /* Archivo que almacena la configuración de la estrucutra de usuarios, empresas, repositorios, etc */
         touch("$RoutFile/Configuracion/$instanceName.ini");
        
-        return XML::XMLReponse("newInstanceBuilded", 1, "Instancia construida con éxito.");
+        return $this->returnInstanceCreatedResponse($idInstance, $instanceName);
+    }
+    
+    private function returnInstanceCreatedResponse($idInstance, $instanceName){
         
+        $doc  = new DOMDocument('1.0','utf-8');
+        libxml_use_internal_errors(true);
+        $doc->formatOutput = true;
+        $root = $doc->createElement("newInstanceBuilded");
+        $doc->appendChild($root); 
+        $Estado=$doc->createElement("Estado",1);
+        $root->appendChild($Estado);
+        $Mensaje=$doc->createElement("Mensaje","Instancia '$instanceName' creada con éxito");
+        $root->appendChild($Mensaje);
+        $idInstanceElement = $doc->createElement("idInstance", $idInstance);
+        $root->appendChild($idInstanceElement);
+        header ("Content-Type:text/xml");
+        echo $doc->saveXML();
+        
+    }
+    
+    private function checkTotalInstances(){
+        
+        $RoutFile = dirname(getcwd());
+        
+        if(!file_exists("$RoutFile/version/config.ini"))
+            return "<p><b>Error</b><br><br> El registro de configuración de CSDocs no existe. Reportelo directamente con CSDocs</p>";
+        
+        $EncryptedSetting = parse_ini_file("$RoutFile/version/config.ini", true);
+        
+        if($EncryptedSetting === FALSE)
+            return "<p><b>Error</b> en el registro de configuración de CSDocs $EncryptedSetting</p>";
+        
+        if(!isset($EncryptedSetting['InstancesNumber']))
+            return "No existe registro del total de instancias permitidas.";
+        
+        $getTotalInstances = $this->getTotalInstances();
+        
+        if($getTotalInstances['Estado']!=1)
+            return $getTotalInstances['Estado'];
+      
+        $totalInstances = $getTotalInstances['ArrayDatos'][0]['COUNT(*)']; 
+        
+        $autorizeEncriptTotalInstance = $EncryptedSetting['InstancesNumber'];
+        
+        $autorizeTotalInstance = Encrypter::decrypt($autorizeEncriptTotalInstance);
+                
+        if((int)$totalInstances >= (int)$autorizeTotalInstance)
+                return "Límite alcanzado de instancias permitidas para su versión";
+        
+        return 1;
+        
+    }
+    
+    private function getTotalInstances(){
+        $DB = new DataBase();
+        $query = "SELECT COUNT(*) FROM instancias";
+        $result = $DB->ConsultaSelect("cs-docs", $query);
+        
+        return $result;
     }
     
     private function DeleteInstance()
@@ -82,7 +146,8 @@ class Instance {
         /* Sí el usuario inicio sesión en la misma instancia que va a eliminar, se destruye la sesión */
         if(is_array($userData)){
             if(isset($userData['dataBaseName']))
-                Session::destroySession ();
+                if(strcasecmp($userData['dataBaseName'], $InstanceName)==0)
+                    Session::destroySession ();
         }
         
         $RoutFile = dirname(getcwd());
