@@ -4,6 +4,8 @@
  * and open the template in the editor.
  */
 
+/* global EnvironmentData */
+
 $(document).ready(function()
 {
     $('.LinkMail').click(function(){
@@ -65,18 +67,17 @@ function ShowMailAccounts()
 
 function ListAccounts()
 {
-    var IdUsuario = $('#id_usr').val();      
-    var nombre_usuario=$('#login_usr').val();
-    var DataBaseName =$('#database_name').val();   
+ 
     var Tabla=$('#TableListMailAccounts').DataTable();
     var TablaInsert=$('#TableListMailAccounts').dataTable();
+    
     $.ajax({
       async:false, 
       cache:false,
       dataType:"html", 
       type: 'POST',   
       url: "php/Mail.php",
-      data: "opcion=ListAccounts"+"&IdUsuario="+IdUsuario+"&DataBaseName="+DataBaseName+'&nombre_usuario='+nombre_usuario, 
+      data: "opcion=ListAccounts"+"&IdUsuario="+EnvironmentData.IdUsuario+"&DataBaseName="+EnvironmentData.DataBaseName+'&nombre_usuario='+EnvironmentData.NombreUsuario, 
       success:  function(xml){       
            ($.parseXML( xml )===null)?Salida(xml) : xml=$.parseXML( xml );
            $(xml).find("Mail").each(function()
@@ -152,10 +153,10 @@ function FormsAddNewAccount()
 
 function AddNewAccount()
 {        
-    var IdUsuario = $('#id_usr').val();      
-    var DataBaseName =$('#database_name').val();        
+      
     var CadenaValores='';
     var Forms=$('.FormsAddNewAccount');
+    
     for(var cont = 0; cont < Forms.length; cont++)
     {
         var name=$(Forms[cont]).attr('name');
@@ -169,7 +170,7 @@ function AddNewAccount()
       dataType:"html", 
       type: 'POST',   
       url: "php/Mail.php",
-      data: 'opcion=AddNewAccount&IdUsuario='+IdUsuario+'&DataBaseName='+DataBaseName+CadenaValores, 
+      data: 'opcion=AddNewAccount&IdUsuario='+EnvironmentData.IdUsuario+'&DataBaseName='+EnvironmentData.DataBaseName+CadenaValores, 
       success:  function(xml){           
           
            ($.parseXML( xml )===null)?Salida(xml) : xml=$.parseXML( xml );
@@ -195,18 +196,18 @@ function AddNewAccount()
 
 
 function DownloadFromAccount()
-{
-    var IdUsuario = $('#id_usr').val();      
-    var DataBaseName =$('#database_name').val();  
+{ 
     var IdAccount=$('#TableListMailAccounts tr.selected').attr('id');
+    
     if(!IdAccount>0){Advertencia("Seleccione una cuenta de correo");return;}
+    
     $.ajax({
       async:false, 
       cache:false,
       dataType:"html", 
       type: 'POST',   
       url: "php/Mail.php",
-      data: 'opcion=DownloadFromAccount&IdUsuario='+IdUsuario+'&DataBaseName='+DataBaseName+'&IdAccount='+IdAccount, 
+      data: 'opcion=DownloadFromAccount&IdUsuario='+EnvironmentData.IdUsuario+'&DataBaseName='+EnvironmentData.DataBaseName+'&IdAccount='+IdAccount, 
       success:  function(xml){           
           
            ($.parseXML( xml )===null)?Salida(xml) : xml=$.parseXML( xml );

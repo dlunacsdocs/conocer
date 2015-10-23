@@ -1,17 +1,39 @@
 <?php
-require_once 'DataBase.php';
-require_once 'XML.php';
-/*
- * To change this license header, choose License Headers in Project Properties.
- * To change this template file, choose Tools | Templates
- * and open the template in the editor.
- */
 
-/**
+/**************************************************************************
+ *  Se devuelve un XML con la Estrcutra generada por el usuario.
+ *      
+ *      El parámetro estructura tiene la siguiente forma (Ejemplo)
+ * 
+ *      Estructura {
+ *                  "Seccion"=>Array{
+ *                      Empresa=Empresa
+                        Empresa[]=NombreEmpresa###type###VARCHAR###long###100###required###true###
+                        Empresa[]=Descripcion###type###TEXT###required###true###
+                        Empresa[]=ClaveEmpresa###type###VARCHAR###long###50###required###true###
+                        Empresa[]=Properties###name###Direccion###type###VARCHAR###long###200###required###false###
+                        Empresa[]=Properties###name###Telefono###type###INT###long###15###required###false###
+                        Empresa[]=Properties###name###FechaFundacion###type###DATE###required###false###
+ *              }
+ *          }
+ *  Los valores vienen separados por ###, siempre se comienza por un valor de default en este caso es 
+ * NombreEmpresa y Descripcion
+ * Luego se siguen las propiedades dadas por el usuario y empiezan con "Properties".
+ * 
  * Description of DesignerForms
  *
  * @author daniel
+ * 
  */
+
+
+require_once 'XML.php';
+require_once 'Session.php';
+
+
+if(!isset($_SESSION))
+    session_start();
+
 class DesignerForms {
     public function __construct() {
         $this->ajax();
@@ -19,41 +41,71 @@ class DesignerForms {
     
     private function ajax()
     {
-        switch (filter_input(INPUT_POST, "opcion"))
-        {
-            case 'GetStructure': $this->GetStructure(); break; 
-            case 'GetAllStructure': $this->GetAllStructure(); break;
+        if(filter_input(INPUT_POST, "opcion")!=NULL and filter_input(INPUT_POST, "opcion")!=FALSE){
+            
+//            $idSession = Session::getIdSession();
+            
+//            if($idSession == null)
+//                return XML::XMLReponse ("Error", 0, "DesignerForms::No existe una sesión activa, por favor vuelva a iniciar sesión");
+
+            $userData = Session::getSessionParameters();
+            switch (filter_input(INPUT_POST, "opcion"))
+            {
+                case 'GetStructure': $this->GetStructure($userData); break; 
+                case 'GetAllStructure': $this->GetAllStructure($userData); break;
+            }
         }
     }   
     /*************************************************************************
      * Se obtiene la estructura de la Tabla diseñada por el usuario, tomandola
      * del archivo de configuración generado al Construir una instancia
      */
-    private function GetStructure()
+    private function GetStructure($userData)
     {
         $TypeStructure=filter_input(INPUT_POST, "TypeStructure");
-        $DataBaseName=filter_input(INPUT_POST, "DataBaseName");
+        $DataBaseName = $userData['dataBaseName'];
         
-        if(!file_exists("../Configuracion/$DataBaseName.ini"))
-            return XML::XMLReponse("Error", 0,"<p>No existe el archivo de configuración estructural.</p>");
+        $fullStructure = $this->getArrayStructureFile($DataBaseName);
         
-        if(($Estructura = parse_ini_file ("../Configuracion/$DataBaseName.ini",true))===FALSE)
-            return XML::XMLReponse ("Error", 0, "<p><b>Error</b> al abrir el registro de estructura de la instancia $DataBaseName</p><br>Detalles:<br><br>$Estructura");
+        if(!is_array($fullStructure))
+            return XML::XMLReponse ("Error", 0, "$fullStructure");
         
-        if(array_key_exists($TypeStructure,$Estructura))
+        if(array_key_exists($TypeStructure,$fullStructure))
         {
-            $Estructura=$Estructura["$TypeStructure"];
-            $this->ReturnXMLStructure($TypeStructure,$Estructura);
+            $Estructura = $fullStructure["$TypeStructure"];
+            $ArrayEstructura = $this->getPropertiesFromStructure($TypeStructure,$Estructura);
+            if(is_array($ArrayEstructura))
+                $this->CreateXMLStruct($ArrayEstructura['structure'],$ArrayEstructura['catalog']);    
+            else
+                XML::XMLReponse ("Error", 0, $ArrayEstructura);
+
         }
         else
             return XML::XMLReponse("Error", 0,"<p>No existe el registro de estructura para $TypeStructure, o puede que no se haya creado correctamente</p>");
+    
     }
+    
+    public function getArrayStructureFile($dataBaseName){
+        
+        $RoutFile = dirname(getcwd());     
+        
+        $Estructura = array();
+        
+        if(!file_exists("$RoutFile/Configuracion/$dataBaseName.ini"))
+            return "No existe el archivo de configuración estructural.";
+        
+        if(($Estructura = parse_ini_file ("$RoutFile/Configuracion/$dataBaseName.ini",true))===FALSE)
+            return "Error al abrir el registro de estructura de la instancia $dataBaseName. Detalles: $Estructura";   
+        
+        return $Estructura;
+    }
+    
     /* Devuelve la estrucutura por default y la definida por el usuario */
-    private function GetAllStructure()
+    private function GetAllStructure($userData)
     {
         $XML=new XML();
-        $TypeStructure=filter_input(INPUT_POST, "TypeStructure");
-        $DataBaseName=filter_input(INPUT_POST, "DataBaseName");
+        $TypeStructure = filter_input(INPUT_POST, "TypeStructure");
+        $DataBaseName = $userData['dataBaseName'];
         $catalogo=0;
         if(!file_exists("../Configuracion/$DataBaseName.ini")){$XML->ResponseXML("Error", 0,"<p>No existe el archivo de configuración estructural.</p>");return;}
         $Estructura_=parse_ini_file ("../Configuracion/$DataBaseName.ini",true); 
@@ -106,28 +158,8 @@ class DesignerForms {
         $this->CreateXMLStruct($ArrayEstructura,$catalogo); 
     }
     
-    /**************************************************************************
-     *  Se devuelve un XML con la Estrcutra generada por el usuario.
-     *      
-     *      El parámetro estructura tiene la siguiente forma (Ejemplo)
-     * 
-     *      Estructura {
-     *                  "Seccion"=>Array{
-     *                      Empresa=Empresa
-                            Empresa[]=NombreEmpresa###type###VARCHAR###long###100###required###true###
-                            Empresa[]=Descripcion###type###TEXT###required###true###
-                            Empresa[]=ClaveEmpresa###type###VARCHAR###long###50###required###true###
-                            Empresa[]=Properties###name###Direccion###type###VARCHAR###long###200###required###false###
-                            Empresa[]=Properties###name###Telefono###type###INT###long###15###required###false###
-                            Empresa[]=Properties###name###FechaFundacion###type###DATE###required###false###
-     *              }
-     *          }
-     *  Los valores vienen separados por ###, siempre se comienza por un valor de default en este caso es 
-     * NombreEmpresa y Descripcion
-     * Luego se siguen las propiedades dadas por el usuario y empiezan con "Properties".
-     * 
-     */
-    function ReturnXMLStructure($TypeStructure,$Estructura)
+
+    function getPropertiesFromStructure($TypeStructure,$Estructura)
     {
         $catalogo=0;
         $XML=new XML();
@@ -168,8 +200,11 @@ class DesignerForms {
 //                $ArrayEstructura[]=$ArrayIteracion;
             }                        
         }
-        if(!(count($ArrayEstructura)>0)){$XML->ResponseXML("Error", 0,"<p>No existe el registro de estructura para uuarios, o puede que no se haya creado correctamente</p>");}        
-        $this->CreateXMLStruct($ArrayEstructura,$catalogo);    
+        
+        if(!(count($ArrayEstructura)>0))
+            return "No existe el registro de estructura para uuarios, o puede que no se haya creado correctamente";
+        
+        return array('structure'=>$ArrayEstructura, 'catalog'=>$catalogo);
     }
     
     /***************************************************************************
@@ -414,45 +449,7 @@ class DesignerForms {
         
         return 1;
     }
-      
-//    function write_ini_file($assoc_arr, $path, $has_sections=FALSE)
-//    { 
-//        $content = ""; 
-//        if ($has_sections) { 
-//            foreach ($assoc_arr as $key=>$elem) { 
-//                $content .= "[".$key."]\n"; 
-//                foreach ($elem as $key2=>$elem2) { 
-//                    if(is_array($elem2)) 
-//                    { 
-//                        for($i=0;$i<count($elem2);$i++) 
-//                        { 
-//                            $content .= $key2."[] = \"".$elem2[$i]."\"\n"; 
-//                        } 
-//                    } 
-//                    else if($elem2=="") $content .= $key2." = \n"; 
-//                    else $content .= $key2." = \"".$elem2."\"\n"; 
-//                } 
-//            } 
-//        } 
-//        else { 
-//            foreach ($assoc_arr as $key=>$elem) { 
-//                if(is_array($elem)) 
-//                { 
-//                    for($i=0;$i<count($elem);$i++) 
-//                    { 
-//                        $content .= $key."[] = \"".$elem[$i]."\"\n"; 
-//                    } 
-//                } 
-//                else if($elem=="") $content .= $key." = \n"; 
-//                else $content .= $key." = \"".$elem."\"\n"; 
-//            } 
-//        } 
-//
-//        if (!$handle = fopen($path, 'w')) { 
-//            return false; 
-//        }
-//    }
-    
+
 }
 
 $designer=new DesignerForms();

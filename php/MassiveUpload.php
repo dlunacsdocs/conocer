@@ -1,11 +1,5 @@
 <?php
 
-/*
- * To change this license header, choose License Headers in Project Properties.
- * To change this template file, choose Tools | Templates
- * and open the template in the editor.
- */
-
 /**
  * Description of MassiveUpload
  *
@@ -16,6 +10,8 @@ require_once 'XML.php';
 require_once 'DesignerForms.php';
 require_once 'Log.php';
 require_once 'UploadSources.php';
+require_once 'Catalog.php';
+
 class MassiveUpload {
     public function __construct() {
         $this->Ajax();
@@ -140,7 +136,7 @@ class MassiveUpload {
             fclose($config);
             
             
-            if(($CreateCatalogsFiles = $this->CreateTempCatalogsFiles($DataBaseName, $UserName ,$IdRepositorio)) != 1)
+            if(($CreateCatalogsFiles = $this->CreateTempCatalogsFiles($DataBaseName, $NombreRepositorio ,$IdRepositorio, $UserName)) != 1)
             {
                 unlink($archivo);
                 XML::XMLReponse("Error", 0, "<p><b>Error</b> al crear los catálogos temporales</p>");
@@ -173,35 +169,28 @@ class MassiveUpload {
     
     /* Se descarga */
     
-    private function CreateTempCatalogsFiles($DataBaseName,$UserName,$IdRepository)
+    private function CreateTempCatalogsFiles($DataBaseName, $NombreRepositorio ,$IdRepository, $UserName)
     {
         $DB = new DataBase();
         $RoutFile = filter_input(INPUT_SERVER, "DOCUMENT_ROOT");
+        $Catalog = new Catalog();
         
-        $CatalogsQuery = "SELECT NombreCatalogo FROM Catalogos WHERE IdRepositorio = $IdRepository";
-        $CatalogsResult = $DB->ConsultaSelect($DataBaseName, $CatalogsQuery);
-        if($CatalogsResult['Estado']!=1)
-        {
-            XML::XMLReponse("Error", 0, "<p><b>Error</b> al consultar el listado de catálogos</p><br>Detalles:<br><br>".$CatalogsResult['Estado']);
-            return 0;
-        }
+        $Catalogs = $Catalog->getArrayCatalogsNames($DataBaseName, $IdRepository);
         
-        $Catalogs = $CatalogsResult['ArrayDatos'];
+        if(!is_array($Catalogs))
+            return XML::XMLReponse ("Error", 0, "<b>Error</b> al recuperar el listado de catálogos. <br><br>Detalles:<br><br>$Catalogs");
         
         for($cont = 0; $cont < count($Catalogs); $cont++)
         {
             $CatalogName = $Catalogs[$cont]['NombreCatalogo'];
-            $GetCatalogQuery = "SELECT * FROM $CatalogName";
-            $CatalogRecordsResult = $DB->ConsultaSelect($DataBaseName, $GetCatalogQuery);
-            if($CatalogRecordsResult['Estado']!=1)
-            {
-                XML::XMLReponse("Error", 0, "<p><b>Error</b> al extraer los registros del catálogo <b>$CatalogName</b></p><br>Detalles:<br><br>".$CatalogRecordsResult['Estado']);
-                return 0;
-            }
             
-            $CatalogRecords = $CatalogRecordsResult['ArrayDatos'];
+            $CatalogRecords = $Catalog->getCatalogRecords($DataBaseName, $NombreRepositorio, $CatalogName);
+            
+            if(!is_array($CatalogRecords))
+                return XML::XMLReponse ("Error", 0, $CatalogRecords);
             
             $PathTempFile = "$RoutFile/Configuracion/Catalogs/$DataBaseName/$UserName";
+            
             if(!file_exists($PathTempFile))
             {                
                 if(($mkdir = mkdir($PathTempFile, 0777, true))!=1)
@@ -211,7 +200,7 @@ class MassiveUpload {
                 }
             }
             
-            if(($TempFile=  fopen($PathTempFile."/$CatalogName.ini", "w")))
+            if(($TempFile=  fopen($PathTempFile."/$NombreRepositorio"."_"."$CatalogName.ini", "w")))
             {
                 for($aux = 0; $aux < count($CatalogRecords); $aux++)
                 {
@@ -238,7 +227,7 @@ class MassiveUpload {
 
     private function StartMassiveUpload()
     {
-        $BD= new DataBase();                
+        $Catalog = new Catalog();
         $designer=new DesignerForms();
         
         $RoutFile = filter_input(INPUT_SERVER, "DOCUMENT_ROOT");        
@@ -267,18 +256,15 @@ class MassiveUpload {
         $ArrayStructureUser=$designer->ReturnStructure($NombreRepositorio,$EstructuraConfig[$NombreRepositorio]);
         $ArrayStructureDefault=$designer->ReturnStructureDefault($NombreRepositorio,$EstructuraConfig[$NombreRepositorio]);        
         
-//        for($cont=0; $cont < count($ArrayStructureUser); $cont++)
-//        {
-//            echo "<p>". $ArrayStructureUser[$cont]['name'] ."</p>";
-//        }
-        
         /* Listado de Catálogos */
-        $Consulta="SELECT IdRepositorio, NombreCatalogo FROM Catalogos WHERE IdRepositorio=$IdRepositorio";
-        $Catalogos=$BD->ConsultaSelect($DataBaseName, $Consulta);
+        $Catalogos = $Catalog->getArrayCatalogsNames($DataBaseName, $IdRepositorio);
+        
+        if(!is_array($Catalogos))
+            return XML::XMLReponse ("Error", 0, "<b>Error</b> al obtener el listado de catálogos.<br><br>Detalles:<br><br>$Catalogos");
         
         /* Función recursiva para leer los directorios por debajo de root  */
         
-        $ScanDirResult = $this->scan_dir($ArrayStructureDefault,$ArrayStructureUser,$Catalogos['ArrayDatos'],$UserName,$directorio,$IdDirectory,$SettingsMassiveUpload,$Path);
+        $ScanDirResult = $this->scan_dir($ArrayStructureDefault,$ArrayStructureUser,$Catalogos,$UserName,$directorio,$IdDirectory,$SettingsMassiveUpload,$Path);
 
         if(strcasecmp($ScanDirResult, 1)==0)
         {
@@ -591,7 +577,7 @@ class MassiveUpload {
                     $this->LogLoadMassive($UserName, "Se renombró el archivo $NombreArchivo a ".basename($PathDestinoArchivo));
                 }
                 
-                $XmlValues = $UploadSource->ReadXml($ArrayStructureDefault, $EstructuraProperties, $Catalogos, $PathBase."/".$NombrePar, $MassiveUploadSettings);
+                $XmlValues = $UploadSource->ReadXml($ArrayStructureDefault, $EstructuraProperties, $NombreRepositorio, $Catalogos, $PathBase."/".$NombrePar, $MassiveUploadSettings);
                 
                 if(!is_array($XmlValues))
                     continue;

@@ -51,6 +51,11 @@ $(document).ready(function(){
    $('#tr_UsersList').click(function(){Users.CM_UsersList();});
    
    $('#tr_GroupsUsers').click(function(){UsersGroups.ShowsGroupsUsers();});
+   
+   $('#LinkCloseSession').click(function(){
+       Users.closeUserSession();
+   });
+   
 });
 
 /*******************************************************************************
@@ -95,9 +100,6 @@ ClassUsers = function()
     {
         var self = this;
         Loading();
-        var DataBaseName=$('#database_name').val();
-        var id_usuario=$('#id_usr').val();
-        var nombre_usuario=$('#login_usr').val();
         var xml_usuario=document.getElementById("NewUser_InputFile");
         var archivo = xml_usuario.files;     
         var data = new FormData();
@@ -106,9 +108,9 @@ ClassUsers = function()
           {
                 data.append('archivo',archivo[i]);
                 data.append('opcion','AddXmlUser');
-                data.append('id_usuario',id_usuario);
-                data.append('DataBaseName',DataBaseName);
-                data.append('nombre_usuario',nombre_usuario);
+                data.append('id_usuario',EnvironmentData.IdUsuario);
+                data.append('DataBaseName',EnvironmentData.DataBaseName);
+                data.append('nombre_usuario',EnvironmentData.NombreUsuario);
           } 
             ajax=objetoAjax();
             ajax.open("POST", 'php/Usuarios.php',true);
@@ -471,7 +473,198 @@ ClassUsers = function()
         error: function(jqXHR, textStatus, errorThrown){$('#UsersPlaceWaiting').remove(); Error(textStatus +"<br>"+ errorThrown);}
         });    
     };
+    
+    dan = function(){
+        alert("dan");
+    };
+       
+    /************** Popover Usuario (Icono Usuario  Menú superior) *************/
+    
+    self.addUserLoggedPopover = function(){
+
+        if($('#userLoggedPopupOptions').length > 0)
+        return 0;
+
+        $('#page').append('\
+            <div id="userLoggedPopupOptions" class="popover">\n\
+                <div class="arrow"></div>\n\
+                <h3 class="popover-title"><span id = "closeUserLoggedPopupOptions" class="close pull-right" data-dismiss="popover-x">&times;</span><span class = "glyphicon glyphicon-user">  '+EnvironmentData.NombreUsuario+'</span></h3>\n\
+                <div class="popover-content">\n\
+                    <div class="form-group">\n\
+                        <label>Cambiar Password</label>\n\
+                        <input type="password" id = "firstUserLoggedPass" class="form-control" placeholder="Cambiar Contraseña">\n\
+                    </div>\n\
+                    <div class="form-group">\n\
+                        <input type="password" id = "secondUserLoggedPass" class="form-control" placeholder="Confirmar Contraseña">\n\
+                    </div>\n\
+                </div>\n\
+                <div class="popover-footer">\n\
+                    <input type = "button" id = "btnChangeUserLoggedPassword" value = "Cambiar Contraseña" class="btn btn-sm btn-primary">\n\
+                </div>\n\
+            </div>');
+
+    
+    $('#userLoggedPopupOptions').modalPopover({
+        target: '#mainMenuUserIcon',
+        placement: 'bottom'
+    });
+    
+        $('#mainMenuUserIcon').click(function(){
+            if(!$('#userLoggedPopupOptions').is(':visible')){
+                _resetUserLoggedPopover();
+                $('#userLoggedPopupOptions').modalPopover('show');
+            }
+            else
+                $('#userLoggedPopupOptions').hide();
+        });
+        $('#closeUserLoggedPopupOptions').click(function(){
+            $('#userLoggedPopupOptions').hide();
+        });
+//    $('#mainMenuUserIcon').click(function(){
+//        $('#userLoggedPopupOptions').popoverX('toggle');
+//    });
+        
+        $('#btnChangeUserLoggedPassword').click(function(){
+            self.changeUserLoggedPassword();
+        });
+//    /* Version del api de bootstrap "popoverX" */ 
+//    
+//    $('<li><a href="#" id = "mainMenuUserIcon" >' + NombreUsuario + '</a></li>').insertAfter('#barra_sup_username');
+//    $('#page').append('\
+//            <div id="myPopover1b" class="popover popover-default">\n\
+//                <div class="arrow"></div>\n\
+//                <h3 class="popover-title"><span class="close pull-right" data-dismiss="popover-x">&times;</span>Enter credentials</h3>\n\
+//                <div class="popover-content">\n\
+//                    <p>Lorem ipsum dolor sit amet, consectetuer adipiscing elit. Aenean commodo ligula eget dolor.</p>\n\
+//                    <form class="form-vertical">\n\
+//                        <div class="form-group">\n\
+//                            <input class="form-control" placeholder="Username">\n\
+//                        </div>\n\
+//                        <input type="password" class="form-control" placeholder="Password">\n\
+//                    </form>\n\
+//                </div>\n\
+//                <div class="popover-footer">\n\
+//                    <button type="submit" class="btn btn-sm btn-primary">Submit</button><button type="reset" class="btn btn-sm btn-default">Reset</button>\n\
+//                </div>\n\
+//            </div>');
+    
+    };
+    
+    _resetUserLoggedPopover = function(){
+        var fieldsValidator = new ClassFieldsValidator();
+
+        $('#firstUserLoggedPass').val("");
+        $('#secondUserLoggedPass').val("");
+        fieldsValidator.RemoveClassRequiredActive($('#firstUserLoggedPass'));
+        fieldsValidator.RemoveClassRequiredActive($('#secondUserLoggedPass'));
+        $('#firstUserLoggedPass').attr('title', '');
+        $('#secondUserLoggedPass').attr('title', '');
+    };
+    
+    _closeUserSession = function(){
+        
+        $.ajax({
+        async:false, 
+        cache:false,
+        dataType:"html", 
+        type: 'POST',   
+        url: "php/Usuarios.php",
+        data: {opcion:"closeUserSession"}, 
+        success:  function(xml)
+        {            
+            if($.parseXML( xml )===null){ Error(xml); return 0;}else xml=$.parseXML( xml );         
+            
+            $(xml).find('userSessionClosed').each(function()
+            {
+                location.reload();
+            });
+
+            $(xml).find("Error").each(function()
+            {
+                var mensaje=$(this).find("Mensaje").text();
+                Error(mensaje);
+            });                 
+
+        },
+        beforeSend:function(){},
+        error: function(jqXHR, textStatus, errorThrown){ Error(textStatus +"<br>"+ errorThrown);}
+        });    
+    };
+    
 };   
+
+ClassUsers.prototype.checkNewPasswordPuted = function(){
+    if(password1.length < 5){
+        fieldsValidator.AddClassRequiredActive($('#firstUserLoggedPass'));
+        $('#firstUserLoggedPass').attr('title', 'La contraseña debe ser mayor a 5 caracteres');
+        return 0;
+    }
+    else
+        $('#firstUserLoggedPass').attr('title', '');
+    
+    if(password2.length < 5){
+        fieldsValidator.AddClassRequiredActive($('#secondUserLoggedPass'));
+        $('#secondUserLoggedPass').attr('title', 'La contraseña debe ser mayor a 5 caracteres');
+        return 0;
+    }
+    else
+        $('#secondUserLoggedPass').attr('title', '');
+    
+    if(password1  === password2){     
+        fieldsValidator.RemoveClassRequiredActive($('#firstUserLoggedPass'));
+        fieldsValidator.RemoveClassRequiredActive($('#secondUserLoggedPass'));
+        $('#firstUserLoggedPass').attr('title', '');
+        $('#secondUserLoggedPass').attr('title', '');
+        
+        /* Cambio de contraseña */
+        
+    }
+    else{
+        fieldsValidator.AddClassRequiredActive($('#firstUserLoggedPass'));
+        fieldsValidator.AddClassRequiredActive($('#secondUserLoggedPass'));
+        $('#firstUserLoggedPass').attr('title', 'Las contraseñas no coinciden');
+        $('#secondUserLoggedPass').attr('title', 'Las contraseñas no coinciden');
+        
+    }
+};
+
+ClassUsers.prototype.changeUserLoggedPassword = function(){
+    var fieldsValidator = new ClassFieldsValidator();
+    var password1 = $('#firstUserLoggedPass').val();
+    var password2 = $('#secondUserLoggedPass').val();
+    
+    $.ajax({
+        async:true, 
+        cache:false,
+        dataType:"html", 
+        type: 'POST',   
+        url: "php/Usuarios.php",
+        data: {opcion:"changeUserPassword", newPassword : password1}, 
+        success:  function(xml)
+        {            
+            if($.parseXML( xml )===null){$('#UsersPlaceWaiting').remove(); Error(xml); return 0;}else xml=$.parseXML( xml );         
+
+            $(xml).find("passwordChanged").each(function(){
+                var mensaje = $(this).find("Mensaje").text();
+                Notificacion(mensaje);
+                $('#userLoggedPopupOptions').hide();        /* Se cierra el Popover de Usuario*/
+            });
+
+            $(xml).find("Error").each(function()
+            {
+                var $Error=$(this);
+                var estado=$Error.find("Estado").text();
+                var mensaje=$Error.find("Mensaje").text();
+                Error(mensaje);
+                $('#UsersPlaceWaiting').remove();
+            });                 
+
+        },
+        beforeSend:function(){},
+        error: function(jqXHR, textStatus, errorThrown){$('#UsersPlaceWaiting').remove(); Error(textStatus +"<br>"+ errorThrown);}
+        });    
+    
+};
 
 
     /*******************************************************************************
@@ -602,6 +795,21 @@ ClassUsers = function()
     {
         return ClassUsers.PasswordColumn;
     };    
+    
+    ClassUsers.prototype.closeUserSession = function(){
+        
+        $('#closeSessionConfirm').remove();
+        $('body').append('<div id = "closeSessionConfirm"></div>');
+        $('#closeSessionConfirm').append("¿Realmente desea salir del sistema?");
+        $('#closeSessionConfirm').dialog({title:"Mensaje de confirmación",
+        width: 300, heigth:250, modal:true, resizable:false, buttons:{
+            "Cancelar": function(){$(this).remove();},
+            "Cerrar Sesión": function(){_closeUserSession(); $(this).remove();}
+        } }).dialogExtend(BotonesWindow);
+        
+    };
+    
+    
 
 
 

@@ -11,8 +11,8 @@
 
 $RoutFile = dirname(getcwd());        
 
-require_once 'DesignerForms.php';
 class DataBase {
+    public static $idDataBaseName = 0;
     public static $dataBaseName = null;
     function Conexion()
     {
@@ -46,6 +46,8 @@ class DataBase {
             
        $CreateInstances="CREATE TABLE IF NOT EXISTS `instancias` (IdInstancia INT(11) NOT NULL AUTO_INCREMENT,"
                . "NombreInstancia VARCHAR(50) NOT NULL,"
+               . "fechaCreacion DATETIME NOT NULL DEFAULT 0,"
+               . "usuarioCreador VARCHAR(50) DEFAULT 'root',"
                . "PRIMARY KEY (`IdInstancia`)) ENGINE=InnoDB AUTO_INCREMENT=1 DEFAULT CHARSET=utf8";
        
        if(($ResultCreateInstances = $this->crear_tabla("cs-docs",  $CreateInstances))!=1)
@@ -105,8 +107,6 @@ class DataBase {
        
         echo "<p>Creando Instancia $nombre_instancia y estructuras de control del sistema CSDocs...</p>";
         
-        flush();
-        
         $query="SELECT NombreInstancia FROM instancias WHERE NombreInstancia='$nombre_instancia'"; 
         
         $CheckNuevaInstancia = $this->ConsultaSelect("cs-docs", $query);  
@@ -127,7 +127,7 @@ class DataBase {
         
         $InsertInstancia = "INSERT INTO instancias (NombreInstancia) VALUES ('$nombre_instancia')";                
         
-        if($this->CreateCSDocsControl($nombre_instancia))
+        if($this->CreateCSDocsControl($nombre_instancia) == 1)
         {
             echo "<p>Proceso de construcción del control de CSDocs terminado...</p>";
             
@@ -141,6 +141,7 @@ class DataBase {
         {
             $this->DeleteInstance($nombre_instancia);
             echo "<p>No fué posible crear el control de CSDocs</p>";
+            echo "<p>La instancia <b>$nombre_instancia</b> no se pudo construir</p>";
             return 0;
         }            
             
@@ -149,7 +150,7 @@ class DataBase {
     
     /* Crea la tablas de control de Menús, Repositorios y Usuarios  */
     
-    private function CreateCSDocsControl($DataBaseName)
+    function CreateCSDocsControl($DataBaseName)
     {
         $CreateGroupsUsers = "CREATE TABLE IF NOT EXISTS GruposUsuario ("
                 . "IdGrupo INT NOT NULL AUTO_INCREMENT,"
@@ -159,10 +160,7 @@ class DataBase {
                 . ")ENGINE=InnoDB AUTO_INCREMENT=5 DEFAULT CHARSET=utf8";
         
         if(($ResultCreateGroupsUsers = $this->ConsultaQuery($DataBaseName, $CreateGroupsUsers))!=1)
-        {
-            echo "<p><b>Error</b> al crear <b>Grupos de Usuario</b> en $DataBaseName. $ResultCreateGroupsUsers</p>";
-            return 0;
-        }                
+            return "<p><b>Error</b> al crear <b>Grupos de Usuario</b> en $DataBaseName. $ResultCreateGroupsUsers</p>";
         
         $CreateGruposControl = "CREATE TABLE IF NOT EXISTS GruposControl ("
                 . "IdGrupoControl INT AUTO_INCREMENT,"
@@ -172,26 +170,18 @@ class DataBase {
                 . ")ENGINE=InnoDB AUTO_INCREMENT=0 DEFAULT CHARSET=utf8";       
         
         if(($ResultCreateGruposControl = $this->ConsultaQuery($DataBaseName, $CreateGruposControl))!=1)
-        {
-            echo "<p><b>Error</b> al crearl <b>Grupos de Control</b>. $ResultCreateGruposControl</p>";
-            return 0;
-        }
+            return "<p><b>Error</b> al crearl <b>Grupos de Control</b>. $ResultCreateGruposControl</p>";
         
         $InsertGrupoAdmin = "INSERT INTO GruposUsuario (IdGrupo, Nombre, Descripcion) VALUES (1,'Administradores','Grupo de Administradores del Sistema (Con todos los privilegios)')";
         $IdGroupAdmin = $this->ConsultaInsertReturnId($DataBaseName, $InsertGrupoAdmin);
         
         if(!($IdGroupAdmin>0))
-        {
-            echo "<p><b>Error</b> al crear el Grupo <b>Admisnitradores</b>. $IdGroupAdmin</p>";
-            return ;
-        }
+            return "<p><b>Error</b> al crear el Grupo <b>Admisnitradores</b>. $IdGroupAdmin</p>";
         
         $InsertIntoGruposControl = "INSERT INTO GruposControl (IdGrupo, IdUsuario) VALUES ($IdGroupAdmin, 1)";
+        
         if(($ResultInsertIntoGruposControl = $this->ConsultaQuery($DataBaseName, $InsertIntoGruposControl))!=1)
-        {
-            echo "<p><b>Error</b> al insert el usuario <b>root</b> al <b>Control de Grupos</b></p>";
-            return 0;
-        }        
+            return "<p><b>Error</b> al insert el usuario <b>root</b> al <b>Control de Grupos</b></p>";
         
         $CreateMenu = "CREATE TABLE IF NOT EXISTS SystemMenu ("
                 . "IdMenu INT NOT NULL AUTO_INCREMENT,"
@@ -202,10 +192,7 @@ class DataBase {
                 . ")ENGINE=InnoDB AUTO_INCREMENT=0 DEFAULT CHARSET=utf8";
         
         if(($ResultCreateMenu = $this->ConsultaQuery($DataBaseName, $CreateMenu))!=1)
-        {
-            echo "<p><b>Error</b> al crear <b>Menú</b> en $DataBaseName. $ResultCreateMenu</p>";
-            return 0;
-        }
+            return "<p><b>Error</b> al crear <b>Menú</b> en $DataBaseName. $ResultCreateMenu</p>";
         
         if($this->InsertMenuRecords($DataBaseName)!=1)
             return 0;
@@ -220,24 +207,17 @@ class DataBase {
                 . ")ENGINE=InnoDB AUTO_INCREMENT=0 DEFAULT CHARSET=utf8";
         
         if(($ResultCreateControlMenu = $this->ConsultaQuery($DataBaseName, $CreateControlMenu))!=1)
-        {
-            echo "<p><b>Error</b> al crear <b>Control de Ménu</b> $ResultCreateControlMenu en $DataBaseName. $ResultCreateControlMenu</p>";
-            return 0;
-        }
+            return "<p><b>Error</b> al crear <b>Control de Ménu</b> $ResultCreateControlMenu en $DataBaseName. $ResultCreateControlMenu</p>";
+
         
         $InsertAdminIntoMenuControl = "INSERT INTO SystemMenuControl (IdMenu) SELECT IdMenu FROM SystemMenu";
         if(($ResultInsertAdminIntoMenuControl = $this->ConsultaQuery($DataBaseName, $InsertAdminIntoMenuControl))!=1)
-        {
-            echo "<p><b>Error</b> al asignar permisos al grupo <b>Administradores</b></p>. <br>Detalles:<br><br>$ResultInsertAdminIntoMenuControl";
-            return 0;
-        }
+            return "<p><b>Error</b> al asignar permisos al grupo <b>Administradores</b></p>. <br>Detalles:<br><br>$ResultInsertAdminIntoMenuControl";
         
         $UpdateAdminPermissions = "UPDATE SystemMenuControl SET IdGrupo = 1";
         if(($ResultUpdateAdminsPermissions = $this->ConsultaQuery($DataBaseName, $UpdateAdminPermissions))!=1)
-        {
-            echo "<p><b<Error</b> al asignar permisos al grupo <b>Administradores</b>. <br>Detalles:<br><br>$ResultUpdateAdminsPermissions</p>";
-            return 0;
-        }
+            return "<p><b<Error</b> al asignar permisos al grupo <b>Administradores</b>. <br>Detalles:<br><br>$ResultUpdateAdminsPermissions</p>";
+
                         
         
         $CreateRepositoryControl = "CREATE TABLE IF NOT EXISTS RepositoryControl ("
@@ -249,12 +229,10 @@ class DataBase {
                 . ")ENGINE=InnoDB AUTO_INCREMENT=0 DEFAULT CHARSET=utf8";
         
         if(($ResultCreateRepositoryControl = $this->ConsultaQuery($DataBaseName, $CreateRepositoryControl))!=1)
-        {
-            echo "<p><b>Error</b> al crear el <b>Control de Repositorios</b> en $DataBaseName. $ResultCreateRepositoryControl</p>";
-            return 0;
-        }            
+            return "<p><b>Error</b> al crear el <b>Control de Repositorios</b> en $DataBaseName. $ResultCreateRepositoryControl</p>";
+         
         
-        $TablaRepositorio="CREATE TABLE IF NOT EXISTS Repositorios "
+        $TablaRepositorio="CREATE TABLE IF NOT EXISTS CSDocs_Repositorios "
             . "(IdRepositorio INT(11) NOT NULL AUTO_INCREMENT,"
             . "ClaveEmpresa VARCHAR(50) NOT NULL,"
             . "NombreRepositorio VARCHAR(200) NOT NULL,"
@@ -262,16 +240,13 @@ class DataBase {
             . ")DEFAULT CHARSET=utf8";
             
             if(($estado=$this->ConsultaQuery($DataBaseName, $TablaRepositorio))!=1)
-            {
-                echo "<p><b>Error</b> al crear <b>Repositorios</b> en $DataBaseName. $TablaRepositorio</p>";
-                return 0;
-            }
+                return "<p><b>Error</b> al crear <b>Repositorios</b> en $DataBaseName. $TablaRepositorio</p>";
                                 
 //            echo $ResulTRoles=($this->CreateTableRoles($nombre_instancia)) ? "<p>Se construyó <b>Roles</b> </p>" : "<p><b>Error</b> al crear la tabla Roles de Usuario</p>";
             
 //            echo $ResultPermissions = ($this->CreateTablePermissions($nombre_instancia))? "<p>Se construyo <b>Permissions</b></p>":"<p>Error al crear Permissions $ResultPermissions</p>";
             
-            $TablaCatalogos="CREATE TABLE IF NOT EXISTS Catalogos ("
+            $TablaCatalogos="CREATE TABLE IF NOT EXISTS CSDocs_Catalogos ("
                     . "IdCatalogo INT(11) NOT NULL AUTO_INCREMENT,"
                     . "IdRepositorio INT(11) NOT NULL,"
                     . "NombreCatalogo VARCHAR(100) NOT NULL,"
@@ -279,10 +254,7 @@ class DataBase {
                     . ")DEFAULT CHARSET=utf8";
             
             if(($catalogos=$this->ConsultaQuery($DataBaseName, $TablaCatalogos))!=1)
-            {
-                echo "<p><b>Error</b> al crear <b>Catálogos</b></p>";
-                return 0;
-            }
+                return "<p><b>Error</b> al crear <b>Catálogos</b></p>";
             
             $TablaGlobalRepositorios="CREATE TABLE IF NOT EXISTS RepositorioGlobal ("
                     . "IdGlobal INT NOT NULL AUTO_INCREMENT,"
@@ -297,19 +269,16 @@ class DataBase {
                     . "TipoArchivo VARCHAR(10) NOT NULL, "
                     . "RutaArchivo TEXT NOT NULL,"
                     . "UsuarioPublicador VARCHAR(50) NOT NULL,"
-                    . "FechaIngreso DATE NOT NULL,"
+                    . "FechaIngreso DATETIME NOT NULL,"
                     . "Full TEXT NOT NULL,"
                     . "PRIMARY KEY (IdGlobal),"
                     . "FULLTEXT (Full)"
                     . ")ENGINE = MYISAM DEFAULT CHARSET=utf8 COLLATE=utf8_spanish_ci";
             
             if(($EstadoTablaGlobal=$this->ConsultaQuery($DataBaseName, $TablaGlobalRepositorios))!=1)
-            {
-                echo "<p><b>Error</b> al crear <b>Global</b></p>";
-                return 0;
-            }
+                return "<p><b>Error</b> al crear <b>Global</b></p>";
             
-            $TablaNotas="CREATE TABLE IF NOT EXISTS Notes ("
+            $TablaNotas="CREATE TABLE IF NOT EXISTS CSDocs_Notes ("
                     . "IdNote INT NOT NULL AUTO_INCREMENT,"
                     . "IdUser INT NOT NULL,"
                     . "UserName VARCHAR(50) NOT NULL,"
@@ -324,12 +293,9 @@ class DataBase {
                     . ")DEFAULT CHARSET=utf8";
             
             if(($EstadoTablaNotas = $this->ConsultaQuery($DataBaseName, $TablaNotas))!=1)
-            {
-                echo "<p><b>Error al crear <b>Notas</p> en $DataBaseName. $EstadoTablaNotas</p>";   
-                return 0;
-            }         
+                return "<p><b>Error al crear <b>Notas</p> en $DataBaseName. $EstadoTablaNotas</p>";        
             
-            $TablaSmtp="CREATE TABLE IF NOT EXISTS Correos ("
+            $TablaSmtp="CREATE TABLE IF NOT EXISTS CSDocs_Correos ("
                     . "IdCorreo INT(11) NOT NULL AUTO_INCREMENT,"
                     . "IdUsuario INT(11) NOT NULL,"
                     . "NombreCuenta VARCHAR(100) NOT NULL,"
@@ -345,10 +311,7 @@ class DataBase {
                     . ")DEFAULT CHARSET=utf8";
             
             if(($EstadoTablaCorreos=$this->ConsultaQuery($DataBaseName, $TablaSmtp))!=1)
-            {
-                echo "<p><b>Error</b> al crear <b>Correo</b> en $DataBaseName. $EstadoTablaCorreos</p>";
-                    return 0;
-            }
+                return "<p><b>Error</b> al crear <b>Correo</b> en $DataBaseName. $EstadoTablaCorreos</p>";
         
         return 1;
     }
@@ -356,7 +319,7 @@ class DataBase {
     function DeleteInstance($InstanceName)
     {
         $IdInstance = filter_input(INPUT_POST, "IdInstance");
-        $RoutFile = filter_input(INPUT_SERVER, "DOCUMENT_ROOT"); /* /var/services/web */
+        $RoutFile = dirname(getcwd());
         
         $QueryDrop = "DROP DATABASE IF EXISTS $InstanceName";
         if(($Result = $this->ConsultaQuery("cs-docs", $QueryDrop))!=1)
@@ -416,7 +379,21 @@ class DataBase {
         if(($ResultInsertIntoSistema = $this->ConsultaQuery($DataBaseName, $InsertIntoSistema))!=1)
         {
             echo "<p><b>Error</b> al insertar registros del <b>Menú Sistema</b>. $ResultInsertIntoSistema</p>";
+            return 0;
         }
+        
+        $insertInstances = "INSERT INTO SystemMenu (Nombre, IdParent) VALUES ('Instancias', $IdMenuAdministracion)";
+        if(!($idInstances = $this->ConsultaInsertReturnId($DataBaseName, $insertInstances))>0){
+            echo "<p><b>Error/<b> al crear el <b>Menú Instancias</b> $idInstances</p>";
+            return 0;
+        }
+                
+        $insertIntoInstances = "INSERT INTO SystemMenu (Nombre, IdParent) VALUES ('Administración', $idInstances)";
+        if(!($resultInsertIntoInstances = $this->ConsultaInsert($DataBaseName, $insertIntoInstances))>0){
+            echo "<p>Error</p> al insertar el menú Administración dentro de <b>Instancias</b>. $resultInsertIntoInstances";
+            return 0;
+        }
+        
         
         $InsertEmpresa = "INSERT INTO SystemMenu (Nombre, IdParent) VALUES ('Empresas', $IdMenuAdministracion)";
         if(!(($IdEmpresa = $this->ConsultaInsertReturnId($DataBaseName, $InsertEmpresa))>0))
@@ -546,7 +523,7 @@ class DataBase {
                 $DefinitionUser=$Empresa->DefinitionUsersProperties->children();                                           
             }            
             $DatabaseName=$Empresa['DataBaseName']; 
-            $TablaEmpresa="CREATE TABLE IF NOT EXISTS Empresas (IdEmpresa int(11) NOT NULL AUTO_INCREMENT, ";
+            $TablaEmpresa="CREATE TABLE IF NOT EXISTS CSDocs_Empresas (IdEmpresa int(11) NOT NULL AUTO_INCREMENT, ";
                         
             /*Almacenando Estructura para Archivo de Configuracion */
             $atributos=array();
@@ -619,7 +596,7 @@ class DataBase {
             foreach ($Empresa->children() as $InsertEmpresa)
             {
                 
-                if($InsertEmpresa=='ClaveEmpresa'){$CE=$InsertEmpresa;$ExistEmpresa=$this->ExistRegister($DataBase, 'Empresas', 'ClaveEmpresa', "'".$InsertEmpresa['Value']."'");
+                if($InsertEmpresa=='ClaveEmpresa'){$CE=$InsertEmpresa;$ExistEmpresa=$this->ExistRegister($DataBase, 'CSDocs_Empresas', 'ClaveEmpresa', "'".$InsertEmpresa['Value']."'");
                 if($ExistEmpresa['Peso']!=0){echo "<p>Error: La clave ".$InsertEmpresa['Value']." de empresa ya existe.</p>";continue 2;}}
                 
                 $Value=$InsertEmpresa['Value'];                                        
@@ -634,7 +611,7 @@ class DataBase {
             $cadena_valores_=trim($cadena_valores,',');  /* Quita la última Coma ( , ) */
             $CadenaCampos_=trim($CadenaCampos,',');
             
-            $query="INSERT INTO Empresas ($CadenaCampos_) VALUES ($cadena_valores_)";
+            $query="INSERT INTO CSDocs_Empresas ($CadenaCampos_) VALUES ($cadena_valores_)";
 //            echo "<p>$query</p>";
 //            echo "<br>";
             if(($Insert=$this->ConsultaInsert($DataBase,   $query)))
@@ -733,7 +710,7 @@ class DataBase {
                         
                         $NombreCatalogo= $list['name'];
                         $List=$list->children();/* Properties de un List */
-                        $TablaCatalogo="CREATE TABLE IF NOT EXISTS $NombreCatalogo (Id$NombreCatalogo int(11) NOT NULL AUTO_INCREMENT, ";
+                        $TablaCatalogo="CREATE TABLE IF NOT EXISTS $nombre_tabla"."_$NombreCatalogo (Id$NombreCatalogo int(11) NOT NULL AUTO_INCREMENT, ";
                         $atributosRepositorios = array("Tipo"=>$list->getName(),"Struct"=>$ListProperties);
                         foreach ($List as $valor)
                         {
@@ -751,7 +728,7 @@ class DataBase {
                         if($this->crear_tabla($DataBaseName,$TablaCatalogo))
                         {
                             $configStructure=array("TipoEstructura"=>"Empresa","DataBaseName"=>$DataBaseName,"Estructura"=>$atributosRepositorios);
-                            $this->WriteConfigCatalogo("Catalogo_$NombreCatalogo",$configStructure);
+                            $this->WriteConfigCatalogo("$nombre_tabla"."_$NombreCatalogo",$configStructure);
                         }
                         unset($atributosRepositorios);
                         
@@ -825,7 +802,7 @@ class DataBase {
 
             }
                         
-            $FKRepositorio.=' FOREIGN KEY (IdEmpresa) REFERENCES Empresas(IdEmpresa),'
+            $FKRepositorio.=' FOREIGN KEY (IdEmpresa) REFERENCES CSDocs_Empresas(IdEmpresa),'
                     . "FOREIGN KEY (IdDirectory) REFERENCES dir_$nombre_tabla(IdDirectory), ";
 
             /* Se crean los campos que guardan el Id de los catalogos */
@@ -846,7 +823,7 @@ class DataBase {
                 . ") ENGINE = MYISAM AUTO_INCREMENT=1 DEFAULT CHARSET=utf8 COLLATE=utf8_spanish_ci";
             
             /* Se busca que no exista el repositoria para registrarlo en la tabla de Repositorios */            
-            $query="SELECT *FROM Repositorios WHERE NombreRepositorio='$nombre_tabla'";
+            $query = "SELECT *FROM CSDocs_Repositorios WHERE NombreRepositorio='$nombre_tabla'";
     
             $ExistRepositorio=  $this->ConsultaSelect($DataBaseName, $query);            
             /* Sino existe un registro del repositorio este se crea y se registra */        
@@ -888,12 +865,12 @@ class DataBase {
                 }
                 
                 /* Registro del Repositorio */
-                $QueryRegistroRepositorio="INSERT INTO Repositorios (NombreRepositorio,ClaveEmpresa) VALUES ('$nombre_tabla','$ClaveEmpresa')";
+                $QueryRegistroRepositorio="INSERT INTO CSDocs_Repositorios (NombreRepositorio,ClaveEmpresa) VALUES ('$nombre_tabla','$ClaveEmpresa')";
 
                 if(($IdRepositorio=$this->ConsultaInsertReturnId($DataBaseName, $QueryRegistroRepositorio))>0)
                 {                    
                     /* El catálogo recién creado se registra en la tabla catálogos */
-                    $RegistroCatalogo="INSERT INTO Catalogos (IdRepositorio, NombreCatalogo) VALUES ";
+                    $RegistroCatalogo="INSERT INTO CSDocs_Catalogos (IdRepositorio, NombreCatalogo) VALUES ";
                     $CamposCatalogo='';
                     
                     for($cont=0; $cont<count($RepositorioIdCatalogo);$cont++)    
@@ -944,57 +921,8 @@ class DataBase {
             echo "<p>Repositorio Creado <b>$Repositorio->NombreRepositorio</b></p>";                                   
         }                                        
     }
-    
-    private function CreateCatalogs($DataBaseName, $Definition)
-    {
-        $DB = new DataBase();
-        
-        $RepositorioIdCatalogo = array();
-        /* Definiciones tipo List */
-        $ListProperties = $Definition->children();
-        foreach ($ListProperties as $list)
-        {
-            /************************CATALOGOS********************/
-            $TipoCatalogo=$list['TipoCatalogo'];
-
-            if($TipoCatalogo!=true)
-                continue;
-
-            $NombreCatalogo = $list['name'];
-            $List=$list->children();/* Properties de un List */
-            $TablaCatalogo="CREATE TABLE IF NOT EXISTS $NombreCatalogo (Id$NombreCatalogo int(11) NOT NULL AUTO_INCREMENT, ";
-            $atributosRepositorios = array("Tipo"=>$list->getName(),"Struct"=>$ListProperties);
-            foreach ($List as $valor)
-            {
-                if($valor['long']>0)
-                    $TablaCatalogo.=$valor['name']." ". $valor['type']."(".$valor['long']."), ";
-                else
-                    $TablaCatalogo.=$valor['name']." ". $valor['type'].", ";                                             
-            }
-
-            $TablaCatalogo.="PRIMARY KEY (`Id$NombreCatalogo`)" /* Al modificar, modificar también en la llave foranea del query de repositorio */
-                . ") ENGINE=InnoDB AUTO_INCREMENT=1 DEFAULT CHARSET=utf8";
-
-            if($this->crear_tabla($DataBaseName,$TablaCatalogo))
-            {
-                $configStructure=array("TipoEstructura"=>"Empresa","DataBaseName"=>$DataBaseName,"Estructura"=>$atributosRepositorios);
-                $this->WriteConfigCatalogo("Catalogo_$NombreCatalogo",$configStructure);
-            }
-            unset($atributosRepositorios);
-            
-//            $RegisterCatalog = "INSERT INTO Catalogos (NombreCatalogo) VALUES ('$NombreCatalogo')";
-//            if(($RegisterCatalogResult = $DB->ConsultaQuery($DataBaseName, $RegisterCatalog))!=1)
-//            {
-//                echo "<p><b>Error</b> al registrar el catálogo <b>$NombreCatalogo</b></p>";
-//                return 0;
-//            }
-            
-            $RepositorioIdCatalogo[]=$NombreCatalogo;
-        }
-        
-        return $RepositorioIdCatalogo;
-    }
-           
+  
+       
     /***************************************************************************
      *                              USUARIOS                                   *
      ***************************************************************************/
@@ -1009,7 +937,7 @@ class DataBase {
         $DefaultEstruct=$StructUsuario->DefaultStructProperties->children();
         $DefinitionUser=$StructUsuario->DefinitionUsersProperties->children();                           
         $DatabaseName=$StructUsuario['DataBaseName']; 
-        $TablaUsuarios = "CREATE TABLE IF NOT EXISTS Usuarios (IdUsuario int(11) NOT NULL AUTO_INCREMENT,"
+        $TablaUsuarios = "CREATE TABLE IF NOT EXISTS CSDocs_Usuarios (IdUsuario int(11) NOT NULL AUTO_INCREMENT,"
                         . "estatus INT NOT NULL DEFAULT '1', ";
 //                        . "IdRol INT NOT NULL DEFAULT '1', ";  /* El rol 1 = sin grupo */
                         
@@ -1081,8 +1009,8 @@ class DataBase {
             $estado= mysql_error();            
             return $estado;
         }
-       
-        $sql="SELECT *FROM Usuarios WHERE Login='root'";
+        $rootPass = md5("root");
+        $sql="SELECT *FROM Usuarios WHERE Login='$rootPass'";
         
         mysql_select_db("cs-docs",  $conexion);  
         $resultado=mysql_query($sql,  $conexion);
@@ -1118,8 +1046,8 @@ class DataBase {
             $estado= mysql_error();            
             return $estado;
         }
-       
-        $sql="INSERT INTO Usuarios (Login, Password) VALUES('root','root')";
+        $rootPass = md5("root");
+        $sql="INSERT INTO Usuarios (IdUsuario, Login, Password) VALUES(1,'root','$rootPass')";
         mysql_select_db("cs-docs",  $conexion);  
         $resultado=mysql_query($sql,  $conexion);
         if(!$resultado)
@@ -1163,6 +1091,8 @@ class DataBase {
     
     function insertar_usuario($detalle_usuario)
     {
+        require_once 'DesignerForms.php';
+
         $designer = new DesignerForms();     
         
         $GetTotalRegistros = $this->ConsultaSelect("cs-docs", "SELECT COUNT(*) FROM Usuarios");
@@ -1256,7 +1186,7 @@ class DataBase {
                         continue 2;
                         
                     }                    
-                    $ExistUser = $this->ConsultaSelect($DataBaseName, "SELECT *FROM Usuarios WHERE Login = '$login'"); 
+                    $ExistUser = $this->ConsultaSelect($DataBaseName, "SELECT *FROM CSDocs_Usuarios WHERE Login = '$login'"); 
                     if($ExistUser['Estado']!=1)
                     {
                         echo "<p>Error al comprobar existencia del usuario en el sistema. ". $ExistUser['Estado'] ."</p>";
@@ -1337,7 +1267,7 @@ class DataBase {
                 continue;
             }
             
-            $query="INSERT INTO Usuarios ($CadenaCamposProcessed) VALUES ($cadena_valores_processed)";
+            $query="INSERT INTO CSDocs_Usuarios ($CadenaCamposProcessed) VALUES ($cadena_valores_processed)";
             $InsertUserIntoCsDocs = "INSERT INTO Usuarios (Login, Password) VALUES ('$login', '$password')";            
             if(($IdUsuario=$this->ConsultaInsertReturnId($DataBaseName,   $query))>0)
             {

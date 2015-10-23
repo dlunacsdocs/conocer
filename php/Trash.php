@@ -11,6 +11,8 @@ require_once(__DIR__ . '/DataBase.php');
 require_once(__DIR__ . '/DesignerForms.php');
 require_once(__DIR__ . '/Fifo.php');
 require_once(__DIR__ . '/Log.php');
+require_once(__DIR__ . '/Catalog.php');
+
 
 class Trash {
     //put your code here
@@ -968,6 +970,7 @@ class Trash {
         $designer=new DesignerForms();
         $Fifo= new Fifo();
         $Log = new Log();
+        $Catalog = new Catalog();
         
         $Parametros=$_SERVER['argv'];      
         $KeyProcess=$Parametros[1];        
@@ -996,13 +999,12 @@ class Trash {
         $ArrayStructureUser=$designer->ReturnStructure($NombreRepositorio,$EstructuraConfig[$NombreRepositorio]);
         $ArrayStructureDefault=$designer->ReturnStructureDefault($NombreRepositorio,$EstructuraConfig[$NombreRepositorio]);
         
-        $ConsultaCatalogos="select re.IdRepositorio, re.NombreRepositorio, re.ClaveEmpresa, em.IdEmpresa, em.NombreEmpresa,
-        em.ClaveEmpresa, ca.IdCatalogo, ca.NombreCatalogo from Repositorios re inner join Empresas em on em.ClaveEmpresa=re.ClaveEmpresa
-        inner join Catalogos ca on ca.IdRepositorio=re.IdRepositorio AND re.IdRepositorio=$IdRepositorio";
+        $ArrayCatalogos = $Catalog->getFilteredArrayCatalogsDetail($DataBaseName, $IdRepositorio);
         
-        $ArrayCatalogos=$BD->ConsultaSelect($DataBaseName, $ConsultaCatalogos);
-        
-        if($ArrayCatalogos['Estado']!=1){echo "Error al obtener los catálogos. Mysql: ".$ArrayCatalogos['Esatdo'].PHP_EOL; return 0;} 
+        if(!is_array($ArrayCatalogos)){
+            echo  "Error al consulta catálogos. $ArrayCatalogos".PHP_EOL;
+            return 0;
+        }
         
         
         /* Archivo de status del servicio (Permite deter el servicio ) */
@@ -1031,7 +1033,7 @@ class Trash {
             
             echo "Restaurando el Documento $Key".PHP_EOL;
             
-            if($this->MoveFileToRepository($ArrayStructureDefault, $ArrayStructureUser, $ArrayCatalogos['ArrayDatos'], $DataBaseName, $IdRepositorio, $NombreRepositorio, $value, $RouteFileAdvancing,$KeyProcess))
+            if($this->MoveFileToRepository($ArrayStructureDefault, $ArrayStructureUser, $ArrayCatalogos, $DataBaseName, $IdRepositorio, $NombreRepositorio, $value, $RouteFileAdvancing,$KeyProcess))
             {
                  echo "Se restauró a $Key".PHP_EOL;    
                  $Log ->Write("27", $IdUsuario, $NombreUsuario, $Key, $DataBaseName);
@@ -1482,6 +1484,8 @@ class Trash {
         $BD= new DataBase();
         $designer=new DesignerForms();
         $Fifo= new Fifo();
+        $Catalog = new Catalog();
+        
         
         $Parametros=$_SERVER['argv'];      
         $KeyProcess=$Parametros[1];        
@@ -1509,13 +1513,9 @@ class Trash {
         $ArrayStructureUser=$designer->ReturnStructure($NombreRepositorio,$EstructuraConfig[$NombreRepositorio]);
         $ArrayStructureDefault=$designer->ReturnStructureDefault($NombreRepositorio,$EstructuraConfig[$NombreRepositorio]);
         
-        $ConsultaCatalogos="select re.IdRepositorio, re.NombreRepositorio, re.ClaveEmpresa, em.IdEmpresa, em.NombreEmpresa,
-        em.ClaveEmpresa, ca.IdCatalogo, ca.NombreCatalogo from Repositorios re inner join Empresas em on em.ClaveEmpresa=re.ClaveEmpresa
-        inner join Catalogos ca on ca.IdRepositorio=re.IdRepositorio AND re.IdRepositorio=$IdRepositorio";
+        $ArrayCatalogos = $Catalog->getFilteredArrayCatalogsDetail($DataBaseName, $IdRepositorio);
         
-        $ArrayCatalogos=$BD->ConsultaSelect($DataBaseName, $ConsultaCatalogos);
-        
-        if($ArrayCatalogos['Estado']!=1){echo "Error al obtener los catálogos. Mysql: ".$ArrayCatalogos['Esatdo'].PHP_EOL; return 0;}                                
+        if(!is_array($ArrayCatalogos)){echo "Error al obtener los catálogos. Mysql: ".$ArrayCatalogos.PHP_EOL; return 0;}                                
         
         /* Archivo que contiene el avance del borrado de los directorios */
         if(!($FileAdvancing=  fopen($RouteFileAdvancing, "a+"))){  $FileAdvancing.PHP_EOL;  }         
@@ -1538,7 +1538,7 @@ class Trash {
             }
         }                
         
-                
+            
         /* Se recorren los directorios padre que serán restaurados junto a sus subdirectorios.
            Los directorios restaurados son eliminados del Array TempDirectories         */                        
         
@@ -1555,7 +1555,7 @@ class Trash {
             
             if($this->CheckIfDirectoryWasRestored($Path, $IdDirectory)){echo "El directorio \"$campo\" ya había sido restaurado."; continue;}           
                                     
-            $TempDirectories=$this->MoveDirectoryToItsRepository($IdUsuario, $NombreUsuario, $KeyProcess,$ArrayStructureDefault,$ArrayStructureUser,$ArrayCatalogos['ArrayDatos'],$Path,$RouteFileAdvancing,$DataBaseName, $IdRepositorio ,$NombreRepositorio, $title, $IdDirectory,$IdParent,$TempDirectories);                                   
+            $TempDirectories=$this->MoveDirectoryToItsRepository($IdUsuario, $NombreUsuario, $KeyProcess,$ArrayStructureDefault,$ArrayStructureUser,$ArrayCatalogos,$Path,$RouteFileAdvancing,$DataBaseName, $IdRepositorio ,$NombreRepositorio, $title, $IdDirectory,$IdParent,$TempDirectories);                                   
         }                        
         
         unlink($RouteFileStatus);      

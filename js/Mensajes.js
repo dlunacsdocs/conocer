@@ -4,6 +4,8 @@
  * and open the template in the editor.
  */
 
+/* global BootstrapDialog */
+
 var HideClose={show: { effect: "blind", duration: 800 },
               hide: { effect: "fade", duration: 500 }};
 
@@ -35,13 +37,34 @@ function Error(mensaje)
     $('#MensajeError').append(mensaje);
 }
 
+function errorMessage(mensaje)
+{
+    alert("ErrorMessage"+" "+$('#MensajeError').length);
+
+    $('#MensajeError').dialog();
+    $('#MensajeError').empty();
+    $('#MensajeError').append('<center><img src="img/fallo.png"></center>');
+    $('#MensajeError').append(mensaje);
+}
+
 function Advertencia(mensaje)
 {
-    $('#MensajeAdvertencia').dialog(WindowAdvertencia);
-    $('#MensajeAdvertencia').empty();
-    $('#MensajeAdvertencia').append('<center><img src="img/caution.png"></center>');
-    $('#MensajeAdvertencia').append(mensaje);
+
+        BootstrapDialog.show({
+            title: 'Advertencia',
+            message: mensaje,
+            type: BootstrapDialog.TYPE_WARNING,
+            size: BootstrapDialog.SIZE_SMALL,
+            buttons: [{
+                    label:"Aceptar",
+                    action:function(dialog){
+                        dialog.close();
+                    }
+            }]
+        });
+
 }
+
 
 function Exito(mensaje)
 {

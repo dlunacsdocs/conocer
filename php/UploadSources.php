@@ -29,7 +29,7 @@ class UploadSources
     
     
     
-    function ReadCSDocsXml($DefaultStructure,$EstructuraProperties,$Catalogs,$FileNameXml, $MassiveUploadSettings)
+    function ReadCSDocsXml($DefaultStructure,$EstructuraProperties, $repositoryName ,$Catalogs,$FileNameXml, $MassiveUploadSettings)
     {        
         $RoutFile = filter_input(INPUT_SERVER, "DOCUMENT_ROOT");
         $DataBaseName = $MassiveUploadSettings['DataBaseName'];
@@ -121,7 +121,7 @@ class UploadSources
            $IdList = $CatalogFields[$NombreCatalogo]['IdCatalog'];
 
            /* Se obtiene los registros de cada catálogo a través de sus archivo de registros  */
-           $RutaRegistroCatalogo = "$RoutFile/Configuracion/Catalogs/$DataBaseName/$UserName/$NombreCatalogo.ini";
+           $RutaRegistroCatalogo = "$RoutFile/Configuracion/Catalogs/$DataBaseName/$UserName/$repositoryName"."_"."$NombreCatalogo.ini";
            if(!file_exists($RutaRegistroCatalogo))
            {
                echo "<p>No existe el archivo de registro del Catálogo <b>$NombreCatalogo</b>.</p>"; 
@@ -158,7 +158,7 @@ class UploadSources
         return array("Estado"=>$estado, "Fields"=>$Fields, "Values"=>$Values, "Full"=>$Full);
     }
     
-    private function ReadCaptureXml($DefaultStructure, $EstructuraProperties, $Catalogs, $FileNameXml, $MassiveUploadSettings)
+    private function ReadCaptureXml($DefaultStructure, $EstructuraProperties, $repositoryName,  $Catalogs, $FileNameXml, $MassiveUploadSettings)
     {                               
         $RoutFile = filter_input(INPUT_SERVER, "DOCUMENT_ROOT");
         $DataBaseName = $MassiveUploadSettings['DataBaseName'];
@@ -243,7 +243,7 @@ class UploadSources
            $IdList = $ArrayCamposDefaultXml[$NombreCatalogo];
 
            /* Se obtiene los registros de cada catálogo a través de sus archivo de registros  */
-           $RutaRegistroCatalogo = "$RoutFile/Configuracion/Catalogs/$DataBaseName/$UserName/$NombreCatalogo.ini";
+           $RutaRegistroCatalogo = "$RoutFile/Configuracion/Catalogs/$DataBaseName/$UserName/$repositoryName"."_"."$NombreCatalogo.ini";
            if(!file_exists($RutaRegistroCatalogo))
            {
                echo "<p>No existe el archivo de registro del Catálogo <b>$NombreCatalogo</b>.</p>"; 
@@ -285,18 +285,18 @@ class UploadSources
         return array("Estado"=>$estado, "Fields"=>$Fields, "Values"=>$Values, "Full"=>$Full);
     }
     
-    public function ReadXml($DefaultStructure,$EstructuraProperties,$Catalogos,$FileNameXml, $MassiveUploadSettings)
+    public function ReadXml($DefaultStructure,$EstructuraProperties, $repositoryName ,$Catalogos,$FileNameXml, $MassiveUploadSettings)
     {
         switch($this->Source)
         {
             case "1":
             {
-                $Result = $this->ReadCSDocsXml($DefaultStructure, $EstructuraProperties, $Catalogos, $FileNameXml, $MassiveUploadSettings);
+                $Result = $this->ReadCSDocsXml($DefaultStructure, $EstructuraProperties, $repositoryName, $Catalogos, $FileNameXml, $MassiveUploadSettings);
                 return $Result;
             }
             case "2":
             {
-                $Result = $this->ReadCaptureXml($DefaultStructure, $EstructuraProperties, $Catalogos, $FileNameXml, $MassiveUploadSettings);
+                $Result = $this->ReadCaptureXml($DefaultStructure, $EstructuraProperties, $repositoryName, $Catalogos, $FileNameXml, $MassiveUploadSettings);
                 return $Result;
             }                        
             default: return 0;

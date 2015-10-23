@@ -21,25 +21,52 @@ $RoutFile = dirname(getcwd());
 
 
 class Usuarios {
+//    static $userName =  null;
+//    static $idUser = 0;
+//    static $idGroup = 0;
+//    static $groupName = null;
+    
     public function __construct() {
         $this->Ajax();
     }
     private function Ajax()
     {
-        switch (filter_input(INPUT_POST, "opcion"))
-        {
-            case "ExistRoot":$this->ExisteRoot();break;
-            case 'AddUser': $this->AddUser(); break;
-            case 'AddXmlUser': $this->AddXmlUser(); break;
-            case 'UsersList': $this->UsersList();break;            
-            case 'GetUsersDiffGroup': $this->GetUsersDiffGroup();break;
-            case 'AddUserToGroup': $this->AddUserToGroup();break;
-            case 'DeleteUserFromGroup': $this->DeleteUserFromGroup(); break;
-            case 'GetInfoUser':$this->GetInfoUser(); break;
-            case 'ModifyUser':$this->ModifyUser(); break;
-            case 'CM_RemoveUser':$this->CM_RemoveUser(); break;                                         
-        }      
-    }           
+        if(filter_input(INPUT_POST, "opcion")!=NULL and filter_input(INPUT_POST, "opcion")!=FALSE){
+            
+            if(strcasecmp(filter_input(INPUT_POST,"opcion"), "ExistRoot")==0){
+                     $this->ExisteRoot();
+                     return;
+            }
+            
+            $idSession = Session::getIdSession();
+        
+            if($idSession == null)
+                return XML::XMLReponse ("Error", 0, "Tree:No existe una sesión activa, por favor vuelva a iniciar sesión");
+            
+            $userData = Session::getSessionParameters();
+            
+            switch (filter_input(INPUT_POST, "opcion"))
+            {
+                case 'AddUser': $this->AddUser(); break;
+                case 'AddXmlUser': $this->AddXmlUser(); break;
+                case 'UsersList': $this->UsersList();break;            
+                case 'GetUsersDiffGroup': $this->GetUsersDiffGroup();break;
+                case 'AddUserToGroup': $this->AddUserToGroup();break;
+                case 'DeleteUserFromGroup': $this->DeleteUserFromGroup(); break;
+                case 'GetInfoUser':$this->GetInfoUser(); break;
+                case 'ModifyUser':$this->ModifyUser(); break;
+                case 'CM_RemoveUser':$this->CM_RemoveUser(); break;   
+                case 'changeUserPassword': $this->changeUserPassword($userData); break;
+                case 'closeUserSession': $this->closeUserSession($userData); break;
+            }      
+        }
+    }         
+    
+    private function closeUserSession($user){
+        Session::destroySession();
+        
+        return XML::XMLReponse("userSessionClosed", 1, "Sesión finalizada");
+    }
     
     private function AddUser()
     {
@@ -137,14 +164,14 @@ class Usuarios {
             return 0;
         }
             
-        $QInsertUser = "INSERT INTO Usuarios ($FieldsChain_) VALUES ($ValuesChain_)";
+        $QInsertUser = "INSERT INTO CSDocs_Usuarios ($FieldsChain_) VALUES ($ValuesChain_)";
         
         if(!($IdNewUser = $BD->ConsultaInsertReturnId($DataBaseName, $QInsertUser))>0)
         {
             XML::ReturnError("<p><b>Error</b> al intentar registrar el nuevo usuario</p><br>Detalles:<br><br>$IdNewUser");
             return 0;
         }
-        $InsertIntoCSDocs = "INSERT INTO Usuarios (Login, Password) VALUES ('$UserLogin', '$Password')";
+        $InsertIntoCSDocs = "INSERT INTO CSDocs_Usuarios (Login, Password) VALUES ('$UserLogin', '$Password')";
         if(!($BD->ConsultaInsertReturnId("cs-docs",$InsertIntoCSDocs))>0)
         {
             $DeleteNewUser = "DELETE FROM Usuarios WHERE IdUsuario = $IdNewUser";
@@ -169,8 +196,14 @@ class Usuarios {
         }
 
         mysql_select_db($DataBaseName,  $conexion);  
-        $query="SELECT COUNT(*) FROM Usuarios";
+        $query = "";
+        if(strcasecmp($DataBaseName, "cs-docs"))
+            $query = "SELECT COUNT(*) FROM Usuarios";
+        else
+            $query = "SELECT COUNT(*) FROM CSDocs_Usuarios";
+        
         $select=mysql_query($query,  $conexion);
+        
         if(!$select)
             {
                 $estado= mysql_error(); 
@@ -188,7 +221,12 @@ class Usuarios {
     private function CheckIfExistUser($DataBaseName, $UserName)
     {
         $BD = new DataBase();
-        $ExistUser = $BD->ConsultaSelect($DataBaseName, "SELECT *FROM Usuarios WHERE Login = '$UserName'"); 
+        $ExistUser = "";
+        if(strcasecmp("cs-docs", $DataBaseName)==0)
+            $ExistUser = $BD->ConsultaSelect($DataBaseName, "SELECT *FROM Usuarios WHERE Login = '$UserName'"); 
+        else
+            $ExistUser = $BD->ConsultaSelect($DataBaseName, "SELECT *FROM CSDocs_Usuarios WHERE Login = '$UserName'"); 
+        
         if($ExistUser['Estado']!=1)
         {
             echo "<p>Error al comprobar existencia del usuario en el sistema. ". $ExistUser['Estado'] ."</p>";
@@ -213,7 +251,7 @@ class Usuarios {
 
         if($IdRemoveUser==$IdUser and $nombre_usuario!='root'){XML::XMLReponse("Error", 0, "No puede eliminarse así mismo."); return;}
         
-        $ConsultaDelete="DELETE FROM Usuarios WHERE IdUsuario=$IdRemoveUser";
+        $ConsultaDelete="DELETE FROM CSDocs_Usuarios WHERE IdUsuario=$IdRemoveUser";
         $ResultadoConsulta=$BD->ConsultaQuery($DataBaseName, $ConsultaDelete);
         if($ResultadoConsulta!=1)
         {
@@ -222,7 +260,7 @@ class Usuarios {
         }
         
         $DeleteFromCsdocs = "DELETE FROM Usuarios WHERE Login = '$NameUserToRemove' AND Password = '$Password'";
-        if(($ResultDelete = $BD->ConsultaQuery($DataBaseName, $DeleteFromCsdocs))!=1)
+        if(($ResultDelete = $BD->ConsultaQuery("cs-docs", $DeleteFromCsdocs))!=1)
         {
             XML::XMLReponse("Error", 0, "<p><b>Error</b> al eliminar el usuario del contenedor de usuarios de CSDocs. Esto puede alterar el control del límite de usuarios de su versión de CSDocs, pongase en contacto con soporte técnico</p>");
             return 0;
@@ -243,7 +281,7 @@ class Usuarios {
         $UserName = filter_input(INPUT_POST, "UserName");
         $xml=  simplexml_load_string($XmlModify);
 
-        $Update="UPDATE Usuarios SET ";
+        $Update="UPDATE CSDocs_Usuarios SET ";
         
         for($cont=0; $cont<count($xml->Campo); $cont++)
         {
@@ -284,7 +322,7 @@ class Usuarios {
         $designer=new DesignerForms();
         $IdUser=  filter_input(INPUT_POST, "IdUser");
         $DataBaseName=  filter_input(INPUT_POST, "DataBaseName");
-        $QueryInfoUser="SELECT *FROM Usuarios WHERE IdUsuario=$IdUser";
+        $QueryInfoUser="SELECT *FROM CSDocs_Usuarios WHERE IdUsuario=$IdUser";
         $InfoUser=$BD->ConsultaSelect($DataBaseName, $QueryInfoUser);
 //        var_dump($InfoUser);
         $EstructuraConfig=parse_ini_file ("../Configuracion/$DataBaseName.ini",true);
@@ -328,7 +366,7 @@ class Usuarios {
         $DataBaseName=  filter_input(INPUT_POST, "DataBaseName");                
         $IdUser=filter_input(INPUT_POST, "IdUser");
         
-        $Consulta="UPDATE Usuarios SET IdRol=1 WHERE IdUsuario=$IdUser";
+        $Consulta="UPDATE CSDocs_Usuarios SET IdRol=1 WHERE IdUsuario=$IdUser";
         if(($Grupo=$BD->ConsultaQuery($DataBaseName, $Consulta))!=true){XML::XMLReponse("Error", 0, "Error en la asignación de grupo. $Grupo");}
         else{XML::XMLReponse("DeleteUserFromGroup", "1", "Usuario movido a NoGroup");}
     }
@@ -345,7 +383,7 @@ class Usuarios {
         $IdUser=filter_input(INPUT_POST, "IdUser");
         $IdGroupDestination=filter_input(INPUT_POST, "IdGroupDestination");
         
-        $Consulta="UPDATE Usuarios SET IdRol=$IdGroupDestination WHERE IdUsuario=$IdUser";
+        $Consulta="UPDATE CSDocs_Usuarios SET IdRol=$IdGroupDestination WHERE IdUsuario=$IdUser";
         if(($Grupo=$BD->ConsultaQuery($DataBaseName, $Consulta))!=true){XML::XMLReponse("Error", 0, "Error en la asignación de grupo. $Grupo");}
         else{XML::XMLReponse("UserToGroup", "1", "Agregado con éxito");}
     }
@@ -359,7 +397,7 @@ class Usuarios {
         $BD= new DataBase();
         $DataBaseName=  filter_input(INPUT_POST, "DataBaseName");
         $IdGroup= filter_input(INPUT_POST, "IdGroup");
-        $Consulta="select IdUsuario,Nombre,IdRol,Login from Usuarios  where IdRol!=$IdGroup and estatus=1";
+        $Consulta="select IdUsuario,Nombre,IdRol,Login from CSDocs_Usuarios  where IdRol!=$IdGroup and estatus=1";
         $Usuarios=$BD->ConsultaSelect($DataBaseName, $Consulta);
         if($Usuarios['Estado']!=true){XML::XMLReponse("Error", 0, "<p>Ocurrió un error al consultar los usuarios ".$Consulta['Estado']."</p>"); return;}
         $XML->ResponseXmlFromArray("Usuarios", "Usuario", $Usuarios['ArrayDatos']);
@@ -373,7 +411,7 @@ class Usuarios {
         $XML=new XML();
         $BD= new DataBase();
         $DataBaseName=  filter_input(INPUT_POST, "DataBaseName");
-        $Consulta="SELECT *FROM Usuarios where estatus=1";
+        $Consulta="SELECT *FROM CSDocs_Usuarios where estatus=1";
         $Usuarios=$BD->ConsultaSelect($DataBaseName, $Consulta);
 
         if($Usuarios['Estado']!=true){XML::XMLReponse("Error", 0, "<p>Ocurrió un error al consultar los usuarios ".$Consulta['Estado']."</p>"); return;}
@@ -416,7 +454,7 @@ class Usuarios {
 
     /**************************************************************************
      * function: @SearchRoot
-     * Comprueba que exista el usuario root al momento de 
+     * Comprueba que exista el usuario root al momento de iniciar sesión
      **************************************************************************/
 
     private function ExisteRoot()
@@ -429,8 +467,33 @@ class Usuarios {
        {
            $DataBase->InsertUserRoot();
        }       
-    }
+    }    
     
+    function changeUserPassword($user){
+        $DB = new DataBase();
+        
+        $dataBaseName = $user['dataBaseName'];
+        $idUser = $user['idUser'];
+        $userName = $user['userName'];
+        $newPassword = filter_input(INPUT_POST, "newPassword");
+        $md5Password = md5($newPassword);
+        
+        $query = "";
+        
+        if(strcasecmp("root", $userName)==0){
+                $query = "UPDATE Usuarios SET Password = '$md5Password' WHERE IdUsuario = 1";
+                $dataBaseName = "cs-docs";
+        }
+        else{
+            $query = "UPDATE CSDocs_Usuarios SET Password = '$md5Password' WHERE IdUsuario = $idUser";
+        }
+        
+        if(($resultUpdate = $DB->ConsultaQuery($dataBaseName, $query))!=1)
+                return XML::XMLReponse("Error", 0, "No se fué posible actualizar la contraseña. $resultUpdate");
+        
+        return XML::XMLReponse("passwordChanged", 1, "Contraseña actualizada");
+        
+    }
     
 }
 $usuarios=new Usuarios();

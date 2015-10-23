@@ -27,9 +27,13 @@
  * @author daniel
  */
 
-require_once '/volume1/web/php/DataBase.php';
-require_once '/volume1/web/php/XML.php';
-require_once '/volume1/web/php/DesignerForms.php';
+$RoutFile = dirname(getcwd());        
+
+
+require_once "$RoutFile/php/DataBase.php";
+require_once "$RoutFile/php/XML.php";
+require_once "$RoutFile/php/DesignerForms.php";
+require_once "$RoutFile/php/Catalog.php";
 require_once(__DIR__ . '/Fifo.php');
 
 class ServiceDeleteDirectory {
@@ -134,7 +138,7 @@ class ServiceDeleteDirectory {
     private function ReadConfig()
     {
         $XML=new XML();
-        $BD= new DataBase();
+        $Catalog = new Catalog();
         $designer=new DesignerForms();
         $Fifo= new Fifo();
         
@@ -172,13 +176,13 @@ class ServiceDeleteDirectory {
         $ArrayStructureUser=$designer->ReturnStructure($NombreRepositorio,$EstructuraConfig[$NombreRepositorio]);
         $ArrayStructureDefault=$designer->ReturnStructureDefault($NombreRepositorio,$EstructuraConfig[$NombreRepositorio]);
         
-        $ConsultaCatalogos="select re.IdRepositorio, re.NombreRepositorio, re.ClaveEmpresa, em.IdEmpresa, em.NombreEmpresa,
-        em.ClaveEmpresa, ca.IdCatalogo, ca.NombreCatalogo from Repositorios re inner join Empresas em on em.ClaveEmpresa=re.ClaveEmpresa
-        inner join Catalogos ca on ca.IdRepositorio=re.IdRepositorio AND re.IdRepositorio=$IdRepositorio";
+        $ArrayCatalogos = $Catalog->getCatalogsArray($DataBaseName, $IdRepositorio);
         
-        $ArrayCatalogos=$BD->ConsultaSelect($DataBaseName, $ConsultaCatalogos);
-        
-        if($ArrayCatalogos['Estado']!=1){echo "Error al obtener los catálogos. Mysql: ".$ArrayCatalogos['Esatdo'].PHP_EOL; return 0;}                        
+        if(!is_array($ArrayCatalogos)){
+            echo "Error al obtener los catálogos. Mysql: ".PHP_EOL; 
+            return 0;
+            
+        }                        
         
         /* Archivo que contiene el avance del borrado de los directorios */
         if(!($FileAdvancing=  fopen($RouteFileAdvancing, "a+"))){  $FileAdvancing.PHP_EOL;  } 

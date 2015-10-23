@@ -11,6 +11,11 @@ require_once 'DataBase.php';
 require_once 'XML.php';
 require_once 'Log.php';
 require_once 'DesignerForms.php';
+require_once 'Session.php';
+require_once 'Catalog.php';
+
+if(!isset($_SESSION))
+    session_start();
 
 class Repository {
 
@@ -19,21 +24,31 @@ class Repository {
     }
 
     private function Ajax() {
-        switch (filter_input(INPUT_POST, "opcion")) {
-            case 'GetListRepositories': $this->GetListRepositories();
-                break;
-            case 'GetRepositoriesDetail': $this->GetRepositoriesDetail();
-                break;
-            case 'NewRepository': $this->NewRepository();
-                break;
-            case 'AddNewFieldToRepository': $this->AddNewFieldToRepository();
-                break;
-            case 'DeleteRepositoryField': $this->DeleteRepositoryField();
-                break;
-            case 'XMLInsertRepositorio': $this->XMLInsertRepositorio(); 
-                break;
-            case 'DeleteRepository': $this->DeletingRepository();
-                break;
+        if(filter_input(INPUT_POST, "opcion")!=NULL and filter_input(INPUT_POST, "opcion")!=FALSE){
+            
+            $idSession = Session::getIdSession();
+        
+            if($idSession == null)
+                return XML::XMLReponse ("Error", 0, "Repository::No existe una sesión activa, por favor vuelva a iniciar sesión");
+
+            $userData = Session::getSessionParameters();
+            
+            switch (filter_input(INPUT_POST, "opcion")) {
+                case 'GetListRepositories': $this->GetListRepositories($userData);
+                    break;
+    //            case 'GetRepositoriesDetail': $this->GetRepositoriesDetail();
+    //                break;
+                case 'NewRepository': $this->NewRepository();
+                    break;
+                case 'AddNewFieldToRepository': $this->AddNewFieldToRepository($userData);
+                    break;
+                case 'DeleteRepositoryField': $this->DeleteRepositoryField();
+                    break;
+                case 'XMLInsertRepositorio': $this->XMLInsertRepositorio(); 
+                    break;
+                case 'DeleteRepository': $this->DeletingRepository();
+                    break;
+            }
         }
     }
     
@@ -121,43 +136,29 @@ class Repository {
         
         XML::XMLReponse("DeletedField", 1, "Campo $FieldName eliminado con éxito");
     }
-    private function AddNewFieldToRepository()
+    private function AddNewFieldToRepository($user)
     {
         $DB = new DataBase();
         
-        $DataBaseName = filter_input(INPUT_POST, "DataBaseName");
+        $DataBaseName = $user['dataBaseName'];
 //        $IdUser = filter_input(INPUT_POST, "IdUser");
 //        $UserName = filter_input(INPUT_POST, "UserName");
 //        $IdRepository = filter_input(INPUT_POST, "IdRepository");
         $RepositoryName = filter_input(INPUT_POST, "RepositoryName");
-        $XMLResponse = filter_input(INPUT_POST, "Xml");
+        $FieldName = filter_input(INPUT_POST, "FieldName");
+        $FieldType = filter_input(INPUT_POST, "FieldType");
+        $FieldTypeMysql= filter_input(INPUT_POST, "FieldType");
+        $FieldLength = filter_input(INPUT_POST, "FieldLength");
+        $Required = filter_input(INPUT_POST, "RequiredField");
         
-        if(!($xml = simplexml_load_string($XMLResponse)))
-                XML::XMLReponse ("Error", 0, "<p><b>Error</b> el xml no pudo ser leÃ­do</p><br>Detalles:<br><br>Es posible que no se haya formado correctamente");
-           
-        $FieldName = ''; $FieldType = ''; $FieldTypeMysql= ''; $FieldLength = ''; $Required = '';
-        
-        foreach ($xml as $value)
-        {
-            $FieldName = $value->Name;
-            $FieldType = $value->Type;
-            $FieldTypeMysql = $value->Type;           
-            if(isset($value->Required))
-                $Required = $value->Required;     
-            
-            if(isset($value->Length))
-            {
-                if((int)($value->Length)>0)
-                {
-                    $FieldType.="($value->Length)";
-                    $FieldTypeMysql = "$value->Type($value->Length)";
-                    $FieldLength = "long ".$value->Length."###";
-                }              
-            }
-        }   
+
+        if((int)($FieldLength)>0)
+            $FieldLength = "long ".$FieldLength."###";
+        else 
+            $FieldLength = "";
         
         $NewProperty = "Properties###name $FieldName###type $FieldType###".$FieldLength."required $Required###";
-       
+               
         if(strcasecmp($Required, "true")==0)
                 $Required = "NOT NULL";
         else
@@ -257,17 +258,16 @@ class Repository {
         echo "<p>$CreateRepository</p>";
     }
 
-    private function GetListRepositories() {
-//        $Log = new Log();
-
-        $DataBaseName = filter_input(INPUT_POST, "DataBaseName");
-        $IdRepositorio = filter_input(INPUT_POST, "IdRepositorio");
-        $IdGroup = filter_input(INPUT_POST, "IdGroup");
-        $IdUsuario = filter_input(INPUT_POST, "IdUsuario");
-        $NombreUsuario = filter_input(INPUT_POST, "NombreUsuario");
+    private function GetListRepositories($userData) {
+        
+        $DataBaseName = $userData['dataBaseName'];
+        $IdGroup = $userData['idGroup'];
+        $idUser = $userData['idUser'];
+        $userName = $userData['userName'];
+        
         $EnterpriseKey = filter_input(INPUT_POST, "EnterpriseKey");
         
-        $Repositories = $this->GetRepositoriesList($DataBaseName, $EnterpriseKey, $IdGroup);
+        $Repositories = $this->GetRepositoriesList($DataBaseName, $EnterpriseKey, $IdGroup, $idUser);
         
         if(is_array($Repositories))
             XML::XmlArrayResponse("Repositories", "Repository", $Repositories);
@@ -276,16 +276,16 @@ class Repository {
 
     }
     
-    public function GetRepositoriesList($DataBaseName, $EnterpriseKey, $IdGroup)
+    public function GetRepositoriesList($DataBaseName, $EnterpriseKey, $IdGroup, $idUser)
     {
         $BD = new DataBase();
         
-        if($EnterpriseKey==0)
-            $query = "SELECT *FROM Repositorios";
+        if(strcasecmp($EnterpriseKey, 0)==0)
+            $query = "SELECT *FROM CSDocs_Repositorios";
         else
-            $query = "SELECT  em.IdEmpresa, re.IdRepositorio, re.NombreRepositorio FROM Repositorios re "
+            $query = "SELECT  em.IdEmpresa, re.IdRepositorio, re.NombreRepositorio FROM CSDocs_Repositorios re "
                 . "INNER JOIN RepositoryControl rc ON rc.IdRepositorio = re.IdRepositorio "
-                . "INNER JOIN Empresas em on re.ClaveEmpresa=em.ClaveEmpresa "
+                . "INNER JOIN CSDocs_Empresas em on re.ClaveEmpresa=em.ClaveEmpresa "
                 . "WHERE rc.IdGrupo = $IdGroup AND re.ClaveEmpresa = '$EnterpriseKey'";
         
         $ResultSelect = $BD->ConsultaSelect($DataBaseName, $query);
@@ -295,8 +295,7 @@ class Repository {
         return $ResultSelect['ArrayDatos'];
         
     }
-    
-    
+        
     function  DeletingRepository()
     {
         $DataBaseName = filter_input(INPUT_POST, "DataBaseName");
@@ -310,7 +309,7 @@ class Repository {
         
         
         If(($DeletingResult = $this->DeleteRepository($DataBaseName, $IdEnterprise, $IdRepository, $RepositoryName))!=1)
-                echo $DeletingResult;
+             return XML::XMLReponse ("Error", 0, $DeletingResult);
         
         XML::XMLReponse("DeletedRepository", 1, "Repositorio eliminado con éxito");
     }
@@ -322,9 +321,25 @@ class Repository {
     public function DeleteRepository($DataBaseName, $IdEnterprise , $IdRepository, $RepositoryName, $DeleteForEnterprise = 0)
     {
         $DB = new DataBase();
+        $Catalog = new Catalog();
+        
         $RoutFile = dirname(getcwd());        
         $RepositoryPath = "$RoutFile/Estructuras/$DataBaseName/$RepositoryName";
         
+        /* Eliminando catálogos del repositorio */
+        $catalogs = $Catalog->getCatalogsArray($DataBaseName, $IdRepository);
+        
+        if(!is_array($catalogs))
+            return "Error al obtener el listado de catálogos. Detalles: $catalogs";
+ 
+        for($cont = 0; $cont < count($catalogs); $cont++){
+            if(($resultDeleteCatalog = $Catalog->deleteCatalog($DataBaseName, $IdRepository, $RepositoryName, $catalogs[$cont]['NombreCatalogo']))!=1)
+                return "$resultDeleteCatalog";
+        }
+        
+        if(!is_array($catalogs))
+            return  "<b>Error</b> al recuperar los catálogos del repositorio.<br><br>Detalles: $catalogs";
+                
         if(file_exists($RepositoryPath))
             exec("rm -R $RepositoryPath");
         
@@ -365,14 +380,29 @@ class Repository {
             if(($ResultDeletingOfGlobal = $DB->ConsultaQuery($DataBaseName, $DeletingOfGlobal))!=1)
                     return "<p><b>Error</b> al intentar eliminar los documentos del repositorio <b>$RepositoryName</b> localizados en Global</p><br>Detalles:<br><br>$ResultDeletingOfGlobal"; 
 
-            $DeletingOfRepository = "DELETE FROM Repositorios WHERE IdRepositorio = $IdRepository";
+            $DeletingOfRepository = "DELETE FROM CSDocs_Repositorios WHERE IdRepositorio = $IdRepository";
                 if(($ResultDeletingOfRepository = $DB->ConsultaQuery($DataBaseName, $DeletingOfRepository))!=1)
                     return "<p><b>Error</b> al intentar eliminar el repositorio <b>$RepositoryName</b> del registro de repositorios</p><br>Detalles:<br><br>$ResultDeletingOfRepository";
         } 
-        
-        
-        
+
         return 1;
+    }
+    
+        /* Devuelve el detalle de empresas y repositorios a partir del nombre de un repositorio */
+    function getEnterprisesAndRepositoriesDetail($instanceName,$repositoryName){
+        $DB = new DataBase();
+        
+        $query = "SELECT em.IdEmpresa, em.ClaveEmpresa, re.IdRepositorio, re.NombreRepositorio FROM CSDocs_Repositorios re
+            RIGHT JOIN CSDocs_Empresas em ON re.ClaveEmpresa = em.ClaveEmpresa
+            WHERE re.NombreRepositorio = '$repositoryName' ";
+        
+        $resultQuery = $DB->ConsultaSelect($instanceName, $query);
+        
+        if($resultQuery['Estado']!=1)
+            return $resultQuery['Estado'];
+        else
+            return $resultQuery['ArrayDatos'];
+        
     }
 
 }

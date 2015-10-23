@@ -39,8 +39,28 @@
 
 //echo date('d-m-Y h:i:s' );
 
-require_once 'Log.php';
 
-$Log = new Log();
+//$formato = 'Y-m-d';
+//$fecha = DateTime::createFromFormat($formato, '2009/07/21');
+//echo "Formato: $formato; " . $fecha->format('Y-m-d H:i:s') . "\n";
 
-echo $Log->Write("1", "root", "root");
+
+$date = "2013/10/05";
+$your_date = date("Y-m-d", strtotime($date));
+
+echo $your_date."<br>";
+
+$date = "01/30/2013";
+$your_date = date("Y-m-d", strtotime($date));
+
+echo $your_date."<br>";
+
+$date = "2013-09-01";
+$your_date = date("Y-m-d", strtotime($date));
+
+echo $your_date."<br>";
+
+$date = "09-07-2015";
+$your_date = date("Y-m-d", strtotime($date));
+
+echo $your_date."<br>";

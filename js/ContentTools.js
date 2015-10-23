@@ -94,13 +94,7 @@ var ClassTools = function()
         data: 'opcion=NewMassiveUpload&IdRepository='+IdRepositorio+'&DataBaseName='+EnvironmentData.DataBaseName+'&IdUser='+EnvironmentData.IdUsuario+'&UserName='+EnvironmentData.NombreUsuario+'&RepositoryName='+NombreRepositorio+'&Path='+Path+'&IdParent='+IdParent+'&IdDirectory='+IdDirectory+'&IdEnterprise='+IdEmpresa+"&Random="+Random+"&EnterpriseName="+NombreEmpresa+'&SourceMassiveUpload='+SourceMassiveUpload, 
         success:  function(xml){
             $('#div_MassiveLoad').remove();
-            if($.parseXML( xml )===null){ Salida(xml); return 0;}else xml=$.parseXML( xml );
-
-            $(xml).find("Error").each(function()
-            {
-                var mensaje=$(this).find("Mensaje").text();
-                Error(mensaje);
-            });       
+            Salida(xml);
         },
         beforeSend:function(){},
         error: function(jqXHR, textStatus, errorThrown) {Error(textStatus +"<br>"+ errorThrown);}
@@ -160,20 +154,8 @@ var ClassTools = function()
         data: 'opcion=ResumeMassiveUpload&DataBaseName='+EnvironmentData.DataBaseName+'&IdUser='+EnvironmentData.IdUsuario+'&UserName='+EnvironmentData.NombreUsuario, 
         success:  function(xml){
             $('#div_MassiveLoad').remove();
-            if($.parseXML( xml )===null){ Salida(xml); return 0;}else xml=$.parseXML( xml );
-
-            $(xml).find("FisnishedMassiveUpload").each(function()/* Sí existen archivos pendientes */ 
-            {                                   
-                var $Carga=$(this);
-                var Mensaje=$Carga.find("Mensaje").text();
-            });
-            $(xml).find("Error").each(function()
-            {
-                var $Error=$(this);
-                var estado=$Error.find("Estado").text();
-                var mensaje=$Error.find("Mensaje").text();
-                Error(mensaje);
-            });       
+            
+            Salida(xml);
         },
         beforeSend:function(){},
         error: function(jqXHR, textStatus, errorThrown) {Error(textStatus +"<br>"+ errorThrown);}
@@ -309,16 +291,13 @@ function AnswerOfUserML(Answer)
     IdParent=IdParent.data.key;
     var IdRepositorio=$('#CM_select_repositorios').val();
     var NombreRepositorio=$('#CM_select_repositorios option:selected').html();
-    var DataBaseName=$('#database_name').val();
-    var id_usuario=$('#id_usr').val();
-    var nombre_usuario=$('#login_usr').val();
     var IdEmpresa = $('#CM_select_empresas option:selected').attr('id');
     IdEmpresa = parseInt(IdEmpresa);
     
     ajax=objetoAjax();
         ajax.open("POST", 'php/MassiveUpload.php',true);
         ajax.setRequestHeader("Content-Type", "application/x-www-form-urlencoded;charset=utf-8;");
-        ajax.send('opcion=AnswerOfUserML&IdRepositorio='+IdRepositorio+'&DataBaseName='+DataBaseName+'&id_usuario='+id_usuario+'&nombre_usuario='+nombre_usuario+'&NombreRepositorio='+NombreRepositorio+'&Path='+Path+'&IdParent='+IdParent+'&IdDirectory='+IdDirectory+'&IdEmpresa='+IdEmpresa+'&Answer='+Answer+"&Random="+Random);    
+        ajax.send('opcion=AnswerOfUserML&IdRepositorio='+IdRepositorio+'&DataBaseName='+EnvironmentData.DataBaseName+'&id_usuario='+EnvironmentData.IdUsuario+'&nombre_usuario='+EnvironmentData.NombreUsuario+'&NombreRepositorio='+NombreRepositorio+'&Path='+Path+'&IdParent='+IdParent+'&IdDirectory='+IdDirectory+'&IdEmpresa='+IdEmpresa+'&Answer='+Answer+"&Random="+Random);    
         ajax.onreadystatechange=function() 
         {        
             if (ajax.readyState===4 && ajax.status===200) 
@@ -458,9 +437,6 @@ function PasteFile()
     IdParent = IdParent.data.key;
     var IdRepositorio = $('#CM_select_repositorios').val();
     var NombreRepositorio = $('#CM_select_repositorios option:selected').html();
-    var DataBaseName = $('#database_name').val();
-    var id_usuario = $('#id_usr').val();
-    var nombre_usuario = $('#login_usr').val();
     var IdEmpresa = $('#CM_select_empresas option:selected').attr('id');
     IdEmpresa = parseInt(IdEmpresa);
     var NombreEmpresa = $('#CM_select_empresas option:selected').html();
@@ -477,7 +453,7 @@ function PasteFile()
     dataType:'html', 
     type: 'POST',   
     url: "php/ContentManagement.php",
-    data: opcion+'&IdRepositorio='+IdRepositorio+'&DataBaseName='+DataBaseName+'&id_usuario='+id_usuario+'&nombre_usuario='+nombre_usuario+'&NombreRepositorio='+NombreRepositorio+'&Path='+Path+'&IdParent='+IdParent+'&IdDirectory='+IdDirectory+'&IdEmpresa='+IdEmpresa+"&NombreDirectorio="+NombreDirectorio+'&NombreEmpresa='+NombreEmpresa, 
+    data: opcion+'&IdRepositorio='+IdRepositorio+'&NombreRepositorio='+NombreRepositorio+'&Path='+Path+'&IdParent='+IdParent+'&IdDirectory='+IdDirectory+'&IdEmpresa='+IdEmpresa+"&NombreDirectorio="+NombreDirectorio+'&NombreEmpresa='+NombreEmpresa, 
     success:  function(xml){   
       $('#Loading').dialog('close');
       if($.parseXML( xml )===null){Error(xml);return 0;}else xml=$.parseXML( xml );
@@ -593,11 +569,8 @@ function DeleteFile()
     IdParent=IdParent.data.key;
     var IdRepositorio=$('#CM_select_repositorios').val();
     var NombreRepositorio=$('#CM_select_repositorios option:selected').html();
-    var DataBaseName=$('#database_name').val();
-    var id_usuario=$('#id_usr').val();
-    var nombre_usuario=$('#login_usr').val();
-    var IdEmpresa=$('#CM_select_empresas option:selected').attr('id');
-    IdEmpresa = parseInt(IdEmpresa);
+    var IdEmpresa = $('#CM_select_empresas option:selected').attr('id');
+
     if(!(node.data.key>0)){return;}
         
     $.ajax({
@@ -606,7 +579,7 @@ function DeleteFile()
       dataType:'html', 
       type: 'POST',   
       url: "php/ContentManagement.php",
-      data: "opcion=DeleteFile&IdRepositorio="+IdRepositorio+'&DataBaseName='+DataBaseName+'&id_usuario='+id_usuario+'&nombre_usuario='+nombre_usuario+'&NombreRepositorio='+NombreRepositorio+'&Path='+Path+'&IdParent='+IdParent+'&IdDirectory='+IdDirectory+'&IdEmpresa='+IdEmpresa+'&IdFile='+IdFile, 
+      data: "opcion=DeleteFile&IdRepositorio="+IdRepositorio+'&NombreRepositorio='+NombreRepositorio+'&Path='+Path+'&IdParent='+IdParent+'&IdDirectory='+IdDirectory+'&IdEmpresa='+IdEmpresa+'&IdFile='+IdFile, 
       success:  function(xml){   
           $('#Loading').dialog('close');
           if($.parseXML( xml )===null){Error(xml);return 0;}else xml=$.parseXML( xml );
@@ -693,7 +666,7 @@ function FileEditPhp()
       dataType:'html', 
       type: 'POST',   
       url: "php/ContentManagement.php",
-      data: 'opcion=FileEdit&DataBaseName='+EnvironmentData.DataBaseName+'&IdUsuario='+EnvironmentData.IdUsuario+'&IdRepositorio='+IdRepositorio+'&NombreRepositorio='+NombreRepositorio+"&Ruta="+Ruta+"&NombreArchivoNuevo="+NombreArchivoNuevo+"&IdFile="+IdFile+"&NombreArchivoActual="+NombreArchivoActual+'&nombre_usuario='+EnvironmentData.NombreUsuario, 
+      data: 'opcion=FileEdit&IdRepositorio='+IdRepositorio+'&NombreRepositorio='+NombreRepositorio+"&Ruta="+Ruta+"&NombreArchivoNuevo="+NombreArchivoNuevo+"&IdFile="+IdFile+"&NombreArchivoActual="+NombreArchivoActual, 
       success:  function(xml){   
           $('#Loading').dialog('close');
           if($.parseXML( xml )===null){Error(xml);return 0;}else xml=$.parseXML( xml );

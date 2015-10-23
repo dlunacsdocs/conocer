@@ -9,8 +9,8 @@ var FieldsManager = function()
 {
     
 };
- /* Ventana que muestra las opciones de agregar un nuevo campo  */
-FieldsManager.prototype.BuildWindow = function()
+ /* Ventana que muestra las opciones de agregar un nuevo campo (Metadato) */
+FieldsManager.prototype.windowNewField = function()
 {
     $('#DivFormsNewField').remove();
         $('body').append('<div id = "DivFormsNewField"></div>');
@@ -21,10 +21,11 @@ FieldsManager.prototype.BuildWindow = function()
         var FieldName = '<input type = "text" id = "FieldNameRM" class = "FormStandart required" FieldType = "varchar" FieldLength = "50">';
         var FieldType = '<select id = "FieldTypeRM" class = "FormStandart" FieldType = "varchar" FieldLenght = "50">\n\
                             <option value = "text">Texto</option>\n\
-                            <option value = "varchar">Varchar</option>\n\
+                            <option value = "varchar">Texto Limitado</option>\n\
                             <option value = "int">Entero</option>\n\
-                            <option value = "float">Flotante</option>\n\\n\
-                            <option value = "date">Fecha</option>\n\
+                            <option value = "float">Decimal</option>\n\\n\
+                            <option value = "date">Fecha (Y-m-d)</option>\n\
+                            <option value = "datetime">Fecha y Hora (Y-m-d H:s:i)</option>\n\
                         </select>';
         var RequiredCheck = '<input type = "checkbox" id = "CheckRequiredRM"></p>';
         var FieldLength = '<p><input type = "text" id = "FieldLengthRM" class = "FormStandart" FieldType = "int" FieldLength = "" disabled></p>';

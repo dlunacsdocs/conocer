@@ -68,19 +68,20 @@ function mostrar_crear_instanciaBD()
 /* Se recoge el XML introducido por el Usuario y se envia al servidor para su lectura*/
 function CreateInstancia()
 {
-    var id_usuario=$('#id_usr').val();
-    var nombre_usuario=$('#login_usr').val();
     var xml_usuario=document.getElementById("xml_nueva_instancia");
     var archivo = xml_usuario.files;     
-      var data = new FormData();
-      if(!(archivo.length>0)){Advertencia('Debe seleccionar un XMl con la estructura de una nueva Instancia'); return;}
-      for(i=0; i<archivo.length; i++)
+    var data = new FormData();
+      
+    if(!(archivo.length>0)){Advertencia('Debe seleccionar un XMl con la estructura de una nueva Instancia'); return;}
+      
+    for(i=0; i<archivo.length; i++)
       {
             data.append('archivo',archivo[i]);
             data.append('opcion','ReadXML');
-            data.append('id_usuario',id_usuario);
-            data.append('nombre_usuario',nombre_usuario);
-      } 
+            data.append('id_usuario',EnvironmentData.IdUsuario);
+            data.append('nombre_usuario',EnvironmentData.NombreUsuario);
+      }
+      
       Loading();
       
     ajax=objetoAjax();
@@ -94,89 +95,17 @@ function CreateInstancia()
            $('#Loading').dialog('close');   
            mostrar_crear_instanciaBD();
            Salida(ajax.responseText);
-//           if(ajax.responseXML===null){Salida(ajax.responseText);return;}                  
-//            var xml=ajax.responseXML;           
+    
 
         }
     };
-
-//        $.ajax({
-//        async:true, 
-//        cache:false,
-////        dataType:"html", 
-//        contentType: false,
-//        processData: false,
-//        type: 'POST',   
-//        url: "php/XML.php",
-//        data: data, 
-//        success:  function(xml)
-//        {     
-//            $('#Loading').dialog('close');
-//            if($.parseXML( xml )===null){Salida(xml); return 0;}else xml=$.parseXML( xml );         
-//
-//            $(xml).find("Error").each(function()
-//            {
-//                var $Error=$(this);
-//                var estado=$Error.find("Estado").text();
-//                var mensaje=$Error.find("Mensaje").text();
-//                Error(mensaje);
-//
-//            });                 
-//
-//        },
-//        beforeSend:function(){},
-//        error: function(jqXHR, textStatus, errorThrown){$('#Loading').dialog('close'); Error(textStatus +"<br>"+ errorThrown);}
-//        });    
+  
    };
 
 var Instances = function()
 {
-    _ConfirmDeleteInstance = function()
-    {
-        var InstanceName = $('#DeleteInstanceForm option:selected').html();
-        var IdInstance = $('#DeleteInstanceForm').val();
-        
-        if(!(IdInstance>0))
-            return 0;
 
-        $('body').append('<div id = "DivConfirmDeleteInstance"></div>');
-        $('#DivConfirmDeleteInstance').dialog({title:'Mensaje de confirmacion', width:300, minWidth:300, height:300, minHeight:300, modal:true, closeOnEscape:false, 
-            buttons:{Aceptar:{text:'Aceptar', click:function(){_DeleteInstance(IdInstance, InstanceName);$(this).dialog('destroy');}}}});
-        $('#DivConfirmDeleteInstance').append('<p>¿Realmente desea eliminar la instancia <b>'+InstanceName+'? El proceso no puede revertirse.</b></p>');
-    };
     
-    _DeleteInstance = function(IdInstance, InstanceName)
-    {
-        
-        $.ajax({
-        async:false, 
-        cache:false,
-        dataType:"html", 
-        type: 'POST',   
-        url: "php/Instance.php",
-        data: 'option=DeleteInstance&IdUser='+EnvironmentData.IdUsuario+'&UserName='+EnvironmentData.NombreUsuario+'&IdInstance='+IdInstance+'&InstanceName='+InstanceName,
-        success:  function(xml)
-        {     
-            if($.parseXML( xml )===null){Salida(xml); return 0;}else xml=$.parseXML( xml );         
-
-            $(xml).find('DeleteInstance').each(function()
-            {
-                var Mensaje = $(this).find('Mensaje').text();
-                Notificacion(Mensaje);
-                $('#DivDeleteInstance').dialog('destroy');
-            });
-            
-            $(xml).find("Error").each(function()
-            {
-                var mensaje = $(this).find("Mensaje").text();
-                Error(mensaje);
-            });                   
-
-        },
-        beforeSend:function(){},
-        error: function(jqXHR, textStatus, errorThrown){Error(textStatus +"<br>"+ errorThrown);}
-        });    
-    };
 };
 
 Instances.prototype.DeleteInstance = function()
@@ -211,7 +140,7 @@ Instances.prototype.GetInstances = function()
     dataType:"html", 
     type: 'POST',   
     url: "php/Instance.php",
-    data: 'option=GetInstances&IdUser='+EnvironmentData.IdUsuario+'&UserName='+EnvironmentData.NombreUsuario, 
+    data: 'option=getInstances&IdUser='+EnvironmentData.IdUsuario+'&UserName='+EnvironmentData.NombreUsuario, 
     success:  function(response)
     {     
         if($.parseXML( response )===null){Salida(response); return 0;}else xml=$.parseXML( response );         

@@ -7,16 +7,125 @@
 
 require_once 'DataBase.php';
 require_once 'XML.php';
+require_once 'Session.php';
+require_once 'Encrypter.php';
 
+if (!isset($_SESSION))
+    session_start();
 
 class Instance {
     public function __construct() {
         $option = filter_input(INPUT_POST, "option");
         switch ($option)
         {
-            case 'GetInstances': $this->GetInstances(); break;
+            case 'getInstances': $this->getInstances(); break;
             case "DeleteInstance": $this->DeleteInstance(); break;
+            case 'buildNewInstance': $this->buildNewInstance(); break;
         }
+    }
+    
+    /* Construye una nueva instancia */
+    private function buildNewInstance(){
+        $DB = new DataBase();
+        $instanceName = filter_input(INPUT_POST, "instanceName");
+        $userName = filter_input(INPUT_POST, "userName");
+        
+        $RoutFile = dirname(getcwd());
+        
+        
+        if(($checkTotalInstances = $this->checkTotalInstances()) != 1)
+            return XML::XMLReponse ("Error", 0, $checkTotalInstances);
+        
+        $createSchema = "CREATE DATABASE $instanceName 
+                        DEFAULT CHARACTER SET utf8
+                        DEFAULT COLLATE utf8_general_ci";
+        
+        if(file_exists("$RoutFile/Estructuras/$instanceName"))
+                return XML::XMLReponse("Error", 0, "La instancia ingresada ya existe.");
+        
+        if(($result = $DB->ConsultaQuery("", $createSchema))!=1)
+                return XML::XMLReponse ("Error", 0, "<b>Error</b> al intentar crear la instancia $instanceName.<br>Detalles:<br>$result" );
+        
+        if(($resultBuildInstanceControl = $DB->CreateCSDocsControl($instanceName))!=1){
+                $DB->ConsultaQuery("", "DROP DATABASE IF EXISTS $instanceName");
+                return XML::XMLReponse ("Error", 0, "<b>Error</b> al crear la estructura de control de la instancia <b>$instanceName</b>. $resultBuildInstanceControl");
+        }
+        if($resultBuildInstanceControl == 0){
+            $DB->ConsultaQuery("", "DROP DATABASE IF EXISTS $instanceName");
+        }
+        
+        $InsertInstance = "INSERT INTO instancias (NombreInstancia, fechaCreacion, usuarioCreador) VALUES ('$instanceName', '".date('Y-m-d H:i:s')."', '$userName')";
+        
+        if(!(($idInstance = $DB->ConsultaInsertReturnId("cs-docs", $InsertInstance))>0)){
+            $DB->ConsultaQuery("", "DROP DATABASE IF EXISTS $instanceName");
+            return XML::XMLReponse("Error", 0, "<b>Error</b> al intentar registrar la instancia. <br>Detalles:<br>$resultInsert");
+        }
+        
+        mkdir("$RoutFile/Estructuras/$instanceName", 0777);
+        
+        /* Archivo que almacena la configuración de la estrucutra de usuarios, empresas, repositorios, etc */
+        touch("$RoutFile/Configuracion/$instanceName.ini");
+       
+        return $this->returnInstanceCreatedResponse($idInstance, $instanceName);
+    }
+    
+    private function returnInstanceCreatedResponse($idInstance, $instanceName){
+        
+        $doc  = new DOMDocument('1.0','utf-8');
+        libxml_use_internal_errors(true);
+        $doc->formatOutput = true;
+        $root = $doc->createElement("newInstanceBuilded");
+        $doc->appendChild($root); 
+        $Estado=$doc->createElement("Estado",1);
+        $root->appendChild($Estado);
+        $Mensaje=$doc->createElement("Mensaje","Instancia '$instanceName' creada con éxito");
+        $root->appendChild($Mensaje);
+        $idInstanceElement = $doc->createElement("idInstance", $idInstance);
+        $root->appendChild($idInstanceElement);
+        header ("Content-Type:text/xml");
+        echo $doc->saveXML();
+        
+    }
+    
+    private function checkTotalInstances(){
+        
+        $RoutFile = dirname(getcwd());
+        
+        if(!file_exists("$RoutFile/version/config.ini"))
+            return "<p><b>Error</b><br><br> El registro de configuración de CSDocs no existe. Reportelo directamente con CSDocs</p>";
+        
+        $EncryptedSetting = parse_ini_file("$RoutFile/version/config.ini", true);
+        
+        if($EncryptedSetting === FALSE)
+            return "<p><b>Error</b> en el registro de configuración de CSDocs $EncryptedSetting</p>";
+        
+        if(!isset($EncryptedSetting['InstancesNumber']))
+            return "No existe registro del total de instancias permitidas.";
+        
+        $getTotalInstances = $this->getTotalInstances();
+        
+        if($getTotalInstances['Estado']!=1)
+            return $getTotalInstances['Estado'];
+      
+        $totalInstances = $getTotalInstances['ArrayDatos'][0]['COUNT(*)']; 
+        
+        $autorizeEncriptTotalInstance = $EncryptedSetting['InstancesNumber'];
+        
+        $autorizeTotalInstance = Encrypter::decrypt($autorizeEncriptTotalInstance);
+                
+        if((int)$totalInstances >= (int)$autorizeTotalInstance)
+                return "Límite alcanzado de instancias permitidas para su versión";
+        
+        return 1;
+        
+    }
+    
+    private function getTotalInstances(){
+        $DB = new DataBase();
+        $query = "SELECT COUNT(*) FROM instancias";
+        $result = $DB->ConsultaSelect("cs-docs", $query);
+        
+        return $result;
     }
     
     private function DeleteInstance()
@@ -26,7 +135,22 @@ class Instance {
         $UserName = filter_input(INPUT_POST, "UserName");
         $IdInstance = filter_input(INPUT_POST, "IdInstance");
         $InstanceName = filter_input(INPUT_POST, "InstanceName");
-        $RoutFile = filter_input(INPUT_SERVER, "DOCUMENT_ROOT"); /* /var/services/web */
+        
+        $idSession = Session::getIdSession();
+
+        if($idSession == null)
+                return XML::XMLReponse ("Error", 0, "Tree:No existe una sesión activa, por favor vuelva a iniciar sesión");
+            
+        $userData = Session::getSessionParameters();
+        
+        /* Sí el usuario inicio sesión en la misma instancia que va a eliminar, se destruye la sesión */
+        if(is_array($userData)){
+            if(isset($userData['dataBaseName']))
+                if(strcasecmp($userData['dataBaseName'], $InstanceName)==0)
+                    Session::destroySession ();
+        }
+        
+        $RoutFile = dirname(getcwd());
         
         $QueryDrop = "DROP DATABASE IF EXISTS $InstanceName";
         if(($Result = $DB->ConsultaQuery("cs-docs", $QueryDrop))!=1)
@@ -72,23 +196,35 @@ class Instance {
         if(file_exists("/volume1/Publisher/$InstanceName"))
             exec("rm -R /volume1/Publisher/$InstanceName");  
         
+        if(file_exists("$RoutFile/Log/$InstanceName"))
+            exec ("rm -R $RoutFile/Log/$InstanceName");
+                
         XML::XMLReponse("DeleteInstance", 1, "Instancia $InstanceName eliminada");
         
     }
     
-    private function GetInstances()
+    private function getInstances()
+    {        
+        $instances = $this->getInstancesArray();
+        
+        if(is_array($instances))
+            XML::XmlArrayResponse("Instances", "Instance", $instances);
+        else
+            XML::XMLReponse("Error", 0, "<p><b>Error</b> al obtener el listado de instancias del sistema</p><br><br>Detalles:<br><br>".$instances);
+
+    }
+    
+    function getInstancesArray()
     {
         $DB = new DataBase();
         
         $QueryInstances = "SELECT *FROM instancias";
         $ResultQuery = $DB->ConsultaSelect("cs-docs", $QueryInstances);
-        if($ResultQuery['Estado']!=1)
-        {
-            XML::XMLReponse("Error", 0, "<p><b>Error</b> al obtener el listado de instancias del sistema</p><br><br>Detalles:<br><br>".$ResultQuery['Estado']);
-            return 0;
-        }
         
-        XML::XmlArrayResponse("Instances", "Instance", $ResultQuery['ArrayDatos']);
+        if($ResultQuery['Estado']!=1)
+            return $ResultQuery['Estado'];
+        else
+            return $ResultQuery['ArrayDatos'];
     }
     
 }
