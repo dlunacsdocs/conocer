@@ -225,17 +225,7 @@ class Login {
             return array();
         
     }
-    
-    private function createUserSession($idUser, $userName, $dataBaseName)
-    {
-        $_SESSION[$dataBaseName]['idUser'] = $idUser;
-        $_SESSION[$dataBaseName]['userName'] = $userName;
-        $_SESSION[$dataBaseName]['dataBaseName'] = $dataBaseName;
-        
-        $sessionId = session_id();
-        
-        DataBase::$dataBaseName = $dataBaseName;
-    }
+
 }
 
 $Login=new Login();

@@ -124,18 +124,25 @@ var ClassInstanceManager = function(){
     /* Modal que se abre para ingresar una nueva instancia */
     _newInstanceModal = function(){
         var $text = $('<div></div>');
-        
+        $text.append('<p>Agregar instancia vacia</p>');
         $text.append('<div class = "form-inline">\n\
                     <div class = "form-group has-feedback text-muted">\n\
                          Nombre \n\
                         <input type = "text" class = "form-control" id = "newInstanceName" placeholder = "Nombre instancia">\n\
                     </div>\n\
                 </div>');
+        $text.append('<br>');
+        $text.append('<p>Construir instancia desde un XML (Se genera automáticamente al seleccionar XML)</p>');
+        $text.append('<div class = "form-inline">\n\
+                    <div class = "form-group has-feedback text-muted">\n\
+                        <input type="file" class = "" id="xml_nueva_instancia" accept="text/xml">\n\
+                    </div>\n\
+                </div>');
         $text.append('<br>');   
         $text.append('<p class = "well">Una instancia es un ambiente reservado y aislado dentro de su equipo NAS el cual podrá administrar \n\
             con nuevas empresas y repositorios para el almacenamiento y distribución de sus documentos.</p>');
         
-        BootstrapDialog.show({
+        var dialog = BootstrapDialog.show({
             title: 'Nueva instancia',
             message: $text,
             closable: true,
@@ -149,14 +156,56 @@ var ClassInstanceManager = function(){
             }, {
                 label: 'Construir',
                 id: 'btnNewInstance',
-                action: function(dialogRef){
-                    var $button = this; // 'this' here is a jQuery object that wrapping the <button> DOM element.
-                    
+                action: function(dialogRef){                    
                     _buildNewInstance(dialogRef);
                 }
-            }]
+            }],
+            onshown: function(dialogRef){
+                $('#xml_nueva_instancia').on('change',function(){
+                    buildInstanceFromXML(dialog);
+                });
+            }
         });
+        
+        
     };
+    
+    /* Se recoge el XML introducido por el Usuario y se envia al servidor para su lectura*/
+    buildInstanceFromXML = function(dialogRef)
+    {
+        var xml_usuario=document.getElementById("xml_nueva_instancia");
+        var archivo = xml_usuario.files;     
+        var data = new FormData();
+
+        if(!(archivo.length>0)){Advertencia('Debe seleccionar un XMl con la estructura de una nueva Instancia'); return;}
+
+        dialogRef.enableButtons(false);
+        var buttonNewInstance = dialogRef.getButton('btnNewInstance');
+        buttonNewInstance.disable();
+        buttonNewInstance.spin();
+        dialogRef.setClosable(false);
+
+        for(i=0; i<archivo.length; i++)
+          {
+                data.append('archivo',archivo[i]);
+                data.append('opcion','ReadXML');
+                data.append('id_usuario',EnvironmentData.IdUsuario);
+                data.append('nombre_usuario',EnvironmentData.NombreUsuario);
+          }
+
+        ajax=objetoAjax();
+        ajax.open("POST", 'php/XML.php',true);
+        ajax.send(data);    
+        ajax.onreadystatechange=function() 
+        {             
+            if (ajax.readyState===4 && ajax.status===200) 
+            { 
+               dialogRef.close();
+               Salida(ajax.responseText);
+            }
+        };
+  
+   };
     
     _buildNewInstance = function(dialogRef){        
         var instanceName = $('#newInstanceName').val();
@@ -411,5 +460,36 @@ ClassInstanceManager.prototype.getInstancesXml = function(){
     
 };
 
+
+function getListInstances()
+{
+    ajax=objetoAjax();
+    ajax.open("POST", 'php/Login.php',true);
+    ajax.setRequestHeader("Content-Type", "application/x-www-form-urlencoded;charset=utf-8;");
+    ajax.send("opcion=getInstances");
+    ajax.onreadystatechange=function() 
+    {
+       if (ajax.readyState===4 && ajax.status===200) 
+       {
+          if(ajax.responseXML===null){Error(ajax.responseText);return;     }              
+           var xml = ajax.responseXML;
+           $(xml).find("Instancia").each(function()
+            {
+               var $Instancia=$(this);
+               var id=$Instancia.find("IdInstancia").text();
+               var nombre = $Instancia.find("NombreInstancia").text();  
+               $("#select_login_instancias").append("<option value=\""+id+"\">"+nombre+"</option>");
+            });
+            $(xml).find("Error").each(function()
+            {
+                var $Instancias=$(this);
+                var estado=$Instancias.find("Estado").text();
+                var mensaje=$Instancias.find("mensaje").text();
+                Error(mensaje);
+            });
+            
+       }       
+   };
+}
 
 

@@ -53,7 +53,7 @@ function GetAllStructure(TypeStructure)
           url: "php/DesignerForms.php",
           data: "opcion=GetAllStructure&TypeStructure="+TypeStructure, 
           success:  function(respuesta){
-              if($.parseXML( respuesta )===null){Error(respuesta); return 0;}else xml=$.parseXML( respuesta );                         
+              if($.parseXML( respuesta )===null){errorMessage(respuesta); return 0;}else xml=$.parseXML( respuesta );                         
           },
           beforeSend:function(){},
           error:function(objXMLHttpRequest){Error(objXMLHttpRequest);}

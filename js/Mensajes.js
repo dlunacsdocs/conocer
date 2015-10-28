@@ -24,36 +24,92 @@ var WindowLoading={width:200, height:200, minWidth:200, minHeight:200,draggable:
 
 function Salida(mensaje)
 {    
-    $('#MensajeSalida').dialog(WindowSalida);
-    $('#MensajeSalida').empty();
-    $('#MensajeSalida').append('<center><img src="img/edit_icon.png"></center>');
-    $('#MensajeSalida').append(mensaje);
+    var $message = $('<div></div>');
+    $message.append(mensaje);
+    
+    BootstrapDialog.show({
+            title: '<span class = "glyphicon glyphicon-warning-sign"></span> Mensaje de Salida',
+            message: $message,
+            type: BootstrapDialog.TYPE_INFO,
+            size: BootstrapDialog.SIZE_WIDE,
+            buttons: [{
+                    label:"Aceptar",
+                    action:function(dialog){
+                        dialog.close();
+                    }
+            }],
+            closable: false
+        });
 }
 function Error(mensaje)
 {
-    $('#MensajeError').dialog(WindowError);
-    $('#MensajeError').empty();
-    $('#MensajeError').append('<center><img src="img/fallo.png"></center>');
-    $('#MensajeError').append(mensaje);
+    var $message = $('<div></div>');
+    $message.append(mensaje);
+    
+    BootstrapDialog.show({
+            title: '<span class = "glyphicon glyphicon-warning-sign"></span> Error',
+            message: $message,
+            type: BootstrapDialog.TYPE_DANGER,
+            size: BootstrapDialog.SIZE_WIDE,
+            buttons: [{
+                    label:"Aceptar",
+                    action:function(dialog){
+                        dialog.close();
+                    }
+            }],
+            closable: false
+            
+        });
 }
 
 function errorMessage(mensaje)
 {
-    alert("ErrorMessage"+" "+$('#MensajeError').length);
-
-    $('#MensajeError').dialog();
-    $('#MensajeError').empty();
-    $('#MensajeError').append('<center><img src="img/fallo.png"></center>');
-    $('#MensajeError').append(mensaje);
+    var $message = $('<div></div>');
+    $message.append(mensaje);
+    
+    BootstrapDialog.show({
+            title: '<span class = "glyphicon glyphicon-warning-sign"></span> Error',
+            message: $message,
+            type: BootstrapDialog.TYPE_DANGER,
+            size: BootstrapDialog.SIZE_WIDE,
+            buttons: [{
+                    label:"Aceptar",
+                    action:function(dialog){
+                        dialog.close();
+                    }
+            }],
+            closable: false
+        });
 }
 
 function Advertencia(mensaje)
 {
 
-        BootstrapDialog.show({
-            title: 'Advertencia',
-            message: mensaje,
-            type: BootstrapDialog.TYPE_WARNING,
+    BootstrapDialog.show({
+            title: '<span class = "glyphicon glyphicon-warning-sign"></span> Advertencia',
+        message: mensaje,
+        type: BootstrapDialog.TYPE_WARNING,
+        size: BootstrapDialog.SIZE_SMALL,
+        buttons: [{
+                label:"Aceptar",
+                action:function(dialog){
+                    dialog.close();
+                }
+        }]
+    });
+
+}
+
+
+function Exito(mensaje)
+{
+    var $message = $('<div></div>');
+    $message.append(mensaje);
+    
+    BootstrapDialog.show({
+            title: '<span class = "glyphicon glyphicon-warning-sign"></span> Éxito',
+            message: $message,
+            type: BootstrapDialog.TYPE_SUCCESS,
             size: BootstrapDialog.SIZE_SMALL,
             buttons: [{
                     label:"Aceptar",
@@ -62,16 +118,6 @@ function Advertencia(mensaje)
                     }
             }]
         });
-
-}
-
-
-function Exito(mensaje)
-{
-    $('#MensajeExito').dialog(WindowExito);
-    $('#MensajeExito').empty();
-    $('#MensajeExito').append('<center><img src="img/success.png" width="80px" heigth="80px"></center>');
-    $('#MensajeExito').append(mensaje);
 }
 
 function Loading()

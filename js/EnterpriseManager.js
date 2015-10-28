@@ -731,7 +731,6 @@ ClassEnterprise.prototype.AdminStructure = function ()
     var self = this;
 
     $('#EnterpriseWS').empty();
-    $('#EnterpriseWS').append('<div class="titulo_ventana">Estructura de Empresas</div>');
     $('#EnterpriseWS').append('<div class="Loading" id = "IconWaitingEnterprise"><img src="../img/loadinfologin.gif"></div>');
 
     var EnterpriseDetail = GeStructure('Empresa');
@@ -750,10 +749,10 @@ ClassEnterprise.prototype.AdminStructure = function ()
                         {"sExtends": "text", "sButtonText": "Eliminar Campo", "fnClick": function () {
                                 _ConfirmDeleteField();
                             }},
-                        {"sExtends": "copy", "sButtonText": "Copiar al portapapeles"},
+                        {"sExtends": "copy", "sButtonText": "Copiar Tabla"},
                         {
                             "sExtends": "collection",
-                            "sButtonText": "Guardar como...",
+                            "sButtonText": "Exportar",
                             "aButtons": ["csv", "xls", "pdf"]
                         }
                     ]
@@ -804,7 +803,6 @@ ClassEnterprise.prototype.DisplayEnterprises = function ()
     var self = this;
 
     $('#EnterpriseWS').empty();
-    $('#EnterpriseWS').append('<div class="titulo_ventana">Empresas del Sistema</div>');
     $('#EnterpriseWS').append('<div class="Loading" id = "IconWaitingEnterprises"><img src="../img/loadinfologin.gif"></div>');
 
     var FieldsArray = new Array();
@@ -812,7 +810,16 @@ ClassEnterprise.prototype.DisplayEnterprises = function ()
     var th = '';
 
     var EnterpriseStructure = GetAllStructure('Empresa');
+    
+        $(EnterpriseStructure).find("Error").each(function(){
+            var message = $(this).find("Mensaje").text();
+            errorMessage(message);
+            $('#IconWaitingEnterprises').remove();
 
+            return 0;
+        });
+        
+        
     $(EnterpriseStructure).find('Campo').each(function ()
     {
         var FieldName = $(this).find('name').text();

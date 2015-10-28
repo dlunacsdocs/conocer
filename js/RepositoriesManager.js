@@ -5,7 +5,7 @@
  */
 
 
-/* global EnvironmentData, BotonesWindow, LanguajeDataTable */
+/* global EnvironmentData, BotonesWindow, LanguajeDataTable, ConsoleSettings */
 var FormsNewRepositorydT,FormsNewRepositoryDT, RepositoryDetaildT, RepositoryDetailDT;
 $(document).ready(function(){
     $('.LinkRepositories').click(function()
@@ -459,7 +459,7 @@ var ClassRepository = function()
                     {"sExtends":"text", "sButtonText": "Agregar Campo", "fnClick" :function(){_FormsAddNewField();}},
                     {"sExtends":"text", "sButtonText": "Eliminar Campo", "fnClick" :function(){_ConfirmDeleteRepositoryField();}},
                     {"sExtends":"text", "sButtonText": "Eliminar Repositorio", "fnClick" :function(){_ConfirmDeleteRepository();}},
-                    {"sExtends": "copy","sButtonText": "Copiar al portapapeles"},
+                    {"sExtends": "copy","sButtonText": "Copiar Tabla"},
                     {
                         "sExtends":    "collection",
                         "sButtonText": "Guardar como...",
@@ -564,7 +564,7 @@ var ClassRepository = function()
         });         
         
         $('#IconWaitingRepository').remove();
-    }
+    };
     
     _ConfirmDeleteRepositoryField = function()
     {
@@ -805,8 +805,8 @@ ClassRepository.prototype.NewRepository = function()
                 {"sExtends":"text", "sButtonText": "Agregar Campo", "fnClick" :function(){_FormsNewField();}},
                 {"sExtends":"text", "sButtonText": "Editar Campo", "fnClick" :function(){_EditNewRepositoryField();}},
                 {"sExtends":"text", "sButtonText": "Eliminar Campo", "fnClick" :function(){_ConfirmDeleteNewRepositoryField();}},                    
-                {"sExtends":"text", "sButtonText": "Agregar Repositorio desde un XML", "fnClick" :function(){_FormAddNewRepositoryXml();}},
-                {"sExtends": "copy","sButtonText": "Copiar al portapapeles"}                  
+                {"sExtends":"text", "sButtonText": "Agregar desde XML", "fnClick" :function(){_FormAddNewRepositoryXml();}},
+                {"sExtends": "copy","sButtonText": "Copiar Tabla"}                  
             ]
         },
         "autoWidth" : false,
@@ -1042,7 +1042,7 @@ function CM_Repository()
     {
         if (ajax.readyState===4 && ajax.status===200) 
        { 
-           if(ajax.responseXML===null){Error(ajax.responseText);return;}                  
+           if(ajax.responseXML===null){errorMessage(ajax.responseText);return;}                  
             var xml=ajax.responseXML;           
             /* Div que contiene el ÃƒÂ¡rbol de repositorios */
             
@@ -1092,10 +1092,7 @@ function CM_Repository()
                                     
             $(xml).find("Error").each(function()
             {
-                var $Instancias=$(this);
-                var estado=$Instancias.find("Estado").text();
-                var mensaje=$Instancias.find("Mensaje").text();
-                Error(mensaje);
+                return 0;
             });
         }
     };        

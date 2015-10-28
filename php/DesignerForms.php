@@ -62,11 +62,11 @@ class DesignerForms {
      */
     private function GetStructure($userData)
     {
-        $TypeStructure=filter_input(INPUT_POST, "TypeStructure");
+        $TypeStructure = filter_input(INPUT_POST, "TypeStructure");
         $DataBaseName = $userData['dataBaseName'];
         
         $fullStructure = $this->getArrayStructureFile($DataBaseName);
-        
+   
         if(!is_array($fullStructure))
             return XML::XMLReponse ("Error", 0, "$fullStructure");
         
@@ -81,7 +81,7 @@ class DesignerForms {
 
         }
         else
-            return XML::XMLReponse("Error", 0,"<p>No existe el registro de estructura para $TypeStructure, o puede que no se haya creado correctamente</p>");
+            return XML::XMLReponse("Error", 0,"<p>No existe el registro de estructura para <b>$TypeStructure</b>, o puede que no se haya creado correctamente</p>");
     
     }
     
@@ -154,7 +154,7 @@ class DesignerForms {
             }              
         }
                
-        if(!(count($ArrayEstructura)>0)){$XML->ResponseXML("Error", 0,"<p>No existe el registro de estructura para uuarios, o puede que no se haya creado correctamente</p>");}        
+        if(!(count($ArrayEstructura)>0)){$XML->ResponseXML("Error", 0,"<p>No existe la estructura <b>$TypeStructure</b></p>");}        
         $this->CreateXMLStruct($ArrayEstructura,$catalogo); 
     }
     
@@ -202,7 +202,7 @@ class DesignerForms {
         }
         
         if(!(count($ArrayEstructura)>0))
-            return "No existe el registro de estructura para uuarios, o puede que no se haya creado correctamente";
+            return "No existen metadatos definidos por el usuario.";
         
         return array('structure'=>$ArrayEstructura, 'catalog'=>$catalogo);
     }

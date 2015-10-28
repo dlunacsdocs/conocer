@@ -43,6 +43,20 @@ class Instance {
         if(file_exists("$RoutFile/Estructuras/$instanceName"))
                 return XML::XMLReponse("Error", 0, "La instancia ingresada ya existe.");
         
+        if(file_exists("$RoutFile/Configuracion/$instanceName.ini"))    /* Elimina el archivo de configuración anterior sí existe */
+            unlink ("$RoutFile/Configuracion/$instanceName.ini");
+        
+        /* Archivo que almacena la configuración de la estrucutra de usuarios, empresas, repositorios, etc */
+        touch("$RoutFile/Configuracion/$instanceName.ini");
+        
+        if(($enterpriseStructure = $DB->createEnterpriseDefaultConfiguration($instanceName))!=1){
+            return XML::XMLReponse("Error", 0, $enterpriseStructure);
+        }
+        
+        if(($userStructure = $DB->createUsersDefaultConfiguration($instanceName))!=1){
+            return XML::XMLReponse("Error", 0, $userStructure);
+        }
+        
         if(($result = $DB->ConsultaQuery("", $createSchema))!=1)
                 return XML::XMLReponse ("Error", 0, "<b>Error</b> al intentar crear la instancia $instanceName.<br>Detalles:<br>$result" );
         
@@ -58,14 +72,11 @@ class Instance {
         
         if(!(($idInstance = $DB->ConsultaInsertReturnId("cs-docs", $InsertInstance))>0)){
             $DB->ConsultaQuery("", "DROP DATABASE IF EXISTS $instanceName");
-            return XML::XMLReponse("Error", 0, "<b>Error</b> al intentar registrar la instancia. <br>Detalles:<br>$resultInsert");
+            return XML::XMLReponse("Error", 0, "<b>Error</b> al intentar registrar la instancia. <br>Detalles:<br>$idInstance");
         }
         
         mkdir("$RoutFile/Estructuras/$instanceName", 0777);
         
-        /* Archivo que almacena la configuración de la estrucutra de usuarios, empresas, repositorios, etc */
-        touch("$RoutFile/Configuracion/$instanceName.ini");
-       
         return $this->returnInstanceCreatedResponse($idInstance, $instanceName);
     }
     

@@ -67,7 +67,7 @@ class Tree {
             while(($row[] = mysql_fetch_assoc($result)) || array_pop($row));
         }
         
-        (count($row)>0)?$this->ReturnXmlEmpresasRepository($row):$XML->ResponseXML("Error", 0, "Imposible construir la estructura de repositorios, no se encontraron resultados de repositorios correspondientes a una empresa");
+        (count($row)>0)?$this->ReturnXmlEmpresasRepository($row):$XML->ResponseXML("Error", 0, "No existen repositorios para mostrar");
             
         mysql_close($conexion);
     }

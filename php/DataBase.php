@@ -96,6 +96,12 @@ class DataBase {
     
     function CreateIntanciaDataBase($nombre_instancia_)
     {
+        
+        $userName = filter_input(INPUT_POST, "nombre_usuario");
+        
+        if(strcasecmp($userName, FALSE)==0 or strcasecmp($userName, NULL)==0)
+                $userName = "";
+        
         /* Se crea la instancia del Sistema por Default */
         $nombre_instancia=  trim($nombre_instancia_);
         $this->CreateInstanciaCSDOCS();   
@@ -125,7 +131,8 @@ class DataBase {
         if(($ResNuevaInstancia=$this->crear_tabla("cs-docs",$sql)!=true))
                 return "<p>Error al crear la instancia \"$nombre_instancia\". $ResNuevaInstancia</p>";
         
-        $InsertInstancia = "INSERT INTO instancias (NombreInstancia) VALUES ('$nombre_instancia')";                
+        $InsertInstancia = "INSERT INTO instancias (NombreInstancia, fechaCreacion, usuarioCreador) "
+                . "VALUES ('$nombre_instancia', '".date('Y-m-d H:i:s')."', '$userName')";                
         
         if($this->CreateCSDocsControl($nombre_instancia) == 1)
         {
@@ -218,7 +225,16 @@ class DataBase {
         if(($ResultUpdateAdminsPermissions = $this->ConsultaQuery($DataBaseName, $UpdateAdminPermissions))!=1)
             return "<p><b<Error</b> al asignar permisos al grupo <b>Administradores</b>. <br>Detalles:<br><br>$ResultUpdateAdminsPermissions</p>";
 
-                        
+        $enterpriseTable = "CREATE TABLE IF NOT EXISTS CSDocs_Empresas ("
+                . "IdEmpresa INT NOT NULL AUTO_INCREMENT,"
+                . "NombreEmpresa VARCHAR(100) NOT NULL,"
+                . "Descripcion TEXT,"
+                . "ClaveEmpresa VARCHAR(50) NOT NULL,"
+                . "PRIMARY KEY (IdEmpresa)"
+                . ") ENGINE=InnoDB AUTO_INCREMENT=1 DEFAULT CHARSET=utf8";
+        
+        if(($result = $this->ConsultaQuery($DataBaseName, $enterpriseTable))!=1)
+                return "<p><b>Error</b> al crear Empresas</p> <p> $result </p>";
         
         $CreateRepositoryControl = "CREATE TABLE IF NOT EXISTS RepositoryControl ("
                 . "IdRepositoryControl INT NOT NULL AUTO_INCREMENT,"
@@ -932,7 +948,7 @@ class DataBase {
      */
     function CrearStructUsuario($StructUsuario)
     {
-        echo "<br><p>*****Creando StructUsuario peso=".count($StructUsuario)."******</p><br>";
+        echo "<br><p>***** Creando Estructura de Usuarios ****</p><br>";
 //        $NodosUsuario=$StructUsuario->children();
         $DefaultEstruct=$StructUsuario->DefaultStructProperties->children();
         $DefinitionUser=$StructUsuario->DefinitionUsersProperties->children();                           
@@ -992,7 +1008,47 @@ class DataBase {
                 return "<p>Error al crear Tabla Usuarios $Insert</p>";
     }
     
-
+    /* Crea la estructura de empresas en el archivo de configuración de la instancia */
+    
+    function createEnterpriseDefaultConfiguration($dataBaseName){
+        $config = array();
+        $config['DataBaseName'] = $dataBaseName;
+        
+        $config['Atributos'][0]['Campo'] = "NombreEmpresa";
+        $config['Atributos'][0]['Atributos'] = array("type"=>"VARCHAR", "long"=>"100", "required"=>"true");
+        
+        $config['Atributos'][1]['Campo'] = "Descripcion";
+        $config['Atributos'][1]['Atributos'] = array("type"=>"TEXT", "required"=>"false");
+        
+        $config['Atributos'][2]['Campo'] = "ClaveEmpresa";
+        $config['Atributos'][2]['Atributos'] = array("type"=>"VARCHAR", "long"=>"50", "required"=>"true");
+        
+        $config['TipoEstructura'] = "Empresa";
+        
+        $section = "Empresa";
+        
+        return $this->WriteConfig($section,$config);
+    }
+    
+    function createUsersDefaultConfiguration($dataBaseName){
+        $config = array();
+        $config['DataBaseName'] = $dataBaseName;
+        
+        $config['Atributos'][0]['Campo'] = "Login";
+        $config['Atributos'][0]['Atributos'] = array("type"=>"VARCHAR", "long"=>"50", "required"=>"true");
+        
+        $config['Atributos'][1]['Campo'] = "Password";
+        $config['Atributos'][1]['Atributos'] = array("type"=>"VARCHAR", "long"=>"50", "required"=>"true");
+        
+        $config['Atributos'][2]['Campo'] = "Descripcion";
+        $config['Atributos'][2]['Atributos'] = array("type"=>"TEXT", "required"=>"false");
+        
+        $config['TipoEstructura'] = "Usuarios";
+        
+        $section = "Usuarios";
+        
+        return $this->WriteConfig($section,$config);
+    }
     
     /*
      * Se comprueba la existencia del usuario Root en el sistema
@@ -1468,12 +1524,16 @@ function ExistRegister($DataBaseName,$Table,$field,$Value)
      * *************************************************************************
      */
     function WriteConfig($Seccion,$ArrayDatos)
-    {                
-       $gestor = fopen("../Configuracion/".$ArrayDatos['DataBaseName'].".ini", "a+");
-       fwrite($gestor,";#############################################################################".PHP_EOL);
-       fwrite($gestor,";--------- $Seccion ---------".PHP_EOL);
-       fwrite($gestor,";#############################################################################".PHP_EOL);
-       fwrite($gestor,"".PHP_EOL);
+    {             
+        $RoutFile = dirname(getcwd());
+
+        if(!($gestor = fopen("$RoutFile/Configuracion/".$ArrayDatos['DataBaseName'].".ini", "a+")))
+                return $gestor;
+        
+        fwrite($gestor,";#############################################################################".PHP_EOL);
+        fwrite($gestor,";--------- $Seccion ---------".PHP_EOL);
+        fwrite($gestor,";#############################################################################".PHP_EOL);
+        fwrite($gestor,"".PHP_EOL);
         fwrite($gestor,"$Seccion=$Seccion".PHP_EOL);
         for($cont=0;$cont<count($ArrayDatos['Atributos']);$cont++)
         {
@@ -1492,6 +1552,7 @@ function ExistRegister($DataBaseName,$Table,$field,$Value)
         fclose($gestor);
         
 //        var_dump( parse_ini_file ("../Configuracion/".$ArrayDatos['DataBaseName'].".ini"),true);
+        return 1;
     }
     
     /* Recibe como parámetro la estructura a partir del tipo de catálogo, p.e.: 

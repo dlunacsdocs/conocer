@@ -1,5 +1,5 @@
 
-/* global Users, UsersGroups, EnvironmentData, Struct, BotonesWindow */
+/* global Users, UsersGroups, EnvironmentData, Struct, BotonesWindow, BootstrapDialog */
 
 var CAWindowUsers={minHeight:500,minWidth:800,width:800, height:500};
 var TableUsersdT = undefined;
@@ -798,14 +798,25 @@ ClassUsers.prototype.changeUserLoggedPassword = function(){
     
     ClassUsers.prototype.closeUserSession = function(){
         
-        $('#closeSessionConfirm').remove();
-        $('body').append('<div id = "closeSessionConfirm"></div>');
-        $('#closeSessionConfirm').append("¿Realmente desea salir del sistema?");
-        $('#closeSessionConfirm').dialog({title:"Mensaje de confirmación",
-        width: 300, heigth:250, modal:true, resizable:false, buttons:{
-            "Cancelar": function(){$(this).remove();},
-            "Cerrar Sesión": function(){_closeUserSession(); $(this).remove();}
-        } }).dialogExtend(BotonesWindow);
+        BootstrapDialog.confirm({
+            title: '<span class = "glyphicon glyphicon-warning-sign"></span> Advertencia',
+            message: 'Se cerrará la sesión. ¿Desea continuar?',
+            type: BootstrapDialog.TYPE_WARNING, // <-- Default value is BootstrapDialog.TYPE_PRIMARY
+            size:BootstrapDialog.SIZE_SMALL ,
+            closable: true, // <-- Default value is false
+            draggable: false, // <-- Default value is false
+            btnCancelLabel: 'Cancelar', // <-- Default value is 'Cancel',
+            btnOKLabel: 'Cerrar Sesión', // <-- Default value is 'OK',
+            btnOKClass: 'btn-danger', // <-- If you didn't specify it, dialog type will be used,
+            callback: function(result) {
+                // result will be true if button was click, while it will be false if users close the dialog directly.
+                if(result) {
+                    _closeUserSession();
+                }else {
+                    
+                }
+            }
+        });
         
     };
     
