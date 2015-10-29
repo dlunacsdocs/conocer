@@ -164,7 +164,12 @@ function BuildFullStructureTable(NombreRepositorio,tabla,Detalle)
            }
            else
            {
-               $('#'+tabla).append('<tr><td>'+name+'</td><td><input type="text" id="'+id+'" name = "'+ name +'" class = "FormStandart" FieldType = "'+ type +'" FieldLength = "'+length+'"></td></tr>');  
+               var inputType = "text";
+               
+               if(String(name.toLowerCase()) === "password")
+                   inputType = "password";
+               
+               $('#'+tabla).append('<tr><td>'+name+'</td><td><input type="'+inputType+'" id="'+id+'" name = "'+ name +'" class = "FormStandart" FieldType = "'+ type +'" FieldLength = "'+length+'"></td></tr>');  
                if(type==='DATE'){$('#'+id).datepicker(GlobalDatePicker);}
                if(type==='date'){$('#'+id).datepicker(GlobalDatePicker);}
                
@@ -188,3 +193,45 @@ function BuildFullStructureTable(NombreRepositorio,tabla,Detalle)
     return xml;
 }
 
+
+/*******************************************************************************
+ *  Función que ingresa una rejilla de formularios sobre un dialog o div
+ * 
+ * @param {type} selector       "Selector donde se ingresara la cuadricula de formularios"
+ * @param {type} structure      "Estructura a partir de la cual se construye la cuadricula"
+ * @returns {undefined}
+ *******************************************************************************/
+function buildFormsGrid(selector, structure){
+    
+    $(structure).find("Campo").each(function(){
+                        
+        var $Campo = $(this);
+        var name = $Campo.find("name").text();
+        var type = $Campo.find("type").text();
+        var length = $Campo.find("long").text();
+        var required = $Campo.find("required").text(); 
+        var id = selector+'_'+name;   /* Id que contendrá cada elemento recuperado */
+
+        var formType = "text";
+
+        if(String(name.toLowerCase()) === "password")
+            formType = "password";
+
+        if(String(required.toLowerCase()) === "true")
+            required = "required";
+        else
+            required = "";
+
+
+        var form = $('<input>', {type:formType,  id:id, name: name, class:"form-control "+required, FieldType:type, FieldLength: length});
+        var label = '<label>'+name+'<label>';
+
+        var $formGroup = $('<div>', {class:"form-group col-xs-12 col-sm-8"});
+
+        $formGroup.append(label);
+        $formGroup.append(form);
+
+        $('#'+selector).append($formGroup);
+
+    });
+}

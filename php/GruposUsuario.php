@@ -202,7 +202,6 @@ class Grupos {
     
     private function GetGroupMemebers()
     {
-        $XML=new XML();
         $BD= new DataBase();
         $DataBaseName=  filter_input(INPUT_POST, "DataBaseName");                
 //        $IdGroup= filter_input(INPUT_POST, "IdGrupo");    /* Variable de tipo environment */
@@ -211,27 +210,30 @@ class Grupos {
         $IdGrupoUsuario = filter_input(INPUT_POST, "IdGrupoUsuario");
 //        $NombreGrupoUsuario = filter_input(INPUT_POST, "NombreGrupoUsuario");
         
-        $Consulta="select usu.IdUsuario, usu.Login, usu.Descripcion from Usuarios usu INNER JOIN GruposControl gc "
+        $Consulta="select usu.IdUsuario, usu.Login, usu.Descripcion from CSDocs_Usuarios usu INNER JOIN GruposControl gc "
                 . "ON usu.IdUsuario = gc.IdUsuario WHERE gc.IdGrupo = $IdGrupoUsuario";
         
+        $Usuarios = $BD->ConsultaSelect($DataBaseName, $Consulta);
         
-        $Usuarios=$BD->ConsultaSelect($DataBaseName, $Consulta);
-        if($Usuarios['Estado']!=true){$XML->ResponseXML("Error", 0, "<p>Ocurrió un error al consultar los usuarios ".$Consulta['Estado']."</p>"); return;}
-        $XML->ResponseXmlFromArray("Usuarios", "Member", $Usuarios['ArrayDatos']);
+        if($Usuarios['Estado']!=1)
+            return XML::XMLReponse("Error", 0, "<p>Ocurrió un error al consultar los usuarios ".$Usuarios['Estado']."</p>"); 
+            
+        XML::XmlArrayResponse("Usuarios", "Member", $Usuarios['ArrayDatos']);
     }
     
     private function GetUsersWithoutGroup()
     {
-        $XML=new XML();
         $BD= new DataBase();
         $DataBaseName=  filter_input(INPUT_POST, "DataBaseName");
         $IdGroup= filter_input(INPUT_POST, "IdGrupo");        
         
-        $Consulta="SELECT *FROM Usuarios usu WHERE usu.IdUsuario NOT IN (SELECT gc.IdUsuario FROM GruposControl gc)";
+        $Consulta="SELECT *FROM CSDocs_Usuarios usu WHERE usu.IdUsuario NOT IN (SELECT gc.IdUsuario FROM GruposControl gc)";
         $Usuarios=$BD->ConsultaSelect($DataBaseName, $Consulta);
         
-        if($Usuarios['Estado']!=1){$XML->ResponseXML("Error", 0, "<p>Ocurrió un error al consultar los usuarios ".$Usuarios['Estado']."</p>"); return;}        
-        $XML->ResponseXmlFromArray("Usuarios", "Member", $Usuarios['ArrayDatos']);
+        if($Usuarios['Estado']!=1)
+            return XML::XMLReponse("Error", 0, "<p>Ocurrió un error al consultar los usuarios ".$Usuarios['Estado']."</p>");       
+     
+        XML::XmlArrayResponse("Usuarios", "Member", $Usuarios['ArrayDatos']);
     }
     
     private function AddUsersToGroup()

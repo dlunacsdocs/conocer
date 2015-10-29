@@ -40,6 +40,7 @@ class Instance {
                         DEFAULT CHARACTER SET utf8
                         DEFAULT COLLATE utf8_general_ci";
         
+        
         if(file_exists("$RoutFile/Estructuras/$instanceName"))
                 return XML::XMLReponse("Error", 0, "La instancia ingresada ya existe.");
         
@@ -49,30 +50,36 @@ class Instance {
         /* Archivo que almacena la configuración de la estrucutra de usuarios, empresas, repositorios, etc */
         touch("$RoutFile/Configuracion/$instanceName.ini");
         
-        if(($enterpriseStructure = $DB->createEnterpriseDefaultConfiguration($instanceName))!=1){
-            return XML::XMLReponse("Error", 0, $enterpriseStructure);
-        }
-        
-        if(($userStructure = $DB->createUsersDefaultConfiguration($instanceName))!=1){
-            return XML::XMLReponse("Error", 0, $userStructure);
-        }
-        
         if(($result = $DB->ConsultaQuery("", $createSchema))!=1)
                 return XML::XMLReponse ("Error", 0, "<b>Error</b> al intentar crear la instancia $instanceName.<br>Detalles:<br>$result" );
-        
-        if(($resultBuildInstanceControl = $DB->CreateCSDocsControl($instanceName))!=1){
-                $DB->ConsultaQuery("", "DROP DATABASE IF EXISTS $instanceName");
-                return XML::XMLReponse ("Error", 0, "<b>Error</b> al crear la estructura de control de la instancia <b>$instanceName</b>. $resultBuildInstanceControl");
-        }
-        if($resultBuildInstanceControl == 0){
-            $DB->ConsultaQuery("", "DROP DATABASE IF EXISTS $instanceName");
-        }
         
         $InsertInstance = "INSERT INTO instancias (NombreInstancia, fechaCreacion, usuarioCreador) VALUES ('$instanceName', '".date('Y-m-d H:i:s')."', '$userName')";
         
         if(!(($idInstance = $DB->ConsultaInsertReturnId("cs-docs", $InsertInstance))>0)){
             $DB->ConsultaQuery("", "DROP DATABASE IF EXISTS $instanceName");
             return XML::XMLReponse("Error", 0, "<b>Error</b> al intentar registrar la instancia. <br>Detalles:<br>$idInstance");
+        }
+        
+        if(($enterpriseStructure = $DB->createEnterpriseDefaultConfiguration($instanceName))!=1){
+            $this->removeInstanceFromCSDocs($idInstance, $instanceName, 0, $userName);
+            return XML::XMLReponse("Error", 0, $enterpriseStructure);
+        }
+        
+        if(($userStructure = $DB->createUsersDefaultConfiguration($instanceName))!=1){
+            $this->removeInstanceFromCSDocs($idInstance, $instanceName, 0, $userName);
+            return XML::XMLReponse("Error", 0, $userStructure);
+        }
+           
+        if(($result = $DB->createUsersControl($instanceName))!=1){
+            $this->removeInstanceFromCSDocs($idInstance, $instanceName, 0, $userName);
+            return "Error al intentar crear el control de <b>Usuarios</b> en la instancia <b>$instanceName</b><br><br>".$result;
+        }
+        if(($resultBuildInstanceControl = $DB->CreateCSDocsControl($instanceName))!=1){
+                $this->removeInstanceFromCSDocs($idInstance, $instanceName, 0, $userName);
+                return XML::XMLReponse ("Error", 0, "<b>Error</b> al crear la estructura de control de la instancia <b>$instanceName</b>. $resultBuildInstanceControl");
+        }
+        if($resultBuildInstanceControl == 0){
+            $this->removeInstanceFromCSDocs($idInstance, $instanceName, 0, $userName);
         }
         
         mkdir("$RoutFile/Estructuras/$instanceName", 0777);
@@ -141,12 +148,17 @@ class Instance {
     
     private function DeleteInstance()
     {
-        $DB = new DataBase();
         $IdUser = filter_input(INPUT_POST, "IdUser");
         $UserName = filter_input(INPUT_POST, "UserName");
         $IdInstance = filter_input(INPUT_POST, "IdInstance");
         $InstanceName = filter_input(INPUT_POST, "InstanceName");
         
+        $this->removeInstanceFromCSDocs($IdInstance, $InstanceName, $IdUser, $UserName);
+    }
+    
+    private function removeInstanceFromCSDocs($IdInstance, $InstanceName, $idUser, $userName){
+        $DB = new DataBase();
+
         $idSession = Session::getIdSession();
 
         if($idSession == null)
@@ -211,7 +223,6 @@ class Instance {
             exec ("rm -R $RoutFile/Log/$InstanceName");
                 
         XML::XMLReponse("DeleteInstance", 1, "Instancia $InstanceName eliminada");
-        
     }
     
     private function getInstances()

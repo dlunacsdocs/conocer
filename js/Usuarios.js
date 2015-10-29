@@ -392,28 +392,11 @@ ClassUsers = function()
     };
     
     
-    var _ClickOnRowUsersTable = function()
-    {
-        var self = this;
-        var LogCol = this.LoginColumn;
-        var PassCol = this.PasswordColumn;
-
-        $('#Table_UsersList tbody').on( 'click', 'tr', function ()
-        {
-            TableUsersDT.$('tr.selected').removeClass('selected');
-            $(this).addClass('selected');
-            var IdRow = $('#Table_UsersList tr.selected').attr('id');              
-            var position = TableUsersdT.fnGetPosition(this); // getting the clicked row position
-            IdUsuario = IdRow;
-            NombreUsuario = TableUsersdT.fnGetData(position)[LogCol];
-            Password = TableUsersdT.fnGetData(position)[PassCol];
-        } );  
-    };
     
     AddUser = function(XmlStructure)
     {
         var self = this;
-        var Forms = $('#AddTableNewUser :text');
+        var Forms = $('#AddTableNewUser input');
         var FieldsValidator = new ClassFieldsValidator();   
         var Validation = FieldsValidator.ValidateFields(Forms);        
         if(!Validation)
@@ -433,6 +416,7 @@ ClassUsers = function()
                         '<FieldValue>'+FieldValue +'</FieldValue>'+
                     '</Field>'
                     ;
+            console.log("Ingresando: "+FieldName);
         });
         
         UserXml+='</AddUser>';
@@ -443,11 +427,12 @@ ClassUsers = function()
         dataType:"html", 
         type: 'POST',   
         url: "php/Usuarios.php",
-        data: "opcion=AddUser&DataBaseName="+EnvironmentData.DataBaseName+'&IdUser='+EnvironmentData.IdUsuario+'&UserName='+EnvironmentData.NombreUsuario+'&IdGroup='+EnvironmentData.IdGrupo+'&UserXml='+UserXml, 
+        data: {"opcion":"AddUser", 'UserXml':UserXml}, 
         success:  function(xml)
         {            
+            console.log("success function");
             $('#UsersPlaceWaiting').remove();
-            if($.parseXML( xml )===null){ Error(xml); return 0;}else xml=$.parseXML( xml );         
+            if($.parseXML( xml )===null){errorMessage(xml); return 0;}else xml=$.parseXML( xml );         
             
             $(xml).find('AddUser').each(function()
             {
@@ -465,12 +450,12 @@ ClassUsers = function()
             $(xml).find("Error").each(function()
             {
                 var mensaje=$(this).find("Mensaje").text();
-                Error(mensaje);
+                errorMessage(mensaje);
             });                 
 
         },
         beforeSend:function(){},
-        error: function(jqXHR, textStatus, errorThrown){$('#UsersPlaceWaiting').remove(); Error(textStatus +"<br>"+ errorThrown);}
+        error: function(jqXHR, textStatus, errorThrown){$('#UsersPlaceWaiting').remove(); errorMessage(textStatus +"<br>"+ errorThrown);}
         });    
     };
     
@@ -590,7 +575,7 @@ ClassUsers = function()
         error: function(jqXHR, textStatus, errorThrown){ Error(textStatus +"<br>"+ errorThrown);}
         });    
     };
-    
+       
 };   
 
 ClassUsers.prototype.checkNewPasswordPuted = function(){
@@ -750,38 +735,33 @@ ClassUsers.prototype.changeUserLoggedPassword = function(){
     {
         var self = this;
         $('#WS_Users').empty();
-        $('#WS_Users').append('<div class="titulo_ventana">Agregar un Nuevo(s) Usuario(s)</div>');
-//         $('#WS_Users').append('<center><p><h2>CARGA DE USUARIOS REMOTOS</h2></center></p><br><br>');
-//        $('#WS_Users').append('<p>Autenticar LDAP: <input type="checkbox" id="UserCheckLdap"></p>');
-//        $('#WS_Users').append('<p>Active Directory: <input type="checkbox" id="UserCheckActiveDir"></p>');
-//        $('#WS_Users').append('<p>IP: <input type="text" id="UserInputIp"></p>');
-//        $('#WS_Users').append('<p>Puerto: <input type="text" id="UserInputPuerto"></p>');
-//        $('#WS_Users').append('<p>Dominio: <input type="text" id="UserInputDominio"></p>');
-//        $('#WS_Users').append('<p>Usuario: <input type="text" id="UserInputUsuario"></p>');
-//        $('#WS_Users').append('<p>CN: <input type="text" id="UserInputCN"></p>');
-//        $('#WS_Users').append('<p>Grupo: <input type="text" id="UserInputGrupo"></p>');
-//        $('#WS_Users').append('<input type="button" value="Import Idap/directory" id="UserImport">');
-//        $('#WS_Users').append('<p><br><br><br><br>');
-//        $('#WS_Users').append('<p><center><h2>CARGA DE USUARIOS LOCALES</h2></center></p><br><br>');
-//        $('#UserImport').button();
-
         $('#WS_Users').append('<p>Agregar un nuevo usuario de forma manual</p>');
-        $('#WS_Users').append('<table id = "AddTableNewUser"></table><br>');
-        $('#WS_Users').append('<p>Seleccione un XML con la estructura de los datos de usuario en base al XSD definido por el sistema.</p>');                
-                
-        var UserStructure = BuildFullStructureTable('Usuarios','AddTableNewUser',0);
+        $('#WS_Users').append('<div id = "AddTableNewUser"><div><br>');
         
-        var DialogButtons = {
-            "Agregar Usuario":{text:"Agregar Usuario", click:function(){AddUser(UserStructure); }}
-        };
+        var userStructure = GetAllStructure('Usuarios');
         
-        var Forms = $('#AddTableNewUser :text');
-        var FieldsValidator = new ClassFieldsValidator();   
-        FieldsValidator.InspectCharacters(Forms);
+        if(!$.isXMLDoc(userStructure))
+            return 0;
         
+        buildFormsGrid('AddTableNewUser', userStructure);
+
+        $('#WS_Users').append("<br>");
         /* ----- Input file para cargar usuarios por XML  ----- */
         $('#WS_Users').append('<br><input type ="file" accept="text/xml" id="NewUser_InputFile">');
+        $('#WS_Users').append('<br>');
+        $('#WS_Users').append('<p class = "well">Al seleccionar un XML la carga se hace automáticamente.</p>');
+        
+        var Forms = $('#AddTableNewUser input');
+                
+        var FieldsValidator = new ClassFieldsValidator();   
+        
+        FieldsValidator.InspectCharacters(Forms);
+        
         $('#NewUser_InputFile').change(function(){_CM_AddXmlUser();});
+        
+        var DialogButtons = {
+            "Agregar Usuario":{text:"Agregar Usuario", click:function(){AddUser(userStructure); }}
+        };
         
         $('#div_consola_users').dialog('option','buttons',DialogButtons);
     };

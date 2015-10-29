@@ -47,7 +47,7 @@ class Usuarios {
             
             switch (filter_input(INPUT_POST, "opcion"))
             {
-                case 'AddUser': $this->AddUser(); break;
+                case 'AddUser': $this->AddUser($userData); break;
                 case 'AddXmlUser': $this->AddXmlUser(); break;
                 case 'UsersList': $this->UsersList();break;            
                 case 'GetUsersDiffGroup': $this->GetUsersDiffGroup();break;
@@ -68,19 +68,21 @@ class Usuarios {
         return XML::XMLReponse("userSessionClosed", 1, "Sesión finalizada");
     }
     
-    private function AddUser()
+    private function AddUser($user)
     {
         $BD= new DataBase();
         
         $UserXml = filter_input(INPUT_POST, "UserXml");
-        $xml =  simplexml_load_string($UserXml);
-        $IdUser = filter_input(INPUT_POST, "IdUser");
-        $UserName = filter_input(INPUT_POST, "UserName");
-        $DataBaseName = filter_input(INPUT_POST, "DataBaseName");
+        $IdUser = $user['idUser'];
+        $UserName = $user['userName'];
+        $DataBaseName = $user['dataBaseName'];
         $RoutFile = dirname(getcwd());        
         $UserLogin = '';
         $Password = '';
-                       
+        
+        if(!($xml =  simplexml_load_string($UserXml)))
+                return XML::XMLReponse ("Error", 0, "El xml recibido es incorrecto. Es posible que no se haya formado correctamente.<br><br>".$xml);
+        
         if(!file_exists("$RoutFile/version/config.ini"))
         {
             XML::XMLReponse("Error", 0, "<p><b>Error</b><br><br> El registro de configuración de CSDocs no existe. Reportelo directamente con CSDocs</p>");
@@ -97,7 +99,7 @@ class Usuarios {
         $UsersNumber_ = $this->CheckUsersNumber($DataBaseName);
         if($UsersNumber_['Estado']!=1)
         {
-            XML::XMLReponse("Errro", 0, "<p><b>Error</b> al obtener el numéro de usuarios en el sistema</p><br>Detalles:<br><br>".$UsersNumber_['Estado']);
+            XML::XMLReponse("Error", 0, "<p><b>Error</b> al obtener el numéro de usuarios en el sistema</p><br>Detalles:<br><br>".$UsersNumber_['Estado']);
             return 0;
         }
         $UsersNumber = $UsersNumber_['ArrayDatos']['COUNT(*)'];        
@@ -126,6 +128,8 @@ class Usuarios {
                     XML::XMLReponse("warning", 0, "<p><b>Error</b> contraseña demasiado corta </p>");
                     return 0;
                 }
+                else
+                    $Password = md5 ($FieldValue);
             }
             
             if(strcasecmp($FieldName, "Login")==0)
@@ -197,7 +201,7 @@ class Usuarios {
 
         mysql_select_db($DataBaseName,  $conexion);  
         $query = "";
-        if(strcasecmp($DataBaseName, "cs-docs"))
+        if(strcasecmp($DataBaseName, "cs-docs")==0)
             $query = "SELECT COUNT(*) FROM Usuarios";
         else
             $query = "SELECT COUNT(*) FROM CSDocs_Usuarios";
@@ -288,8 +292,21 @@ class Usuarios {
             $value=$xml->Campo[$cont]->value;
             $name=$xml->Campo[$cont]->name;
             $type=$xml->Campo[$cont]->type;
-          
+                      
+            if(strcasecmp($name, "Password")==0)
+            {
+                if(strlen ($value)<=4)
+                {
+                    XML::XMLReponse("warning", 0, "<p><b>Error</b> contraseña demasiado corta </p>");
+                    return 0;
+                }
+                else
+                    $value = md5 ($value);
+            }
+            
             $FormattedField = DataBase::FieldFormat($value, $type);
+
+            
             if(strcasecmp($FormattedField, 0)!=0)
             {
                 $Update.="$name = $FormattedField,";

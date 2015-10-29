@@ -110,7 +110,7 @@ class Login {
         
         $idSession = Session::getIdSession();
 //        var_dump($idSession);
-        $ResultSelect = array();
+        $ResultSelect = null;
         
         if(strlen($user)>0)
             $ResultSelect = $this->searchRegisterUser($DataBaseName, $user, $pass);
@@ -196,12 +196,12 @@ class Login {
         }
         else
         {
-            $SelectUsuario = "SELECT usu.IdUsuario, usu.Login, gc.IdGrupo, gu.Nombre FROM Usuarios usu 
+            $SelectUsuario = "SELECT usu.IdUsuario, usu.Login, gc.IdGrupo, gu.Nombre FROM CSDocs_Usuarios usu 
             INNER JOIN GruposControl gc ON gc.IdUsuario=usu.IdUsuario
             LEFT JOIN GruposUsuario gu ON gu.IdGrupo = gc.IdGrupo
             WHERE usu.Login  COLLATE utf8_bin ='$userName' AND usu.Password  COLLATE utf8_bin ='".md5(trim($password))."'";
-            
-            if(!file_exists("$RoutFile/web/Estructuras/$instanceName")){
+        
+            if(!file_exists("$RoutFile/Estructuras/$instanceName")){
                 $ResultSelect['Estado'] = 1;
                 $ResultSelect['ArrayDatos'] = array();
             }

@@ -4,7 +4,7 @@
  * Clase que administra los Grupos de Usuario (Creación, modificación, borrado y  permisos por grupo)
  ---------------------------------------------------------------------------------------------------------*/
 
-/* global EnvironmentData, BotonesWindow, OptionDataTable, Repository, Tree */
+/* global EnvironmentData, BotonesWindow, OptionDataTable, Repository, Tree, LanguajeDataTable */
 
 var TableGroupsdT;
 var TableGroupsDT;
@@ -368,20 +368,24 @@ var ClassUsersGroups = function()
         $('.PanelGroupsMembers').remove();
         $('body').append('<div class = "PanelGroupsMembers" style = "display:none"></div>');
         $('.PanelGroupsMembers').append('<div class="titulo_ventana">Integrantes de grupo</div>');       
-        $('.PanelGroupsMembers').append('<table id = "GroupMembers" class = "display hover"><thead><tr><th>Usuario</th><th>Descripción</th></tr></thead><tbody></tbody></table>');
+        $('.PanelGroupsMembers').append('<table id = "GroupMembers" class = "table table-striped table-bordered table-hover table-condensed"><thead><tr><th>Usuario</th><th>Descripción</th></tr></thead><tbody></tbody></table>');
         
-        TableGroupMembersdT = $('#GroupMembers').dataTable({"sDom": '<"ButtonsTableGroupMembers">frtip'},OptionDataTable);  
+        TableGroupMembersdT = $('#GroupMembers').dataTable({
+            "sDom": 'lfTrtip',
+            "bInfo":false, "autoWidth" : false, "oLanguage":LanguajeDataTable,
+            "tableTools": {
+                "aButtons": [
+                    {"sExtends":"text", "sButtonText": "Agregar", "fnClick" :function(){_ShowUsersWithoutGroup();}},
+                    {"sExtends":"text", "sButtonText": "Quitar", "fnClick" :function(){_ConfirmDeleteGroupMembers();}},
+                    {"sExtends": "copy","sButtonText": "Copiar Tabla"},
+                    {
+                        "sExtends":    "collection",
+                        "sButtonText": "Exportar...",
+                        "aButtons":    [ "csv", "xls", "pdf" ]
+                    }                          
+                ]
+            }    });  
         TableGroupMembersDT = new $.fn.dataTable.Api('#GroupMembers');
-        
-        $('div.ButtonsTableGroupMembers').append('<input type = "button" value = "Agregar" id = "BTGM_Agregar">');
-        $('div.ButtonsTableGroupMembers').append('<input type = "button" value = "Quitar" id = "BTGM_Quitar">');
-        
-        $('#BTGM_Agregar').button();
-        $('#BTGM_Quitar').button();
-        
-        $('#BTGM_Agregar').click(function(){_ShowUsersWithoutGroup();});
-        $('#BTGM_Quitar').click(function(){_ConfirmDeleteGroupMembers();});
-        
         
         var XmlGruposUsuario = _GetGroupMemebers();
         
@@ -452,9 +456,21 @@ var ClassUsersGroups = function()
         $('.PanelUsersWithoutGroup').remove();
         $('body').append('<div class = "PanelUsersWithoutGroup" style = "display:none"></div>');
         $('.PanelUsersWithoutGroup').append('<div class="titulo_ventana">Integrantes de grupo</div>');       
-        $('.PanelUsersWithoutGroup').append('<table id = "UsersWithoutGroup" class = "display hover"><thead><tr><th>Usuario</th><th>Descripción</th></tr></thead><tbody></tbody></table>');
+        $('.PanelUsersWithoutGroup').append('<table id = "UsersWithoutGroup" class = "table table-striped table-bordered table-hover table-condensed"><thead><tr><th>Usuario</th><th>Descripción</th></tr></thead><tbody></tbody></table>');
         
-        TableUsersWithoutGroupdT = $('#UsersWithoutGroup').dataTable(OptionDataTable);  
+        TableUsersWithoutGroupdT = $('#UsersWithoutGroup').dataTable({
+            "sDom": 'lfTrtip',
+            "bInfo":false, "autoWidth" : false, "oLanguage":LanguajeDataTable,
+            "tableTools": {
+                "aButtons": [
+                    {"sExtends": "copy","sButtonText": "Copiar Tabla"},
+                    {
+                        "sExtends":    "collection",
+                        "sButtonText": "Exportar...",
+                        "aButtons":    [ "csv", "xls", "pdf" ]
+                    }                          
+                ]
+            } });  
         TableUsersWithoutGroupDT = new $.fn.dataTable.Api('#UsersWithoutGroup');
                 
         var XmlUsers = _GetUsersWithoutGroup();
@@ -748,8 +764,8 @@ var ClassUsersGroups = function()
         }});
     
     $('#UsersPlaceWaiting').remove();    
-    
-    RepositoryChildren[0].activate();               /* Se activa el primer repositorio */
+    if(RepositoryChildren !== null && RepositoryChildren !== undefined)
+        RepositoryChildren[0].activate();               /* Se activa el primer repositorio */
         
         
     };
@@ -1132,32 +1148,27 @@ ClassUsersGroups.prototype.ShowsGroupsUsers = function()
        $('#WS_Users').empty();       
        $('#WS_Users').append('<div class="titulo_ventana">Grupos de Usuario</div>');
        $('#WS_Users').append('<div class="LoadingGroups loading"><img src="../img/loadinfologin.gif"></div>');
-       $('#WS_Users').append('<table id="TableUsersGroups" class="display hover"><thead><tr><th>Nombre del Grupo</th><th>Descripción</th></tr></thead><tbdoy></tbody></table>');
+       $('#WS_Users').append('<table id="TableUsersGroups" class="table table-striped table-bordered table-hover table-condensed"><thead><tr><th>Nombre del Grupo</th><th>Descripción</th></tr></thead><tbdoy></tbody></table>');
 
-       TableGroupsdT = $('#TableUsersGroups').dataTable({"sDom": '<"ButtonsTableGroups">frtip'},OptionDataTable);    
+       TableGroupsdT = $('#TableUsersGroups').dataTable({"sDom": 'lfTrtip',
+            "bInfo":false, "autoWidth" : false, "oLanguage":LanguajeDataTable,
+            "tableTools": {
+                "aButtons": [
+                    {"sExtends":"text", "sButtonText": "Crear", "fnClick" :function(){_NewGroup();}},
+                    {"sExtends":"text", "sButtonText": "Editar", "fnClick" :function(){_ShowGroupData();}},
+                    {"sExtends":"text", "sButtonText": "Eliminar", "fnClick" :function(){_ConfirmDelete();}},
+                    {"sExtends":"text", "sButtonText": "Miembros", "fnClick" :function(){_Members();}},
+                    {"sExtends":"text", "sButtonText": "Permisos", "fnClick" :function(){_CreatePermissionsPanel();}},
+                    {"sExtends": "copy","sButtonText": "Copiar Tabla"},
+                    {
+                        "sExtends":    "collection",
+                        "sButtonText": "Exportar...",
+                        "aButtons":    [ "csv", "xls", "pdf" ]
+                    }                          
+                ]
+            }    });    
+
        TableGroupsDT = new $.fn.dataTable.Api('#TableUsersGroups');
-       
-       $( "div.ButtonsTableGroups" ).append('<input type  = "button" value = "Crear" id = "GroupButtonCrear">');
-       $( "div.ButtonsTableGroups" ).append('<input type  = "button" value = "Editar" id ="GroupButtonEditar">');
-       $( "div.ButtonsTableGroups" ).append('<input type  = "button" value = "Eliminar" id = "GroupButtonEliminar">');
-       $( "div.ButtonsTableGroups" ).append('<input type  = "button" value = "Miembros" id = "GroupButtonEditarMiembros">');
-       $( "div.ButtonsTableGroups" ).append('<input type  = "button" value = "Permisos" id = "GroupButtonEditarPermisos">');
-       $( "div.ButtonsTableGroups" ).append('<input type  = "button" value = "Jerarquía" id = "GroupButtonJerarquia">');
-       
-       $('#GroupButtonCrear').button();
-       $('#GroupButtonEditar').button();
-       $('#GroupButtonEliminar').button();
-       $('#GroupButtonEditarMiembros').button();
-       $('#GroupButtonEditarPermisos').button();
-       $('#GroupButtonJerarquia').button();
-              
-       $('#GroupButtonCrear').click(function(){_NewGroup();});
-       $('#GroupButtonEditar').click(function(){_ShowGroupData();});
-       $('#GroupButtonEliminar').click(function(){_ConfirmDelete();});
-       $('#GroupButtonEditarMiembros').click(function(){_Members();});
-       $('#GroupButtonEditarPermisos').click(function(){_CreatePermissionsPanel();});
-       $('#GroupButtonJerarquia').click(function(){_ShowsGroupsHierarchy();});
-       
        
        $.ajax({
        async:true, 

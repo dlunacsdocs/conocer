@@ -125,12 +125,12 @@ var ClassInstanceManager = function(){
     _newInstanceModal = function(){
         var $text = $('<div></div>');
         $text.append('<p>Agregar instancia vacia</p>');
-        $text.append('<div class = "form-inline">\n\
-                    <div class = "form-group has-feedback text-muted">\n\
-                         Nombre \n\
-                        <input type = "text" class = "form-control" id = "newInstanceName" placeholder = "Nombre instancia">\n\
-                    </div>\n\
-                </div>');
+        $text.append('  <div class = "form-inline text-muted">\n\
+                            <div class = "form-group has-feedback text-muted">\n\
+                                 Nombre \n\
+                                <input type = "text" class = "form-control" id = "newInstanceName" placeholder = "Nombre instancia">\n\
+                            </div>\n\
+                        </div>');
         $text.append('<br>');
         $text.append('<p>Construir instancia desde un XML (Se genera automáticamente al seleccionar XML)</p>');
         $text.append('<div class = "form-inline">\n\

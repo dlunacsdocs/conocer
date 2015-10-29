@@ -1030,7 +1030,7 @@ class DataBase {
         return $this->WriteConfig($section,$config);
     }
     
-    function createUsersDefaultConfiguration($dataBaseName){
+    function createUsersDefaultConfiguration($dataBaseName){ 
         $config = array();
         $config['DataBaseName'] = $dataBaseName;
         
@@ -1048,6 +1048,23 @@ class DataBase {
         $section = "Usuarios";
         
         return $this->WriteConfig($section,$config);
+    }
+    
+    function createUsersControl($dataBaseName){        
+        $users = 'CREATE TABLE IF NOT EXISTS CSDocs_Usuarios ('
+                . 'IdUsuario INT NOT NULL AUTO_INCREMENT,'
+                . 'estatus INT NOT NULL DEFAULT "1",'
+                . 'Login VARCHAR(50) NOT NULL,'
+                . 'Password VARCHAR(50) NOT NULL,'
+                . 'Descripcion TEXT,'
+                . 'PRIMARY KEY (IdUsuario)'
+                . ') ENGINE=InnoDB AUTO_INCREMENT=5 DEFAULT CHARSET=utf8';
+        
+        if(($result = $this->ConsultaQuery($dataBaseName, $users))!=1)
+                return $result;
+        
+        return 1;
+        
     }
     
     /*
