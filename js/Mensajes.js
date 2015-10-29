@@ -43,23 +43,10 @@ function Salida(mensaje)
 }
 function Error(mensaje)
 {
-    var $message = $('<div></div>');
-    $message.append(mensaje);
-    
-    BootstrapDialog.show({
-            title: '<span class = "glyphicon glyphicon-warning-sign"></span> Error',
-            message: $message,
-            type: BootstrapDialog.TYPE_DANGER,
-            size: BootstrapDialog.SIZE_WIDE,
-            buttons: [{
-                    label:"Aceptar",
-                    action:function(dialog){
-                        dialog.close();
-                    }
-            }],
-            closable: false
-            
-        });
+    $('#MensajeError').dialog(WindowError);
+    $('#MensajeError').empty();
+    $('#MensajeError').append('<center><img src="img/fallo.png"></center>');
+    $('#MensajeError').append(mensaje);
 }
 
 function errorMessage(mensaje)
