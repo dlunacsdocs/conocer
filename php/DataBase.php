@@ -612,15 +612,26 @@ class DataBase {
             foreach ($Empresa->children() as $InsertEmpresa)
             {
                 
-                if($InsertEmpresa=='ClaveEmpresa'){$CE=$InsertEmpresa;$ExistEmpresa=$this->ExistRegister($DataBase, 'CSDocs_Empresas', 'ClaveEmpresa', "'".$InsertEmpresa['Value']."'");
-                if($ExistEmpresa['Peso']!=0){echo "<p>Error: La clave ".$InsertEmpresa['Value']." de empresa ya existe.</p>";continue 2;}}
+                if($InsertEmpresa=='ClaveEmpresa'){
+                    $CE = $InsertEmpresa; 
+                    $ExistEmpresa = $this->ExistRegister($DataBase, 'CSDocs_Empresas', 'ClaveEmpresa', "'".$InsertEmpresa['Value']."'");
                 
-                $Value=$InsertEmpresa['Value'];                                        
+                    if($ExistEmpresa['Peso']!=0){
+                        echo "<p>Error: La clave ".$InsertEmpresa['Value']." de empresa ya existe.</p>";continue 2;
+                        
+                    }
+                    
+                }
+                
+                $Value=$InsertEmpresa['Value'];     
+                
                 if(!(is_numeric("$Value")))
                 {
                     $Value="'$Value'";
                 }
+                
                 $cadena_valores.=$Value.",";
+                
                 $CadenaCampos.= "$InsertEmpresa,";
             }
             
@@ -628,12 +639,14 @@ class DataBase {
             $CadenaCampos_=trim($CadenaCampos,',');
             
             $query="INSERT INTO CSDocs_Empresas ($CadenaCampos_) VALUES ($cadena_valores_)";
+            
 //            echo "<p>$query</p>";
-//            echo "<br>";
-            if(($Insert=$this->ConsultaInsert($DataBase,   $query)))
-            {
-                echo "<p>Insertado $CE</p>";
-            }else{echo $Insert;}
+            echo "<br> Registrando en la instancia $DataBase";
+            
+            if(($Insert = $this->ConsultaInsert($DataBase,$query)))
+                echo "<p>Empresa registrada</p>";
+            else
+                echo "Error al registrar empresa con clave $CE. <br>".$Insert;
             
         }
                               

@@ -19,5 +19,9 @@ if($EncryptedSetting === FALSE)
 
 $UsersNumberEncrypted = $EncryptedSetting['UsersNumber'];
 $UserNumberDecrypted = Encrypter::decrypt($UsersNumberEncrypted);
+$repositoriesEncrypted = $EncryptedSetting['RepositoriesNumber'];
+$repositoriesNumber = Encrypter::decrypt($repositoriesEncrypted);
+$instancesNumberEncrypted = $EncryptedSetting['InstancesNumber'];
+$instancesNumber = Encrypter::decrypt($instancesNumberEncrypted);
 
-echo $UserNumberDecrypted;
+echo "Instances: $instancesNumber Usuarios: ".$UserNumberDecrypted." repos:$repositoriesNumber" ;
