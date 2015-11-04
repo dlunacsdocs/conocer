@@ -3,9 +3,9 @@
  * To change this template file, choose Tools | Templates
  * and open the template in the editor.
  */
-/* global CatalogAdmin, BotonesWindow, EnvironmentData, Enterprise */
+/* global CatalogAdmin, BotonesWindow, EnvironmentData, Enterprise, LanguajeDataTable, Repository */
 
-var WindowCatalogo={minHeight:500,minWidth:800,width:$(window).width()-100, height:600, closeOnEscape:false};
+var WindowCatalogo={minHeight:400,minWidth:300,width:750, height:500, closeOnEscape:false};
 var CatalogTabledT = undefined;
 var CatalogTableDT = undefined;
 
@@ -44,8 +44,8 @@ $(document).ready(function()
        $("#AccordionCatalogs").accordion({ header: "h3", collapsible: true, heightStyle: "content" });
        $('#tr_NewCatalogo').click();
    });
-   $('#tr_NewCatalogo').click(function(){CatalogAdmin.CM_AddCatalogo();});
-   $('#tr_Catalogos').click(function(){CatalogAdmin.GetListCatalogos()();});
+   $('#tr_NewCatalogo').click(function(){CatalogAdmin.createNewCatalogInterface();});
+   $('#tr_Catalogos').click(function(){CatalogAdmin.GetListCatalogos();});
    $('#tr_ViewCatalog').click(function(){CatalogAdmin.ViewCatalog();});
 });
 
@@ -688,38 +688,8 @@ ClassCatalogAdministrator = function()
         }                    
     };
     
-};
-
-/*-----------------------------------------------------------------------------*
- *                                                                             *
- *            Definición de Métodos Públicos mediante Prototipos               *
- *                                                                             *
- *-----------------------------------------------------------------------------*/
-
-    /*******************************************************************************
-    *  Define una nueva estructura para un Catalogo a través de un XML
-    * @returns {undefined}
-    */
-   ClassCatalogAdministrator.prototype.CM_AddCatalogo = function()
-   {
-       $('#WS_Catalogo').empty();
-       $('#WS_Catalogo').append('<div class="titulo_ventana">Agregar un Nuevo Catálogo</div>');
-       $('#WS_Catalogo').append('<p>Seleccione un XML con la estructura del Catálogo en base al XSD definido por el sistema.</p>');
-       $('#WS_Catalogo').append('<br><table id="TableCatalogosAdd"></table>');
-       $('#TableCatalogosAdd').append('<tr><td>Empresa:</td> <td><select class = "FormStandart" id="SelectEmpresasAddCatalogo"><option>Seleccione una empresa...</option></select></td></tr>');
-       $('#TableCatalogosAdd').append('<tr><td>Repositorio:</td><td> <select class = "FormStandart" id="SelectRepositoriosAddCatalogo"><option>Esperando empresa...</option></select></td></tr>');
-       
-       var enterprises = Enterprise.GetEnterprises();
-
-       $(enterprises).find('Enterprise').each(function()
-        {
-            var IdEnterprise = $(this).find('IdEmpresa').text();
-            var EnterpriseKey = $(this).find('ClaveEmpresa').text();
-            var EnterpriseName = $(this).find('NombreEmpresa').text();
-           $("#SelectEmpresasAddCatalogo").append("<option value=\""+EnterpriseKey+"\">"+EnterpriseName+"</option>");
-        });
-       
-       $('#SelectEmpresasAddCatalogo').change(function()
+    _setActionsToSelects = function(){
+        $('#SelectEmpresasAddCatalogo').change(function()
        {
            var EnterpriseKey = $('#SelectEmpresasAddCatalogo').val();
            if(EnterpriseKey!=="0")
@@ -739,7 +709,7 @@ ClassCatalogAdministrator = function()
                   if($('#SelectRepositoriosAddCatalogo').val()!=="0")
                   {
                       $('#InputFile_AddCatalogo').remove();
-                      $('#WS_Catalogo').append('<input type="file" id="InputFile_AddCatalogo" accept="text/xml">');
+//                      $('#WS_Catalogo').append('<input type="file" id="InputFile_AddCatalogo" accept="text/xml">');
                       $('#InputFile_AddCatalogo').change(function(){_CM_AddCatalogoXML();});
                   }
                   else
@@ -753,6 +723,220 @@ ClassCatalogAdministrator = function()
                $('#InputFile_AddCatalogo').remove();
            }
        });     
+    };
+    
+    _newFieldInterface = function(){
+        
+        if(!parseInt($('#SelectRepositoriosAddCatalogo').val()) > 0 && !parseInt($('#SelectEmpresasAddCatalogo').val()) > 0)
+            return Advertencia("Debe seleccionar una empresa y un repositorio");
+                
+        var fieldsManager = new FieldsManager();
+        fieldsManager.windowNewField(this._AddNewFieldToCatalog);        
+    };
+    
+    _AddNewFieldToCatalog = function()
+    {
+        
+        var fieldsManager = new FieldsManager();
+        var FieldsValues = fieldsManager.GetFieldsValues(CatalogTabledT, CatalogTableDT);
+        
+        if (!$.isPlainObject(FieldsValues))
+            return 0;
+                
+        var required = "No";
+        
+        if(String(FieldsValues.RequiredField).toLowerCase() === "true")
+            required = "Si";
+        
+        var data = [FieldsValues.FieldName, FieldsValues.FieldType, FieldsValues.FieldLength, required];
+        var ai = CatalogTableDT.row.add(data).draw();
+        var n = CatalogTabledT.fnSettings().aoData[ ai[0] ].nTr;
+    };
+    
+    _buildCatalog = function(){
+
+        var xml = _getCatalogXml();
+        
+        if(!$.parseXML(xml))
+            return 0;
+        
+        var data = {"opcion":"buildNewCatalog", xml:xml};
+        
+        $.ajax({
+        async:false, 
+        cache:false,
+        dataType:"html", 
+        type: 'POST',   
+        url: "php/Catalog.php",
+        data: data, 
+        success:  function(xml)
+        {            
+            if($.parseXML( xml )===null){Error(xml); return 0;}else xml=$.parseXML( xml );
+
+            $(xml).find('newCatalogBuilded').each(function(){
+                var Mensaje = $(xml).find('Mensaje').text();
+                Notificacion(Mensaje);
+                
+            });
+            
+            $(xml).find("Error").each(function()
+            {
+                var $Error=$(this);
+                var mensaje=$Error.find("Mensaje").text();
+                Error(mensaje);
+            });                 
+
+        },
+        beforeSend:function(){},
+        error: function(jqXHR, textStatus, errorThrown) {Error(textStatus +"<br>"+ errorThrown);}
+        });         
+    };
+    
+    /********************************************************************************
+     * Genera la estructura XML que se va a utilizar para generar el nuevo Catálogo *
+     *                                                                              *
+     * @returns {Xml}                                                         *
+     ********************************************************************************/
+    _getCatalogXml = function(){
+        var FieldsValidator = new ClassFieldsValidator();   
+        var RegularExpression = /^([a-zA-Z0-9\_])+$/g;
+        var catalogName = $('#catalogNameNew').val();
+        catalogName = $.trim(catalogName);
+        
+        if(catalogName.length === 0){
+            FieldsValidator.AddClassRequiredActive($('#catalogNameNew'));
+            $('#catalogNameNew').attr('title','El nombre del catálogo es obligatorio');
+            return 0;
+        }
+        else{
+            FieldsValidator.RemoveClassRequiredActive($('#catalogNameNew'));
+            $('#catalogNameNew').attr('title','');
+        }
+             
+        if(!RegularExpression.test(catalogName))
+        {
+            FieldsValidator.AddClassRequiredActive($('#catalogNameNew'));
+            $('#catalogNameNew').attr('title','Nombre inválido');
+            return 0;
+        }
+        else{
+            FieldsValidator.RemoveClassRequiredActive($('#catalogNameNew'));
+            $('#catalogNameNew').attr('title','');
+        }
+        
+        var Xml = "";
+        
+        /* Se genera la misma estructura de xml de carga de repositorio a travÃ©s del attachment 'Nueva Instancia' */
+        var Xml = "<NewCatalog version='1.0' encoding='UTF-8'>\n\
+                        <CrearEstructuraCatalogo>";
+                    Xml+="<NombreCatalogo>"+catalogName+"</NombreCatalogo>\n\
+                            <DefinitionUsersProperties>";
+        
+        var Rows = CatalogTableDT.rows().data().each(function(value, index)
+        {
+            var FieldName = value[0];
+            var FieldType = value[1];
+            var FieldLength = value[2];
+            var RequiredField = value[3];
+            
+            if(RequiredField==='Si')
+                RequiredField = true;
+            else if(RequiredField==='No')
+                RequiredField = false;
+            
+            Xml+=               '<Properties name = "'+FieldName+'" long = "'+FieldLength+'" type = "'+FieldType+'" required = "'+RequiredField+'" />';            
+        });
+        
+        if(Rows.length===0)
+        {
+            Advertencia('Debe agregar por lo menos un campo en el nuevo repositorio');
+            return;
+        }
+                
+        Xml+=               '</DefinitionUsersProperties>\n\
+                        </CrearEstructuraCatalogo>\n\
+                    </NewCatalog>';
+        
+        return Xml;
+        
+    };
+};
+
+/*-----------------------------------------------------------------------------*
+ *                                                                             *
+ *            Definición de Métodos Públicos mediante Prototipos               *
+ *                                                                             *
+ *-----------------------------------------------------------------------------*/
+
+    /*******************************************************************************
+    *  Define una nueva estructura para un Catalogo a través de un XML
+    * @returns {undefined}
+    */
+   ClassCatalogAdministrator.prototype.createNewCatalogInterface = function()
+   {
+       $('#WS_Catalogo').empty();
+       
+       var form = $('<select>', {id:"SelectEmpresasAddCatalogo", class:"form-control"});
+       form.append("<option>Seleccione una empresa</option>");
+       var label = '<label>Empresa<label>';
+       var $formGroup = $('<div>', {class:"form-group"});
+
+       $formGroup.append(label);
+       $formGroup.append(form);
+       
+       form = $('<select>', {id:"SelectRepositoriosAddCatalogo", class:"form-control"});
+       form.append("<option>Seleccione un repositorio</option>");
+       label = '<label>Repositorio<label>';
+
+       $formGroup.append(label);
+       $formGroup.append(form);
+       
+       form = $('<input>', {class:"form-control",id:"catalogNameNew", class:"form-control"});
+       label = '<label>Nombre Catálogo<label>';
+
+       $formGroup.append(label);
+       $formGroup.append(form);
+
+       $('#WS_Catalogo').append($formGroup);
+       
+       var $table = $('<table>',{id:"newCatalogTable", class: "table table-striped table-bordered table-hover table-condensed display hover"});
+       $table.append("<thead><tr><th>Nombre</th><th>Tipo</th><th>Longitud</th><th>Requerido</th></tr></thead>");
+       
+       $('#WS_Catalogo').append($table);
+       
+       CatalogTabledT = $('#newCatalogTable').dataTable({
+        'bPaginate':false, 'bInfo':false, bFilter: false, "bSort": false, "autoWidth" : false, "oLanguage":LanguajeDataTable,
+        "dom": 'lfTrtip',
+            "oTableTools": {
+                "aButtons": [
+                    {"sExtends":"text", "sButtonText": "Nuevo Campo", "fnClick" :function(){_newFieldInterface();}},
+                    {"sExtends":"text", "sButtonText": "Construir Catálogo", sButtonClass:"", "fnClick":function(){_buildCatalog();}},
+                    {
+                        "sExtends":    "collection",
+                        "sButtonText": "Otro",
+                        "aButtons":    ["copy" ,"csv", "xls", "pdf" ]
+                    }                    
+                ]
+            },
+            "sSwfPath": "../apis/DataTables/extensions/TableTools/swf/copy_csv_xls_pdf.swf"
+        });    
+        
+        CatalogTableDT = new $.fn.dataTable.Api( '#newCatalogTable' );      
+               
+       var enterprises = Enterprise.GetEnterprises();
+
+       $(enterprises).find('Enterprise').each(function()
+        {
+            var IdEnterprise = $(this).find('IdEmpresa').text();
+            var EnterpriseKey = $(this).find('ClaveEmpresa').text();
+            var EnterpriseName = $(this).find('NombreEmpresa').text();
+           $("#SelectEmpresasAddCatalogo").append("<option value=\""+EnterpriseKey+"\">"+EnterpriseName+"</option>");
+        });
+       
+       $('#btnBuildCatalog').on("click", "_buildCatalog");
+       
+       _setActionsToSelects();
+       
    };
 
 
@@ -842,76 +1026,7 @@ ClassCatalogAdministrator = function()
          beforeSend:function(){},
          error: function(jqXHR, textStatus, errorThrown){$('#Loading').dialog('close');Error(textStatus +"<br>"+ errorThrown);}
        });
-       
-//       ajax=objetoAjax();
-//       ajax.open("POST", 'php/Catalog.php',true);
-//       ajax.setRequestHeader("Content-Type", "application/x-www-form-urlencoded;charset=utf-8;");
-//       ajax.send("opcion=GetListCatalogos");
-//       ajax.onreadystatechange=function() 
-//       {
-//           $('#Loading').dialog('close');
-//          if (ajax.readyState===4 && ajax.status===200) 
-//          {
-//             if(ajax.responseXML===null){Error(ajax.responseText);return;     }  
-//              var xml = ajax.responseXML;
-//              var cont=0;
-//              var ArrayDirectories=new Array();
-//              var ArrayEmpresas=new Array();
-//              var ArrayRepositorios=new Array();
-//              var ArrayCatalogos=new Array();
-//              $(xml).find("Empresas").each(function()
-//               {                
-//                  var $Empresas=$(this);
-//                   var ClaveEmpresa=$Empresas.find("ClaveEmpresa").text();
-//                   var NombreEmpresa = $Empresas.find("NombreEmpresa").text();
-//                   var IdEmpresa = $Empresas.find("IdEmpresa").text();
-//                   var IdRepositorio=$Empresas.find("IdRepositorio").text();
-//                   var IdCatalogo=$Empresas.find("IdCatalogo").text();
-//                   var NombreRepositorio=$Empresas.find("NombreRepositorio").text();
-//                   var NombreCatalogo=$Empresas.find("NombreCatalogo").text();
-//                   var Index=ArrayDirectories.indexOf(IdEmpresa);
-//                   var IdexRepositorio=ArrayRepositorios.indexOf(IdRepositorio);                
-//                   var IndexCatalogo=ArrayCatalogos.indexOf(IdCatalogo);
-//
-//                   /* Comprobación para no repetir empresas */
-//                  if(Index === (-1)) 
-//                  {
-//                      ArrayDirectories[IdEmpresa]=IdEmpresa;
-//                      $('#Tree_Repository_').append('<li id="'+ClaveEmpresa+'" class="unselectable expanded folder" data="icon: \'enterprise.png\'">'+NombreEmpresa+'<ul id="'+ClaveEmpresa+'_clave"></ul>');
-//                  }
-//
-//                  if(IdexRepositorio === (-1)) 
-//                  {
-//                      ArrayRepositorios[IdRepositorio]=IdRepositorio;
-//                      $('#'+ClaveEmpresa+'_clave').append('<li id="'+NombreRepositorio+'" class="unselectable expanded folder" data="icon: \'Repositorio.png\'">'+NombreRepositorio+'<ul id="rep_'+IdRepositorio+'"></ul>');
-//                  } 
-//
-//   //                   ArrayCatalogos[IndexCatalogo]=IndexCatalogo;
-//                      $('#rep_'+IdRepositorio).append('<li id="'+IdCatalogo+'" class="unselectable expanded folder" data="icon: \'Catalogo.png\'">'+NombreCatalogo+'<ul id="'+IdCatalogo+'_catalogo"></ul>');
-//               });     
-//
-//               $(xml).find("Error").each(function()
-//               {
-//                   var $Instancias=$(this);
-//                   var estado=$Instancias.find("Estado").text();
-//                   var mensaje=$Instancias.find("Mensaje").text();
-//                   Error(mensaje);
-//               });
-//
-//               $("#tree_catalogos").dynatree({onActivate: function(node) {                    
-//                   if(node.data.key>0) /* Condición que solo cumplen los repositorios en este árbol */
-//                   {
-//                       $('#TableStructureCatalogos').remove();
-//                       $('#WS_Catalogo').empty();
-//                       $('#WS_Catalogo').append('<div class="titulo_ventana">Estructura de Catálogo</div>'); 
-//                       $('#WS_Catalogo').append('<table id="TableStructureCatalogos"  class="TablaPresentacion"><thead><tr><th>Nonbre del Campo</th><th>Tipo de Campo</th><th>Longitud</th><th>Requerido</th></tr></thead></table>');
-//                       /* SetTableStructura es una función localizada en Designer.js */
-//                       SetTableStructura("Catalogo_"+node.data.title,'TableStructureCatalogos',1);/* En el archivo de Configuración
-//                        *                                                          Los nombres de cada catálogo anteceden con Catalogo_ */
-//                   }                    
-//               }});
-//          }       
-//      };
+ 
    };
 
    ClassCatalogAdministrator.prototype.GetCatalogRecordsInXml = function(repositoryName, CatalogName, CatalogType)

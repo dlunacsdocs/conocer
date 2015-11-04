@@ -641,7 +641,7 @@ var ClassRepository = function()
     
     _FormsAddNewField = function()
     {
-        console.log('_AddFieldToRepository');
+        
         var fieldsManager = new FieldsManager();
         fieldsManager.windowNewField();
         
@@ -658,7 +658,6 @@ var ClassRepository = function()
     /* Agrega un nuevo campo a un repositorio existente  */
     _AddNewFieldToRepository = function()
     {
-        console.log('AddNewFieldToRepository:::');
         
         var fieldsManager = new FieldsManager();
         var FieldsValues = fieldsManager.GetFieldsValues(RepositoryDetaildT, RepositoryDetailDT);

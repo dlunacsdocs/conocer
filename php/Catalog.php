@@ -41,15 +41,20 @@ class Catalog {
             
             switch (filter_input(INPUT_POST, "opcion"))
             {
-                case 'GetListCatalogos':$this->GetListCatalogos($userData);break;
+                case 'GetListCatalogos':$this->GetListCatalogos($userData); break;
                 case "GetCatalogRecordsInXml": $this->GetCatalogRecordsInXml($userData); break;
-                case 'AddCatalogoXML':$this->AddCatalogoXML();break;
-                case 'ModifyCatalogRecord':$this->ModifyCatalogRecord($userData);break;
-                case 'AddNewRecord':$this->AddNewRecord($userData);break;
+                case 'AddCatalogoXML':$this->AddCatalogoXML(); break;
+                case 'ModifyCatalogRecord':$this->ModifyCatalogRecord($userData); break;
+                case 'AddNewRecord':$this->AddNewRecord($userData); break;
                 case 'AddNewColumn': $this->AddNewColumn($userData); break;
+                case 'buildNewCatalog': $this->buildNewCatalog($userData); break;
             }
         }
     }  
+    
+    private function buildNewCatalog($user){
+        var_dump($_POST);
+    }
     
     /***************************************************************************
      *  Devuelve el listado de catalogos ordenado por empresa y repositorio
