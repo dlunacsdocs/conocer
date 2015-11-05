@@ -1533,7 +1533,6 @@ function ExistRegister($DataBaseName,$Table,$field,$Value)
     
     function GetTableFields($DataBaseName, $TableName)
     {
-        $XML = new XML();
         $estado = 1;
         $GetFields = "SHOW COLUMNS FROM $TableName";
         $ResultGetFields = $this->ConsultaSelect($DataBaseName, $GetFields);

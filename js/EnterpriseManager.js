@@ -21,31 +21,24 @@ var ClassEnterprise = function ()
     _DisplayWindowNewField = function ()
     {
         var fieldsManager = new FieldsManager();
-        fieldsManager.windowNewField();
-
-        var buttons = {"Cancelar": function () {
-                $(this).remove();
-            },
-            "Agregar": {text: "Agregar", click: function () {
-                    _ValidateNewField();
-                }}};
-
-        $('#DivFormsNewField').dialog('option', 'buttons', buttons);
+        var dialogRef = fieldsManager.windowNewField(this._ValidateNewField);
     };
 
-    _ValidateNewField = function ()
+    _ValidateNewField = function (dialogRef)
     {
         var fieldsManager = new FieldsManager();
         var FieldsValues = fieldsManager.GetFieldsValues(EnterprisedT, EnterpriseDT);
         if (!$.isPlainObject(FieldsValues))
             return 0;
 
+        dialogRef.close();
         _AddNewField(FieldsValues);
 
     };
 
     _AddNewField = function (FieldsValues)
     {
+        var self = this;
         var data = {option: 'NewField', DataBaseName: EnvironmentData.DataBaseName, IdUser: EnvironmentData.IdUsuario, UserName: EnvironmentData.NombreUsuario, FieldName: FieldsValues.FieldName, FieldType: FieldsValues.FieldType, FieldLength: FieldsValues.FieldLength, RequiredField: FieldsValues.RequiredField};
 
         $.ajax({
@@ -66,19 +59,6 @@ var ClassEnterprise = function ()
                 if ($(xml).find('AddedField').length > 0)
                 {
                     var Mensaje = $(xml).find('Mensaje').text();
-                    Notificacion(Mensaje);
-
-                    /*  Se reconstruye la ventana para agregar un nuevo campo y se selecciona el campo agregado sobre la tabla */
-                    var fieldsManager = new FieldsManager();
-                    fieldsManager.windowNewField();
-
-                    var buttons = {"Cancelar": function () {
-                            $(this).remove();
-                        }, "Agregar": {text: "Agregar", click: function () {
-                                _ValidateNewField();
-                            }}};
-
-                    $('#DivFormsNewField').dialog('option', 'buttons', buttons);
 
                     $('#TableEnterpriseDetail tr').removeClass('selected');
 

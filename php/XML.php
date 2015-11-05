@@ -27,8 +27,9 @@ class XML {
     /* Se válida el xml contra un esquema */
     function validacion_xml()
     {
-                       
-        if(!(file_exists('../Configuracion/Structure/CSDocs_1.0.xsd')))
+        $RoutFile = dirname(getcwd());        
+               
+        if(!(file_exists($RoutFile.'/Configuracion/Structure/CSDocs_1.0.xsd')))
         {
             $this->ResponseXML("Error", 0, "<p>No se encuentra el esquema de válidación!</p>");
             return 0;
@@ -53,7 +54,7 @@ class XML {
                     return 0;
                 }
                 
-                if (!$xml->schemaValidate('../Configuracion/Structure/CSDocs_1.0.xsd'))
+                if (!$xml->schemaValidate($RoutFile.'/Configuracion/Structure/CSDocs_1.0.xsd'))
                 {           
                 /*********** Errores ocurridos al válidar el archivo se registran en el log **********/
                     $Error='';

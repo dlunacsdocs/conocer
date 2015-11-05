@@ -643,16 +643,8 @@ var ClassRepository = function()
     {
         
         var fieldsManager = new FieldsManager();
-        fieldsManager.windowNewField();
+        fieldsManager.windowNewField(this._AddNewFieldToRepository);
         
-        var buttons = {"Cancelar": function () {
-                $(this).remove();
-            },
-            "Agregar": {text: "Agregar", click: function () {
-            _AddNewFieldToRepository();
-        }}};
-                
-        $('#DivFormsNewField').dialog('option','buttons',buttons);
     };
     
     /* Agrega un nuevo campo a un repositorio existente  */
@@ -684,7 +676,7 @@ var ClassRepository = function()
                 var Mensaje = $(xml).find('Mensaje').text();
                 
                 Notificacion(Mensaje);
-                console.log(FieldsValues.RequiredField);
+
                 FieldsValues.RequiredField = FieldsValues.RequiredField.toString();
                 if(FieldsValues.RequiredField == "false") 
                     FieldsValues.RequiredField = "No";

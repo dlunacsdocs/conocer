@@ -52,8 +52,32 @@ class Catalog {
         }
     }  
     
+    /***************************************************************************
+     * Construye un nuevo catálogo a través de la interfaz de usuario.         *
+     ***************************************************************************/
+    
     private function buildNewCatalog($user){
-        var_dump($_POST);
+        $dataBaseName = $user['dataBaseName'];
+        $userName = $user['userName'];
+        $idUser = $user['idUser'];
+        $idRepository = filter_input(INPUT_POST, "idRepository");
+        
+        $xmlString = filter_input(INPUT_POST, "xml");
+        $errorMessage = 0;
+        if(!($xml = simplexml_load_string($xmlString))){
+            foreach(libxml_get_errors() as $error) {
+                $errorMessage.= $error->message;
+            }
+        }
+        
+        if($errorMessage != 0)
+            return XML::XMLReponse ("Error", 0, "El xml no se construyó correctamente.<br><br> $errorMessage");
+
+        if(($result = $this->InsertCatalogIntoRepository($xml->CrearEstructuraCatalogo, $dataBaseName)) !=1)
+            return XML::XMLReponse ("Error", 0, "No pudo ser creado el repositorio");
+        else
+            XML::XMLReponse ("newCatalogBuilded", 1, "Catálogo construido correctamente");
+        
     }
     
     /***************************************************************************
@@ -279,7 +303,7 @@ class Catalog {
         return $Catalogos['ArrayDatos'];
     }
     
-        /***************************************************************************
+     /***************************************************************************
      * Crea un nuevo Catálogo
      */
     private function AddCatalogoXML()
@@ -311,95 +335,74 @@ class Catalog {
         } 
     }
     
-    function InsertCatalogIntoRepository($CatalogDetail)
+    function InsertCatalogIntoRepository($CatalogDetail, $DataBaseName)
     {
         $DB = new DataBase();
         
-        $DataBaseName = filter_input(INPUT_POST, "DataBaseName");
-        $ClaveEmpresa = filter_input(INPUT_POST, "ClaveEmpresa"); 
-        $NombreRepositorio = filter_input(INPUT_POST, "NombreRepositorio");
-        $IdRepository = filter_input(INPUT_POST, "IdRepository");
-            
-        foreach ($CatalogDetail->ListProperties as $ListProperties)
-        {                                                            
-            foreach ($ListProperties as $list)
-            {                            
-                $TipoCatalogo = $list['TipoCatalogo'];
+        $NombreCatalogo = $CatalogDetail->NombreCatalogo;
+        $NombreRepositorio = $CatalogDetail->NombreCatalogo['nombreRepositorio'];
+        $IdRepository = $CatalogDetail->NombreCatalogo['idRepositorio'];
+                                 
+        $list = $CatalogDetail->DefinitionUsersProperties;
 
-                if($TipoCatalogo!=true)
-                    continue;
+        $RepositoryFields_ = $DB->GetTableFields($DataBaseName, $NombreRepositorio);
+        if($RepositoryFields_['Estado']!=1)
+        {
+            echo "<p><b>Error</b> al obtener los campos del Repositorio</p><br>Detalles:<br><br>".$RepositoryFields_['Estado'];
+            return 0;
+        }
 
-                $NombreCatalogo= $list['name'];
-                 
-                /* Se comprueba si el catálogo no se encuentra repetido */
-                
-                $RepositoryFields_ = $DB->GetTableFields($DataBaseName, $NombreRepositorio);
+        $RepositoryFields = $RepositoryFields_['ArrayDatos'];
 
-                if($RepositoryFields_['Estado']!=1)
-                {
-                    echo "<p><b>Error</b> al obtener los campos del Repositorio</p><br>Detalles:<br><br>".$RepositoryFields_['Estado'];
-                    return 0;
-                }
+        for ($cont = 0; $cont < count($RepositoryFields); $cont++)
+        {
+            if(strcasecmp($RepositoryFields[$cont]['Field'], $NombreCatalogo)==0)
+            {
+                echo "<p>El nombre del catálogo que quiere ingresar a este repositorio ya <b>existe</b></p>";
+                return 0;
+            }                
+        }
 
-                $RepositoryFields = $RepositoryFields_['ArrayDatos'];
+        $List=$list->children();/* Properties de un List */
+        $CatalogAttr = array("Tipo"=>"ListSearch","Struct"=>$list);
 
-                for ($cont = 0; $cont < count($RepositoryFields); $cont++)
-                {
-                    if(strcasecmp($RepositoryFields[$cont]['Field'], $NombreCatalogo)==0)
-                    {
-                        echo "<p>El nombre del catálogo que quiere ingresar a este repositorio ya <b>existe</b></p>";
-                        return 0;
-                    }                
-                }
-                /* / */
+        $TablaCatalogo="CREATE TABLE IF NOT EXISTS $NombreRepositorio"."_$NombreCatalogo (Id$NombreCatalogo int(11) NOT NULL AUTO_INCREMENT, ";
 
-                $List=$list->children();/* Properties de un List */
-                $CatalogAttr = array("Tipo"=>$list->getName(),"Struct"=>$ListProperties->children());
-                
-                $TablaCatalogo="CREATE TABLE IF NOT EXISTS $NombreRepositorio"."_$NombreCatalogo (Id$NombreCatalogo int(11) NOT NULL AUTO_INCREMENT, ";
+        foreach ($List as $valor)
+        {
+            if($valor['long']>0)
+                $TablaCatalogo.=$valor['name']." ". $valor['type']."(".$valor['long']."), ";
+            else
+                $TablaCatalogo.=$valor['name']." ". $valor['type'].", ";                                      
+        }
 
-                foreach ($List as $valor)
-                {
-                    if($valor['long']>0)
-                        $TablaCatalogo.=$valor['name']." ". $valor['type']."(".$valor['long']."), ";
-                    else
-                        $TablaCatalogo.=$valor['name']." ". $valor['type'].", ";                                      
-                }
+        $configStructure = array("TipoEstructura"=>"Catalogo","DataBaseName"=>$DataBaseName,"Estructura"=>$CatalogAttr);
 
-                $configStructure=array("TipoEstructura"=>"Catalogo","DataBaseName"=>$DataBaseName,"Estructura"=>$CatalogAttr);
+        $TablaCatalogo.="PRIMARY KEY (`Id$NombreCatalogo`)" /* Al modificar, modificar también en la llave foranea del query de repositorio */
+            . ") ENGINE=InnoDB AUTO_INCREMENT=1 DEFAULT CHARSET=utf8";
 
-                $TablaCatalogo.="PRIMARY KEY (`Id$NombreCatalogo`)" /* Al modificar, modificar también en la llave foranea del query de repositorio */
-                    . ") ENGINE=InnoDB AUTO_INCREMENT=1 DEFAULT CHARSET=utf8";
+        if(($ResultCrearCatalogo = $DB->crear_tabla($DataBaseName,$TablaCatalogo))!=1)
+            return "<p>Error al crear el catálogo <b>$NombreCatalogo</b></p>";
 
-                if(($ResultCrearCatalogo = $DB->crear_tabla($DataBaseName,$TablaCatalogo))!=1)
-                {
-                    return "<p>Error al crear el catálogo <b>$NombreCatalogo</b></p>";
-                }
-                
-                /* Se registra el catálogo en la tabla catálogos */
-                $InsertCatalog = "INSERT INTO CSDocs_Catalogos (IdRepositorio, NombreCatalogo) VALUES ($IdRepository, '$NombreCatalogo')";
-                if(($ResultInsertCatalog = $DB->ConsultaQuery($DataBaseName, $InsertCatalog))!=1)
-                {
-                    echo "<p><b>Error</b> al registrar el catálogo</p><br>Detalles:<br><br>".$ResultInsertCatalog;
-                    $DeleteCatalog = "DROP TABLE $NombreRepositorio"."_$NombreCatalogo";
-                    $DB->ConsultaQuery($DataBaseName, $DeleteCatalog);
-                    return 0;
-                }
-                
-                $DB->WriteConfigCatalogo("$NombreRepositorio"."_$NombreCatalogo",$configStructure);
+        /* Se registra el catálogo en la tabla catálogos */
+        $InsertCatalog = "INSERT INTO CSDocs_Catalogos (IdRepositorio, NombreCatalogo) VALUES ($IdRepository, '$NombreCatalogo')";
+        if(($ResultInsertCatalog = $DB->ConsultaQuery($DataBaseName, $InsertCatalog))!=1)
+        {
+            echo "<p><b>Error</b> al registrar el catálogo</p>Detalles:<br>".$ResultInsertCatalog;
+            $DeleteCatalog = "DROP TABLE $NombreRepositorio"."_$NombreCatalogo";
+            $DB->ConsultaQuery($DataBaseName, $DeleteCatalog);
+            return 0;
+        }
 
-                $AlterTable="ALTER TABLE $NombreRepositorio ADD COLUMN $NombreCatalogo INT NOT NULL, ADD INDEX $NombreCatalogo ($NombreCatalogo), ADD FOREIGN KEY ($NombreCatalogo) REFERENCES $NombreRepositorio"."_$NombreCatalogo (Id$NombreCatalogo)";
+        $DB->WriteConfigCatalogo("$NombreRepositorio"."_$NombreCatalogo",$configStructure);
 
-                if(($ResultAlterTable = $DB->ConsultaQuery($DataBaseName, $AlterTable))==1)
-                    echo "<p>Relaciones del catálogo <b>$NombreCatalogo</b> construidas.</p>";
-                else
-                {
-                    $DeleteCatalog = "DROP TABLE $NombreRepositorio"."_$NombreCatalogo";
-                    $DB->ConsultaQuery($DataBaseName, $DeleteCatalog);
-                    echo  "<b>Error</b> al crear las relaciones del catálogo <b>$NombreCatalogo</b><br><br>Detalles:<br><br> $ResultAlterTable";
-                }
+        $AlterTable="ALTER TABLE $NombreRepositorio ADD COLUMN $NombreCatalogo INT NOT NULL, ADD INDEX $NombreCatalogo ($NombreCatalogo), ADD FOREIGN KEY ($NombreCatalogo) REFERENCES $NombreRepositorio"."_$NombreCatalogo (Id$NombreCatalogo)";
 
-            }
+        if(($ResultAlterTable = $DB->ConsultaQuery($DataBaseName, $AlterTable))!=1){
+            $DeleteCatalog = "DROP TABLE $NombreRepositorio"."_$NombreCatalogo";
+            $DB->ConsultaQuery($DataBaseName, $DeleteCatalog);
+            echo  "<b>Error</b> al crear las relaciones del catálogo <b>$NombreCatalogo</b><br><br>Detalles:<br><br> $ResultAlterTable";
+            return 0;
         }
         
         return 1;

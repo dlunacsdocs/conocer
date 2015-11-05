@@ -40,7 +40,7 @@ $(document).ready(function(){
     $('.LinkUsers').click(function()
     {
         $('#div_consola_users').dialog(CAWindowUsers,{ title:"Consola de Usuarios"}).dialogExtend(BotonesWindow);
-        Users.CM_AddUserForms();
+        $('#tr_NewUser').click();
     });
     $("#accordion_users").accordion({ header: "h3", collapsible: true,heightStyle: "content" });
    $('#tr_NewUser').click(function()       

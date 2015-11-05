@@ -733,8 +733,13 @@ ClassCatalogAdministrator = function()
         var fieldsManager = new FieldsManager();
         fieldsManager.windowNewField(this._AddNewFieldToCatalog);        
     };
-    
-    _AddNewFieldToCatalog = function()
+    /***************************************************************************
+     *                                                                         *
+     * @param {type} dialogRef: Cuadro de dialogo con las opciones del tipo de *
+     *                          campo disponibles                              *
+     * @returns {Number}                                                       *
+     ***************************************************************************/
+    _AddNewFieldToCatalog = function(dialogRef)
     {
         
         var fieldsManager = new FieldsManager();
@@ -751,11 +756,15 @@ ClassCatalogAdministrator = function()
         var data = [FieldsValues.FieldName, FieldsValues.FieldType, FieldsValues.FieldLength, required];
         var ai = CatalogTableDT.row.add(data).draw();
         var n = CatalogTabledT.fnSettings().aoData[ ai[0] ].nTr;
+        
+        dialogRef.close();
+        _newFieldInterface();
     };
     
     _buildCatalog = function(){
-
-        var xml = _getCatalogXml();
+        var idRepository = $('#SelectRepositoriosAddCatalogo').val();
+        var repositoryName = $('#SelectRepositoriosAddCatalogo :selected').html();
+        var xml = _getCatalogXml(idRepository, repositoryName);
         
         if(!$.parseXML(xml))
             return 0;
@@ -771,7 +780,7 @@ ClassCatalogAdministrator = function()
         data: data, 
         success:  function(xml)
         {            
-            if($.parseXML( xml )===null){Error(xml); return 0;}else xml=$.parseXML( xml );
+            if($.parseXML( xml )===null){Salida(xml); return 0;}else xml=$.parseXML( xml );
 
             $(xml).find('newCatalogBuilded').each(function(){
                 var Mensaje = $(xml).find('Mensaje').text();
@@ -797,7 +806,7 @@ ClassCatalogAdministrator = function()
      *                                                                              *
      * @returns {Xml}                                                         *
      ********************************************************************************/
-    _getCatalogXml = function(){
+    _getCatalogXml = function(idRepository, repositoryName){
         var FieldsValidator = new ClassFieldsValidator();   
         var RegularExpression = /^([a-zA-Z0-9\_])+$/g;
         var catalogName = $('#catalogNameNew').val();
@@ -824,13 +833,19 @@ ClassCatalogAdministrator = function()
             $('#catalogNameNew').attr('title','');
         }
         
+        if(CatalogTableDT.rows().data().length===0)
+        {
+            Advertencia('Debe agregar por lo menos un campo en el nuevo catálogo');
+            return;
+        }
+        
         var Xml = "";
         
         /* Se genera la misma estructura de xml de carga de repositorio a travÃ©s del attachment 'Nueva Instancia' */
         var Xml = "<NewCatalog version='1.0' encoding='UTF-8'>\n\
                         <CrearEstructuraCatalogo>";
-                    Xml+="<NombreCatalogo>"+catalogName+"</NombreCatalogo>\n\
-                            <DefinitionUsersProperties>";
+                    Xml+='<NombreCatalogo idRepositorio = "'+idRepository+'" nombreRepositorio = "'+repositoryName+'">'+catalogName+'</NombreCatalogo>\n\
+                            <DefinitionUsersProperties>';
         
         var Rows = CatalogTableDT.rows().data().each(function(value, index)
         {
@@ -846,12 +861,6 @@ ClassCatalogAdministrator = function()
             
             Xml+=               '<Properties name = "'+FieldName+'" long = "'+FieldLength+'" type = "'+FieldType+'" required = "'+RequiredField+'" />';            
         });
-        
-        if(Rows.length===0)
-        {
-            Advertencia('Debe agregar por lo menos un campo en el nuevo repositorio');
-            return;
-        }
                 
         Xml+=               '</DefinitionUsersProperties>\n\
                         </CrearEstructuraCatalogo>\n\

@@ -66,10 +66,10 @@ FieldsManager.prototype.windowNewField = function(funct)
                 label: "Agregar",
                 cssClass: 'btn-primary',
                 action: function(dialog){
-                    funct();
+                    funct(dialogRef);
                 }
         },{
-            label: 'Cancelar',
+            label: 'Cerrar',
 //                cssClass: 'btn-primary',
             action: function(dialog){
                 dialog.close();
