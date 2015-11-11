@@ -749,3 +749,15 @@ div.Loading
     color: black;
     background-color:white;
 }
+
+/*******************************************************************************
+                            Visor de imagénes
+******************************************************************************+*/
+
+.imageViewer{
+    top: 20px;
+    width: 99%;
+    bottom: 0px;
+    position: absolute;
+    
+}

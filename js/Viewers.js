@@ -41,28 +41,29 @@ function Preview(tipo, IdGlobal, IdFile,  Source)
     {      
         var RutaArchivoServer=location.host+'/'+DocEnvironment.FileRoute;
         
-        $('#VistaPrevia').append('<div id="div_vista_previa" class="viewer"></div>');
+        $('#VistaPrevia').remove();
+        $('body').append('<div id = "VistaPrevia"></div>');
+        $('#VistaPrevia').append('<div id="div_vista_previa" class="viewer imageViewer"></div>');
         
         $('#div_vista_previa').dialog({width:Wvisor, height:Hvisor, minWidth:minWvisor, minHeight:minHvisor, title:"Vista Previa", modal:true,closeOnEscape:false}).dialogExtend(BotonesWindow);
         
-        var iv2 = $("#div_vista_previa").iviewer(
+        var iv1 = $("#div_vista_previa").iviewer(
                   {
-                      src: RutaArchivoServer
+                       src: RutaArchivoServer,
+                       update_on_resize: true,
+                       zoom_animation: true,
+                       mousewheel: true,
+                       onMouseMove: function(ev, coords) { },
+                       onStartDrag: function(ev, coords) { return false; }, //this image will not be dragged
+                       onDrag: function(ev, coords) { }
                   });
 
-                  $("#chimg").click(function()
-                  {
-                    iv2.iviewer('loadImage', RutaArchivoServer);
-                    return false;
-                  });
+//        $("#in").click(function(){ iv1.iviewer('zoom_by', 1); });
+//        $("#out").click(function(){ iv1.iviewer('zoom_by', -1); });
+//        $("#fit").click(function(){ iv1.iviewer('fit'); });
+//        $("#orig").click(function(){ iv1.iviewer('set_zoom', 100); });
+//        $("#update").click(function(){ iv1.iviewer('update_container_info'); });
 
-                  var fill = false;
-                  $("#fill").click(function()
-                  {
-                    fill = !fill;
-                    iv2.iviewer('fill_container', fill);
-                    return false;
-                  });
     }
     
     $('#div_vista_previa').append('<div class = "iviewer_common iviewer_button"><img src = "../img/note.png"></div>');

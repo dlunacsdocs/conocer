@@ -12,9 +12,9 @@
             $(document).ready(function(){
                   var iv1 = $("#viewer").iviewer({
                        src: "test_image.jpg",
-                       update_on_resize: false,
-                       zoom_animation: false,
-                       mousewheel: false,
+                       update_on_resize: true,
+                       zoom_animation: true,
+                       mousewheel: true,
                        onMouseMove: function(ev, coords) { },
                        onStartDrag: function(ev, coords) { return false; }, //this image will not be dragged
                        onDrag: function(ev, coords) { }
