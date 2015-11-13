@@ -79,10 +79,10 @@ class Usuarios {
         $RoutFile = dirname(getcwd());        
         $UserLogin = '';
         $Password = '';
-        
+
         if(!($xml =  simplexml_load_string($UserXml)))
                 return XML::XMLReponse ("Error", 0, "El xml recibido es incorrecto. Es posible que no se haya formado correctamente.<br><br>".$xml);
-        
+     
         if(!file_exists("$RoutFile/version/config.ini"))
         {
             XML::XMLReponse("Error", 0, "<p><b>Error</b><br><br> El registro de configuración de CSDocs no existe. Reportelo directamente con CSDocs</p>");
@@ -90,6 +90,7 @@ class Usuarios {
         }
         
         $EncryptedSetting = parse_ini_file("$RoutFile/version/config.ini", true);
+        
         if($EncryptedSetting === FALSE)
         {
             XML::XMLReponse("Error", 0, "<p><b>Error</b> en el registro de configuración de CSDocs $EncryptedSetting</p>");
@@ -97,6 +98,7 @@ class Usuarios {
         }
         
         $UsersNumber_ = $this->CheckUsersNumber($DataBaseName);
+        
         if($UsersNumber_['Estado']!=1)
         {
             XML::XMLReponse("Error", 0, "<p><b>Error</b> al obtener el numéro de usuarios en el sistema</p><br>Detalles:<br><br>".$UsersNumber_['Estado']);
@@ -114,12 +116,12 @@ class Usuarios {
         }                                                
         
         $ValuesChain=''; $FieldsChain = '';
-        foreach ($xml as $field)
+        foreach ($xml->Field as $field)
         {            
             $FieldValue = $field->FieldValue;
             $FiledType = $field->FieldType;
             $FieldName = $field->FieldName;
-            
+                        
             if(strcasecmp($FieldName, "Password")==0)
             {
                 $Password = $FieldValue;
@@ -129,7 +131,7 @@ class Usuarios {
                     return 0;
                 }
                 else
-                    $Password = md5 ($FieldValue);
+                    $FieldValue = md5 ($FieldValue);                
             }
             
             if(strcasecmp($FieldName, "Login")==0)
@@ -151,7 +153,7 @@ class Usuarios {
                 $FieldsChain.=$FieldName.", ";
             }                
         }
-        
+                
         $ValuesChain_ = trim($ValuesChain, ", ");
         $FieldsChain_ = trim($FieldsChain, ", ");
         
@@ -259,8 +261,12 @@ class Usuarios {
         $ResultadoConsulta=$BD->ConsultaQuery($DataBaseName, $ConsultaDelete);
         if($ResultadoConsulta!=1)
         {
-            XML::XMLReponse("Error", 0, "Error de Consulta. $ResultadoConsulta. ");
+            XML::XMLReponse("Error", 0, "Error de al intentar eliminar el usuario. $ResultadoConsulta. ");
             return;
+        }
+        
+        $qDeleteFromControl = "DELETE FROM GruposControl WHERE IdUsuario = $IdRemoveUser";
+        if(($resultDeleteFromControl = $BD->ConsultaQuery($DataBaseName, $qDeleteFromControl)) !=1 ){
         }
         
         $DeleteFromCsdocs = "DELETE FROM Usuarios WHERE Login = '$NameUserToRemove' AND Password = '$Password'";
