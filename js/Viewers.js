@@ -44,10 +44,26 @@ function Preview(tipo, IdGlobal, IdFile,  Source)
         $('#VistaPrevia').remove();
         $('body').append('<div id = "VistaPrevia"></div>');
         $('#VistaPrevia').append('<div id="div_vista_previa" class="viewer imageViewer"></div>');
+        $('#div_vista_previa').append('<div id = "viewerImageNavBar" class = "viewerImageNavBar"></div>');
+        $('#div_vista_previa').append('<div id = "viewerImageBody" class = "viewerImageBody"></div>');
+        $('#viewerImageNavBar').append('\n\
+            <nav class="navbar navbar-inverse">\n\
+          </nav>\n\
+        ');
         
-        $('#div_vista_previa').dialog({width:Wvisor, height:Hvisor, minWidth:minWvisor, minHeight:minHvisor, title:"Vista Previa", modal:true,closeOnEscape:false}).dialogExtend(BotonesWindow);
+        $('#div_vista_previa').dialog({responsive:true, fluid:true ,width:Wvisor, 
+            height:Hvisor, minWidth:minWvisor, minHeight:minHvisor, title:"Vista Previa", 
+            modal:true,closeOnEscape:true,
+        open:function(){
+            
+            $('#div_vista_previa.ui-dialog-content').css({"padding": "0em"});
+            $('#div_vista_previa.ui-dialog').css({"padding": "0em"});
+            
+        }
+            
+        }).dialogExtend(BotonesWindow);
         
-        var iv1 = $("#div_vista_previa").iviewer(
+        var iv1 = $("#viewerImageBody").iviewer(
                   {
                        src: RutaArchivoServer,
                        update_on_resize: true,
@@ -58,6 +74,10 @@ function Preview(tipo, IdGlobal, IdFile,  Source)
                        onDrag: function(ev, coords) { }
                   });
 
+        $('#viewerImageBody .iviewer_common').hide();
+        
+       
+        
 //        $("#in").click(function(){ iv1.iviewer('zoom_by', 1); });
 //        $("#out").click(function(){ iv1.iviewer('zoom_by', -1); });
 //        $("#fit").click(function(){ iv1.iviewer('fit'); });
@@ -66,7 +86,7 @@ function Preview(tipo, IdGlobal, IdFile,  Source)
 
     }
     
-    $('#div_vista_previa').append('<div class = "iviewer_common iviewer_button"><img src = "../img/note.png"></div>');
+//    $('#div_vista_previa').append('<div class = "iviewer_common iviewer_button"><img src = "../img/note.png"></div>');
     
     if(tipo==='pdf')
         pdfViewer(DocEnvironment);

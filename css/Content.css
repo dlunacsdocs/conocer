@@ -465,20 +465,6 @@ div.loading
     text-align: center;
 }
 
-/*************************** Visor de Imágenes *********************************/
-.viewer
-{
-    width: 99%;
-    height: 99%;
-    
-    border: 1px solid black;
-    position: absolute;
-}
-
-.wrapper
-{
-    overflow: hidden;
-}
 
 
 /********************************** Notas **************************************/
@@ -754,10 +740,29 @@ div.Loading
                             Visor de imagénes
 ******************************************************************************+*/
 
-.imageViewer{
-    top: 20px;
-    width: 99%;
-    bottom: 0px;
+.viewerImageNavBar{
+    height: 25px;
     position: absolute;
-    
+    left: 10px;
+    right: 10px;
+}
+
+.viewerImageBody{
+    top: 55px;
+    bottom: 0px;
+    width: 100%;
+    position: absolute;
+}
+
+.viewer
+{
+    width: 99%;
+    height: 99%;
+    border: 1px solid black;
+    position: absolute;
+}
+
+.wrapper
+{
+    overflow: hidden;
 }
