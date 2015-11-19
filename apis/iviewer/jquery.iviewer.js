@@ -797,6 +797,8 @@ $.widget( "ui.iviewer", $.ui.mouse, {
                 this.zoom_object.html(percent + "%");
             }
         }
+        
+        return percent;
     },
 
     /**

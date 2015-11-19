@@ -766,3 +766,10 @@ div.Loading
 {
     overflow: hidden;
 }
+
+ .toolbarButton.pageDownIcon{
+  background: url(../img/toolbarButton-pageDown.png);
+}
+.toolbarButton.pageUpIcon {
+  background: url(../img/toolbarButton-pageUp.png);
+}
