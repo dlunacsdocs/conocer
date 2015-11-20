@@ -1,27 +1,21 @@
-/* 
- * To change this license header, choose License Headers in Project Properties.
- * To change this template file, choose Tools | Templates
- * and open the template in the editor.
- */
+/*******************************************************************************
+ *  Clase que administra las Notas en el sistema: ingreso, modificación y
+ *  borrado.
+ *******************************************************************************/
 
 /* global TableEnginedT, TableContentdT, OptionDataTable, PDFViewerApplication, HideClose, EnvironmentData, Hvisor, Notes */
 
-var ArrayObteinNotes=0;
-var ArrayNotes=new Array();
-var PaginaActual=0;   
+var ArrayObteinNotes = 0;
+var ArrayNotes = new Array();
+var PaginaActual = 0;   
 
 var TableNotesdT;
 var TableNotesDT;
 
 $(document).ready(function()
 {
-    /* Se abre la ventana de Notas al Pulsar sobre la Imagen de Note */
-                      
-    $('.LinkNotes').click(function()
-    {
-//        ArrayNotes=new Array();
-//        PaginaActual=0;
-//        ArrayObteinNotes=0;
+    /* Se abre la ventana de Notas al Pulsar sobre la Imagen de Note */                
+    $('.LinkNotes').click(function(){
         Notes.ShowListOfNotes();
         $('#secondaryToolbarToggle').click();
     });     
@@ -30,7 +24,7 @@ $(document).ready(function()
 var ClassNotes = function(viewerType,IdRepository,RepositoryName, IdFile, FileName, IdGlobal)
 {
     /*******************************************************************************
-    * Descripción: Muestra u oculta el icono de Nota dentro de una página
+    * @description  Muestra u oculta el icono de Nota dentro de una página
     * LLamdo: pdf_viewer.js
     * @returns {undefined}                 
     *******************************************************************************/
@@ -56,7 +50,7 @@ var ClassNotes = function(viewerType,IdRepository,RepositoryName, IdFile, FileNa
 
        if(ArrayObteinNotes===0)
        {
-           var XmlArrayNotes = this.ObtainXmlNotes();
+           var XmlArrayNotes = self.ObtainXmlNotes();
            console.log("XMLNotes =  "+XmlArrayNotes);
            $(XmlArrayNotes).find("Note").each(function()
            {         
@@ -72,29 +66,65 @@ var ClassNotes = function(viewerType,IdRepository,RepositoryName, IdFile, FileNa
            });
        }
 
-       var NoPagina=$('#pageNumber').val();
-       $('#NotesIcon').remove();
-       if($.type(ArrayNotes[NoPagina])==='array')
-       {
+       var NoPagina = $('#pageNumber').val();
+       
+       $('.NotesIcon').remove();
+       
+       if($.type(ArrayNotes[NoPagina])==='array'){
            var IdNotes = ArrayNotes[NoPagina];
-           if($.type(IdNotes)==='array')
-                for(var cont = 0; cont < IdNotes.length; cont++)
-                {            
-                    var IdNote = IdNotes[cont];
-                    if(IdNote > 0)
-                        if((!$("#NoteIcon"+ IdNote).length>0))
-                            $('#NotesZone').append('<img src="../img/note.png"  title="Nota(s) en la pagina '+self.Page+'" id="NoteIcon'+ IdNote +'" class="NotesIcon" onclick = "_ReadNote(\''+ IdNote +'\')">');                                        
-                }               
+           if($.type(IdNotes)==='array'){
+                if(IdNotes.length > 0){            
+                    var IdNote = IdNotes[0];
+                    if(IdNote > 0){
+                        if((!$("#NoteIcon"+ IdNote).length>0)){
+                            $('#NotesZone').append('<img src="../img/note.png"  title="Nota(s) en la pagina '+self.Page+'" id="NoteIcon" class="NotesIcon">');          
+                            $('#NoteIconPerPage').click(function(){
+                                var notes = self.getNotesPerPage(NoPagina);
+                                _listingNotesPerPage(notes, NoPagina);
+                            });
+                        }
+                    }
+                } 
+            }
        }
    };
    
-   /*******************************************************************************
-    * Descripcion: Obtiene un XML Con las paginas que contienen una Nota (Consulta más ligera 
-    * que la que contiene la descripción de las Notas)
+   /****************************************************************************
+    * @description Lista las notas contenidas en una página al hacer click sobre
+    *              el icono de "Nota" en un popover.
+    * @param {type} notes
     * @returns {undefined}
-    */
-   this.ObtainXmlNotes = function()
-   {   
+    ***************************************************************************/
+   _listingNotesPerPage = function(pageNumber, notes){
+       console.log(notes);
+       $('#listNotesPerPage').remove();
+       
+        $('#page').append('\
+            <div id = "listNotesPerPage" class = "popover">\n\
+                <div class="arrow"></div>\n\
+                <h3 class="popover-title"><span id = "closeListNotesPerPage" class="close pull-right" data-dismiss="popover-x">&times;</span><span class = "glyphicon glyphicon-user"> Notas Página '+pageNumber+'</span></h3>\n\
+                <div class="popover-content">\n\
+                \n\
+                </div>\n\
+                <div class="popover-footer">\n\
+                \n\
+                </div>\n\
+            </div>');
+       
+       $('#listNotesPerPage').modalPopover({
+        target: '#NoteIcon',
+        placement: 'bottom'
+    });
+   };
+   
+   /****************************************************************************
+    * @description  Obtiene un XML Con las paginas que contienen una Nota (Consulta más ligera 
+    *               que la que contiene la descripción de las Notas)
+    * @param {without parameters}  
+    * @returns  {Xml con el contenido de cada una de las Notas del documento 
+    *           órdenadas por página}
+    ****************************************************************************/
+   this.ObtainXmlNotes = function(){   
        ArrayObteinNotes=1;            
 
        if(!this.IdFile > 0 || !this.IdRepository > 0)
@@ -113,10 +143,8 @@ var ClassNotes = function(viewerType,IdRepository,RepositoryName, IdFile, FileNa
        {   
            if($.parseXML( response )===null){ Error(response); return 0;}else xml=$.parseXML( response );
 
-           if($(xml).find("Notes").length>0)
-           {      
+           if($(xml).find("Notes").length > 0)
                return xml;
-           }
 
            if($(xml).find("Error").length>0)
            {
@@ -135,12 +163,8 @@ var ClassNotes = function(viewerType,IdRepository,RepositoryName, IdFile, FileNa
     * 
     * @returns {undefined}
     *
-    * 
-    * active == 0     :: Panel Principal
-    * active == 1     :: Busqueda 
     * *****************************************************************************/
-   this.ShowListOfNotes = function()
-   {                
+   this.ShowListOfNotes = function(){                
        var estado=0;         
 
         $.ajax({
@@ -149,7 +173,7 @@ var ClassNotes = function(viewerType,IdRepository,RepositoryName, IdFile, FileNa
         dataType:'xml', 
         type: 'POST',   
         url: "php/Notes.php",
-        data: 'opcion=ShowNotes&DataBaseName='+EnvironmentData.DataBaseName+'&IdUsuario='+EnvironmentData.IdUsuario+'&IdRepositorio='+self.IdRepository+"&IdFile="+self.IdFile+'&nombre_usuario='+EnvironmentData.NombreUsuario, 
+        data: 'opcion=ShowNotes&IdRepositorio='+self.IdRepository+"&IdFile="+self.IdFile, 
         success:  function(xml)
         {   
             if(typeof (xml)!=='object')
@@ -183,8 +207,7 @@ var ClassNotes = function(viewerType,IdRepository,RepositoryName, IdFile, FileNa
     * @param {type} xml
     * @returns {undefined}
     */
-   _BuildNotesTable = function(xml)
-   {
+   _BuildNotesTable = function(xml){
 
        $('#div_notes').empty();      
        $('#div_notes').dialog('option','title','Listado de Notas');
@@ -229,13 +252,11 @@ var ClassNotes = function(viewerType,IdRepository,RepositoryName, IdFile, FileNa
 
    };
 
-   _JumpToPage = function(Page)
-   {
+   _JumpToPage = function(Page){
        PDFViewerApplication.page=Page;         
    };
    
-   _ReadNote = function(IdNote)
-   {
+   _ReadNote = function(IdNote){
        var NoteXml = _GetNote(IdNote);
 
        $(NoteXml).find("Note").each(function()
@@ -247,8 +268,7 @@ var ClassNotes = function(viewerType,IdRepository,RepositoryName, IdFile, FileNa
        });
    };
 
-   _GetNote = function(IdNote)
-   {
+   _GetNote = function(IdNote){
        $('#div_notes').append('<div class="PlaceWaiting" id = "NotesPlaceWaiting"><img src="../img/loadinfologin.gif"></div>');       
        
        var xml;
@@ -284,8 +304,7 @@ var ClassNotes = function(viewerType,IdRepository,RepositoryName, IdFile, FileNa
        return xml;
    };
 
-   _PreviewNote = function(Text,NoPagina)
-   {
+   _PreviewNote = function(Text,NoPagina){
        $('#div_PreviewNote').remove();
        $('body').append('<div id="div_PreviewNote"><div class="titulo_ventana">Detalle de Nota</div></div>');
        $('#div_PreviewNote').append('<br><p><center><textarea class="TextAreaPreviewNotes" id="PreviewNoteText"></textarea></center></p>');
@@ -302,8 +321,7 @@ var ClassNotes = function(viewerType,IdRepository,RepositoryName, IdFile, FileNa
     * Descripción: Abre una ventana con un TextArea para introducir el texto de Nota*
     * @returns {undefined}                                                          *
     *******************************************************************************/
-   _WriteNote = function()
-   {
+   _WriteNote = function(){
        var NoPagina=$('#pageNumber').val();
        $('#WriteNote').remove();
        $('body').append('<div id="WriteNote"><textarea class="TextAreaNotes" id="TextAreaNotes" placeholder="Escribir nota..."></textarea>\n\
@@ -324,8 +342,7 @@ var ClassNotes = function(viewerType,IdRepository,RepositoryName, IdFile, FileNa
     * @returns {undefined}                                                         *
     ********************************************************************************/
 
-   _AddNote = function()
-   {
+   _AddNote = function(){
        $('#div_notes').append('<div class="PlaceWaiting" id = "NotesPlaceWaiting"><img src="../img/loadinfologin.gif"></div>');       
 
        var TextNote=$('#TextAreaNotes').val();
@@ -397,8 +414,7 @@ var ClassNotes = function(viewerType,IdRepository,RepositoryName, IdFile, FileNa
        });                    
    };
    
-   _PrepareEditingNote = function(IdNote)
-   {
+   _PrepareEditingNote = function(IdNote){
        var NoteXml = _GetNote(IdNote);
 
        $(NoteXml).find("Note").each(function()
@@ -413,8 +429,7 @@ var ClassNotes = function(viewerType,IdRepository,RepositoryName, IdFile, FileNa
        $('#PreviewNoteText').prop( "disabled", false );
    };
    
-   _ModifyNote = function()
-   {
+   _ModifyNote = function(){
         var IdNote = 0;
         var NoteText = $('#PreviewNoteText').val();       
         var PreviousText = undefined;
@@ -463,8 +478,7 @@ var ClassNotes = function(viewerType,IdRepository,RepositoryName, IdFile, FileNa
        
    };
    
-   _DeleteNote = function(IdNote)
-   {
+   _DeleteNote = function(IdNote){
         var NoteText = undefined;
         
         $('#table_notes tr[id='+IdNote+']').each(function()
@@ -518,6 +532,43 @@ var ClassNotes = function(viewerType,IdRepository,RepositoryName, IdFile, FileNa
         });      
    };
    
+};
+
+/*******************************************************************************
+ * Descripción: Se obtienen las notas del documento por página.
+ * 
+ * @param {type} pageNumber
+ * @returns {notes}
+ *******************************************************************************/
+ClassNotes.prototype.getNotesPerPage = function(pageNumber){
+    var notes = {};
+    var self = this;
+    $.ajax({
+        async:false, 
+        cache:false,
+        dataType:"html", 
+        type: 'POST',   
+        url: "php/Notes.php",
+        data: 'opcion=getNotesPerPage&pageNumber='+pageNumber+'&idRepository='+self.IdRepository+'&repositoryName='+ self.RepositoryName +'&idFile='+self.IdFile+'&idGlobal='+self.IdGlobal, 
+        success:  function(xml)
+        {                   
+            if($.parseXML( xml )===null){errorMessage(xml); return 0;}else xml=$.parseXML( xml );
+
+            if($(xml).find('note').length > 0)
+                notes =  xml;
+
+            $(xml).find("Error").each(function()
+            {
+                var mensaje=$(this).find("Mensaje").text();
+                Error(mensaje);
+            });                 
+
+        },
+        beforeSend:function(){},
+        error: function(jqXHR, textStatus, errorThrown){errorMessage(textStatus +"<br>"+ errorThrown);}
+        });      
+    
+    return notes;
 };
 
 

@@ -16,20 +16,51 @@ class Notes {
 
     private function Ajax()
     {
-        switch (filter_input(INPUT_POST, "opcion"))
-        {
-            case 'ShowNotes': $this->ShowNotes(); break;
-            case 'AddNote': $this->AddNote(); break;
-            case 'ObtainXmlNotes': $this->ObtainXmlNotes(); break;
-            case 'GetNote': $this->GetNote(); break;
-            case 'ModifyNote': $this->ModifyNote(); break;
-            case 'DeleteNote': $this->DeleteNote(); break;        
+        if(filter_input(INPUT_POST, "opcion")!=NULL and filter_input(INPUT_POST, "opcion")!=FALSE){
+            
+            $idSession = Session::getIdSession();
+        
+            if($idSession == null)
+                return XML::XMLReponse ("Error", 0, "Repository::No existe una sesión activa, por favor vuelva a iniciar sesión");
+
+            $userData = Session::getSessionParameters();
+            
+            switch (filter_input(INPUT_POST, "opcion"))
+            {
+                case 'ShowNotes': $this->ShowNotes($userData); break;
+                case 'AddNote': $this->AddNote(); break;
+                case 'ObtainXmlNotes': $this->ObtainXmlNotes(); break;
+                case 'GetNote': $this->GetNote(); break;
+                case 'ModifyNote': $this->ModifyNote(); break;
+                case 'DeleteNote': $this->DeleteNote(); break;        
+                case 'getNotesPerPage': $this->getNotesPerPage($userData); break;
+            }
         }
     }
-            
+           
+    private function getNotesPerPage($userData){
+        $db = new DataBase();
+        
+        $dataBaseName = $userData['dataBaseName'];
+        
+        $idRepository = filter_input(INPUT_POST, "idRepository");
+        $idFile = filter_input(INPUT_POST, "idFile");
+        $pageNumber = filter_input(INPUT_POST, "pageNumber");
+        
+        $queryGetNotes = "SELECT *FROM CSDocs_Notes WHERE IdRepository = $idRepository AND IdFile = $idFile AND Page = $pageNumber";
+        
+        $resultGetNotes = $db->ConsultaSelect($dataBaseName, $queryGetNotes);
+        
+        if($resultGetNotes['Estado'] !=1)
+            return XML::XMLReponse ("Error", 0, "<p><b>Error</b> al obtener las notas del documento</p>Detalles:<p>$resultGetNotes</p>");
+        
+        XML::XmlArrayResponse("Notes", "note", $resultGetNotes['ArrayDatos']);
+    }
+    
     /***************************************************************************
-     * Obtiene un XML con las paginas que contienen notas en un archivo determinado
-     */
+     * Obtiene un XML con las paginas que contienen notas en un documento 
+     * determinado
+     ****************************************************************************/
     
     private function ObtainXmlNotes()
     {
@@ -60,20 +91,11 @@ class Notes {
      * Return: XML.                                                            *
      * Llamado desde: Notes.js->ShowNotes()                                    *
      ***************************************************************************/
-    private function ShowNotes()
+    private function ShowNotes($userData)
     {
-        $XML=new XML();
-        $BD= new DataBase();
-//        $designer=new DesignerForms();
         $DataBaseName=  filter_input(INPUT_POST, "DataBaseName");
-//        $NombreRepositorio=  filter_input(INPUT_POST, "NombreRepositorio");
         $IdRepositorio=  filter_input(INPUT_POST, "IdRepositorio");
-//        $IdUsuario=filter_input(INPUT_POST, "IdUsuario");
-//        $RutaArchivo=  filter_input(INPUT_POST, "RutaArchivo");   /* Archivo que será copiado */
-//        $IdEmpresa=  filter_input(INPUT_POST, "IdEmpresa");
-//        $NombreUsuario=  filter_input(INPUT_POST, "nombre_usuario");
-//        $IdDirectory=  filter_input(INPUT_POST, "IdDirectory");
-        $IdFile=filter_input(INPUT_POST,"IdFile");                
+        $IdFile = filter_input(INPUT_POST,"IdFile");                
         
         $notesArray = $this->getNotesArray($DataBaseName, $IdRepositorio, $IdFile);
         
@@ -81,7 +103,7 @@ class Notes {
             return XML::XMLReponse ("Error", 0, "<b<Error</b> al consultar las notas.<br><br>Detalles:<br><br>$notesArray");
                 
         /* Sí la consulta no generó errores, se devuelve el listado de notas en un XML */
-        $XML->ResponseXmlFromArray("Notes", "Note", $notesArray);
+        XML::XmlArrayResponse("Notes", "Note", $notesArray);
         
     }
     

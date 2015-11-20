@@ -106,7 +106,7 @@ function imagePreview(DocEnvironment){
         $('#viewerImageBody .iviewer_common').hide();       /* Se esconden iconos ingresados por el api */
         
         setActionToImageViewer();
-        
+
         if($.type(DocEnvironment)==='object');
             Notes = new ClassNotes('imageViewer',DocEnvironment.IdRepository, DocEnvironment.RepositoryName, DocEnvironment.IdFile, DocEnvironment.FileName, DocEnvironment.IdGlobal);
 
@@ -190,7 +190,7 @@ function pdfViewer(DocEnvironment){
 //            alert(DocumentEnvironment+DocumentEnvironment.FileRoute+tipo+IdGlobal+IdFile+Source);
     DEFAULT_URL = DocEnvironment.FileRoute;
     PDFView.open(DocEnvironment.FileRoute, 0);     
-
+    
     if($.type(DocEnvironment)==='object');
         Notes = new ClassNotes('pdfViewer', DocEnvironment.IdRepository, DocEnvironment.RepositoryName, DocEnvironment.IdFile, DocEnvironment.FileName, DocEnvironment.IdGlobal);
 

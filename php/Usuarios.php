@@ -81,39 +81,32 @@ class Usuarios {
         $Password = '';
         
         if(!($xml =  simplexml_load_string($UserXml)))
-                return XML::XMLReponse ("Error", 0, "El xml recibido es incorrecto. Es posible que no se haya formado correctamente.<br><br>".$xml);
+            return XML::XMLReponse ("Error", 0, "El xml recibido es incorrecto. Es posible que no se haya formado correctamente.<br><br>".$xml);
         
         if(!file_exists("$RoutFile/version/config.ini"))
-        {
-            XML::XMLReponse("Error", 0, "<p><b>Error</b><br><br> El registro de configuración de CSDocs no existe. Reportelo directamente con CSDocs</p>");
-            return 0;
-        }
+            return XML::XMLReponse("Error", 0, "<p><b>Error</b><br><br> El registro de configuración de CSDocs no existe. Reportelo directamente con CSDocs</p>");
         
         $EncryptedSetting = parse_ini_file("$RoutFile/version/config.ini", true);
+        
         if($EncryptedSetting === FALSE)
-        {
-            XML::XMLReponse("Error", 0, "<p><b>Error</b> en el registro de configuración de CSDocs $EncryptedSetting</p>");
-            return 0;
-        }
+            return XML::XMLReponse("Error", 0, "<p><b>Error</b> en el registro de configuración de CSDocs $EncryptedSetting</p>");
         
         $UsersNumber_ = $this->CheckUsersNumber($DataBaseName);
+        
         if($UsersNumber_['Estado']!=1)
-        {
-            XML::XMLReponse("Error", 0, "<p><b>Error</b> al obtener el numéro de usuarios en el sistema</p><br>Detalles:<br><br>".$UsersNumber_['Estado']);
-            return 0;
-        }
+            return XML::XMLReponse("Error", 0, "<p><b>Error</b> al obtener el numéro de usuarios en el sistema</p><br>Detalles:<br><br>".$UsersNumber_['Estado']);
+        
         $UsersNumber = $UsersNumber_['ArrayDatos']['COUNT(*)'];        
 
         $UsersNumberEncrypted = $EncryptedSetting['UsersNumber'];
+        
         $UserNumberDecrypted = Encrypter::decrypt($UsersNumberEncrypted);
         
-        if($UsersNumber>=$UserNumberDecrypted)
-        {
-            XML::XMLReponse("warning", 0, "<p>Advertencia</p> <br><br><p>Numéro de usuarios alcanzado para su versión de CSDocs</p>");
-            return 0;
-        }                                                
-        
+        if($UsersNumber >= $UserNumberDecrypted)
+            return XML::XMLReponse("warning", 0, "<p>Advertencia</p> <br><br><p>Numéro de usuarios alcanzado para su versión de CSDocs</p>");
+                                              
         $ValuesChain=''; $FieldsChain = '';
+        
         foreach ($xml as $field)
         {            
             $FieldValue = $field->FieldValue;
@@ -124,27 +117,20 @@ class Usuarios {
             {
                 $Password = $FieldValue;
                 if(strlen ($Password)<=4)
-                {
-                    XML::XMLReponse("warning", 0, "<p><b>Error</b> contraseña demasiado corta </p>");
-                    return 0;
-                }
+                    return XML::XMLReponse("warning", 0, "<p><b>Error</b> contraseña demasiado corta </p>");
                 else
-                    $Password = md5 ($FieldValue);
+                    $FieldValue = md5 ($FieldValue);
             }
             
             if(strcasecmp($FieldName, "Login")==0)
             {
                 $UserLogin = $FieldValue;
                 if(strcasecmp($UserLogin, 'root')==0)
-                {
-                    XML::XMLReponse("warning", 0, "<p>No puede utilizarse este nombre de usuario ya que es parte del sistema</p>");
-                    return 0;
-                }
+                    return XML::XMLReponse("warning", 0, "<p>No puede utilizarse este nombre de usuario ya que es parte del sistema</p>");
             }
             
-//            echo "<p>FieldName = $field->FieldName FieldValue = $FieldValue  FieldType = $FiledType</p>";
             $FormattedField = DataBase::FieldFormat($FieldValue, $FiledType);
-//            echo "<p>Campo formateado = $FormattedField</p>";
+            
             if(strcasecmp($FormattedField, 0)!=0)
             {
                 $ValuesChain.= $FormattedField.", ";
@@ -169,13 +155,15 @@ class Usuarios {
         }
             
         $QInsertUser = "INSERT INTO CSDocs_Usuarios ($FieldsChain_) VALUES ($ValuesChain_)";
-        
+
         if(!($IdNewUser = $BD->ConsultaInsertReturnId($DataBaseName, $QInsertUser))>0)
         {
             XML::ReturnError("<p><b>Error</b> al intentar registrar el nuevo usuario</p><br>Detalles:<br><br>$IdNewUser");
             return 0;
         }
+        
         $InsertIntoCSDocs = "INSERT INTO CSDocs_Usuarios (Login, Password) VALUES ('$UserLogin', '$Password')";
+        
         if(!($BD->ConsultaInsertReturnId("cs-docs",$InsertIntoCSDocs))>0)
         {
             $DeleteNewUser = "DELETE FROM Usuarios WHERE IdUsuario = $IdNewUser";
