@@ -767,9 +767,19 @@ div.Loading
     overflow: hidden;
 }
 
- .toolbarButton.pageDownIcon{
-  background: url(../img/toolbarButton-pageDown.png);
+.pageDownIcon{
+  background: url(../img/toolbarButton-pageDown.png) no-repeat;
+  width: 20px;
+  height: 20px;
 }
-.toolbarButton.pageUpIcon {
-  background: url(../img/toolbarButton-pageUp.png);
+.pageUpIcon {
+  background: url(../img/toolbarButton-pageUp.png) no-repeat;
+      width: 20px;
+    height: 20px;
+}
+.notesIcon{
+    background: url(../img/secondaryToolbarButton-Note.png) no-repeat;
+    width: 20px;
+    height: 20px;
+    
 }

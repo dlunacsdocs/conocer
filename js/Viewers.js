@@ -1,13 +1,6 @@
-/* 
- * To change this license header, choose License Headers in Project Properties.
- * To change this template file, choose Tools | Templates
- * and open the template in the editor.
- */
-
-
-
 
 /* global BotonesWindow, PDFJS, Wvisor, minWvisor, minHvisor, Hvisor */
+var iv1;   /* Objeto que controla el api del visor de imágenes */
 
 /******************************************************************************
  * 
@@ -18,9 +11,7 @@
  * @returns {undefined}
  */
 function Preview(tipo, IdGlobal, IdFile,  Source)
-{    
-    $('#div_vista_previa').remove();   
-    
+{        
     switch (Source)
     {
         case 'Content':
@@ -38,76 +29,158 @@ function Preview(tipo, IdGlobal, IdFile,  Source)
     tipo = String(tipo.toLowerCase());
     
     if(tipo ==='jpg' || tipo==='png' || tipo==='tiff' || tipo==='jpge')
-    {      
-        var RutaArchivoServer=location.host+'/'+DocEnvironment.FileRoute;
+        imagePreview(DocEnvironment);
         
-        $('#VistaPrevia').remove();
-        $('body').append('<div id = "VistaPrevia"></div>');
-        $('#VistaPrevia').append('<div id="div_vista_previa" class="viewer imageViewer"></div>');
-        $('#div_vista_previa').append('<div id = "viewerImageNavBar" class = "viewerImageNavBar"></div>');
-        $('#div_vista_previa').append('<div id = "viewerImageBody" class = "viewerImageBody"></div>');
-        $('#viewerImageNavBar').append('\n\
-            <nav class="navbar navbar-inverse">\n\
-            <ul class="nav navbar-nav">\n\
-                <li class="active"><a href="#"><span class = "toolbarButton pageUpIcon" /></a></li>\n\
-                <li class="active"><a href="#"><span class = "toolbarButton pageDownIcon" /></a></li>\n\
-                <li class="active"><a href="#"><span class = "zoomDown glyphicon glyphicon glyphicon-zoom-in" /></a></li>\n\
-                <li class="active"><a href="#"><span class = "zoomUp glyphicon glyphicon glyphicon-zoom-out" /></a></li>\n\
-                <li class="active"><a href="#"><span class = "glyphicon glyphicon glyphicon-resize-full" /></a></li>\n\
-            </ul>\n\
-            <div class="navbar-form navbar-left" role="search">\n\
-                <div class="form-group">\n\
-                  <input type="text" class="form-control iviewer_zoom_status" disabled>\n\
-                </div>\n\
-            </div>\n\
-          </nav>\n\
-        ');
-        
-        $('#div_vista_previa').dialog({responsive:true, fluid:true ,width:Wvisor, 
-            height:Hvisor, minWidth:minWvisor, minHeight:minHvisor, title:"Vista Previa", 
-            modal:true,closeOnEscape:true,
-        open:function(){
-            
-            $('#div_vista_previa.ui-dialog-content').css({"padding": "0em"});
-            $('#div_vista_previa.ui-dialog').css({"padding": "0em"});
-            
-        }
-            
-        }).dialogExtend(BotonesWindow);
-        
-        var iv1 = $("#viewerImageBody").iviewer(
-        {
-            src: RutaArchivoServer,
-            update_on_resize: true,
-            zoom_animation: true,
-            mousewheel: true,
-//            onDrag: function(ev, coords) { },
-            onZoom: function(ev, coords){ var zoomPercent = $(this).iviewer("update_status"); $('#viewerImageNavBar input.iviewer_zoom_status').val(zoomPercent+"%");   }
-        });
-
-        $('#viewerImageBody .iviewer_common').hide();
-        
-        
-        $("#viewerImageNavBar .pageUpIcon").click(function(){iv1.iviewer('angle', +90); });
-        $("#viewerImageNavBar .pageDownIcon").click(function(){iv1.iviewer('angle', -90); });
-        $("#viewerImageNavBar .zoomDown").click(function(){ iv1.iviewer('zoom_by', 1); });
-        $("#viewerImageNavBar .zoomUp").click(function(){ iv1.iviewer('zoom_by', -1); });
-        $("#viewerImageNavBar .glyphicon-resize-full").click(function(){ iv1.iviewer('fit'); });
-        
-//        $('#viewerImageNavBar .iviewer_zoom_status').click(function(){var zommObject = iv1.iviewer("update_status"); console.log(zommObject);});
-//        $("#orig").click(function(){ iv1.iviewer('set_zoom', 100); });
-//        $("#update").click(function(){ iv1.iviewer('update_container_info'); });
-
-    }
-    
-//    $('#div_vista_previa').append('<div class = "iviewer_common iviewer_button"><img src = "../img/note.png"></div>');
-    
     if(tipo==='pdf')
         pdfViewer(DocEnvironment);
     
 }
 
 
+function imagePreview(DocEnvironment){
+    var RutaArchivoServer = location.host+'/'+DocEnvironment.FileRoute;
+        
+        $('#div_vista_previa').remove();
+        
+        $('body').append('<div id = "div_vista_previa"></div>');
+        $('#div_vista_previa').append('<div id = "viewerImageNavBar" class = "viewerImageNavBar"></div>');
+        $('#div_vista_previa').append('<div id = "viewerImageBody" class = "viewerImageBody"></div>');
+        
+        
+        $('#div_vista_previa').dialog({
+            responsive:true, fluid:true ,width:Wvisor, 
+            height:Hvisor, minWidth:380, minHeight:minHvisor, title:"Vista Previa", 
+            modal:true,closeOnEscape:true,
+            resize:function(){
+                if($(this).width() <= 400){
+//                    console.log("<= 400");
+                    if($('#viewerImageNavBar nav.responsive').length === 0){
+                        $('#viewerImageNavBar').empty();
+                        insertResponsiveMenuToImageViewer();
+                        setActionToImageViewer(iv1);
+                        
+                    }
+                }
+                else if($(this).width() > 400){
+//                    console.log("> 400");
+                    if($('#viewerImageNavBar nav.responsive').length > 0){
+                            $('#viewerImageNavBar').empty();
+                            insertMenuToImageViewer();
+                            setActionToImageViewer(iv1);
+                        }
+                }
+            },
+            open:function(){
+                $('#div_vista_previa.ui-dialog-content').css({"padding": "0em"});
+                $('#div_vista_previa.ui-dialog').css({"padding": "0em"});
+                
+                /* Se define el tipo del menú: responsive ó ampliado */
+                if($(this).width() <= 400)
+                    insertResponsiveMenuToImageViewer();
+                else
+                    insertMenuToImageViewer();
+            },
+            close:function(){
+                iv1 = undefined;
+            }
+        }).dialogExtend(BotonesWindow);
+                
+/****************   Inicio de API para mostrar las imágenes ********************/                
+                
+        iv1 = $("#viewerImageBody").iviewer({
+            src: RutaArchivoServer,
+            update_on_resize: true,
+            zoom_animation: true,
+            mousewheel: true,
+//            onDrag: function(ev, coords) { },
+            onZoom: function(ev, coords){ 
+                var zoomPercent = $(this).iviewer("update_status"); 
+                $('#viewerImageNavBar input.iviewer_zoom_status').val(zoomPercent+"%");   
+            },
+            onFinishLoad: function(){
+                var zoomPercent = $(this).iviewer("update_status"); 
+                $('#viewerImageNavBar input.iviewer_zoom_status').val(zoomPercent+"%");
+            }
+        });
+
+        $('#viewerImageBody .iviewer_common').hide();       /* Se esconden iconos ingresados por el api */
+        
+        setActionToImageViewer();
+        
+        if($.type(DocEnvironment)==='object');
+            Notes = new ClassNotes('imageViewer',DocEnvironment.IdRepository, DocEnvironment.RepositoryName, DocEnvironment.IdFile, DocEnvironment.FileName, DocEnvironment.IdGlobal);
+
+
+}
+
+function setActionToImageViewer(){
+    $("#viewerImageNavBar .liPageUpIcon").click(function(){iv1.iviewer('angle', +90); });
+    $("#viewerImageNavBar .liPageDown").click(function(){iv1.iviewer('angle', -90); });
+    $("#viewerImageNavBar .liZoomDown").click(function(){ iv1.iviewer('zoom_by', 1); });
+    $("#viewerImageNavBar .liZoomUp").click(function(){ iv1.iviewer('zoom_by', -1); });
+    $("#viewerImageNavBar .liResizeFull").click(function(){
+        iv1.iviewer('fit'); 
+        var zoomPercent = iv1.iviewer("update_status"); 
+        $('#viewerImageNavBar input.iviewer_zoom_status').val(zoomPercent+"%"); 
+    });
+    
+    var zoomPercent = $(iv1).iviewer("update_status"); 
+    
+    $('#viewerImageNavBar input.iviewer_zoom_status').val(zoomPercent+"%");
+    $('#viewerImageNavBar .liNotes').click(function(){alert("Notes");});
+        
+//        $('#viewerImageNavBar .iviewer_zoom_status').click(function(){var zommObject = iv1.iviewer("update_status"); console.log(zommObject);});
+//        $("#orig").click(function(){ iv1.iviewer('set_zoom', 100); });
+//        $("#update").click(function(){ iv1.iviewer('update_container_info'); });
+}
+
+function insertResponsiveMenuToImageViewer(){
+    $('#viewerImageNavBar').append('\n\
+        <nav class="navbar navbar-inverse responsive">\n\
+            <ul class="nav navbar-nav">\n\
+                <li class = "liZoomDown"><a href="#"><span class = "zoomDown glyphicon glyphicon-zoom-in" /></a></li>\n\
+                <li class = "liZoomUp"><a href="#"><span class = "zoomUp glyphicon glyphicon glyphicon-zoom-out" /></a></li>\n\
+                <li class = "dropdown">\n\
+                    <a href="#" class="dropdown-toggle" data-toggle="dropdown" role="button" aria-haspopup="true" aria-expanded="false">Más<span class="caret"></span></a>\n\
+                    <ul class="dropdown-menu navbar-inverse">\n\
+                        <li class = "liPageUpIcon"><a href="#">Izquierda<span class = "glyphicon pageUpIcon" /></a></li>\n\
+                        <li class = "liPageDown"><a href="#">Derecha<span class = "glyphicon pageDownIcon" /></a></li>\n\
+                        <li class = "liResizeFull"><a href="#">100%<span class = "glyphicon glyphicon-resize-full" /></a></li>\n\
+                        <li class = "liNotes"><a href="#"><span class = "glyphicon notesIcon"></span>Nueva Nota</a></li>\n\
+                    </ul>\n\
+                </li>\n\
+            </ul>\n\
+            <div class="navbar-form navbar-left" role="search">\n\
+                <div class="form-group">\n\
+                    <input type="text" class="iviewer_zoom_status" disabled>\n\
+                </div>\n\
+            </div>\n\
+        </nav>\n\
+    ');
+    
+}
+
+/* Menú ampliado */
+function insertMenuToImageViewer(){
+    $('#viewerImageNavBar').append('\n\
+        <nav class="navbar navbar-inverse">\n\
+            <ul class="nav navbar-nav">\n\
+                <li class="liPageUpIcon"><a href="#"><span class = "glyphicon pageUpIcon" /></a></li>\n\
+                <li class="liPageDown"><a href="#"><span class = "glyphicon pageDownIcon" /></a></li>\n\
+                <li class="liZoomDown"><a href="#"><span class = "zoomDown glyphicon glyphicon-zoom-in" /></a></li>\n\
+                <li class="liZoomUp"><a href="#"><span class = "zoomUp glyphicon glyphicon glyphicon-zoom-out" /></a></li>\n\
+                <li class="liResizeFull"><a href="#"><span class = "glyphicon glyphicon-resize-full" /></a></li>\n\
+                <li class="liNotes"><a href="#"><span class = "glyphicon notesIcon"></span></li>\n\
+            </ul>\n\
+            <div class="navbar-form navbar-left" role="search">\n\
+                <div class="form-group">\n\
+                    <input type="text" class="iviewer_zoom_status" disabled>\n\
+                </div>\n\
+            </div>\n\
+        </nav>\n\
+    ');
+    
+}
 
 function pdfViewer(DocEnvironment){
      PDFJS.workerSrc = 'apis/pdf.js-master/src/worker_loader.js';
@@ -119,7 +192,7 @@ function pdfViewer(DocEnvironment){
     PDFView.open(DocEnvironment.FileRoute, 0);     
 
     if($.type(DocEnvironment)==='object');
-        Notes = new ClassNotes(DocEnvironment.IdRepository, DocEnvironment.RepositoryName, DocEnvironment.IdFile, DocEnvironment.FileName, DocEnvironment.IdGlobal);
+        Notes = new ClassNotes('pdfViewer', DocEnvironment.IdRepository, DocEnvironment.RepositoryName, DocEnvironment.IdFile, DocEnvironment.FileName, DocEnvironment.IdGlobal);
 
     $('#DivPdfViewer').dialog({width:Wvisor, height:Hvisor, minWidth:minWvisor, minHeight:minHvisor, title:"Vista Previa", modal:true}).dialogExtend(BotonesWindow);
 }
