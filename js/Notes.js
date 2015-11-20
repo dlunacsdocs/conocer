@@ -72,15 +72,15 @@ var ClassNotes = function(viewerType,IdRepository,RepositoryName, IdFile, FileNa
            });
        }
 
-       var NoPagina = $('#pageNumber').val();
+       var NoPagina=$('#pageNumber').val();
        $('#NotesIcon').remove();
        if($.type(ArrayNotes[NoPagina])==='array')
        {
            var IdNotes = ArrayNotes[NoPagina];
-           if($.type(IdNotes)==='array')        /* Contiene todas las notas obtenidas */
-                if(IdNotes.length > 0)
+           if($.type(IdNotes)==='array')
+                for(var cont = 0; cont < IdNotes.length; cont++)
                 {            
-                    var IdNote = IdNotes[0];
+                    var IdNote = IdNotes[cont];
                     if(IdNote > 0)
                         if((!$("#NoteIcon"+ IdNote).length>0))
                             $('#NotesZone').append('<img src="../img/note.png"  title="Nota(s) en la pagina '+self.Page+'" id="NoteIcon'+ IdNote +'" class="NotesIcon" onclick = "_ReadNote(\''+ IdNote +'\')">');                                        
