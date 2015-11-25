@@ -102,7 +102,8 @@ var LanguajeDataTable = {
     "sZeroRecords": "No se encontraron resultados",
     "sInfo": "Mostrados _START_ de _END_ de _TOTAL_ registro(s)",
     "sInfoEmpty": "Mostrados 0 de 0 of 0 registros",
-    "sInfoFiltered": "(Filtrando desde _MAX_ total registros)"
+    "sInfoFiltered": "(Filtrando desde _MAX_ total registros)",
+    "sSearch": "Buscar"
 };
 
 var BotonesWindow = {"closable": true, // enable/disable close button

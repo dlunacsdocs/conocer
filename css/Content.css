@@ -484,10 +484,10 @@ div.loading
 }
 .TextAreaPreviewNotes
 {
-    font-family: Verdana,Arial,sans-serif; 
-    font-size: 10px;
-    min-width: 200px;
-    min-height: 200px;
+    font-size: 13px;
+    width: 99%;
+    height: 90%;
+    min-height: 300px;
 }
 .div_PreviewNote
 {

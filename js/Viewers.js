@@ -194,6 +194,10 @@ function pdfViewer(DocEnvironment){
     if($.type(DocEnvironment)==='object');
         Notes = new ClassNotes('pdfViewer', DocEnvironment.IdRepository, DocEnvironment.RepositoryName, DocEnvironment.IdFile, DocEnvironment.FileName, DocEnvironment.IdGlobal);
 
-    $('#DivPdfViewer').dialog({width:Wvisor, height:Hvisor, minWidth:minWvisor, minHeight:minHvisor, title:"Vista Previa", modal:true}).dialogExtend(BotonesWindow);
+    $('#DivPdfViewer').dialog({width:Wvisor, height:Hvisor, minWidth:minWvisor, minHeight:minHvisor, title:"Vista Previa", close:function(){
+        if($('#div_notes').is(':visible'))
+            $('#div_notes').remove();
+        }
+    }).dialogExtend(BotonesWindow);
 }
 

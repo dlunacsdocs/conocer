@@ -31,7 +31,7 @@ class Notes {
                 case 'AddNote': $this->AddNote(); break;
                 case 'ObtainXmlNotes': $this->ObtainXmlNotes(); break;
                 case 'GetNote': $this->GetNote(); break;
-                case 'ModifyNote': $this->ModifyNote(); break;
+                case 'ModifyNote': $this->ModifyNote($userData); break;
                 case 'DeleteNote': $this->DeleteNote(); break;        
                 case 'getNotesPerPage': $this->getNotesPerPage($userData); break;
             }
@@ -93,7 +93,7 @@ class Notes {
      ***************************************************************************/
     private function ShowNotes($userData)
     {
-        $DataBaseName=  filter_input(INPUT_POST, "DataBaseName");
+        $DataBaseName = $userData['dataBaseName'];
         $IdRepositorio=  filter_input(INPUT_POST, "IdRepositorio");
         $IdFile = filter_input(INPUT_POST,"IdFile");                
         
@@ -247,26 +247,25 @@ class Notes {
         
     }
     
-    private function ModifyNote()
+    private function ModifyNote($userData)
     {
-        $XML=new XML();
         $BD= new DataBase();
         $Log = new Log();
         
-        $DataBaseName = filter_input(INPUT_POST, "DataBaseName");
+        $DataBaseName = $userData['dataBaseName'];
         $RepositoryName = filter_input(INPUT_POST, "RepositoryName");
         $IdRepository = filter_input(INPUT_POST, "IdRepository");
-        $IdUsuario = filter_input(INPUT_POST, "IdUser");
-        $NombreUsuario = filter_input(INPUT_POST, "UserName");
+        $IdUsuario = $userData['idUser'];
+        $NombreUsuario = $userData['userName'];
         $FileName = filter_input(INPUT_POST, "FileName");
         $IdNote = filter_input(INPUT_POST, "IdNote");
         $IdFile = filter_input(INPUT_POST, "IdFile");
         $IdGlobal = filter_input(INPUT_POST, "IdGlobal"); 
         $Text = filter_input(INPUT_POST, "Text");
-        $PreviousText_ = filter_input(INPUT_POST, "PreviousText");
+//        $PreviousText_ = filter_input(INPUT_POST, "PreviousText");
         $Page = filter_input(INPUT_POST, "Page");
-        $Text_ = substr($Text,0,100);
-        $PreviousText = substr($PreviousText_,0,100);
+//        $Text_ = substr($Text,0,100);
+//        $PreviousText = substr($PreviousText_,0,100);
         $FullWithoutNotes = $this->RemoveNotesOfFull($DataBaseName, $IdGlobal, $IdFile, $IdRepository);
 
         if($FullWithoutNotes === 0)
@@ -275,30 +274,26 @@ class Notes {
         $UpdateNote = "UPDATE CSDocs_Notes SET Text = '$Text' WHERE IdNote = $IdNote";
 
         if(($ResultUpdateNote = $BD->ConsultaQuery($DataBaseName, $UpdateNote))!=1)
-        {
-            $XML->ResponseXML("Error", 0, "<p><b>Error</b> al actualiza la Nota</p><br>Detalles:<br><br>$ResultUpdateNote");
-            return 0;
-        }
+            return XML::XMLReponse("Error", 0, "<p><b>Error</b> al actualiza la Nota</p><br>Detalles:<br><br>$ResultUpdateNote");
+
         
         $NewNotesFields = $this->GetNotesString($DataBaseName, $IdRepository, $IdFile);
+        
         if($NewNotesFields===0)
             return 0;
-        $NewFullField = $FullWithoutNotes." ".$NewNotesFields;
         
-//        $Prueba = "SELECT global.Full, rep.Full FROM $RepositoryName rep INNER JOIN RepositorioGlobal global ON rep.IdRepositorio = global.IdFile WHERE global.IdRepositorio = $IdRepository AND global.IdFile = $IdFile AND rep.IdRepositorio = $IdFile";
-//        $Resul = $BD->ConsultaSelect($DataBaseName, $Prueba);
+        $NewFullField = $FullWithoutNotes." ".$NewNotesFields;
         
         $UpdateGlobalAndRepository = 
         "UPDATE $RepositoryName, RepositorioGlobal SET $RepositoryName.Full = '$NewFullField', RepositorioGlobal.Full = '$NewFullField' "    
         . "WHERE RepositorioGlobal.IdRepositorio = $IdRepository AND RepositorioGlobal.IdFile = $IdFile AND $RepositoryName.IdRepositorio = $IdFile ";
-//        echo $UpdateGlobalAndRepository;
+
         if(($ResultUpdateGlobalAndRepository = $BD->ConsultaQuery($DataBaseName, $UpdateGlobalAndRepository))!=1)
-        {
-            $XML->ResponseXML("Error", 0, "<p><b>Error</b> al actualizar los campos Full</p><br>Detalles:<br><br>$ResultUpdateGlobalAndRepository");
-            return 0;
-        }
-        $Log->Write("30", $IdUsuario, $NombreUsuario, " del documento '$FileName' en la página $Page con el con el contenido '$PreviousText' al nuevo contenido '$Text_'", $DataBaseName);
-        $XML->ResponseXML("ModifyNote", 1, "Se modificó la nota con éxito");
+            return XML::XMLReponse("Error", 0, "<p><b>Error</b> al actualizar los campos Full</p><br>Detalles:<br><br>$ResultUpdateGlobalAndRepository");
+
+        $Log->Write("30", $IdUsuario, $NombreUsuario, " $IdNote del documento '$FileName' en la página $Page del repositorio $RepositoryName");
+        
+        XML::XMLReponse("ModifyNote", 1, "Se modificó la nota con éxito");
                                 
     }
     
