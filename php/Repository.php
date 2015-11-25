@@ -150,26 +150,37 @@ class Repository {
         $FieldTypeMysql= filter_input(INPUT_POST, "FieldType");
         $FieldLength = filter_input(INPUT_POST, "FieldLength");
         $Required = filter_input(INPUT_POST, "RequiredField");
-        
+//        var_dump($_POST);
 
-        if((int)($FieldLength)>0)
+        if((int)($FieldLength)>0){
+            $FieldTypeMysql = $FieldTypeMysql."($FieldLength) ";
             $FieldLength = "long ".$FieldLength."###";
+        }
         else 
             $FieldLength = "";
         
         $NewProperty = "Properties###name $FieldName###type $FieldType###".$FieldLength."required $Required###";
-               
+      
         if(strcasecmp($Required, "true")==0)
                 $Required = "NOT NULL";
         else
             $Required = '';
 
         $AlterTable = "ALTER TABLE $RepositoryName ADD COLUMN $FieldName $FieldTypeMysql $Required";
-        
+
         if(($AlterRes = $DB->ConsultaQuery($DataBaseName, $AlterTable))!=1)
                 return XML::XMLReponse ("Error", 0, "<p><b>Error</b> al agregar el nuevo campo <b>$FieldName</b></p><br>Detalles:<br><br>$AlterRes");
 
-
+        $AlterTableTemp = "ALTER TABLE temp_rep_$RepositoryName ADD COLUMN $FieldName $FieldTypeMysql $Required";
+        
+        if(($AlterRes = $DB->ConsultaQuery($DataBaseName, $AlterTableTemp))!=1){
+            $DropColumn = "ALTER TABLE $RepositoryName DROP COLUMN $FieldName";
+            if(($DropResult = $DB->ConsultaQuery($DataBaseName, $DropColumn))!=1)
+                return XML::XMLReponse ("Error", 0, "<p><b>Error</b> al agregar al registro de estructura el nuevo campo '$FieldName'. No fué posible eliminar la columna posteriormente, debe reportarlo a CSDocs</p><br>Detalles:<br><br>$DropResult");
+            else
+                return XML::XMLReponse ("Error", 0, "<p><b>Error</b> al agregar el nuevo campo <b>$FieldName</b></p><br>Detalles:<br><br>$AlterRes");
+        }
+        
         if(($AddField =  DesignerForms::AddPropertyIntoStructureConfig($DataBaseName, $RepositoryName, $NewProperty))!=1)
         {
             $DropColumn = "ALTER TABLE $RepositoryName DROP COLUMN $FieldName";

@@ -115,8 +115,20 @@ var ClassNotes = function(viewerType,IdRepository,RepositoryName, IdFile, FileNa
             ],
             onshown: function(dialogRef){
                 TableNotesdT = $('#notesPerPageTable').dataTable({
-                    "bInfo":false, "autoWidth" : false, "oLanguage":LanguajeDataTable
-                });  
+                "sDom": 'lfTrtip',
+                 "bInfo":false, "autoWidth" : false, "oLanguage":LanguajeDataTable,
+                 "tableTools": {
+                     "aButtons": [
+                         {"sExtends":"text", "sButtonText": "Agregar Nota", "fnClick" :function(){_WriteNote();}},
+                         {"sExtends":"text", "sButtonText": "Eliminar Nota", "fnClick" :function(){_confirmDeleteNote();}},
+                         {
+                             "sExtends":    "collection",
+                             "sButtonText": "Exportar...",
+                             "aButtons":    [ "copy","csv", "xls", "pdf" ]
+                         }                          
+                     ]
+                 }                   
+            });  
 
                 TableNotesDT = new $.fn.dataTable.Api('#notesPerPageTable');                                
                 
@@ -254,7 +266,7 @@ var ClassNotes = function(viewerType,IdRepository,RepositoryName, IdFile, FileNa
             "tableTools": {
                 "aButtons": [
                     {"sExtends":"text", "sButtonText": "Agregar Nota", "fnClick" :function(){_WriteNote();}},
-                    {"sExtends":"text", "sButtonText": "Eliminar Nota", "fnClick" :function(){_DeleteNote();}},
+                    {"sExtends":"text", "sButtonText": "Eliminar Nota", "fnClick" :function(){_confirmDeleteNote();}},
                     {"sExtends": "copy","sButtonText": "Copiar Tabla"},
                     {
                         "sExtends":    "collection",
@@ -482,8 +494,14 @@ var ClassNotes = function(viewerType,IdRepository,RepositoryName, IdFile, FileNa
                ArrayNotes[NoPagina] = Notes;
                console.log("If se agrego la nota "+IdNote+" a la página "+NoPagina);
 
-               if((!$("#NoteIcon"+ IdNote).length>0))
-                   $('#NotesZone').append('<img src="../img/note.png"  title="Nota(s) en la pagina '+NoPagina+'" id="NoteIcon'+ IdNote +'" class="NotesIcon" onclick = "_ReadNote(\''+ IdNote +'\')">');
+               if($('.NotesIcon').length===0){
+                   $('#NotesZone').append('<img src="../img/note.png"  title="Nota(s) en la pagina '+NoPagina+'" id = "NoteIconPerPage" class = "NotesIcon">');
+                   $('#NoteIconPerPage').click(function(){
+                        var notes = self.getNotesPerPage(NoPagina);
+
+                        _listingNotesPerPage(notes, NoPagina);
+                    });
+               }
 
                $('#WriteNote').dialog('destroy');    
            });
@@ -544,11 +562,32 @@ var ClassNotes = function(viewerType,IdRepository,RepositoryName, IdFile, FileNa
        
    };
    
+   _confirmDeleteNote = function(){
+       BootstrapDialog.show({
+            type: BootstrapDialog.TYPE_DANGER,
+            size: BootstrapDialog.SIZE_SMALL,
+            title: 'Mensaje de Confirmación',
+            message: "¿Realmente desea realizar eliminar la Nota seleccionada?",
+            buttons: [{
+                label: 'Cancelar',
+                action: function(dialogRef){
+                    dialogRef.close();
+                }
+            },{
+                label: 'Eliminar',
+                action: function(dialogRef){
+                    _DeleteNote();
+                    dialogRef.close();
+                }
+            }
+            ]
+        });
+   };
+   
    _DeleteNote = function(){
         var NoteText = undefined;
         var IdNote = 0;
-        $('#table_notes tr.selected').each(function()
-        {
+        $('#table_notes tr.selected').each(function(){
             var position = TableNotesdT.fnGetPosition(this); // getting the clicked row position  
             NoteText = TableNotesdT.fnGetData(position)[0];
             IdNote = $(this).attr('id');
@@ -582,7 +621,7 @@ var ClassNotes = function(viewerType,IdRepository,RepositoryName, IdFile, FileNa
                     {
                         var IdBackgroundNote = Notes[cont];
                         if(IdNote === IdBackgroundNote)
-                            Notes[cont] = undefined;
+                            delete Notes[cont];
                     }
                     ArrayNotes[self.Page] = Notes;
                 }

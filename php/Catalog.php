@@ -396,13 +396,29 @@ class Catalog {
 
         $DB->WriteConfigCatalogo("$NombreRepositorio"."_$NombreCatalogo",$configStructure);
 
-        $AlterTable="ALTER TABLE $NombreRepositorio ADD COLUMN $NombreCatalogo INT NOT NULL, ADD INDEX $NombreCatalogo ($NombreCatalogo), ADD FOREIGN KEY ($NombreCatalogo) REFERENCES $NombreRepositorio"."_$NombreCatalogo (Id$NombreCatalogo)";
+        $AlterTable = "ALTER TABLE $NombreRepositorio ADD COLUMN $NombreCatalogo INT NOT NULL, ADD INDEX $NombreCatalogo ($NombreCatalogo), ADD FOREIGN KEY ($NombreCatalogo) REFERENCES $NombreRepositorio"."_$NombreCatalogo (Id$NombreCatalogo)";
 
         if(($ResultAlterTable = $DB->ConsultaQuery($DataBaseName, $AlterTable))!=1){
             $DeleteCatalog = "DROP TABLE $NombreRepositorio"."_$NombreCatalogo";
             $DB->ConsultaQuery($DataBaseName, $DeleteCatalog);
             echo  "<b>Error</b> al crear las relaciones del catálogo <b>$NombreCatalogo</b><br><br>Detalles:<br><br> $ResultAlterTable";
             return 0;
+        }
+        
+        $AlterTableTemp = "ALTER TABLE temp_rep_$NombreRepositorio ADD COLUMN $NombreCatalogo INT NOT NULL, ADD INDEX $NombreCatalogo ($NombreCatalogo) ";
+        
+        if(($ResultAlterTable = $DB->ConsultaQuery($DataBaseName, $AlterTableTemp))!=1){
+            $DropColumn = "ALTER TABLE $NombreRepositorio DROP COLUMN $NombreCatalogo";
+            if(($DropResult = $DB->ConsultaQuery($DataBaseName, $DropColumn))!=1){
+                echo "<p><b>Error</b> al integrar relación del nuevo catálogo en <b>temporal</b>. "
+                . "No fué posible integrar relación del nuevo catálogo al repositorio <b>$NombreRepositorio</b> "
+                . "<br>Detalles:<br><br>Operación 1: $ResultAlterTable. <br><br>Operación 2: $DropResult";
+                return 0;
+            }else{
+                echo "<p><b>Error</b> al agregar relación del catálogo '$NombreCatalogo' al repositorio "
+                        . "'$NombreRepositorio'</p><br>Detalles:<br><br>$ResultAlterTable";
+                return 0;
+            }
         }
         
         return 1;
