@@ -91,13 +91,11 @@ var PDFViewer = (function pdfViewer() {
     },
 
     set currentPageNumber(val) {
-        if($.type(Notes)==='object')
-            Notes.HideAndShowNoteIcon();
       if (!this.pdfDocument) {
         this._currentPageNumber = val;
         return;
       }
-
+      
       var event = document.createEvent('UIEvents');
       event.initUIEvent('pagechange', true, true, window, 0);
       event.updateInProgress = this.updateInProgress;

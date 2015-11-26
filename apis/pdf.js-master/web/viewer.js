@@ -25,6 +25,8 @@
            RenderingStates, DEFAULT_SCALE, UNKNOWN_SCALE,
            IGNORE_CURRENT_POSITION_ON_ZOOM: true */
 
+/* global Notes */
+
 'use strict';
 
 var DEFAULT_URL = '';
@@ -1958,7 +1960,11 @@ window.addEventListener('scalechange', function scalechange(evt) {
 window.addEventListener('pagechange', function pagechange(evt) {
   var page = evt.pageNumber;
   if (evt.previousPageNumber !== page) {
+
     document.getElementById('pageNumber').value = page;
+    console.log("Event pageChange "+page);
+    Notes.HideAndShowNoteIcon();
+
     PDFViewerApplication.pdfThumbnailViewer.scrollThumbnailIntoView(page);
   }
   var numPages = PDFViewerApplication.pagesCount;

@@ -5,7 +5,6 @@
 
 /* global TableEnginedT, TableContentdT, OptionDataTable, PDFViewerApplication, HideClose, EnvironmentData, Hvisor, Notes, LanguajeDataTable, BootstrapDialog */
 
-var ArrayObteinNotes = 0;
 var ArrayNotes = new Array();
 var PaginaActual = 0;   
 
@@ -25,7 +24,7 @@ var ClassNotes = function(viewerType,IdRepository,RepositoryName, IdFile, FileNa
 {
     /*******************************************************************************
     * @description  Muestra u oculta el icono de Nota dentro de una página
-    * LLamdo: pdf_viewer.js
+    * LLamdo: Viewer.js
     * @returns {undefined}                 
     *******************************************************************************/
    var self = this;
@@ -38,51 +37,27 @@ var ClassNotes = function(viewerType,IdRepository,RepositoryName, IdFile, FileNa
    this.Page = 0;
    
    this.HideAndShowNoteIcon = function(){
-       
-       if(self.Page === $('#pageNumber').val())
-           return;
       
-       self.Page = $('#pageNumber').val();
+       self.Page = PDFViewerApplication.page;
     
        $('.NotesIcon').remove();
-
-
-       if(ArrayObteinNotes===0)
-       {
-           var XmlArrayNotes = self.ObtainXmlNotes();
-           console.log("XMLNotes =  "+XmlArrayNotes);
-           $(XmlArrayNotes).find("Note").each(function()
-           {         
-               var IdNota = $(this).find('IdNote').text();
-               var NoPagina = $(this).find("Page").text();               
-
-               if(ArrayNotes[NoPagina]=== undefined )
-                   ArrayNotes[NoPagina] = new Array();
-
-               var Notes = ArrayNotes[NoPagina];
-               Notes[Notes.length] = IdNota;
-               ArrayNotes[NoPagina] = Notes;
-           });
-       }
 
        var NoPagina;
        
        if(self.viewerType === 'imageViewer')
            NoPagina = 1;
        else
-           NoPagina = $('#pageNumber').val();
+           NoPagina = self.Page;
        
-       $('.NotesIcon').remove();
-       console.log(ArrayNotes);
+       console.log("HideAndShowNoteIcon:::Buscando en nota en página "+NoPagina);
+       
        if($.type(ArrayNotes[NoPagina])==='array'){
            var IdNotes = ArrayNotes[NoPagina];
            if($.type(IdNotes)==='array'){
                 if(IdNotes.length > 0){            
                     var IdNote = IdNotes[0];
-                    console.log("Dentro de if "+IdNote);
                     if(IdNote > 0){
                         if((!$("#NoteIcon"+ IdNote).length>0)){
-                            console.log("Agregando Icono de Nota");
                             $('.NotesZone').append('<img src="../img/note.png"  title="Nota(s) en la pagina '+self.Page+'"  class = "NotesIcon NoteIconPerPage">');          
                             $('.NoteIconPerPage').click(function(){
                                 var notes = self.getNotesPerPage(NoPagina);
@@ -94,6 +69,65 @@ var ClassNotes = function(viewerType,IdRepository,RepositoryName, IdFile, FileNa
                 } 
             }
        }
+   };
+   
+    /***************************************************************************
+    * @description Registra en un Array cada una de las Páginas que contienen una 
+    *              nota 
+    * @returns {undefined}
+    ****************************************************************************/   
+    this.registerPagesWithNotes = function(){
+        var XmlArrayNotes = self.getPagesWithNote();
+            console.log("XMLNotes =  "+XmlArrayNotes);
+            $(XmlArrayNotes).find("Note").each(function()
+            {         
+                var IdNota = $(this).find('IdNote').text();
+                var NoPagina = $(this).find("Page").text();               
+
+                if(ArrayNotes[NoPagina]=== undefined )
+                    ArrayNotes[NoPagina] = new Array();
+
+                var Notes = ArrayNotes[NoPagina];
+                Notes[Notes.length] = IdNota;
+                ArrayNotes[NoPagina] = Notes;
+            });
+   };
+   
+   /****************************************************************************
+    * @description Obtiene las páginas que continen una nota o más.
+    * @returns {Xml con cada una de las páginas que contienen una nota.}
+    ****************************************************************************/
+   this.getPagesWithNote = function(){
+
+       if(!this.IdFile > 0 || !this.IdRepository > 0)
+           return;
+
+       var xml=0;
+
+       $.ajax({
+       async:false, 
+       cache:false,
+       dataType:'html', 
+       type: 'POST',   
+       url: "php/Notes.php",
+       data: 'opcion=getPagesWithNote&IdRepositorio='+self.IdRepository+"&IdFile="+self.IdFile, 
+       success:  function(response)
+       {   
+           if($.parseXML( response )===null){ Error(response); return 0;}else xml=$.parseXML( response );
+
+           if($(xml).find("Notes").length > 0)
+               return xml;
+
+           if($(xml).find("Error").length>0)
+           {
+               ErrorXml(xml);
+               return 0;
+           }
+       },
+       beforeSend:function(){          },
+       error: function(jqXHR, textStatus, errorThrown){Error(textStatus +"<br>"+ errorThrown);}
+       });
+       return xml;
    };
    
    /****************************************************************************
@@ -165,49 +199,6 @@ var ClassNotes = function(viewerType,IdRepository,RepositoryName, IdFile, FileNa
         });
         
         
-   };
-   
-   
-   
-   /****************************************************************************
-    * @description  Obtiene un XML Con las paginas que contienen una Nota (Consulta más ligera 
-    *               que la que contiene la descripción de las Notas)
-    * @param {without parameters}  
-    * @returns  {Xml con el contenido de cada una de las Notas del documento 
-    *           órdenadas por página}
-    ****************************************************************************/
-   this.ObtainXmlNotes = function(){   
-       ArrayObteinNotes=1;            
-
-       if(!this.IdFile > 0 || !this.IdRepository > 0)
-           return;
-
-       var xml=0;
-
-       $.ajax({
-       async:false, 
-       cache:false,
-       dataType:'html', 
-       type: 'POST',   
-       url: "php/Notes.php",
-       data: 'opcion=ObtainXmlNotes&DataBaseName='+EnvironmentData.DataBaseName+'&IdUsuario='+EnvironmentData.IdUsuario+'&IdRepositorio='+self.IdRepository+"&IdFile="+self.IdFile+'&nombre_usuario='+EnvironmentData.NombreUsuario, 
-       success:  function(response)
-       {   
-           if($.parseXML( response )===null){ Error(response); return 0;}else xml=$.parseXML( response );
-
-           if($(xml).find("Notes").length > 0)
-               return xml;
-
-           if($(xml).find("Error").length>0)
-           {
-               ErrorXml(xml);
-               return 0;
-           }
-       },
-       beforeSend:function(){          },
-       error: function(jqXHR, textStatus, errorThrown){Error(textStatus +"<br>"+ errorThrown);}
-       });
-       return xml;
    };
    
    /*******************************************************************************
@@ -321,7 +312,7 @@ var ClassNotes = function(viewerType,IdRepository,RepositoryName, IdFile, FileNa
    };
 
    _JumpToPage = function(Page){
-       PDFViewerApplication.page=Page;         
+       PDFViewerApplication.page=Page;      
    };
    
    _ReadNote = function(IdNote){

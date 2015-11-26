@@ -29,7 +29,7 @@ class Notes {
             {
                 case 'ShowNotes': $this->ShowNotes($userData); break;
                 case 'AddNote': $this->AddNote(); break;
-                case 'ObtainXmlNotes': $this->ObtainXmlNotes(); break;
+                case 'getPagesWithNote': $this->getPagesWithNote($userData); break;
                 case 'GetNote': $this->GetNote(); break;
                 case 'ModifyNote': $this->ModifyNote($userData); break;
                 case 'DeleteNote': $this->DeleteNote(); break;        
@@ -62,27 +62,23 @@ class Notes {
      * determinado
      ****************************************************************************/
     
-    private function ObtainXmlNotes()
+    private function getPagesWithNote($userData)
     {
-        $XML=new XML();
-        $BD= new DataBase();
+        $BD = new DataBase();
         
-        $DataBaseName=  filter_input(INPUT_POST, "DataBaseName");
-//        $NombreRepositorio=  filter_input(INPUT_POST, "NombreRepositorio");
-        $IdRepositorio=  filter_input(INPUT_POST, "IdRepositorio");
-//        $IdUsuario=filter_input(INPUT_POST, "IdUsuario");
-//        $IdEmpresa=  filter_input(INPUT_POST, "IdEmpresa");
-//        $NombreUsuario=  filter_input(INPUT_POST, "nombre_usuario");
-        $IdFile=filter_input(INPUT_POST,"IdFile");                
+        $DataBaseName = $userData['dataBaseName'];
+        $IdRepositorio = filter_input(INPUT_POST, "IdRepositorio");
+        $IdFile = filter_input(INPUT_POST,"IdFile");                
                 
-        $ConsultaNotas="SELECT note.IdNote, note.Page FROM CSDocs_Notes note WHERE note.IdFile=$IdFile AND IdRepository = $IdRepositorio";
-        $ArrayNotas=$BD->ConsultaSelect($DataBaseName, $ConsultaNotas);
+        $ConsultaNotas = "SELECT note.IdNote, note.Page FROM CSDocs_Notes note WHERE note.IdFile=$IdFile AND IdRepository = $IdRepositorio";
+        $ArrayNotas = $BD->ConsultaSelect($DataBaseName, $ConsultaNotas);
 
         /* Se comprueba si tuvo éxito la consulta */
-        if($ArrayNotas['Estado']!=1){$XML->ResponseXML("Error", 0, "Error al Consultar las Páginas con Nota ".$ArrayNotas['Estado']); return;}
-
+        if($ArrayNotas['Estado']!=1)
+            XML::XMLReponse("Error", 0, "Error al Consultar las Páginas con Nota ".$ArrayNotas['Estado']); 
+         
         /* Sí la consulta no generó errores, se devuelve el listado de notas en un XML */
-        $XML->ResponseXmlFromArray("Notes", "Note", $ArrayNotas['ArrayDatos']);
+        XML::XmlArrayResponse("Notes", "Note", $ArrayNotas['ArrayDatos']);
     }
     
     

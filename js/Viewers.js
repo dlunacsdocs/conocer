@@ -112,6 +112,7 @@ function imagePreview(DocEnvironment){
 
         if($.type(DocEnvironment)==='object'){
             Notes = new ClassNotes('imageViewer',DocEnvironment.IdRepository, DocEnvironment.RepositoryName, DocEnvironment.IdFile, DocEnvironment.FileName, DocEnvironment.IdGlobal);
+            Notes.registerPagesWithNotes();
             Notes.HideAndShowNoteIcon();
         }
             
@@ -200,7 +201,11 @@ function pdfViewer(DocEnvironment){
     if($.type(DocEnvironment)==='object');
         Notes = new ClassNotes('pdfViewer', DocEnvironment.IdRepository, DocEnvironment.RepositoryName, DocEnvironment.IdFile, DocEnvironment.FileName, DocEnvironment.IdGlobal);
 
-    $('#DivPdfViewer').dialog({width:Wvisor, height:Hvisor, minWidth:minWvisor, minHeight:minHvisor, title:"Vista Previa"
+    $('#DivPdfViewer').dialog({width:Wvisor, height:Hvisor, minWidth:minWvisor, 
+        minHeight:minHvisor, title:"Vista Previa", 
+        open:function(){
+            Notes.registerPagesWithNotes();
+        }
     }).dialogExtend(BotonesWindow);
 }
 
