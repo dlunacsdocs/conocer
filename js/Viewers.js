@@ -44,13 +44,16 @@ function imagePreview(DocEnvironment){
         
         $('body').append('<div id = "div_vista_previa"></div>');
         $('#div_vista_previa').append('<div id = "viewerImageNavBar" class = "viewerImageNavBar"></div>');
-        $('#div_vista_previa').append('<div id = "viewerImageBody" class = "viewerImageBody"></div>');
+        $('#div_vista_previa').append('<div id = "viewerImageBody" class = "viewerImageBody">\n\
+            <div class ="NotesZone"></div>\n\
+        </div>');
         
         
         $('#div_vista_previa').dialog({
             responsive:true, fluid:true ,width:Wvisor, 
-            height:Hvisor, minWidth:380, minHeight:minHvisor, title:"Vista Previa", 
-            modal:true,closeOnEscape:true,
+            height:Hvisor, minWidth:380, minHeight:minHvisor, 
+            title:"Vista Previa", 
+            closeOnEscape:true,
             resize:function(){
                 if($(this).width() <= 400){
 //                    console.log("<= 400");
@@ -107,10 +110,11 @@ function imagePreview(DocEnvironment){
         
         setActionToImageViewer();
 
-        if($.type(DocEnvironment)==='object');
+        if($.type(DocEnvironment)==='object'){
             Notes = new ClassNotes('imageViewer',DocEnvironment.IdRepository, DocEnvironment.RepositoryName, DocEnvironment.IdFile, DocEnvironment.FileName, DocEnvironment.IdGlobal);
-
-
+            Notes.HideAndShowNoteIcon();
+        }
+            
 }
 
 function setActionToImageViewer(){
@@ -127,7 +131,9 @@ function setActionToImageViewer(){
     var zoomPercent = $(iv1).iviewer("update_status"); 
     
     $('#viewerImageNavBar input.iviewer_zoom_status').val(zoomPercent+"%");
-    $('#viewerImageNavBar .liNotes').click(function(){alert("Notes");});
+    $('#viewerImageNavBar .liNotes').click(function(){
+        Notes.ShowListOfNotes();
+    });
         
 //        $('#viewerImageNavBar .iviewer_zoom_status').click(function(){var zommObject = iv1.iviewer("update_status"); console.log(zommObject);});
 //        $("#orig").click(function(){ iv1.iviewer('set_zoom', 100); });
@@ -194,10 +200,7 @@ function pdfViewer(DocEnvironment){
     if($.type(DocEnvironment)==='object');
         Notes = new ClassNotes('pdfViewer', DocEnvironment.IdRepository, DocEnvironment.RepositoryName, DocEnvironment.IdFile, DocEnvironment.FileName, DocEnvironment.IdGlobal);
 
-    $('#DivPdfViewer').dialog({width:Wvisor, height:Hvisor, minWidth:minWvisor, minHeight:minHvisor, title:"Vista Previa", close:function(){
-        if($('#div_notes').is(':visible'))
-            $('#div_notes').remove();
-        }
+    $('#DivPdfViewer').dialog({width:Wvisor, height:Hvisor, minWidth:minWvisor, minHeight:minHvisor, title:"Vista Previa"
     }).dialogExtend(BotonesWindow);
 }
 

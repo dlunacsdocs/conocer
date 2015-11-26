@@ -1,0 +1,6 @@
+Log de Cambios del sistema CSDocs
+Creación 25/11/15
+
+1.- Modificación del tipo de campo en la tabla CSDocs_Notes columna CreationDate
+	Tipo anterior: DATE
+	Tipo actual: DATETIME

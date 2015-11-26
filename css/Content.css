@@ -600,7 +600,7 @@ background-color:#FFFFFF;
 
 
 /********************************** Notas del Visor PDF ******************************/
-#NotesZone
+.NotesZone
 {
     z-index: 999;
     width: 10px;
@@ -610,7 +610,7 @@ background-color:#FFFFFF;
     right: 60px;    
 }
 
-#NotesZone img
+.NotesZone img
 {
     cursor: pointer;
 }

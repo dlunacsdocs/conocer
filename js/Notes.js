@@ -41,7 +41,7 @@ var ClassNotes = function(viewerType,IdRepository,RepositoryName, IdFile, FileNa
        
        if(self.Page === $('#pageNumber').val())
            return;
-
+      
        self.Page = $('#pageNumber').val();
     
        $('.NotesIcon').remove();
@@ -65,19 +65,26 @@ var ClassNotes = function(viewerType,IdRepository,RepositoryName, IdFile, FileNa
            });
        }
 
-       var NoPagina = $('#pageNumber').val();
+       var NoPagina;
+       
+       if(self.viewerType === 'imageViewer')
+           NoPagina = 1;
+       else
+           NoPagina = $('#pageNumber').val();
        
        $('.NotesIcon').remove();
-       
+       console.log(ArrayNotes);
        if($.type(ArrayNotes[NoPagina])==='array'){
            var IdNotes = ArrayNotes[NoPagina];
            if($.type(IdNotes)==='array'){
                 if(IdNotes.length > 0){            
                     var IdNote = IdNotes[0];
+                    console.log("Dentro de if "+IdNote);
                     if(IdNote > 0){
                         if((!$("#NoteIcon"+ IdNote).length>0)){
-                            $('#NotesZone').append('<img src="../img/note.png"  title="Nota(s) en la pagina '+self.Page+'" id="NoteIconPerPage" class="NotesIcon">');          
-                            $('#NoteIconPerPage').click(function(){
+                            console.log("Agregando Icono de Nota");
+                            $('.NotesZone').append('<img src="../img/note.png"  title="Nota(s) en la pagina '+self.Page+'"  class = "NotesIcon NoteIconPerPage">');          
+                            $('.NoteIconPerPage').click(function(){
                                 var notes = self.getNotesPerPage(NoPagina);
                          
                                 _listingNotesPerPage(notes, NoPagina);
@@ -123,7 +130,7 @@ var ClassNotes = function(viewerType,IdRepository,RepositoryName, IdFile, FileNa
                          {"sExtends":"text", "sButtonText": "Eliminar Nota", "fnClick" :function(){_confirmDeleteNote();}},
                          {
                              "sExtends":    "collection",
-                             "sButtonText": "Exportar...",
+                             "sButtonText": "Otro...",
                              "aButtons":    [ "copy","csv", "xls", "pdf" ]
                          }                          
                      ]
@@ -232,14 +239,6 @@ var ClassNotes = function(viewerType,IdRepository,RepositoryName, IdFile, FileNa
             if($(xml).find("Error").length>0)
                 ErrorXml(xml);
         },
-        beforeSend:function(){         
-            $('#div_notes').remove();
-            $('body').append('<div id = "div_notes"></div>');
-            $('#div_notes').append('<div class="loading"><img src="../img/loadinfologin.gif"></div>');
-            /*  Venatan de dialogo que espera la consulta con las notas  */    
-            $('#div_notes').dialog({title:"Cargando Notas...", width:700, 
-                minWidth:500,height:550, minHeight:400},HideClose);
-        },
         error: function(jqXHR, textStatus, errorThrown){Error(textStatus +"<br>"+ errorThrown);}
    });
 
@@ -248,67 +247,77 @@ var ClassNotes = function(viewerType,IdRepository,RepositoryName, IdFile, FileNa
        return estado;
    };
    
-   /*******************************************************************************
+   /****************************************************************************
     * Construye la tabla que muestra el listado de Notas
     *
     * @param {type} xml
     * @returns {undefined}
-    */
+    ***************************************************************************/
    _BuildNotesTable = function(xml){
+        var $table = $('<table>',{id:"table_notes", class:"able table-striped table-bordered table-hover table-condensed"});     
+        var thead = $('<thead>').append('<tr><th>Contenido Nota</th><th>Página</th><th>Usuario</th><th>Fecha</th><th>Ir</th><th></th></tr>');
+        $table.append(thead);    
+        
+        BootstrapDialog.show({
+            title: 'Notas del Documento',
+            message: $table,
+            buttons: [{
+                label: 'Cerrar',
+                action: function(dialogRef){
+                    dialogRef.close();
+                }
+            }
+            ],
+            onshown: function(dialogRef){
+                TableNotesdT = $('#table_notes').dataTable({
+                    "sDom": 'lfTrtip',
+                     "bInfo":false, "autoWidth" : false, "oLanguage":LanguajeDataTable,
+                     "tableTools": {
+                         "aButtons": [
+                             {"sExtends":"text", "sButtonText": "Agregar Nota", "fnClick" :function(){_WriteNote();}},
+                             {"sExtends":"text", "sButtonText": "Eliminar Nota", "fnClick" :function(){_confirmDeleteNote();}},
+                             {
+                                 "sExtends":    "collection",
+                                 "sButtonText": "Otro...",
+                                 "aButtons":    ["copy" ,"csv", "xls", "pdf" ]
+                             }                          
+                         ]
+                     }                   
+                });  
+                TableNotesDT = new $.fn.dataTable.Api('#table_notes');
 
-       $('#div_notes').empty();      
-       $('#div_notes').dialog('option','title','Listado de Notas');
-       $('#div_notes').append('<table id="table_notes" class="display hover"><thead><tr><th>Texto</th><th>No. Página</th><th>Usuario</th><th>Fecha de Creación</th><th>Ir</th><th>Ver Nota</th></tr></thead><tbody></tbody></table>');    
+                $(xml).find("Note").each(function()
+                {
+                    var $Note = $(this);
+                    var IdNota = $(this).find("IdNote").text();
+                    var FechaCreacion = $Note.find("CreationDate").text();
+                    var NoPagina = $Note.find("Page").text();
+                    var NombreUsuario = $Note.find("UserName").text();
+                    var Texto=$Note.find("Text").text();
+                    Texto = Texto.slice(0,100);
+                    var ai = TableNotesDT.row.add( [
+                    /*[0]*/Texto,
+                    /*[1]*/NoPagina,
+                    /*[2]*/NombreUsuario,
+                    /*[3]*/FechaCreacion,                        
+                    /*[4]*/'<img src="img/redirect.png" style="cursor:pointer" title="Ir a Pagina" onclick="_JumpToPage('+NoPagina+')" >',
+                    /*[5]*/'<img src="img/SeeNote.png" style="cursor:pointer" title="Vista Previa Nota" onclick="_ReadNote(\''+IdNota+'\')" >'
+                    ]).draw();
 
-       TableNotesdT = $('#table_notes').dataTable({
-           "sDom": 'lfTrtip',
-            "bInfo":false, "autoWidth" : false, "oLanguage":LanguajeDataTable,
-            "tableTools": {
-                "aButtons": [
-                    {"sExtends":"text", "sButtonText": "Agregar Nota", "fnClick" :function(){_WriteNote();}},
-                    {"sExtends":"text", "sButtonText": "Eliminar Nota", "fnClick" :function(){_confirmDeleteNote();}},
-                    {"sExtends": "copy","sButtonText": "Copiar Tabla"},
-                    {
-                        "sExtends":    "collection",
-                        "sButtonText": "Exportar...",
-                        "aButtons":    [ "csv", "xls", "pdf" ]
-                    }                          
-                ]
-            }                   
-       });  
-       TableNotesDT = new $.fn.dataTable.Api('#table_notes');
+                    var n = TableNotesdT.fnSettings().aoData[ ai[0] ].nTr;
+                    n.setAttribute('id',IdNota);
 
-       $(xml).find("Note").each(function()
-       {
-           var $Note = $(this);
-           var IdNota = $(this).find("IdNote").text();
-           var FechaCreacion = $Note.find("CreationDate").text();
-           var NoPagina = $Note.find("Page").text();
-           var NombreUsuario = $Note.find("UserName").text();
-           var Texto=$Note.find("Text").text();
-           Texto = Texto.slice(0,100);
-           var ai = TableNotesDT.row.add( [
-           /*[0]*/Texto,
-           /*[1]*/NoPagina,
-           /*[2]*/NombreUsuario,
-           /*[3]*/FechaCreacion,                        
-           /*[4]*/'<img src="img/redirect.png" style="cursor:pointer" title="Ir a Pagina" onclick="_JumpToPage('+NoPagina+')" >',
-           /*[5]*/'<img src="img/SeeNote.png" style="cursor:pointer" title="Vista Previa Nota" onclick="_ReadNote(\''+IdNota+'\')" >'
-           ]).draw();
+                });
 
-           var n = TableNotesdT.fnSettings().aoData[ ai[0] ].nTr;
-           n.setAttribute('id',IdNota);
+                $('#table_notes tbody').on( 'click', 'tr', function ()
+                {
+                    $('#table_notes tr').removeClass('selected');
+                    $(this).addClass('selected');
+                    var IdRow = $('#table_notes tr.selected').attr('id');              
 
-       });
-
-       $('#table_notes tbody').on( 'click', 'tr', function ()
-       {
-           $('#table_notes tr').removeClass('selected');
-           $(this).addClass('selected');
-           var IdRow = $('#table_notes tr.selected').attr('id');              
-
-       } );  
-
+                } );  
+            }
+        });
    };
 
    _JumpToPage = function(Page){
@@ -381,6 +390,7 @@ var ClassNotes = function(viewerType,IdRepository,RepositoryName, IdFile, FileNa
             },
             {
                 label: 'Modificar',
+                cssClass: 'btn-warning',
                 action: function(dialogRef){
                     _confirmModifyNote(idNote);
                 }
@@ -422,17 +432,44 @@ var ClassNotes = function(viewerType,IdRepository,RepositoryName, IdFile, FileNa
     * @returns {undefined}                                                          *
     *******************************************************************************/
    _WriteNote = function(){
-       var NoPagina=$('#pageNumber').val();
-       $('#WriteNote').remove();
-       $('body').append('<div id="WriteNote"><textarea class="TextAreaNotes" id="TextAreaNotes" placeholder="Escribir nota..."></textarea>\n\
-       <br><p>Página: <input type="text" id="InputNoPagina" class = "FormStandart" disabled> </p></div>');
-
-       $('#InputNoPagina').val(NoPagina);   
-
-       $('#WriteNote').dialog({width:500,height:600,draggable:false, modal:true},HideClose,
-             {open: function() { $(this).closest(".ui-dialog").find(".ui-dialog-titlebar:first").hide(); },
-             buttons:{"Agregar":{text:"Agregar",click:function(){_AddNote();}},
-             "Cancelar":{text:"Cancelar",click:function(){$(this).dialog('destroy');}}}});
+       
+       var textArea = $('<textarea>',{class:"TextAreaNotes", id:"TextAreaNotes", class:"TextAreaPreviewNotes", placeholder:"Texto de la nota..."});
+       var pageNumberForm = $('<input>',{type:"text", id:"InputNoPagina"}).prop("disabled", true);
+       var div = $('<div>').append(textArea);
+       div.append("Página -");
+       div.append(pageNumberForm);
+       
+       BootstrapDialog.show({
+            title: 'Agregar Nueva Nota',
+            message: div,
+            size: BootstrapDialog.SIZE_SMALL,
+            type: BootstrapDialog.TYPE_INFO,
+            buttons: [{
+                label: 'Cerrar',
+                action: function(dialogRef){
+                    dialogRef.close();
+                }
+            },
+            {
+                label: 'Agregar',
+                cssClass: 'btn-success',
+                action: function(dialogRef){
+                    var $button = this; 
+                    $button.disable();
+                    $button.spin();
+                    dialogRef.setClosable(false);
+                    _AddNote();
+                    dialogRef.close();
+                }
+            }
+            ],
+            onshown: function(dialogRef){
+                var NoPagina = $('#pageNumber').val();
+                $('#InputNoPagina').val(NoPagina); 
+                self.Page = NoPagina;
+            }
+        });
+        
    };
 
    /********************************************************************************
@@ -459,8 +496,7 @@ var ClassNotes = function(viewerType,IdRepository,RepositoryName, IdFile, FileNa
           $('#NotesPlaceWaiting').remove();
           if($.parseXML( xml )===null){Error(xml); return 0;}else xml=$.parseXML( xml );   
 
-          $(xml).find("AddNote").each(function()
-           {
+          $(xml).find("AddNote").each(function(){
                var Mensaje = $(this).find('Mensaje').text();
                var IdNote = $(this).find('IdNote').text();                        
                var FechaCreacion = $(this).find("CreationDate").text();
@@ -468,42 +504,51 @@ var ClassNotes = function(viewerType,IdRepository,RepositoryName, IdFile, FileNa
                var NombreUsuario = $(this).find("UserName").text();
                var Texto=$(this).find("Text").text();
                Texto = Texto.slice(0,100);
-
+               var data = {};
                Notificacion(Mensaje);
-
-               var ai = TableNotesDT.row.add(
-               [
-                   Texto,
-                   NoPagina,
-                   NombreUsuario,
-                   FechaCreacion,                        
-                   '<img src="img/redirect.png" style="cursor:pointer" title="Ir a Pagina" onclick="_JumpToPage('+NoPagina+')" >',
-                   '<img src="img/SeeNote.png" style="cursor:pointer" title="Vista Previa Nota" onclick="_ReadNote(\''+IdNote+'\')" >'
-               ]).draw();
+               
+               if(TableNotesdT.fnSettings().aoColumns.length === 6) /* Listado con todas las notas del documento */
+                    data = [
+                        Texto,
+                        NoPagina,
+                        NombreUsuario,
+                        FechaCreacion,                        
+                        '<img src="img/redirect.png" style="cursor:pointer" title="Ir a Pagina" onclick="_JumpToPage('+NoPagina+')" >',
+                        '<img src="img/SeeNote.png" style="cursor:pointer" title="Vista Previa Nota" onclick="_ReadNote(\''+IdNote+'\')" >'
+                    ];
+                
+                if(TableNotesdT.fnSettings().aoColumns.length === 4)    /* Listado de Notas por página  */
+                    data = [
+                        Texto,
+                        FechaCreacion,     
+                        NombreUsuario,
+                        '<img src="img/SeeNote.png" style="cursor:pointer" title="Vista Previa Nota" onclick="_ReadNote(\''+IdNote+'\')" >'
+                    ];
+                
+               TableNotesDT.$('tr.selected').removeClass('selected');
+               
+               var ai = TableNotesDT.row.add(data).draw();
 
                var n = TableNotesdT.fnSettings().aoData[ ai[0] ].nTr;
                n.setAttribute('id',IdNote);
+               n.setAttribute('class', "selected");
 
                if(ArrayNotes[NoPagina]=== undefined )
-               {
                    ArrayNotes[NoPagina] = new Array();
-               }
 
                var Notes = ArrayNotes[NoPagina];
                Notes[Notes.length] = IdNote;
                ArrayNotes[NoPagina] = Notes;
-               console.log("If se agrego la nota "+IdNote+" a la página "+NoPagina);
 
+               /* Acción del icono de Notas al pulsar click sobre este */
                if($('.NotesIcon').length===0){
-                   $('#NotesZone').append('<img src="../img/note.png"  title="Nota(s) en la pagina '+NoPagina+'" id = "NoteIconPerPage" class = "NotesIcon">');
-                   $('#NoteIconPerPage').click(function(){
+                   $('#NotesZone').append('<img src="../img/note.png"  title="Nota(s) en la pagina '+NoPagina+'"  class = "NotesIcon NoteIconPerPage">');
+                   $('.NoteIconPerPage').click(function(){
                         var notes = self.getNotesPerPage(NoPagina);
-
+ 
                         _listingNotesPerPage(notes, NoPagina);
                     });
                }
-
-               $('#WriteNote').dialog('destroy');    
            });
 
           $(xml).find("Error").each(function()

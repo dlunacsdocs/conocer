@@ -300,7 +300,7 @@ class DataBase {
                     . "UserName VARCHAR(50) NOT NULL,"
                     . "IdRepository INT NOT NULL,"
                     . "IdFile INT(11) NOT NULL,"
-                    . "CreationDate DATE NOT NULL,"
+                    . "CreationDate DATETIME NOT NULL,"
                     . "Text TEXT NOT NULL,"
                     . "Page INT(10) NOT NULL,"
                     . "ApprovalStatus INT(1) NOT NULL DEFAULT '0'," 
