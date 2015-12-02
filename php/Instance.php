@@ -240,7 +240,7 @@ class Instance {
     {
         $DB = new DataBase();
         
-        $QueryInstances = "SELECT *FROM instancias";
+        $QueryInstances = "SELECT *FROM instancias ORDER BY NombreInstancia";
         $ResultQuery = $DB->ConsultaSelect("cs-docs", $QueryInstances);
         
         if($ResultQuery['Estado']!=1)

@@ -1,6 +1,6 @@
 
 
-/* global EnvironmentData, Permissions */
+/* global EnvironmentData, Permissions, InstanceManager */
 
 $(document).ready(function() {
     
@@ -31,11 +31,9 @@ $(document).ready(function() {
     ExistRoot();    
     
     if(!checkSessionExistance())
-        getListInstances();
+        setInstancesToLogin();
 
-//-----------------------------------------------------------------------------------
-//	2.	Fix Classes after Validate Login
-//-----------------------------------------------------------------------------------
+
     $('#boton_login').click(function() {
         login();  
     });
@@ -72,6 +70,17 @@ function DeniedSystemStart()
     $('#form_usuario').select();
     $('#form_password').select();              
     $('.validate').addClass('error').delay(210).queue(function() { $(this).removeClass('error'); $(this).dequeue();});
+}
+
+function setInstancesToLogin(){
+    var instances = InstanceManager.getInstancesXml();
+    
+    $(instances).find("Instance").each(function(){
+       var $Instancia=$(this);
+       var id=$Instancia.find("IdInstancia").text();
+       var nombre = $Instancia.find("NombreInstancia").text();  
+       $("#select_login_instancias").append("<option value=\""+id+"\">"+nombre+"</option>");
+    });
 }
 
 

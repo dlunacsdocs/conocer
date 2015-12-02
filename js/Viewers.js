@@ -28,6 +28,18 @@ function Preview(tipo, IdGlobal, IdFile,  Source)
     
     tipo = String(tipo.toLowerCase());
     
+    var supportedImages = getSupportedImages();
+    
+    if(supportedImages[tipo] !== undefined){
+        var functionToExecute = supportedImages[tipo];
+        var tempPath = imageProcessingToConvert(functionToExecute, DocEnvironment);
+        console.log(tempPath);
+        if(tempPath !== undefined){
+            DocEnvironment.FileRoute = tempPath;
+            imagePreview(DocEnvironment);
+        }
+    }
+    
     if(tipo ==='jpg' || tipo==='png' || tipo==='tiff' || tipo==='jpge')
         imagePreview(DocEnvironment);
         
@@ -35,58 +47,107 @@ function Preview(tipo, IdGlobal, IdFile,  Source)
         pdfViewer(DocEnvironment);
     
 }
+/*******************************************************************************
+ * @description Obtiene los formatos de imagenes soportados para su conversión.
+ * @returns {type} Retorna las imágenes que CSDocs puede procesar para su visualización;
+ *******************************************************************************/
+function getSupportedImages(){
+    var supportedImages = {};
+    
+    supportedImages['tif'] = 'processTif';
+    
+    return supportedImages;
+}
+
+/*******************************************************************************
+* 
+*@param {type} functionToExecute Tipo de imagén recibida para ser procesada.
+*@param {type} DocEnvironment Objeto que contiene los datos del documento.
+* @returns {type tempPath Regresa la ruta temporal del documento.} 
+********************************************************************************/
+function imageProcessingToConvert(functionToExecute, DocEnvironment){
+    var tempPath = undefined;
+    
+    $.ajax({
+       async:false, 
+       cache:false,
+       dataType:'html', 
+       type: 'POST',   
+       url: "php/Viewer.php",
+       data: {'option':'imageProcessingToConvert', 'filePath':DocEnvironment.FileRoute, functionToExecute:functionToExecute}, 
+       success:  function(response)
+       {   
+           if($.parseXML( response )===null){ errorMessage(response); return 0;}else xml=$.parseXML( response );
+
+           if($(xml).find("tempPath").length > 0)
+               tempPath =  $(xml).find('tempPath').text();
+
+           if($(xml).find("Error").length>0)
+           {
+               ErrorXml(xml);
+               return 0;
+           }
+       },
+       beforeSend:function(){          },
+       error: function(jqXHR, textStatus, errorThrown){errorMessage(textStatus +"<br>"+ errorThrown);}
+       });
+       
+       return tempPath;
+    
+}
 
 
 function imagePreview(DocEnvironment){
+    console.log(DocEnvironment);
     var RutaArchivoServer = location.host+'/'+DocEnvironment.FileRoute;
+    console.log(RutaArchivoServer);
+    $('#div_vista_previa').remove();
+
+    $('body').append('<div id = "div_vista_previa"></div>');
+    $('#div_vista_previa').append('<div id = "viewerImageNavBar" class = "viewerImageNavBar"></div>');
+    $('#div_vista_previa').append('<div id = "viewerImageBody" class = "viewerImageBody">\n\
+        <div class ="NotesZone"></div>\n\
+    </div>');
         
-        $('#div_vista_previa').remove();
         
-        $('body').append('<div id = "div_vista_previa"></div>');
-        $('#div_vista_previa').append('<div id = "viewerImageNavBar" class = "viewerImageNavBar"></div>');
-        $('#div_vista_previa').append('<div id = "viewerImageBody" class = "viewerImageBody">\n\
-            <div class ="NotesZone"></div>\n\
-        </div>');
-        
-        
-        $('#div_vista_previa').dialog({
-            responsive:true, fluid:true ,width:Wvisor, 
-            height:Hvisor, minWidth:380, minHeight:minHvisor, 
-            title:"Vista Previa", 
-            closeOnEscape:true,
-            resize:function(){
-                if($(this).width() <= 400){
+    $('#div_vista_previa').dialog({
+        responsive:true, fluid:true ,width:Wvisor, 
+        height:Hvisor, minWidth:380, minHeight:minHvisor, 
+        title:"Vista Previa", 
+        closeOnEscape:true,
+        resize:function(){
+            if($(this).width() <= 400){
 //                    console.log("<= 400");
-                    if($('#viewerImageNavBar nav.responsive').length === 0){
-                        $('#viewerImageNavBar').empty();
-                        insertResponsiveMenuToImageViewer();
-                        setActionToImageViewer(iv1);
-                        
-                    }
-                }
-                else if($(this).width() > 400){
-//                    console.log("> 400");
-                    if($('#viewerImageNavBar nav.responsive').length > 0){
-                            $('#viewerImageNavBar').empty();
-                            insertMenuToImageViewer();
-                            setActionToImageViewer(iv1);
-                        }
-                }
-            },
-            open:function(){
-                $('#div_vista_previa.ui-dialog-content').css({"padding": "0em"});
-                $('#div_vista_previa.ui-dialog').css({"padding": "0em"});
-                
-                /* Se define el tipo del menú: responsive ó ampliado */
-                if($(this).width() <= 400)
+                if($('#viewerImageNavBar nav.responsive').length === 0){
+                    $('#viewerImageNavBar').empty();
                     insertResponsiveMenuToImageViewer();
-                else
-                    insertMenuToImageViewer();
-            },
-            close:function(){
-                iv1 = undefined;
+                    setActionToImageViewer(iv1);
+
+                }
             }
-        }).dialogExtend(BotonesWindow);
+            else if($(this).width() > 400){
+//                    console.log("> 400");
+                if($('#viewerImageNavBar nav.responsive').length > 0){
+                        $('#viewerImageNavBar').empty();
+                        insertMenuToImageViewer();
+                        setActionToImageViewer(iv1);
+                    }
+            }
+        },
+        open:function(){
+            $('#div_vista_previa.ui-dialog-content').css({"padding": "0em"});
+            $('#div_vista_previa.ui-dialog').css({"padding": "0em"});
+
+            /* Se define el tipo del menú: responsive ó ampliado */
+            if($(this).width() <= 400)
+                insertResponsiveMenuToImageViewer();
+            else
+                insertMenuToImageViewer();
+        },
+        close:function(){
+            iv1 = undefined;
+        }
+    }).dialogExtend(BotonesWindow);
                 
 /****************   Inicio de API para mostrar las imágenes ********************/                
                 
@@ -190,7 +251,7 @@ function insertMenuToImageViewer(){
 }
 
 function pdfViewer(DocEnvironment){
-     PDFJS.workerSrc = 'apis/pdf.js-master/src/worker_loader.js';
+//    PDFJS.workerSrc = 'apis/pdf.js-master/src/worker_loader.js';
     ArrayNotes=new Array();
     PaginaActual=0;
     ArrayObteinNotes=0;

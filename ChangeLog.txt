@@ -1,6 +1,13 @@
 Log de Cambios del sistema CSDocs
 Creación 25/11/15
 
+25/11/2015
 1.- Modificación del tipo de campo en la tabla CSDocs_Notes columna CreationDate
 	Tipo anterior: DATE
 	Tipo actual: DATETIME
+
+30/11/2015
+1.- Se integró el Script Viewer.php: procesa documentos que no pueden ser visualizados 
+	en el cliente CSDocs, este script los procesa y los almacena temporalmente 
+	para posteriormente ser consultados.
+

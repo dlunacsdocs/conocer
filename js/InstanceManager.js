@@ -461,35 +461,5 @@ ClassInstanceManager.prototype.getInstancesXml = function(){
 };
 
 
-function getListInstances()
-{
-    ajax=objetoAjax();
-    ajax.open("POST", 'php/Login.php',true);
-    ajax.setRequestHeader("Content-Type", "application/x-www-form-urlencoded;charset=utf-8;");
-    ajax.send("opcion=getInstances");
-    ajax.onreadystatechange=function() 
-    {
-       if (ajax.readyState===4 && ajax.status===200) 
-       {
-          if(ajax.responseXML===null){Error(ajax.responseText);return;     }              
-           var xml = ajax.responseXML;
-           $(xml).find("Instancia").each(function()
-            {
-               var $Instancia=$(this);
-               var id=$Instancia.find("IdInstancia").text();
-               var nombre = $Instancia.find("NombreInstancia").text();  
-               $("#select_login_instancias").append("<option value=\""+id+"\">"+nombre+"</option>");
-            });
-            $(xml).find("Error").each(function()
-            {
-                var $Instancias=$(this);
-                var estado=$Instancias.find("Estado").text();
-                var mensaje=$Instancias.find("mensaje").text();
-                Error(mensaje);
-            });
-            
-       }       
-   };
-}
 
 
