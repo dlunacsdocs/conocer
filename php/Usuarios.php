@@ -79,7 +79,7 @@ class Usuarios {
         $RoutFile = dirname(getcwd());        
         $UserLogin = '';
         $Password = '';
-        
+
         if(!($xml =  simplexml_load_string($UserXml)))
             return XML::XMLReponse ("Error", 0, "El xml recibido es incorrecto. Es posible que no se haya formado correctamente.<br><br>".$xml);
         
@@ -112,7 +112,7 @@ class Usuarios {
             $FieldValue = $field->FieldValue;
             $FiledType = $field->FieldType;
             $FieldName = $field->FieldName;
-            
+                        
             if(strcasecmp($FieldName, "Password")==0)
             {
                 $Password = $FieldValue;
@@ -137,7 +137,7 @@ class Usuarios {
                 $FieldsChain.=$FieldName.", ";
             }                
         }
-        
+                
         $ValuesChain_ = trim($ValuesChain, ", ");
         $FieldsChain_ = trim($FieldsChain, ", ");
         
@@ -247,8 +247,12 @@ class Usuarios {
         $ResultadoConsulta=$BD->ConsultaQuery($DataBaseName, $ConsultaDelete);
         if($ResultadoConsulta!=1)
         {
-            XML::XMLReponse("Error", 0, "Error de Consulta. $ResultadoConsulta. ");
+            XML::XMLReponse("Error", 0, "Error de al intentar eliminar el usuario. $ResultadoConsulta. ");
             return;
+        }
+        
+        $qDeleteFromControl = "DELETE FROM GruposControl WHERE IdUsuario = $IdRemoveUser";
+        if(($resultDeleteFromControl = $BD->ConsultaQuery($DataBaseName, $qDeleteFromControl)) !=1 ){
         }
         
         $DeleteFromCsdocs = "DELETE FROM Usuarios WHERE Login = '$NameUserToRemove' AND Password = '$Password'";
