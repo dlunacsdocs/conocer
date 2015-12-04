@@ -49,10 +49,13 @@ class Viewer {
         $dataBaseName = $userData['dataBaseName'];
         $userName = $userData['userName'];
         $RoutFile = dirname(getcwd());        
+        $viewerType = 0;
+        $exec = null;
+        $tempExtension = null;
         
         $nameWithoutExt = pathinfo($filePath, PATHINFO_FILENAME);
-        $tempPath = "$RoutFile/Estructuras/_TEMP_FILES_/$dataBaseName/$userName/$nameWithoutExt.jpg";
-        $tempPathToClient = "../Estructuras/_TEMP_FILES_/$dataBaseName/$userName/$nameWithoutExt.jpg";
+        $tempPath = "$RoutFile/Estructuras/_TEMP_FILES_/$dataBaseName/$userName/$nameWithoutExt";
+        $tempPathToClient = "../Estructuras/_TEMP_FILES_/$dataBaseName/$userName/$nameWithoutExt";
 
         $output = array();
         
@@ -66,9 +69,25 @@ class Viewer {
         
         if(!file_exists($filePath))
             return XML::XMLReponse("Error", 0, "<p><b>Error</b> no existe el documento a procesar</p>");
-                        
-        $exec = "convert $filePath -units PixelsPerInch -density 72 -quality 60 -resize 535 $tempPath";
-          
+                  
+        $pagesNumber = $this->getPagesNumberOfTiff($filePath);
+        
+        if(count($pagesNumber) > 1){
+            $tempExtension = ".pdf";
+            $viewerType = "pdfViewer";
+        }
+        else{
+            $viewerType = "imageViewer";
+            $tempExtension = ".jpg";
+        }
+        
+        $tempPath.= $tempExtension;
+        
+        if(strcasecmp($viewerType, "imageViewer") == 0)
+            $exec = "convert $filePath -units PixelsPerInch -density 72 -quality 60 -resize 535 $tempPath";
+        else if(strcasecmp($viewerType, "pdfViewer") == 0)
+                $exec = "convert $filePath $tempPath";
+        echo "<p>$exec</p>";        
         exec($exec, $output);
         
         if(count($output) > 0)
@@ -81,11 +100,27 @@ class Viewer {
         $doc  = new DOMDocument('1.0','utf-8');
         libxml_use_internal_errors(true);
         $doc->formatOutput = true;
-        $root = $doc->createElement("tempPath", $tempPathToClient);
+        $root = $doc->createElement("document");
         $doc->appendChild($root); 
+        $tempPathXml = $doc->createElement("tempPath", $tempPathToClient);
+        $root->appendChild($tempPathXml);
+        $viewerTypeXml = $doc->createElement("viewerType", $viewerType);
+        $root->appendChild($viewerTypeXml);
         header ("Content-Type:text/xml");
         echo $doc->saveXML();
 
+    }
+    
+    private function getPagesNumberOfTiff($tiffPath){
+   
+        $tiffPathEscaped = str_replace(" ", "\\ ", $tiffPath);
+        
+        $command = 'convert '.$tiffPathEscaped.' -identify -format %p '.$tiffPathEscaped;
+        
+        $pagesNumber = array();
+        exec($command, $pagesNumber);
+        
+        return $pagesNumber;
     }
     
 }

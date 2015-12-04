@@ -32,15 +32,18 @@ function Preview(tipo, IdGlobal, IdFile,  Source)
     
     if(supportedImages[tipo] !== undefined){
         var functionToExecute = supportedImages[tipo];
-        var tempPath = imageProcessingToConvert(functionToExecute, DocEnvironment);
-        console.log(tempPath);
-        if(tempPath !== undefined){
-            DocEnvironment.FileRoute = tempPath;
-            imagePreview(DocEnvironment);
+        var documentData = imageProcessingToConvert(functionToExecute, DocEnvironment);
+      
+        if(documentData.viewerType !== undefined){
+            DocEnvironment.FileRoute = documentData.tempPath;
+            if(documentData.viewerType === 'imageViewer')
+                imagePreview(DocEnvironment);
+            else if(documentData.viewerType === 'pdfViewer')
+                pdfViewer(DocEnvironment);
         }
     }
     
-    if(tipo ==='jpg' || tipo==='png' || tipo==='tiff' || tipo==='jpge')
+    if(tipo ==='jpg' || tipo==='png' || tipo==='jpge')
         imagePreview(DocEnvironment);
         
     if(tipo==='pdf')
@@ -55,6 +58,7 @@ function getSupportedImages(){
     var supportedImages = {};
     
     supportedImages['tif'] = 'processTif';
+    supportedImages['tiff'] = 'processTif';
     
     return supportedImages;
 }
@@ -63,10 +67,11 @@ function getSupportedImages(){
 * 
 *@param {type} functionToExecute Tipo de imagén recibida para ser procesada.
 *@param {type} DocEnvironment Objeto que contiene los datos del documento.
-* @returns {type tempPath Regresa la ruta temporal del documento.} 
+* @returns {type viewerInfo Regresa un objeto con la ruta temporal del documento
+*               y el tipo de visor que se debe utilizar.
 ********************************************************************************/
 function imageProcessingToConvert(functionToExecute, DocEnvironment){
-    var tempPath = undefined;
+    var viewerInfo = {};
     
     $.ajax({
        async:false, 
@@ -78,12 +83,13 @@ function imageProcessingToConvert(functionToExecute, DocEnvironment){
        success:  function(response)
        {   
            if($.parseXML( response )===null){ errorMessage(response); return 0;}else xml=$.parseXML( response );
+           
+           if($(xml).find("tempPath").length > 0){
+                viewerInfo.tempPath = $(xml).find('tempPath').text();
+                viewerInfo.viewerType = $(xml).find('viewerType').text();
+           }
 
-           if($(xml).find("tempPath").length > 0)
-               tempPath =  $(xml).find('tempPath').text();
-
-           if($(xml).find("Error").length>0)
-           {
+           if($(xml).find("Error").length>0){
                ErrorXml(xml);
                return 0;
            }
@@ -92,7 +98,7 @@ function imageProcessingToConvert(functionToExecute, DocEnvironment){
        error: function(jqXHR, textStatus, errorThrown){errorMessage(textStatus +"<br>"+ errorThrown);}
        });
        
-       return tempPath;
+       return viewerInfo;
     
 }
 
