@@ -69,9 +69,9 @@ class Viewer {
         
         if(!file_exists($filePath))
             return XML::XMLReponse("Error", 0, "<p><b>Error</b> no existe el documento a procesar</p>");
-                  
+                
         $pagesNumber = $this->getPagesNumberOfTiff($filePath);
-        
+
         if(count($pagesNumber) > 1){
             $tempExtension = ".pdf";
             $viewerType = "pdfViewer";
@@ -84,10 +84,10 @@ class Viewer {
         $tempPath.= $tempExtension;
         
         if(strcasecmp($viewerType, "imageViewer") == 0)
-            $exec = "convert $filePath -units PixelsPerInch -density 72 -quality 60 -resize 535 $tempPath";
+            $exec = "convert ".str_replace(" ", "\\ ", $filePath)." ".str_replace(" ", "\\ ", $tempPath);
         else if(strcasecmp($viewerType, "pdfViewer") == 0)
-                $exec = "convert $filePath $tempPath";
-        echo "<p>$exec</p>";        
+                $exec = "convert ".str_replace(" ", "\\ ", $filePath)." ".str_replace(" ", "\\ ", $tempPath);
+      
         exec($exec, $output);
         
         if(count($output) > 0)
@@ -102,7 +102,7 @@ class Viewer {
         $doc->formatOutput = true;
         $root = $doc->createElement("document");
         $doc->appendChild($root); 
-        $tempPathXml = $doc->createElement("tempPath", $tempPathToClient);
+        $tempPathXml = $doc->createElement("tempPath", $tempPathToClient.$tempExtension);
         $root->appendChild($tempPathXml);
         $viewerTypeXml = $doc->createElement("viewerType", $viewerType);
         $root->appendChild($viewerTypeXml);
