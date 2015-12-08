@@ -11,3 +11,8 @@ Creación 25/11/15
 	en el cliente CSDocs, este script los procesa y los almacena temporalmente 
 	para posteriormente ser consultados.
 
+03/12/2015
+2.- Instalación de paquete ImageMagick
+
+07/12/2015
+3.- Creación de Tabla Disposición Documental

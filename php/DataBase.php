@@ -328,6 +328,17 @@ class DataBase {
             
             if(($EstadoTablaCorreos=$this->ConsultaQuery($DataBaseName, $TablaSmtp))!=1)
                 return "<p><b>Error</b> al crear <b>Correo</b> en $DataBaseName. $EstadoTablaCorreos</p>";
+            
+            $docDisposition = "CREATE TABLE IF NOT EXISTS CSDocs_DocumentaryDisposition ("
+                . "idDocumentaryDisposition INT NOT NULL,"
+                    . "Name VARCHAR(250) NOT NULL,"
+                    . "NameKey VARCHAR(60) NOT NULL, "
+                    . "Description VARCHAR(255) NOT NULL,"
+                    . "PRIMARY KEY (idDocumentaryDisposition)"
+                . ") DEFAULT CHARSET=utf8";
+        
+        if(($resultDocDisposition = $this->ConsultaQuery($DataBaseName, $docDisposition)) != 1)
+                return "<p><b>Error</b> al intentar construir <b>Disposición Documental</b>. Detalles: $resultDocDisposition</p>";
         
         return 1;
     }

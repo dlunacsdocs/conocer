@@ -4,6 +4,7 @@
  * and open the template in the editor.
  */
 
+var modulesControl = new ModulesControlClass();
 var EnvironmentData = new ClassEnvironmentData();
 var Repository = new ClassRepository();
 var Enterprise = new ClassEnterprise();
@@ -18,3 +19,6 @@ var CatalogAdmin = new ClassCatalogAdministrator();  /* Instancia utilizada para
 var CatalogContent = new ClassCatalogAdministrator();  /* Clase utilizada para operaciones del Content p.e. Visualizar metadatos de un documento */
 var SystemManager = new ClassSystemManager();
 var InstanceManager = new ClassInstanceManager();
+/* Modulos */
+var archival;
+var documentaryDisposition;

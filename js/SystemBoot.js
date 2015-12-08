@@ -1,6 +1,6 @@
 
 
-/* global EnvironmentData, Permissions, InstanceManager */
+/* global EnvironmentData, Permissions, InstanceManager, modulesControl */
 
 $(document).ready(function() {
     
@@ -52,7 +52,13 @@ $(document).ready(function() {
                     $('.dock ul li').removeClass('ok prev next next-ancor prev-ancor');
             }
     );
+    
+    
+    modulesControl.start();
+
+    
 }); 
+
 
 function StartSystem()
 {
