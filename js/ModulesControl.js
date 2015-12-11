@@ -1,7 +1,7 @@
 var ModulesControlClass = function(){
     _archival = function(){
         var status = false;
-        $.getScript( "Modules/Archival.js" )
+        $.getScript( "Modules/js/Archival.js" )
             .done(function( script, textStatus ) {
               status = true;
               archival = new ArchivalClass();

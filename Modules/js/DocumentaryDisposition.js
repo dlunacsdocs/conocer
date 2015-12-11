@@ -195,8 +195,7 @@ var DocumentaryDispositionClass = function(){
                     label: 'Construir',
                     cssClass:"btn-success",
                     action: function(dialogRef){
-                        if(_buildDocumentaryDispositionCatalog() === 1)
-                            dialogRef.close();
+                        _buildDocumentaryDispositionCatalog();                         
                     }
                 }
             ],
@@ -293,6 +292,7 @@ var DocumentaryDispositionClass = function(){
             title: docDispositionData.catalogName,
             key: docDispositionData.catalogKey,
             tooltip: docDispositionData.catalogDescript,
+            structureType: "fondo",
             isFolder: true
           });
           
@@ -313,6 +313,7 @@ var DocumentaryDispositionClass = function(){
             title: docDispositionData.catalogName,
             key: docDispositionData.catalogKey,
             tooltip: docDispositionData.catalogDescript,
+            structureType: "fondo",
             isFolder: true
           });
        
@@ -349,6 +350,7 @@ var DocumentaryDispositionClass = function(){
             title: docDispositionData.catalogName,
             tooltip: docDispositionData.catalogDescript,
             key: docDispositionData.catalogKey,
+            structureType: "section",
             isFolder: true
           });
           
@@ -371,6 +373,7 @@ var DocumentaryDispositionClass = function(){
             title: docDispositionData.catalogName,
             tooltip: docDispositionData.catalogDescript,
             key: docDispositionData.catalogKey,
+            structureType: "section",
             isFolder: true
         });
         
@@ -398,6 +401,7 @@ var DocumentaryDispositionClass = function(){
         var childNode = activeNodeSerie.addChild({
             title: docDispositionData.catalogName,
             tooltip: docDispositionData.catalogDescript,
+            structureType: "serie",
             isFolder: true
           });
           
@@ -420,14 +424,77 @@ var DocumentaryDispositionClass = function(){
         
         if(fondoTree.getChildren() === null)
             return Advertencia("Debe ingresar un <b>Fondo</b>");
-        if(sectionTree.getChildren().length === 0)
-            return Advertencia("Debe ingresar una <b>Serie</b>");
-        if(serieTree.getChildren().length === 0)
-            return Advertencia("Debe ingresar una <b>Serie</b>");
+//        if(sectionTree.getChildren().length === 0)
+//            return Advertencia("Debe ingresar una <b>Serie</b>");
+//        if(serieTree.getChildren().length === 0)
+//            return Advertencia("Debe ingresar una <b>Serie</b>");
         
-        _getFondoDirectories(fondoTree);
+        var catalogXmlStructure = _getCatalogXmlStructure(fondoTree, sectionTree, serieTree);
         
         return 1;
+    };
+    
+    /**
+     * @description Construye un XML con la estructura formada por el usuario correspondiente 
+     * al catálogo de disposición documental.
+     * El recorrido de la estructura comienza en "Sección" analizando primero a "Fondo" y "Sección"
+     * paralelamente al detectar una sección se recorreo la estructura de Serie. De esta forma se
+     * obtiene el XML con la estructura jerárquica (Forma de árbol).
+     *                           
+     * @param {type} fondoTree      Estructura de árbol para Fondo
+     * @param {type} sectionTree    Estructura de árbol para Sección
+     * @param {type} serieTree      Estructura de árbol para Serie
+     * @returns {String}            Xml generado.
+     */
+    _getCatalogXmlStructure = function(fondoTree, sectionTree, serieTree){
+        var xmlStructure = "";
+        var fondoXml = "";
+        
+        var sectionDirectories = sectionTree.getChildren();
+        
+        for(var cont = 0; cont < sectionDirectories.length; cont++){
+            var directory = sectionDirectories[cont];
+            var sectionStructureType = directory.data.structureType;
+            var sectionDirKey = null;                       
+            
+            console.log(directory.data.title+" type: "+sectionStructureType);
+            
+            if(String(sectionStructureType).toLowerCase() === "section")
+                sectionDirKey = directory.data.key;
+            
+            if(directory.getChildren() !== null){
+                var children = directory.getChildren();
+                sectionDirectories = sectionDirectories.concat(children);
+            }
+            
+            var serieDirectories = null;
+            
+            if(sectionDirKey !== null){
+                serieDirectories = $('#serieTree').dynatree("getTree").getNodeByKey(sectionDirKey);
+                serieDirectories = serieDirectories.getChildren();
+            }
+            
+            if(serieDirectories !== null){
+                for(var serieCont = 0; serieCont < serieDirectories.length ; serieCont++){
+                    var serieDirectory = serieDirectories[serieCont];  
+                    var serieStructureType = serieDirectory.data.structureType;
+                    
+                    if(String(serieStructureType).toLowerCase() === "section")
+                        continue;
+
+                    console.log(serieDirectory.data.title+" type: "+serieDirectory.data.structureType);
+
+                    if(serieDirectory.getChildren() !== null){
+                        var serieChildren = serieDirectory.getChildren();
+                        serieDirectories = serieDirectories.concat(serieChildren);
+                    }
+
+                }
+            }
+            
+        }
+        
+        return xmlStructure;
     };
     
     _getFondoDirectories = function(fondoTree){        
@@ -436,18 +503,19 @@ var DocumentaryDispositionClass = function(){
         
         var directories = fondoTree.getChildren();
         
-        $(directories).each(function(){
-            console.log("Directorio: "+this.data.title);
-            if(this.getChildren() !== null){
-                console.log("Agregando directorios "+directories.length);
-                directories.push(this.getChildren());
-                console.log("Comprobando tamaño "+directories.length);
-
+        for(var cont = 0; cont < directories.length; cont++){
+            var directory = directories[cont];
+            console.log(directory);
+            console.log("Directorio: "+directory.data.title);
+            if(directory.getChildren() !== null){
+                var children = directory.getChildren();
+                directories = directories.concat(children);
             }
-        });
+        }
+        
     };
     
-    _getSectionTree = function(){
+    _getSectionTree = function(sectionTree){
         
     };
     
