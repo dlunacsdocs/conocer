@@ -1,4 +1,4 @@
-/* global BootstrapDialog 
+/* global BootstrapDialog, BotonesWindow 
  * 
  * @description Catálogo de disposición documental. Menú Archivística
  * */
@@ -86,10 +86,6 @@ var DocumentaryDispositionClass = function(){
         switch(optionName){
             case 'Fondo': 
                 var activeNodeFondo = $('#fondoTree').dynatree("getRoot");
-                if(activeNodeFondo.getChildren() !== null){
-                    Advertencia("Solo puede haber un Fondo");
-                    status = false;
-                }
                     
             break;
             
@@ -149,10 +145,6 @@ var DocumentaryDispositionClass = function(){
     
     _buildDocumentaryDispositionConsole = function(){
         
-//        var fondoTree = $('<ul>').append('<li id = "fondoTree_0" class = "folder">Fondo');
-//        var sectionTree = $('<ul>').append('<li id = "sectionTree_0" class = "folder">Sección');
-//        var serieTree = $('<ul>').append('<li id = "serieTree_0" class = "folder">Serie');
-        
         var tabbable = $('<div>',{id:"documentaryDispositionNavTab"});
         
         var navTab = $('<ul>', {class:"nav nav-tabs"});
@@ -183,19 +175,30 @@ var DocumentaryDispositionClass = function(){
             size: BootstrapDialog.SIZE_NORMAL,
             closable: false,
             message: tabbable,
-            buttons: [{
-                id: 'documentaryDispositionButton',
-                label: 'Cerrar',
-                cssClass:"btn-primary",
-                action: function(dialogRef){
-                    
+            buttons: [
+                {
+                    label: "Cerrar",
+                    action: function(dialogRef){
+                        dialogRef.close();
+                    }
+                },
+                {
+                    id: 'documentaryDispositionButton',
+                    label: 'Agregar',
+                    cssClass:"btn-primary",
+                    action: function(dialogRef){
+
+                    }
+                },
+                {
+                    id: 'docDispositionBuildButton',
+                    label: 'Construir',
+                    cssClass:"btn-success",
+                    action: function(dialogRef){
+                        if(_buildDocumentaryDispositionCatalog() === 1)
+                            dialogRef.close();
+                    }
                 }
-            },{
-                label: "Cerrar",
-                action: function(dialogRef){
-                    dialogRef.close();
-                }
-            }
             ],
             onshown: function(dialogRef){
                 
@@ -262,13 +265,29 @@ var DocumentaryDispositionClass = function(){
      */
     _addFondo = function(){
         var docDispositionData = _getDocumentaryDispositionData();
+        var activeKeyParent;
         
         var activeNode = $("#fondoTree").dynatree("getRoot");
+        
+        if(activeNode.getChildren() !== null){
+            
+            activeKeyParent = $('#fondoTree').dynatree("getActiveNode").data.key;
+            
+            if(activeKeyParent === null)
+                return Advertencia("No pudo ser recuperado el nodo activo de la estructura <b>Fondo</b>");
+        }
+        
         if(activeNode === null)
             return 0;
         
         if(activeNode.getChildren() !== null)
-            return 0;
+             if($("#fondoTree").dynatree("getActiveNode") !== null){
+                 activeNode = $("#fondoTree").dynatree("getActiveNode");
+                 if(activeNode === null)
+                     return Advertencia("No se pudo recuperar el nodo activado.");
+             }
+         else
+             return Advertencia("Debe seleccionar el Fondo");
         
         var childNode = activeNode.addChild({
             title: docDispositionData.catalogName,
@@ -278,23 +297,50 @@ var DocumentaryDispositionClass = function(){
           });
           
         childNode.activate(true);
+        
+        var sectionTree = $('#sectionTree').dynatree("getRoot");
+        var sectionTreeChildren = sectionTree.getChildren();
+        var activeNodeSection;
+        
+        
+        
+        if(sectionTreeChildren !== null)
+            activeNodeSection = $('#sectionTree').dynatree("getTree").activateKey(activeKeyParent);
+        else
+            activeNodeSection = $('#sectionTree').dynatree("getRoot");
+        
+        var childNodeSection = activeNodeSection.addChild({
+            title: docDispositionData.catalogName,
+            key: docDispositionData.catalogKey,
+            tooltip: docDispositionData.catalogDescript,
+            isFolder: true
+          });
        
+       childNodeSection.activate(true);
     };
     
     _addSeccion = function(){
-        var docDispositionData = _getDocumentaryDispositionData();
-        
+        var docDispositionData = _getDocumentaryDispositionData();  
         var activeNodeFondo = $('#fondoTree').dynatree("getActiveNode");
+        var sectionTree = $('#sectionTree').dynatree("getActiveNode");
+        var fondoKey = activeNodeFondo.data.key;
+        var sectionKey, sectionKeyParent;
+        var serieTree;
+        var childNodeSerie;
+        
+        
+        if(sectionTree === null)
+            return Advertencia("No se ha activado una <b>sección</b>");
         
         if(activeNodeFondo === null)
             return Advertencia("Debe seleccionar <b>Fondo</b>");
         
         var fondoKey = activeNodeFondo.data.key;
-    
+        
         if(fondoKey === null)
             return Advertencia("Debe seleccionar un <b>Fondo</b>");
         
-        var activeNodeSection = $("#sectionTree").dynatree("getRoot");
+        var activeNodeSection = $("#sectionTree").dynatree("getActiveNode");
         
         if(activeNodeSection === null)
             return Advertencia("No existe la estructura de  <b>Sección</b>");
@@ -309,12 +355,19 @@ var DocumentaryDispositionClass = function(){
         childNode.activate(true);
         
         /* Agregando Sección a Serie */
-        var serieTree = $('#serieTree').dynatree("getRoot");
+        serieTree = $('#serieTree').dynatree("getTree");
         
+        sectionKeyParent = $('#sectionTree').dynatree("getTree").getNodeByKey(docDispositionData.catalogKey).getParent().data.key;
+        
+        if(serieTree.getNodeByKey(sectionKeyParent) !== null)          
+            serieTree = serieTree.getNodeByKey(sectionKeyParent);
+        else
+            serieTree = $('#serieTree').dynatree("getRoot");
+               
         if(serieTree === null)
             return Advertencia("No se ha construido la estructura <b>Serie</b>");
-        
-        var childNodeSerie = serieTree.addChild({
+              
+        childNodeSerie = serieTree.addChild({
             title: docDispositionData.catalogName,
             tooltip: docDispositionData.catalogDescript,
             key: docDispositionData.catalogKey,
@@ -350,6 +403,59 @@ var DocumentaryDispositionClass = function(){
           
         childNode.activate(true);
     };
+    
+    /*
+     * @describe(Construye el catálogo de disposición documental definido por 
+     * el usuario.)
+     */
+    _buildDocumentaryDispositionCatalog = function(){
+        console.log("Construyendo catálogo de disposición documental");
+        
+        var fondoTree = $('#fondoTree').dynatree("getRoot");
+        var sectionTree = $('#sectionTree').dynatree("getRoot");
+        var serieTree = $('#serieTree').dynatree("getRoot");
+        
+        if(fondoTree === null || sectionTree === null || serieTree === null)
+            return messageError("No fué posible obtener la estructura. Error Dynatree");
+        
+        if(fondoTree.getChildren() === null)
+            return Advertencia("Debe ingresar un <b>Fondo</b>");
+        if(sectionTree.getChildren().length === 0)
+            return Advertencia("Debe ingresar una <b>Serie</b>");
+        if(serieTree.getChildren().length === 0)
+            return Advertencia("Debe ingresar una <b>Serie</b>");
+        
+        _getFondoDirectories(fondoTree);
+        
+        return 1;
+    };
+    
+    _getFondoDirectories = function(fondoTree){        
+        if(fondoTree === null)
+            return messageError("No se ha podido obtener la estructura <b>Fondo</b>");
+        
+        var directories = fondoTree.getChildren();
+        
+        $(directories).each(function(){
+            console.log("Directorio: "+this.data.title);
+            if(this.getChildren() !== null){
+                console.log("Agregando directorios "+directories.length);
+                directories.push(this.getChildren());
+                console.log("Comprobando tamaño "+directories.length);
+
+            }
+        });
+    };
+    
+    _getSectionTree = function(){
+        
+    };
+    
+    _getSerieTree = function(){
+        
+    };
+    
+  
      
 };
 

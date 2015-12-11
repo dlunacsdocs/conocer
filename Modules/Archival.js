@@ -38,7 +38,7 @@ ArchivalClass.prototype.buildModule = function(){
     
     var li = $('<li>',{class: "here LinkArchival"});
     
-    var dispDoc = $('<li>',{class:"LinkDocumentaryDisposition"}).append('<a href="#">Disposición Documental</a>');
+    var dispDoc = $('<li>',{class:"LinkDocumentaryDisposition"}).append('<a href="#">Catálogo de Disposición Documental</a>');
     var sublist = $('<ul>',{class:"sublist"}).append(dispDoc);
         
     var a = $('<a>', {href:"#Disposición Documental"}).append("Archivística");
