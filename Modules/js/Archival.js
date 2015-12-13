@@ -19,7 +19,7 @@ var ArchivalClass = function(){
     _getDocumentaryDisposition = function(){
         
         var status = false;
-        $.getScript( "Modules/DocumentaryDisposition.js" )
+        $.getScript( "Modules/js/DocumentaryDisposition.js" )
             .done(function( script, textStatus ) {
               status = true;
               documentaryDisposition = new DocumentaryDispositionClass();
