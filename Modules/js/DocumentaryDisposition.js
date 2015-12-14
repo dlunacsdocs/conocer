@@ -292,6 +292,7 @@ var DocumentaryDispositionClass = function(){
             title: docDispositionData.catalogName,
             key: docDispositionData.catalogKey,
             tooltip: docDispositionData.catalogDescript,
+            description: docDispositionData.catalogDescript,
             structureType: "fondo",
             isFolder: true
           });
@@ -313,6 +314,7 @@ var DocumentaryDispositionClass = function(){
             title: docDispositionData.catalogName,
             key: docDispositionData.catalogKey,
             tooltip: docDispositionData.catalogDescript,
+            description: docDispositionData.catalogDescript,
             structureType: "fondo",
             isFolder: true
           });
@@ -349,6 +351,7 @@ var DocumentaryDispositionClass = function(){
         var childNode = activeNodeSection.addChild({
             title: docDispositionData.catalogName,
             tooltip: docDispositionData.catalogDescript,
+            description: docDispositionData.catalogDescript,
             key: docDispositionData.catalogKey,
             structureType: "section",
             isFolder: true
@@ -372,6 +375,7 @@ var DocumentaryDispositionClass = function(){
         childNodeSerie = serieTree.addChild({
             title: docDispositionData.catalogName,
             tooltip: docDispositionData.catalogDescript,
+            description: docDispositionData.catalogDescript,
             key: docDispositionData.catalogKey,
             structureType: "section",
             isFolder: true
@@ -401,6 +405,8 @@ var DocumentaryDispositionClass = function(){
         var childNode = activeNodeSerie.addChild({
             title: docDispositionData.catalogName,
             tooltip: docDispositionData.catalogDescript,
+            description: docDispositionData.catalogDescript,
+            key: docDispositionData.catalogKey,
             structureType: "serie",
             isFolder: true
           });
@@ -449,7 +455,7 @@ var DocumentaryDispositionClass = function(){
      * @returns {String}            Xml generado.
      */
     _getCatalogXmlStructure = function(fondoTree, sectionTree, serieTree){
-        var xmlStructure = "<Users version='1.0' encoding='UTF-8'>";
+        var xmlStructure = "<docDispositionCatalog version='1.0' encoding='UTF-8'>";
         
         var sectionDirectories = sectionTree.getChildren();
         
@@ -461,11 +467,41 @@ var DocumentaryDispositionClass = function(){
             console.log(directory.data.title+" type: "+sectionStructureType);
             
             if(String(sectionStructureType).toLowerCase() === "section"){
+                var nodeParent = directory.getParent();
+                
+                if(nodeParent === null)
+                    nodeParent = "";
+                else
+                    nodeParent = nodeParent.data.key;
+                
+                xmlStructure+=  "<node>\n\
+                                    <type>section</type>\n\
+                                    <parentNode>"+nodeParent+"</parentNode>\n\
+                                    <title>"+directory.data.title+"</title>\n\
+                                    <description>"+directory.data.description+"</description>\n\
+                                    <key>"+directory.data.key+"</key>\n\
+                                </node>";
+                console.log(xmlStructure);
                 sectionDirKey = directory.data.key;
+                                
             }
             
             if(String(sectionStructureType).toLowerCase() === "fondo"){
-                xmlStructure+="<structure><type>fondo</type></structure>";
+                var nodeParent = directory.getParent();
+                
+                if(nodeParent === null)
+                    nodeParent = "";
+                else
+                    nodeParent = nodeParent.data.key;
+                
+                xmlStructure+=  "<node>\n\
+                                    <type>fondo</type>\n\
+                                    <parentNode>"+nodeParent+"</parentNode>\n\
+                                    <title>"+directory.data.title+"</title>\n\
+                                    <description>"+directory.data.description+"</description>\n\
+                                    <key>"+directory.data.key+"</key>\n\
+                                </node>";
+                console.log(xmlStructure);
             }
             
             if(directory.getChildren() !== null){
@@ -487,7 +523,22 @@ var DocumentaryDispositionClass = function(){
                     
                     if(String(serieStructureType).toLowerCase() === "section")
                         continue;
-
+                    
+                    var nodeParent = directory.getParent();
+                
+                    if(nodeParent === null)
+                        nodeParent = "";
+                    else
+                        nodeParent = nodeParent.data.key;
+                    
+                    xmlStructure+=  "<node>\n\
+                                        <type>serie</type>\n\
+                                        <parentNode>"+nodeParent+"</parentNode>\n\
+                                        <title>"+directory.data.title+"</title>\n\
+                                        <description>"+directory.data.description+"</description>\n\
+                                        <key>"+directory.data.key+"</key>\n\
+                                    </node>";
+                    console.log(xmlStructure);
                     console.log(serieDirectory.data.title+" type: "+serieDirectory.data.structureType);
 
                     if(serieDirectory.getChildren() !== null){
@@ -499,6 +550,8 @@ var DocumentaryDispositionClass = function(){
             }
             
         }
+        
+        xmlStructure+="</docDispositionCatalog>";
         
         return xmlStructure;
     };     

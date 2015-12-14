@@ -6,13 +6,18 @@
  */
 $RoutFile = dirname(getcwd());
 
-require_once $RoutFile.'/php/DataBase.php';
-require_once $RoutFile.'/php/XML.php';
-require_once $RoutFile.'/php/Log.php';
-require_once $RoutFile.'/php/Session.php';
+require_once dirname($RoutFile).'/php/DataBase.php';
+require_once dirname($RoutFile).'/php/XML.php';
+require_once dirname($RoutFile).'/php/Log.php';
+require_once dirname($RoutFile).'/php/Session.php';
 
 
 class Archival {
+    
+    public function __construct() {
+        $this->Ajax();
+    }
+    
     private function Ajax()
     {
         if(filter_input(INPUT_POST, "option")!=NULL and filter_input(INPUT_POST, "option")!=FALSE){
@@ -24,15 +29,26 @@ class Archival {
 
             $userData = Session::getSessionParameters();
             
-            switch (filter_input(INPUT_POST, "option"))
-            {
-                
+            switch (filter_input(INPUT_POST, "option")){
+                case "buildNewArchivalDispositionCatalog": $this->buildNewArchivalDispositionCatalog(); break;
             }
         }
     }
     
     private function buildNewArchivalDispositionCatalog(){
-        var_dump($_POST);
+
+        $xmlStructureString = filter_input(INPUT_POST, "xmlStructure");
+        
+        if(!($xml = simplexml_load_string($xmlStructureString))){
+            $errorOutput = "";
+            foreach(libxml_get_errors() as $error) {
+                $errorOutput.=$error->message."<br>";
+            }
+                return XML::XMLReponse ("Error", 0, "<p><b>Error</b> la estructura XML no se ha formado correctamente</p><br>Detalles:<br>$errorOutput");
+        }
+        
+
+        var_dump($xml);
     }
     
 }
