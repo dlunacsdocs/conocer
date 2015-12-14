@@ -524,7 +524,7 @@ var DocumentaryDispositionClass = function(){
                     if(String(serieStructureType).toLowerCase() === "section")
                         continue;
                     
-                    var nodeParent = directory.getParent();
+                    var nodeParent = serieDirectory.getParent();
                 
                     if(nodeParent === null)
                         nodeParent = "";
@@ -534,9 +534,9 @@ var DocumentaryDispositionClass = function(){
                     xmlStructure+=  "<node>\n\
                                         <type>serie</type>\n\
                                         <parentNode>"+nodeParent+"</parentNode>\n\
-                                        <title>"+directory.data.title+"</title>\n\
-                                        <description>"+directory.data.description+"</description>\n\
-                                        <key>"+directory.data.key+"</key>\n\
+                                        <title>"+serieDirectory.data.title+"</title>\n\
+                                        <description>"+serieDirectory.data.description+"</description>\n\
+                                        <key>"+serieDirectory.data.key+"</key>\n\
                                     </node>";
                     console.log(xmlStructure);
                     console.log(serieDirectory.data.title+" type: "+serieDirectory.data.structureType);

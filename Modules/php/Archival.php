@@ -38,17 +38,26 @@ class Archival {
     private function buildNewArchivalDispositionCatalog(){
 
         $xmlStructureString = filter_input(INPUT_POST, "xmlStructure");
+        $values = "";
+        
         
         if(!($xml = simplexml_load_string($xmlStructureString))){
             $errorOutput = "";
             foreach(libxml_get_errors() as $error) {
                 $errorOutput.=$error->message."<br>";
             }
+            
                 return XML::XMLReponse ("Error", 0, "<p><b>Error</b> la estructura XML no se ha formado correctamente</p><br>Detalles:<br>$errorOutput");
         }
         
-
-        var_dump($xml);
+                
+        foreach ($xml->node as $node){
+            $values.="('$node->title', '$node->key', '$node->description', '$node->key', '$node->type', '$node->parentNode'),";
+        }
+        
+        $insert = "INSERT INTO CSDocs_DocumentaryDisposition (Name, NameKey, Description, NodeType, ParentKey) VALUES ".trim($values, ",");
+        
+        echo $insert;
     }
     
 }

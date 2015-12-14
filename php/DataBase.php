@@ -334,6 +334,8 @@ class DataBase {
                     . "Name VARCHAR(250) NOT NULL,"
                     . "NameKey VARCHAR(60) NOT NULL, "
                     . "Description VARCHAR(255) NOT NULL,"
+                    . "NodeType VARCHAR(10) NOT NULL,"
+                    . "ParentKey VARCHAR(25),"
                     . "PRIMARY KEY (idDocumentaryDisposition)"
                 . ") DEFAULT CHARSET=utf8";
         
