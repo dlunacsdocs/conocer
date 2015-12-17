@@ -664,12 +664,66 @@ var DocumentaryDispositionClass = function(){
                 sectionNodesArray.push($(this));
             if($(this).find('NodeType').text() === 'serie')
                 serieNodesArray.push($(this));
-        });
+        }); 
         
-        console.log(fondoNodesArray);
-        console.log(sectionNodesArray);
-        console.log(serieNodesArray);  
+        if(_buildFondoAndSectionTree(fondoNodesArray) === 1)
+            _buildSerieTree();
         
+    };
+    
+    _buildFondoAndSectionTree = function(nodesArray){
+        var fondoTree;
+        var rootStatus = false;
+        
+        for(var cont = 0; cont < nodesArray.length; cont++){
+            var node = nodesArray[cont];            
+            fondoTree = $('#fondoTree').dynatree('getRoot');            
+            
+            if($(node).find('ParentKey').text() === '0'){   
+                fondoTree.addChild({
+                    title: $(node).find('Name').text(),
+                    key: $(node).find('NameKey').text(),
+                    tooltip: $(node).find('Name').text(),
+                    description: $(node).find('Description').text(),
+                    structureType: "fondo",
+                    isFolder: true
+                });
+                
+                rootStatus = true;
+                
+                break;
+            }
+        }
+        
+        if(!rootStatus)
+            return errorMessage("No fué localizado el root de Fondo");
+        
+        for(cont = 0; cont < nodesArray.length; cont++){
+            var node = nodesArray[cont];
+            var parentKey = $(node).find('ParentKey').text();
+            fondoTree = $('#fondoTree').dynatree('getTree');            
+            var parent = fondoTree.getNodeByKey(parentKey);
+                     
+            if(parent === null)
+            return errorMessage("No se ha localizado el nodo padre <b>"+parentKey+"</b> para Fondo");
+                     
+            if($(node).find('ParentKey').text() !== '0'){
+                    parent.addChild({
+                        title: $(node).find('Name').text(),
+                        key: $(node).find('NameKey').text(),
+                        tooltip: $(node).find('Name').text(),
+                        description: $(node).find('Description').text(),
+                        structureType: "fondo",
+                        isFolder: true
+                    });
+            }   
+        }
+        
+        return 1;
+    };
+    
+    _buildSerieTree = function(xmlStructure){
+        console.log(xmlStructure);
     };
      
 };  /* Fin Clase */
