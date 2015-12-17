@@ -54,20 +54,21 @@ var DocumentaryDispositionClass = function(){
             title: 'Agregando '+optionName,
             size: BootstrapDialog.SIZE_SMALL,
             message: panelContent,
-            buttons: [{
-                label: 'Cerrar',
-                action: function(dialogRef){
-                    dialogRef.close();
+            buttons: [
+                {
+                    label: 'Cerrar',
+                    action: function(dialogRef){
+                        dialogRef.close();
+                    }
+                },
+                {
+                    label: 'Agregar',
+                    cssClass:"btn-primary",
+                    action: function(dialogRef){                    
+                        window["_add"+optionName]();    /* Agregando elemento al Catálogo */
+                        dialogRef.close();
+                    }
                 }
-            },
-            {
-                label: 'Agregar',
-                cssClass:"btn-primary",
-                action: function(dialogRef){                    
-                    window["_add"+optionName]();    /* Agregando elemento al Catálogo */
-                    dialogRef.close();
-                }
-            }
             ],
             onshown: function(dialogRef){
                 $('#catalogNameDocDispo').focus();
@@ -170,18 +171,13 @@ var DocumentaryDispositionClass = function(){
         tabbable.append(navTab);
         tabbable.append(tabContent);
         
-        BootstrapDialog.show({
+        var dialog = BootstrapDialog.show({
             title: 'Catálogo de Disposición Documental',
             size: BootstrapDialog.SIZE_NORMAL,
             closable: false,
             message: tabbable,
+            draggable: true,
             buttons: [
-                {
-                    label: "Cerrar",
-                    action: function(dialogRef){
-                        dialogRef.close();
-                    }
-                },
                 {
                     id: 'documentaryDispositionButton',
                     label: 'Agregar',
@@ -197,6 +193,19 @@ var DocumentaryDispositionClass = function(){
                     action: function(dialogRef){
                         _buildDocumentaryDispositionCatalog();                         
                     }
+                },
+                {
+                    label: "Cerrar",
+                    action: function(dialogRef){
+                        BootstrapDialog.confirm('¿Desea continuar cerrando esta ventana?', function(result){
+                            if(result) {
+                                dialogRef.close();
+                            }else {
+                                
+                            }
+                        });
+                        
+                    }
                 }
             ],
             onshown: function(dialogRef){
@@ -210,6 +219,9 @@ var DocumentaryDispositionClass = function(){
                     }
                 });
                 
+                var rootNode = $("#fondoTree").dynatree("getRoot");
+                rootNode.data.key = 0;
+                
                 $('#fondoTree').dynatree("getTree").activateKey("fondoTree_0");
             
                                 /* ______Sección______ */
@@ -221,6 +233,9 @@ var DocumentaryDispositionClass = function(){
                     }
                 });
                 
+                rootNode = $("#sectionTree").dynatree("getRoot");
+                rootNode.data.key = 0;
+                
                  $('#sectionTree').dynatree("getTree").activateKey("sectionTree_0");                
                 
                                 /* ______Serie______ */
@@ -231,6 +246,9 @@ var DocumentaryDispositionClass = function(){
                         console.log(node);
                     }
                 });
+                
+                rootNode = $("#serieTree").dynatree("getRoot");
+                rootNode.data.key = 0;
             
                 $('#serieTree').dynatree("getTree").activateKey("serieTree_0");
 
@@ -250,10 +268,15 @@ var DocumentaryDispositionClass = function(){
                    _showCatalogOption();
                });
                
+               var xmlStructure = _getDocDispositionCatalogStructure();
+               if(typeof (xmlStructure) === 'object')
+                   _buildDocDispositionCatalog(xmlStructure);
+               
+               
             }
         });
         
-        
+        console.log(dialog);
     };
     
      /*
@@ -564,20 +587,90 @@ var DocumentaryDispositionClass = function(){
         type: 'POST',   
         url: "Modules/php/Archival.php",
         data: {option:"buildNewArchivalDispositionCatalog", xmlStructure:catalogXmlStructure}, 
-        success:  function(response)
+        success:  function(xml)
         {   
-            if($.parseXML( response )===null){ Error(response); return 0;}else xml=$.parseXML( response );
-
-            if($(xml).find("Error").length>0)
+            if($.parseXML( xml )===null){ errorMessage(xml); return 0;}else xml = $.parseXML( xml );
+            
+            $(xml).find('docuDispositionCatalogCreated').each(function(){
+                var mensaje = $(this).find('Mensaje').text();
+                Notificacion(mensaje);
+            });
+            
+            $(xml).find("Error").each(function()
             {
-                ErrorXml(xml);
-                return 0;
-            }
+                var mensaje = $(this).find("Mensaje").text();
+                
+                errorMessage(mensaje);
+            });  
+            
         },
         beforeSend:function(){          },
-        error: function(jqXHR, textStatus, errorThrown){Error(textStatus +"<br>"+ errorThrown);}
+        error: function(jqXHR, textStatus, errorThrown){errorMessage(textStatus +"<br>"+ errorThrown);}
         });
     }; 
+    
+    /**
+     * @description Obtiene la estructura del Catálogo de Disposición Documental.
+     * @return {XML} Xml con la estructura del Catálogo de Disposición Documental.
+     */
+    _getDocDispositionCatalogStructure = function(){
+        var xmlStructure = null;
+        
+        $.ajax({
+        async:false, 
+        cache:false,
+        dataType:'html', 
+        type: 'POST',   
+        url: "Modules/php/Archival.php",
+        data: {option:"getDocDispositionCatalogStructure"}, 
+        success:  function(xml)
+        {   
+            if($.parseXML( xml )===null){ errorMessage(xml); return 0;}else xml = $.parseXML( xml );
+            
+            if($(xml).find('docDispositionCatalog').length > 0)
+                xmlStructure = xml;
+            
+            $(xml).find("Error").each(function()
+            {
+                var mensaje = $(this).find("Mensaje").text();
+                
+                errorMessage(mensaje);
+            });  
+            
+        },
+        beforeSend:function(){          },
+        error: function(jqXHR, textStatus, errorThrown){errorMessage(textStatus +"<br>"+ errorThrown);}
+        });
+        
+        return xmlStructure;
+    };
+    
+    /**
+     * @description Construye el Catálogo de Disposición Documental
+     * @param {Xml} xmlStructure
+     * @returns {undefined}
+     */
+    _buildDocDispositionCatalog = function(xmlStructure){
+        
+        var fondoNodesArray = new Array;
+        var sectionNodesArray = new Array;
+        var serieNodesArray = new Array();
+        
+        $(xmlStructure).find('node').each(function(){
+            
+            if($(this).find('NodeType').text() === 'fondo' )
+                fondoNodesArray.push($(this));
+            if($(this).find('NodeType').text() === 'section')
+                sectionNodesArray.push($(this));
+            if($(this).find('NodeType').text() === 'serie')
+                serieNodesArray.push($(this));
+        });
+        
+        console.log(fondoNodesArray);
+        console.log(sectionNodesArray);
+        console.log(serieNodesArray);  
+        
+    };
      
 };  /* Fin Clase */
 

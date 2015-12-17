@@ -24,7 +24,7 @@ $repositoriesNumber = Encrypter::decrypt($repositoriesEncrypted);
 $instancesNumberEncrypted = $EncryptedSetting['InstancesNumber'];
 $instancesNumber = Encrypter::decrypt($instancesNumberEncrypted);
 
-$newLimit = Encrypter::encrypt("10");
+$newLimit = Encrypter::encrypt("15");
 
 echo "Instances: $instancesNumber Usuarios: ".$UserNumberDecrypted." repos:$repositoriesNumber" ;
 echo "<br>$newLimit";

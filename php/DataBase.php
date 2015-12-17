@@ -16,9 +16,13 @@ class DataBase {
     public static $dataBaseName = null;
     function Conexion()
     {
+        $RoutFile = dirname(getcwd());    
+       
+        if(strcasecmp(basename($RoutFile), "Modules") == 0)
+                $RoutFile = dirname ($RoutFile);
         
-        if(file_exists("../Configuracion/Conexion/BD.ini")){echo "<p>No existe el archivo de Conexión.</p>"; return 0;}
-            $Conexion=parse_ini_file ("../Configuracion/ConexionBD/BD.ini",true);
+        if(file_exists("$RoutFile/Configuracion/Conexion/BD.ini")){echo "<p>No existe el archivo de Conexión.</p>"; return 0;}
+            $Conexion=parse_ini_file ("$RoutFile/Configuracion/ConexionBD/BD.ini",true);
 
         $User=$Conexion['Conexion']['User'];
         $Password=$Conexion['Conexion']['Password'];
@@ -330,12 +334,13 @@ class DataBase {
                 return "<p><b>Error</b> al crear <b>Correo</b> en $DataBaseName. $EstadoTablaCorreos</p>";
             
             $docDisposition = "CREATE TABLE IF NOT EXISTS CSDocs_DocumentaryDisposition ("
-                . "idDocumentaryDisposition INT NOT NULL,"
+                . "idDocumentaryDisposition INT NOT NULL AUTO_INCREMENT,"
                     . "Name VARCHAR(250) NOT NULL,"
                     . "NameKey VARCHAR(60) NOT NULL, "
                     . "Description VARCHAR(255) NOT NULL,"
                     . "NodeType VARCHAR(10) NOT NULL,"
                     . "ParentKey VARCHAR(25),"
+                    . "UNIQUE (NameKey),"
                     . "PRIMARY KEY (idDocumentaryDisposition)"
                 . ") DEFAULT CHARSET=utf8";
         
@@ -946,7 +951,7 @@ class DataBase {
                     $AddAccess_Of_Admin_Into_Repository = "INSERT INTO RepositoryControl (IdGrupo, IdUsuario, IdRepositorio) VALUES ($IdGroupAdmin, 0, $IdRepositorio)";
                     if(($ResultAddAccess = $this->ConsultaQuery($DataBaseName, $AddAccess_Of_Admin_Into_Repository))!=1)
                     {
-                        echo "<p><b>Error</b> al dar acceso al grupo <b>Administradores</b> en el repositorio <b>$nombre_tabla</b></p>";
+                        echo "<p><b>Error</b> al dar acceso al grupo <b>Administradores</b> en el repositorio <b>$nombre_tabla</b></p><br>Detalles:<br> $ResultAddAccess";
                         return 0;
                     }
                 }

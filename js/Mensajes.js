@@ -10,7 +10,7 @@ var HideClose={show: { effect: "blind", duration: 800 },
               hide: { effect: "fade", duration: 500 }};
 
 var ButtonsWindows={Buttons:function(){$(this).dialog('close');}};
-var WindowError={width:400, height:500, minWidth:300, minHeight:400, modal:true, title:"Error en la Operación",buttons: {Aceptar: function() {$( this ).dialog( "close" );$( this ).dialog( "destroy" );}}};
+var WindowError={width:400, height:500, minWidth:300, minHeight:400, title:"Error en la Operación",buttons: {close: function() {$( this ).remove();}}};
 var WindowAdvertencia={width:300, height:300, minWidth:300, minHeight:300, modal:true, title:"Advertencia",buttons: {Aceptar: function() {$( this ).dialog( "close" );$( this ).dialog( "destroy" );}}};
 var WindowExito={width:300, height:300, minWidth:300, minHeight:300,draggable:false, modal:true, title:"Operación realizada con éxito",buttons: {Aceptar: function() {$( this ).dialog( "close" );$( this ).dialog( "destroy" );}}};
 var WindowSalida={width:300, height:550, minWidth:300, minHeight:300, modal:true, title:"Registro de Resultados de Operación",show: { effect: "blind", duration: 800 },buttons: {Aceptar: function() {$( this ).dialog( "close" );$( this ).dialog( "destroy" );}}};
@@ -43,10 +43,10 @@ function Salida(mensaje)
 }
 function Error(mensaje)
 {
-    $('#MensajeError').dialog(WindowError);
-    $('#MensajeError').empty();
-    $('#MensajeError').append('<center><img src="img/fallo.png"></center>');
-    $('#MensajeError').append(mensaje);
+    var div = $('<div>').append('<center><img src="img/fallo.png"></center>');
+    div.append(mensaje);
+    
+    div.dialog(WindowError);
 }
 
 function errorMessage(mensaje)
