@@ -667,27 +667,32 @@ var DocumentaryDispositionClass = function(){
         }); 
         
         if(_buildFondoAndSectionTree(fondoNodesArray) === 1)
-            _buildSerieTree();
+            _buildSectionTree(sectionNodesArray);
         
     };
     
     _buildFondoAndSectionTree = function(nodesArray){
         var fondoTree;
         var rootStatus = false;
+        var newDirectory;
         
         for(var cont = 0; cont < nodesArray.length; cont++){
             var node = nodesArray[cont];            
-            fondoTree = $('#fondoTree').dynatree('getRoot');            
-            
-            if($(node).find('ParentKey').text() === '0'){   
-                fondoTree.addChild({
+            fondoTree = $('#fondoTree').dynatree('getRoot');      
+            var sectionTree = $('#sectionTree').dynatree('getRoot');
+                    
+            if($(node).find('ParentKey').text() === '0'){
+                newDirectory = {
                     title: $(node).find('Name').text(),
                     key: $(node).find('NameKey').text(),
                     tooltip: $(node).find('Name').text(),
                     description: $(node).find('Description').text(),
-                    structureType: "fondo",
+                    structureType: $(node).find('NodeType').text(),
                     isFolder: true
-                });
+                };
+                
+                fondoTree.addChild(newDirectory);
+                sectionTree.addChild(newDirectory);
                 
                 rootStatus = true;
                 
@@ -701,25 +706,67 @@ var DocumentaryDispositionClass = function(){
         for(cont = 0; cont < nodesArray.length; cont++){
             var node = nodesArray[cont];
             var parentKey = $(node).find('ParentKey').text();
-            fondoTree = $('#fondoTree').dynatree('getTree');            
+            fondoTree = $('#fondoTree').dynatree('getTree');   
             var parent = fondoTree.getNodeByKey(parentKey);
-                     
-            if(parent === null)
-            return errorMessage("No se ha localizado el nodo padre <b>"+parentKey+"</b> para Fondo");
-                     
+            var sectionTree = $('#sectionTree').dynatree('getTree');
+            var parentSectionTree = sectionTree.getNodeByKey(parentKey);
+                  
             if($(node).find('ParentKey').text() !== '0'){
-                    parent.addChild({
-                        title: $(node).find('Name').text(),
-                        key: $(node).find('NameKey').text(),
-                        tooltip: $(node).find('Name').text(),
-                        description: $(node).find('Description').text(),
-                        structureType: "fondo",
-                        isFolder: true
-                    });
+                if(parent === null)
+                    return errorMessage("No se ha localizado el nodo padre <b>"+parentKey+"</b> de <b>"+$(node).find('Name').text()+"</b> para Fondo");
+                if(parentSectionTree === null)
+                    return errorMessage("No se ha localizado el nodo padre <b>"+parentKey+"</b> de <b>"+$(node).find('Name').text()+"</b> para Sección");
+                
+                newDirectory = {
+                    title: $(node).find('Name').text(),
+                    key: $(node).find('NameKey').text(),
+                    tooltip: $(node).find('Name').text(),
+                    description: $(node).find('Description').text(),
+                    structureType: $(node).find('NodeType').text(),
+                    isFolder: true
+                };
+                
+                parent.addChild(newDirectory);
+                parentSectionTree.addChild(newDirectory);
             }   
         }
         
         return 1;
+    };
+    
+    _buildSectionTree = function(nodesArray){
+        var sectionTree = $('#sectionTree').dynatree('getTree');
+        var parentSectionTree;
+        var serieTree;
+        var rootStatus = false;
+        var newDirectory;
+        var child;
+        
+        for(var cont = 0; cont < nodesArray.length; cont++){
+            var node = nodesArray[cont];            
+//            serieTree = $('#serieTree').dynatree('getRoot');      
+            parentSectionTree = $(node).find('ParentKey').text();
+            child = sectionTree.getNodeByKey(parentSectionTree);
+            
+            if($(node).find('ParentKey').text() !== '0'){
+                newDirectory = {
+                    title: $(node).find('Name').text(),
+                    key: $(node).find('NameKey').text(),
+                    tooltip: $(node).find('Name').text(),
+                    description: $(node).find('Description').text(),
+                    structureType: $(node).find('NodeType').text(),
+                    isFolder: true
+                };
+                
+                child.addChild(newDirectory);
+//                serieTree.addChild(newDirectory);
+                                
+                break;
+            }
+        }
+        
+        if(!rootStatus)
+            return errorMessage("No fué localizado el root de Fondo");
     };
     
     _buildSerieTree = function(xmlStructure){
