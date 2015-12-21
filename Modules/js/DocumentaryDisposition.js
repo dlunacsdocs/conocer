@@ -407,7 +407,10 @@ var DocumentaryDispositionClass = function(){
                     label: "Modificar",
                     cssClass:"btn-warning",
                     action: function(dialogRef){
-                        node.data.title = "My new title";
+                        node.data.title = $('#catalogNameDocDispo').val();
+                        node.data.key = $('#catalogKeyDocDispo').val();
+                        node.data.description = $('#catalogDescripDocDispo').val();
+                        
                         node.render();
                         dialogRef.close();
                     }
