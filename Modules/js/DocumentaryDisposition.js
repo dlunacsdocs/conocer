@@ -65,8 +65,7 @@ var DocumentaryDispositionClass = function(){
                     label: 'Agregar',
                     cssClass:"btn-primary",
                     action: function(dialogRef){                    
-                        window["_add"+optionName]();    /* Agregando elemento al Catálogo */
-                        dialogRef.close();
+                        window["_add"+optionName](dialogRef);    /* Agregando elemento al Catálogo */
                     }
                 }
             ],
@@ -139,6 +138,7 @@ var DocumentaryDispositionClass = function(){
         data.catalogName = catalogName;
         data.catalogKey = catalogKey;
         data.catalogDescript = catalogDescript;
+        
         return data;
     };
     
@@ -159,6 +159,34 @@ var DocumentaryDispositionClass = function(){
         var serieDiv = $('<div>',{id: "serieTree", class:"tab-pane"});
         
         var tabContent = $('<div>', {class:"tab-content"});
+        
+        var navTabBar = $('<nav>',{class:"navbar navbar-default"});
+        var container = $('<div>',{ class: "container-fluid"});
+        var navHeader = $('<div>', {class: "navbar-header"});
+        
+        var deleteButton = $('<button>', {class: "btn btn-danger navbar-btn"}).append("Eliminar");
+        var editButton = $('<button>', {class: "btn btn-warning navbar-btn"}).append("Editar");
+                
+        container.append('<button class = "btn btn-warning navbar-btn docDispositionEdit">Editar</button>\n\
+                            <button class = "btn btn-danger navbar-btn docDispositionRemove">Eliminar</button>');        
+        navTabBar.append(container);
+        fondoDiv.append(navTabBar);
+        
+        navTabBar = $('<nav>',{class:"navbar navbar-default"});
+        container = $('<div>',{ class: "container-fluid"});
+        container.append('<button class = "btn btn-warning navbar-btn docDispositionEdit">Editar</button>\n\
+                            <button class = "btn btn-danger navbar-btn docDispositionRemove">Eliminar</button>');        
+        navTabBar.append(container);
+        
+        sectionDiv.append(navTabBar);
+        
+        navTabBar = $('<nav>',{class:"navbar navbar-default"});
+        container = $('<div>',{ class: "container-fluid"});
+        container.append('<button class = "btn btn-warning navbar-btn docDispositionEdit">Editar</button>\n\
+                            <button class = "btn btn-danger navbar-btn docDispositionRemove">Eliminar</button>');        
+        navTabBar.append(container);
+        
+        serieDiv.append(navTabBar);
         
         tabContent.append(fondoDiv);
         tabContent.append(sectionDiv);
@@ -272,11 +300,131 @@ var DocumentaryDispositionClass = function(){
                if(typeof (xmlStructure) === 'object')
                    _buildDocDispositionCatalog(xmlStructure);
                
+               $('.docDispositionEdit').click(function(){
+                   _showDocDispositionCatalogData();
+               });
                
+               $('.docDispositionRemove').click(function(){
+                   _deleteDocDispositionCatalogNode();
+               });
             }
         });
         
-        console.log(dialog);
+    };
+    
+    /**
+     * @description Comprueba si existe previamente una clave especifica tro de 
+     * alguna de las 3 estructuras.
+     * @param {type} keyNode
+     * @returns {Number}
+     */
+    _checkIfExistsKey = function(keyNode){
+        var fondoNode = $('#fondoTree').dynatree("getTree").getNodeByKey(keyNode);
+        var sectionNode = $('#sectionTree').dynatree("getTree").getNodeByKey(keyNode);
+        var serieNode = $('#serieTree').dynatree("getTree").getNodeByKey(keyNode);
+        
+        if(fondoNode === null && sectionNode === null && serieNode === null)
+            return 0;
+        else
+            return 1;
+        
+    };
+    
+    /**
+     * @description Elimina un nodo de la estructura de Catálogo de disposición documental
+     * @returns {unresolved}
+     */
+    _deleteDocDispositionCatalogNode = function(){
+        var node = null;
+        var optionName = $('#documentaryDispositionNavTab .nav-tabs a').attr('optionName');
+        
+        if(String(optionName).toLowerCase() === 'fondo'){
+            node = $('#fondoTree').dynatree('getActiveNode');
+            if(node === null)
+                return Advertencia("Debe seleccionar un elemento para poder eliminarlo.");
+        
+            node.remove();
+            
+            node = $('#sectionTree').dynatree('getActiveNode');
+            
+            if(node !== null)
+                node.remove();
+        }
+        if(String(optionName).toLowerCase() === 'seccion'){
+            node = $('#sectionTree').dynatree('getActiveNode');
+            
+            if(node === null)
+                return Advertencia("Debe seleccionar un elemento para poder eliminarlo.");
+        
+            node.remove();
+            
+            node = $('#serieTree').dynatree('getActiveNode');
+            
+            if(node !== null)
+                node.remove();
+        }
+        if(String(optionName).toLowerCase() === 'serie'){
+            node = $('#serieTree').dynatree('getActiveNode');
+            
+            if(node === null)
+                return Advertencia("Debe seleccionar un elemento para poder eliminarlo.");
+        
+            node.remove();
+        }
+               
+        
+    };
+    
+    /**
+     * @description Muestra los datos de un nodo perteneciente al Catálogo de Disposición Documental
+     * @param {type} node
+     * @returns {undefined}
+     */
+    _showDocDispositionCatalogData = function(node){
+        var node = null;
+        var optionName = $('#documentaryDispositionNavTab .nav-tabs a').attr('optionName');
+        
+        if(String(optionName).toLowerCase() === 'fondo')
+            node = $('#fondoTree').dynatree('getActiveNode');
+        if(String(optionName).toLowerCase() === 'seccion')
+            node = $('#sectionTree').dynatree('getActiveNode');
+        if(String(optionName).toLowerCase() === 'serie')
+            node = $('#serieTree').dynatree('getActiveNode');
+               
+        if(node === null)
+           return Advertencia("Debe seleccionar un elemento para poder editarlo.");
+        
+        var panelForms = _getArchivalDispositionFormsPanel();
+        
+        var dialog = BootstrapDialog.show({
+            title: 'Editando Datos',
+            size: BootstrapDialog.SIZE_SMALL,
+            closable: true,
+            message: panelForms,
+            draggable: false,
+            buttons: [
+                {
+                    label: "Modificar",
+                    cssClass:"btn-warning",
+                    action: function(dialogRef){
+                        node.data.title = "My new title";
+                        node.render();
+                        dialogRef.close();
+                    }
+                },
+                {
+                    label: "Cerrar",
+                    action: function(dialogRef){
+                        dialogRef.close();
+                    }
+                }
+            ],
+            onshown: function(dialogRef){
+                $('#catalogNameDocDispo').val(node.data.title);
+                $('#catalogKeyDocDispo').val(node.data.key);
+                $('#catalogDescripDocDispo').val(node.data.description);
+            }
+        });
     };
     
      /*
@@ -285,9 +433,14 @@ var DocumentaryDispositionClass = function(){
      *                                  al catálogo de disposición documental.
      * @returns {Number}
      */
-    _addFondo = function(){
+    _addFondo = function(dialogRef){
         var docDispositionData = _getDocumentaryDispositionData();
         var activeKeyParent;
+        
+        if(_checkIfExistsKey(docDispositionData.catalogKey) === 1)
+            return Advertencia("La clave <b>"+docDispositionData.catalogKey+"</b> que intenta ingresar ya existe");
+        
+        dialogRef.close();
         
         var activeNode = $("#fondoTree").dynatree("getRoot");
         
@@ -345,7 +498,7 @@ var DocumentaryDispositionClass = function(){
        childNodeSection.activate(true);
     };
     
-    _addSeccion = function(){
+    _addSeccion = function(dialogRef){
         var docDispositionData = _getDocumentaryDispositionData();  
         var activeNodeFondo = $('#fondoTree').dynatree("getActiveNode");
         var sectionTree = $('#sectionTree').dynatree("getActiveNode");
@@ -354,6 +507,10 @@ var DocumentaryDispositionClass = function(){
         var serieTree;
         var childNodeSerie;
         
+        if(_checkIfExistsKey(docDispositionData.catalogKey) === 1)
+            return Advertencia("La clave <b>"+docDispositionData.catalogKey+"</b> que intenta ingresar ya existe");
+        
+        dialogRef.close();
         
         if(sectionTree === null)
             return Advertencia("No se ha activado una <b>sección</b>");
@@ -407,8 +564,13 @@ var DocumentaryDispositionClass = function(){
         childNodeSerie.activate(true);
     };
     
-    _addSerie = function(){
+    _addSerie = function(dialogRef){
         var docDispositionData = _getDocumentaryDispositionData();
+        
+        if(_checkIfExistsKey(docDispositionData.catalogKey) === 1)
+            return Advertencia("La clave <b>"+docDispositionData.catalogKey+"</b> que intenta ingresar ya existe");
+        
+        dialogRef.close();
         
         var serieTree = $("#serieTree").dynatree("getRoot");
         
@@ -666,8 +828,9 @@ var DocumentaryDispositionClass = function(){
                 serieNodesArray.push($(this));
         }); 
         
-        if(_buildFondoAndSectionTree(fondoNodesArray) === 1)
-            _buildSectionTree(sectionNodesArray);
+        if(fondoNodesArray.length > 0)
+            if(_buildFondoAndSectionTree(fondoNodesArray) === 1)
+                _buildSectionTree(sectionNodesArray);
         
     };
     
@@ -695,12 +858,11 @@ var DocumentaryDispositionClass = function(){
                 sectionTree.addChild(newDirectory);
                 
                 rootStatus = true;
-                
+        
                 break;
             }
         }
-        
-        if(!rootStatus)
+        if(rootStatus === false)
             return errorMessage("No fué localizado el root de Fondo");
         
         for(cont = 0; cont < nodesArray.length; cont++){
@@ -735,38 +897,55 @@ var DocumentaryDispositionClass = function(){
     };
     
     _buildSectionTree = function(nodesArray){
-        var sectionTree = $('#sectionTree').dynatree('getTree');
+        var sectionTree;
         var parentSectionTree;
         var serieTree;
-        var rootStatus = false;
         var newDirectory;
         var child;
         
         for(var cont = 0; cont < nodesArray.length; cont++){
             var node = nodesArray[cont];            
-//            serieTree = $('#serieTree').dynatree('getRoot');      
+            serieTree = $('#serieTree').dynatree('getRoot');      
             parentSectionTree = $(node).find('ParentKey').text();
-            child = sectionTree.getNodeByKey(parentSectionTree);
+                       
+            newDirectory = {
+                title: $(node).find('Name').text(),
+                key: $(node).find('NameKey').text(),
+                tooltip: $(node).find('Name').text(),
+                description: $(node).find('Description').text(),
+                structureType: $(node).find('NodeType').text(),
+                isFolder: true
+            };
             
-            if($(node).find('ParentKey').text() !== '0'){
-                newDirectory = {
-                    title: $(node).find('Name').text(),
-                    key: $(node).find('NameKey').text(),
-                    tooltip: $(node).find('Name').text(),
-                    description: $(node).find('Description').text(),
-                    structureType: $(node).find('NodeType').text(),
-                    isFolder: true
-                };
-                
+            if($(node).find('NodeType').text() === 'section'){
+                console.log("Agregando en Serie");
+                sectionTree = $('#sectionTree').dynatree('getTree');
+                child = sectionTree.getNodeByKey(parentSectionTree);
+                            
+                if(child === null)
+                    return errorMessage("No se ha localizado el nodo padre de  <b>"+$(node).find('Name').text()+"</b> con la clave padre  "+$(node).find('ParentKey').text()+" en la estructura de <b>Sección</b>");
+ 
                 child.addChild(newDirectory);
-//                serieTree.addChild(newDirectory);
-                                
-                break;
+                serieTree.addChild(newDirectory);
+                
             }
+            
+//            if($(node).find('ParentKey').text() !== '0'){
+//                sectionTree = $('#sectionTree').dynatree('getTree');
+//                child = sectionTree.getNodeByKey(parentSectionTree);
+//            
+//                if(child === null)
+//                    return errorMessage("No se ha localizado el nodo padre de  <b>"+$(node).find('Name').text()+"</b> con la clave padre  "+$(node).find('ParentKey').text()+" en la estructura de <b>Sección</b>");
+// 
+//                
+//                child.addChild(newDirectory);
+//                                
+//             
+//            }
+                      
         }
-        
-        if(!rootStatus)
-            return errorMessage("No fué localizado el root de Fondo");
+
+        return 1;
     };
     
     _buildSerieTree = function(xmlStructure){
