@@ -925,7 +925,8 @@ var DocumentaryDispositionClass = function(){
         if(fondoNodesArray.length > 0){
             self.docDispCatalogStoraged = true;
             if(_buildFondoAndSectionTree(fondoNodesArray) === 1)
-                _buildSectionTree(sectionNodesArray);
+                if(_buildSectionTree(sectionNodesArray) === 1)
+                    _buildSerieTree(serieNodesArray);
         }
         
     };
@@ -998,10 +999,11 @@ var DocumentaryDispositionClass = function(){
         var serieTree;
         var newDirectory;
         var child;
+        var serieChild;
         
         for(var cont = 0; cont < nodesArray.length; cont++){
             var node = nodesArray[cont];            
-            serieTree = $('#serieTree').dynatree('getRoot');      
+            serieTree = $('#serieTree').dynatree('getTree');      
             parentSectionTree = $(node).find('ParentKey').text();
                        
             newDirectory = {
@@ -1017,27 +1019,19 @@ var DocumentaryDispositionClass = function(){
                 console.log("Agregando en Serie");
                 sectionTree = $('#sectionTree').dynatree('getTree');
                 child = sectionTree.getNodeByKey(parentSectionTree);
+                serieChild = serieTree.getNodeByKey(parentSectionTree);
                             
                 if(child === null)
                     return errorMessage("No se ha localizado el nodo padre de  <b>"+$(node).find('Name').text()+"</b> con la clave padre  "+$(node).find('ParentKey').text()+" en la estructura de <b>Sección</b>");
  
-                child.addChild(newDirectory);
-                serieTree.addChild(newDirectory);
+                child.addChild(newDirectory);     
+                
+                if(serieChild === null)
+                    $('#serieTree').dynatree('getRoot').addChild(newDirectory);
+                else
+                    serieChild.addChild(newDirectory);
                 
             }
-            
-//            if($(node).find('ParentKey').text() !== '0'){
-//                sectionTree = $('#sectionTree').dynatree('getTree');
-//                child = sectionTree.getNodeByKey(parentSectionTree);
-//            
-//                if(child === null)
-//                    return errorMessage("No se ha localizado el nodo padre de  <b>"+$(node).find('Name').text()+"</b> con la clave padre  "+$(node).find('ParentKey').text()+" en la estructura de <b>Sección</b>");
-// 
-//                
-//                child.addChild(newDirectory);
-//                                
-//             
-//            }
                       
         }
 
