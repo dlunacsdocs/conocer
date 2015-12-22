@@ -32,6 +32,7 @@ class Archival {
             switch (filter_input(INPUT_POST, "option")){
                 case "buildNewArchivalDispositionCatalog": $this->buildNewArchivalDispositionCatalog($userData); break;
                 case 'getDocDispositionCatalogStructure': $this->getDocDispositionCatalogStructure($userData); break;
+                case 'modifyDocDispCatalogNode': $this->modifyDocDispCatalogNode($userData); break;
             }
         }
     }
@@ -86,6 +87,10 @@ class Archival {
         
         return XML::XmlArrayResponse("docDispositionCatalog", "node", $structureArray);
         
+    }
+    
+    private function modifyDocDispCatalogNode($userData){
+        var_dump($_POST);
     }
     
 }
