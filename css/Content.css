@@ -783,3 +783,27 @@ div.Loading
     height: 20px;
     
 }
+
+span.archivalFondoIcon{
+    background: url(../img/archival/fondo-li.png) no-repeat;
+    width: 24px;
+    height: 24px;   
+    color: red;
+    display: inline-block;
+}
+
+span.archivalSectionIcon{
+    background: url(../img/archival/seccion-li.png) no-repeat;
+    width: 24px;
+    height: 24px;   
+    color: red;
+    display: inline-block;
+}
+
+span.archivalSerieIcon{
+    background: url(../img/archival/serie-li.png) no-repeat;
+    width: 24px;
+    height: 24px;   
+    color: red;
+    display: inline-block;
+}

@@ -3,10 +3,7 @@
  * @description Catálogo de disposición documental. Menú Archivística
  * */
 var DocumentaryDispositionClass = function(){
-    /* Bandera que indica si el Catálogo de  disposición documental ya se encuentra creado ó esta en construcción */
-    var docDispCatalogStoraged = false;
-    
-    
+
     /*
      * @description Devuelve el panel para agregar un elemento al 
      *              Catálogo de Disposición Documental 
@@ -153,11 +150,11 @@ var DocumentaryDispositionClass = function(){
         
         var navTab = $('<ul>', {class:"nav nav-tabs"});
         
-        var fondoLi = $('<li>', {class:"active"}).append('<a href="#fondoTree" optionName = "Fondo" data-toggle="tab">Fondo</a>');
-        var sectionLi = $('<li>').append('<a href="#sectionTree" optionName = "Seccion" data-toggle="tab">Sección</a>');
-        var serieLi = $('<li>').append('<a href="#serieTree" optionName = "Serie" data-toggle="tab">Serie</a>');
+        var fondoLi = $('<li>', {class:"active"}).append('<a href="#fondoTree" optionName = "Fondo" data-toggle="tab"><span class = "archivalFondoIcon"></span> Fondo</a>');
+        var sectionLi = $('<li>').append('<a href="#sectionTree" optionName = "Seccion" data-toggle="tab"><span class = "archivalSectionIcon"></span> Sección</a>');
+        var serieLi = $('<li>').append('<a href="#serieTree" optionName = "Serie" data-toggle="tab"><span class = "archivalSerieIcon"></span> Serie</a>');
         
-        var fondoDiv = $('<div>',{id:"fondoTree", class:"tab-pane active"});;
+        var fondoDiv = $('<div>',{id:"fondoTree", class:"tab-pane active"});
         var sectionDiv = $('<div>',{id: "sectionTree", class:"tab-pane"});
         var serieDiv = $('<div>',{id: "serieTree", class:"tab-pane"});
         
@@ -165,7 +162,7 @@ var DocumentaryDispositionClass = function(){
         
         var navTabBar = $('<nav>',{class:"navbar navbar-default"});
         var container = $('<div>',{ class: "container-fluid"});
-        var navHeader = $('<div>', {class: "navbar-header"});
+        var navHeader = $('<div>', {class: "navbar-header"}).append('<a class="navbar-brand" href="#"><img alt="Brand" src = "/img/archival/diagram.png"></a>');
                     
         container.append(navHeader);
         container.append('<div class = "btn-group-sm" role="group"><button class = "btn btn-warning navbar-btn docDispositionEdit"><span class = "glyphicon glyphicon-edit"></span></button>\n\
@@ -175,6 +172,8 @@ var DocumentaryDispositionClass = function(){
         
         navTabBar = $('<nav>',{class:"navbar navbar-default"});
         container = $('<div>',{ class: "container-fluid"});
+        navHeader = $('<div>', {class: "navbar-header"}).append('<a class="navbar-brand" href="#"><img alt="Brand" src = "/img/archival/diagram.png"></a>');
+        container.append(navHeader);
         container.append('<div class = "btn-group-sm" role="group"><button class = "btn btn-warning navbar-btn docDispositionEdit"><span class = "glyphicon glyphicon-edit"></span></button>\n\
                             <button class = "btn btn-danger navbar-btn docDispositionRemove"><span class = "glyphicon glyphicon-remove"></span></button></div>');              
         navTabBar.append(container);
@@ -183,6 +182,8 @@ var DocumentaryDispositionClass = function(){
         
         navTabBar = $('<nav>',{class:"navbar navbar-default"});
         container = $('<div>',{ class: "container-fluid"});
+        navHeader = $('<div>', {class: "navbar-header"}).append('<a class="navbar-brand" href="#"><img alt="Brand" src = "/img/archival/diagram.png"></a>');
+        container.append(navHeader);
         container.append('<div class = "btn-group-sm" role="group"><button class = "btn btn-warning navbar-btn docDispositionEdit"><span class = "glyphicon glyphicon-edit"></span></button>\n\
                             <button class = "btn btn-danger navbar-btn docDispositionRemove"><span class = "glyphicon glyphicon-remove"></span></button></div>');        
         navTabBar.append(container);
@@ -208,9 +209,9 @@ var DocumentaryDispositionClass = function(){
             draggable: true,
             buttons: [
                 {
+                    icon: 'glyphicon glyphicon-plus',
                     id: 'documentaryDispositionButton',
                     label: 'Agregar',
-                    cssClass:"btn-primary",
                     action: function(dialogRef){
 
                     }
@@ -218,15 +219,15 @@ var DocumentaryDispositionClass = function(){
                 {
                     id: 'docDispositionBuildButton',
                     label: 'Guardar',
-                    cssClass:"btn-primary",
                     action: function(dialogRef){
                         _buildDocumentaryDispositionCatalog();                         
                     }
                 },
                 {
+                    icon: 'glyphicon glyphicon-ban-circle',
                     label: "Cerrar",
                     action: function(dialogRef){
-                        var dialog = BootstrapDialog.show({
+                        BootstrapDialog.show({
                             title: 'Mensaje de Confirmación',
                             size: BootstrapDialog.SIZE_SMALL,
                             type: BootstrapDialog.TYPE_WARNING,
@@ -263,8 +264,9 @@ var DocumentaryDispositionClass = function(){
                 $('#fondoTree').dynatree({
                     minExpandLevel: 2,
                     onActivate: function(node) {
-                        console.log(node);
-                    }
+//                        console.log(node);
+                    },
+                    keyboard: true
                 });
                 
                 var rootNode = $("#fondoTree").dynatree("getRoot");
@@ -277,8 +279,9 @@ var DocumentaryDispositionClass = function(){
                 $('#sectionTree').dynatree({
                     minExpandLevel: 2,
                     onActivate: function(node) {
-                        console.log(node);
-                    }
+//                        console.log(node);
+                    },
+                    keyboard: true
                 });
                 
                 rootNode = $("#sectionTree").dynatree("getRoot");
@@ -291,8 +294,9 @@ var DocumentaryDispositionClass = function(){
                 $('#serieTree').dynatree({
                     minExpandLevel: 2,
                     onActivate: function(node) {
-                        console.log(node);
-                    }
+//                        console.log(node);
+                    },
+                    keyboard: true
                 });
                 
                 rootNode = $("#serieTree").dynatree("getRoot");
@@ -305,7 +309,7 @@ var DocumentaryDispositionClass = function(){
                 /* Cambio de Nombre Botón del modal dialog */
                 $('#documentaryDispositionNavTab .nav-tabs a').click(function (e) {
                     var optionName = $(this).attr('optionName');
-                    $('#documentaryDispositionButton').html("Agregar "+optionName);    /* Cambio Nombre Botón */
+                    $('#documentaryDispositionButton').html('<span class = "glyphicon glyphicon-plus"></span>'+" Agregar "+optionName);    /* Cambio Nombre Botón */
                     $('#documentaryDispositionButton').attr({"optionName":optionName});
                });
                
@@ -449,8 +453,8 @@ var DocumentaryDispositionClass = function(){
     _showDocDispositionCatalogData = function(node){
         var self = this;
         var node = null;
-        var optionName = $('#documentaryDispositionNavTab .nav-tabs a').attr('optionName');
-        
+        var optionName = $('#documentaryDispositionNavTab .nav-tabs li.active a').attr('optionName');
+        console.log(optionName);
         if(String(optionName).toLowerCase() === 'fondo')
             node = $('#fondoTree').dynatree('getActiveNode');
         if(String(optionName).toLowerCase() === 'seccion')
@@ -474,12 +478,14 @@ var DocumentaryDispositionClass = function(){
                     label: "Modificar",
                     cssClass:"btn-warning",
                     action: function(dialogRef){
+                        var button = this;
+                        button.spin();
                         node.data.title = $('#catalogNameDocDispo').val();
                         node.data.key = $('#catalogKeyDocDispo').val();
                         node.data.description = $('#catalogDescripDocDispo').val();
                         
-                        if(self)
-                            _modifyDocDispoCatalogNode({catalogName: node.data.title, nameKey: node.data.key, structureType: node.data.structureType, description: node.data.description, parentKey: node.getParent().data.key});
+                        if(parseInt(node.data.idDocDisposition) > 0)
+                            _modifyDocDispoCatalogNode({idDocDisposition:node.data.idDocDisposition, catalogName: node.data.title, nameKey: node.data.key, structureType: node.data.structureType, description: node.data.description, parentKey: node.getParent().data.key});
                         
                         node.render();
                         dialogRef.close();
@@ -511,22 +517,22 @@ var DocumentaryDispositionClass = function(){
         cache: false,
         dataType: "html", 
         type: 'POST',   
-        url: "php/GruposUsuario.php",
-        data: {option: "modifyDocDispCatalogNode", catalogName: data.catalogName, nameKey: data.nameKey, 
+        url: "Modules/php/Archival.php",
+        data: {option: "modifyDocDispCatalogNode", idDocDisposition:data.idDocDisposition, catalogName: data.catalogName, nameKey: data.nameKey, 
             nodeType: data.structureType, description: data.description, parentKey: data.parentKey}, 
         success:  function(xml)
         {           
-            if($.parseXML( xml )===null){Error(xml); return 0;}else xml=$.parseXML( xml );
+            if($.parseXML( xml )===null){errorMessage(xml); return 0;}else xml=$.parseXML( xml );
      
             $(xml).find("Error").each(function()
             {
                 var mensaje=$(this).find("Mensaje").text();
-                Error(mensaje);
+                errorMessage(mensaje);
             });                 
 
         },
         beforeSend:function(){},
-        error: function(jqXHR, textStatus, errorThrown){Error(textStatus +"<br>"+ errorThrown);}
+        error: function(jqXHR, textStatus, errorThrown){errorMessage(textStatus +"<br>"+ errorThrown);}
         });       
     };
     
@@ -573,7 +579,9 @@ var DocumentaryDispositionClass = function(){
             tooltip: docDispositionData.catalogDescript,
             description: docDispositionData.catalogDescript,
             structureType: "fondo",
-            isFolder: true
+            isFolder: true,
+            expand: true
+       
         };
         var childNode = activeNode.addChild(newNode);
           
@@ -631,7 +639,8 @@ var DocumentaryDispositionClass = function(){
             description: docDispositionData.catalogDescript,
             key: docDispositionData.catalogKey,
             structureType: "section",
-            isFolder: true
+            isFolder: true,
+            expand: true
         };
         var childNode = activeNodeSection.addChild(newNode);
           
@@ -684,7 +693,8 @@ var DocumentaryDispositionClass = function(){
             description: docDispositionData.catalogDescript,
             key: docDispositionData.catalogKey,
             structureType: "serie",
-            isFolder: true
+            isFolder: true,
+            expand: true
           });
           
         childNode.activate(true);
@@ -849,7 +859,6 @@ var DocumentaryDispositionClass = function(){
             $(xml).find('docuDispositionCatalogCreated').each(function(){
                 var mensaje = $(this).find('Mensaje').text();
                 Notificacion(mensaje);
-                self.docDispCatalogStoraged = true;
             });
             
             $(xml).find("Error").each(function()
@@ -923,7 +932,6 @@ var DocumentaryDispositionClass = function(){
         }); 
         
         if(fondoNodesArray.length > 0){
-            self.docDispCatalogStoraged = true;
             if(_buildFondoAndSectionTree(fondoNodesArray) === 1)
                 if(_buildSectionTree(sectionNodesArray) === 1)
                     _buildSerieTree(serieNodesArray);
@@ -936,6 +944,8 @@ var DocumentaryDispositionClass = function(){
         var rootStatus = false;
         var newDirectory;
         
+        $('#docDispositionBuildButton').remove();
+        
         for(var cont = 0; cont < nodesArray.length; cont++){
             var node = nodesArray[cont];            
             fondoTree = $('#fondoTree').dynatree('getRoot');      
@@ -943,12 +953,16 @@ var DocumentaryDispositionClass = function(){
                     
             if($(node).find('ParentKey').text() === '0'){
                 newDirectory = {
+                    idDocDisposition: $(node).find('idDocumentaryDisposition').text(),
                     title: $(node).find('Name').text(),
                     key: $(node).find('NameKey').text(),
                     tooltip: $(node).find('Name').text(),
                     description: $(node).find('Description').text(),
                     structureType: $(node).find('NodeType').text(),
-                    isFolder: true
+                    isFolder: true,
+                    expand: true,
+                    icon: "/img/archival/fondo.png",
+                    activate: true
                 };
                 
                 fondoTree.addChild(newDirectory);
@@ -977,12 +991,15 @@ var DocumentaryDispositionClass = function(){
                     return errorMessage("No se ha localizado el nodo padre <b>"+parentKey+"</b> de <b>"+$(node).find('Name').text()+"</b> para Sección");
                 
                 newDirectory = {
+                    idDocDisposition: $(node).find('idDocumentaryDisposition').text(),
                     title: $(node).find('Name').text(),
                     key: $(node).find('NameKey').text(),
                     tooltip: $(node).find('Name').text(),
                     description: $(node).find('Description').text(),
                     structureType: $(node).find('NodeType').text(),
-                    isFolder: true
+                    isFolder: true,
+                    expand: true,
+                    icon: "/img/archival/fondo.png"
                 };
                 
                 parent.addChild(newDirectory);
@@ -1007,13 +1024,19 @@ var DocumentaryDispositionClass = function(){
             parentSectionTree = $(node).find('ParentKey').text();
                        
             newDirectory = {
+                idDocDisposition: $(node).find('idDocumentaryDisposition').text(),
                 title: $(node).find('Name').text(),
                 key: $(node).find('NameKey').text(),
                 tooltip: $(node).find('Name').text(),
                 description: $(node).find('Description').text(),
                 structureType: $(node).find('NodeType').text(),
-                isFolder: true
+                isFolder: true,
+                expand: true,
+                icon: "/img/archival/seccion.png"
             };
+            
+            if(cont === 0)
+                newDirectory.activate = true;
             
             if($(node).find('NodeType').text() === 'section'){
                 console.log("Agregando en Serie");
@@ -1032,20 +1055,50 @@ var DocumentaryDispositionClass = function(){
                     serieChild.addChild(newDirectory);
                 
             }
-                      
+            
         }
 
         return 1;
     };
     
-    _buildSerieTree = function(xmlStructure){
-        console.log(xmlStructure);
+    _buildSerieTree = function(nodesArray){
+        console.log("Construyendo estructura de Serie");
+        
+        var serieNode;
+        var serieTree = $('#serieTree').dynatree("getTree");
+        var nodeSerieParent;
+        var parentKey;
+        
+        for(var cont = 0; cont < nodesArray.length; cont++){
+            serieNode = nodesArray[cont];
+            parentKey = $(serieNode).find('ParentKey').text();
+            nodeSerieParent = serieTree.getNodeByKey(parentKey);
+            
+            var newDirectory = {
+                idDocDisposition: $(serieNode).find('idDocumentaryDisposition').text(),
+                title: $(serieNode).find('Name').text(),
+                key: $(serieNode).find('NameKey').text(),
+                tooltip: $(serieNode).find('Name').text(),
+                description: $(serieNode).find('Description').text(),
+                structureType: $(serieNode).find('NodeType').text(),
+                isFolder: true,
+                expand: true,
+                icon: "/img/archival/serie.png"
+            };
+            
+            if(nodeSerieParent === null)
+                $('#serieTree').dynatree("getRoot").addChild(newDirectory);
+            else
+                nodeSerieParent.addChild(newDirectory);
+            
+        }
     };
      
 };  /* Fin Clase */
 
 DocumentaryDispositionClass.prototype.setActionToLinkDocumentaryDispositionMenu = function(){
     var self = this;
+    
     $('.LinkDocumentaryDisposition').click(function(){
        _buildDocumentaryDispositionConsole(); 
     });

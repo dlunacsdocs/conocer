@@ -90,7 +90,24 @@ class Archival {
     }
     
     private function modifyDocDispCatalogNode($userData){
-        var_dump($_POST);
+        $DB = new DataBase();
+        
+        $dataBaseName = $userData['dataBaseName'];
+        $idDocDisposition = filter_input(INPUT_POST, "idDocDisposition");
+        $catalogName = filter_input(INPUT_POST, "catalogName");
+        $nameKey = filter_input(INPUT_POST, "nameKey");
+        $nodeType = filter_input(INPUT_POST, "nodeType");
+        $description = filter_input(INPUT_POST, "description");
+        $parentKey = filter_input(INPUT_POST, "parentKey");
+        
+        $update = "UPDATE CSDocs_DocumentaryDisposition SET "
+                . "Name = '$catalogName', NameKey = '$nameKey', Description = '$description',"
+                . " NodeType = '$nodeType', ParentKey = '$parentKey' WHERE idDocumentaryDisposition = $idDocDisposition";
+        
+        if(!($updateResult = $DB->ConsultaQuery($dataBaseName, $update)))
+                return XML::XMLReponse ("Error", 0, "<p><b>Error</b> al intentar actualizar la información.</p><br>Detalles:<br>$updateResult");
+
+        XML::XMLReponse("updateCompleted", 1, "<p>Datos actualizados</p>");
     }
     
 }
