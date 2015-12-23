@@ -3,7 +3,7 @@
  * @description Catálogo de disposición documental. Menú Archivística
  * */
 var DocumentaryDispositionClass = function(){
-
+    var docDispoCatalogDialog = undefined;
     /*
      * @description Devuelve el panel para agregar un elemento al 
      *              Catálogo de Disposición Documental 
@@ -226,6 +226,7 @@ var DocumentaryDispositionClass = function(){
                 {
                     icon: 'glyphicon glyphicon-ban-circle',
                     label: "Cerrar",
+                    id: 'docDispCloseButton',
                     action: function(dialogRef){
                         BootstrapDialog.show({
                             title: 'Mensaje de Confirmación',
@@ -336,6 +337,7 @@ var DocumentaryDispositionClass = function(){
             }
         });
         
+        docDispoCatalogDialog = dialog;
     };
     
     /**
@@ -592,8 +594,46 @@ var DocumentaryDispositionClass = function(){
         });       
     };
     
+    /**
+     * @description Almacena en la BD un nuevo nodo.
+     * @returns {undefined}
+     */
+    _storeNewNodeIntoDataBase = function(data){
+        var idDocDisposition = 0;
+        
+        $.ajax({
+        async: false, 
+        cache: false,
+        dataType: "html", 
+        type: 'POST',   
+        url: "Modules/php/Archival.php",
+        data: {option: "storeNewNodeIntoDataBase", catalogName: data.catalogName, nameKey: data.nameKey, 
+            nodeType: data.structureType, description: data.description, parentKey: data.parentKey},
+        success:  function(xml)
+        {           
+            if($.parseXML( xml )===null){errorMessage(xml); return 0;}else xml=$.parseXML( xml );
+            
+            if($(xml).find("newIdDocDisposition").length > 0){
+                idDocDisposition = $(xml).find("newIdDocDisposition").text();
+            }
+                      
+            $(xml).find("Error").each(function()
+            {
+                var mensaje=$(this).find("Mensaje").text();
+                errorMessage(mensaje);
+            });                 
+
+        },
+        beforeSend:function(){},
+        error: function(jqXHR, textStatus, errorThrown){errorMessage(textStatus +"<br>"+ errorThrown);}
+        });   
+        
+        return idDocDisposition;
+    };
+    
      /*
-     * @description Agrega un elemento a Fondo, en el catálogo de Disposición Documental
+     * @description Agrega un elemento a Fondo, en el catálogo de Disposición 
+     *              Documental de manera dinámica y solo en memoria en el árbol de Fondo.
      * @param {type} docDispositionData Contiene los datos para agregar un nuevo elemento
      *                                  al catálogo de disposición documental.
      * @returns {Number}
@@ -604,13 +644,14 @@ var DocumentaryDispositionClass = function(){
         
         if(_checkIfExistsKey(docDispositionData.catalogKey) === 1)
             return Advertencia("La clave <b>"+docDispositionData.catalogKey+"</b> que intenta ingresar ya existe");
-        
-        dialogRef.close();
-        
+                
         var activeNode = $("#fondoTree").dynatree("getRoot");
         
         if(activeNode.getChildren() !== null){
-            
+            activeNode = $("#fondoTree").dynatree("getActiveNode");
+            if(activeNode === null)
+                return Advertencia("Debe seleccionar el Fondo");
+                
             activeKeyParent = $('#fondoTree').dynatree("getActiveNode").data.key;
             
             if(activeKeyParent === null)
@@ -618,17 +659,8 @@ var DocumentaryDispositionClass = function(){
         }
         
         if(activeNode === null)
-            return 0;
-        
-        if(activeNode.getChildren() !== null)
-             if($("#fondoTree").dynatree("getActiveNode") !== null){
-                 activeNode = $("#fondoTree").dynatree("getActiveNode");
-                 if(activeNode === null)
-                     return Advertencia("No se pudo recuperar el nodo activado.");
-             }
-         else
-             return Advertencia("Debe seleccionar el Fondo");
-        
+            return Advertencia("No pudo ser recuperado el nodo activo de la estructura <b>Fondo</b>");
+              
         var newNode = {
             title: docDispositionData.catalogName,
             key: docDispositionData.catalogKey,
@@ -636,19 +668,41 @@ var DocumentaryDispositionClass = function(){
             description: docDispositionData.catalogDescript,
             structureType: "fondo",
             isFolder: true,
-            expand: true
-       
+            expand: true,
+            icon: "/img/archival/fondo.png"
         };
+        var idDocDisposition = 0;
+        
+        if(parseInt(activeNode.data.idDocDisposition) > 0){
+            console.log('Agregando Fondo');
+            var docDispCloseButton = docDispoCatalogDialog.getButton('docDispCloseButton');
+            docDispCloseButton.disable();
+            
+            var documentaryDispositionAddNodeButton = docDispoCatalogDialog.getButton('documentaryDispositionButton');
+            documentaryDispositionAddNodeButton.spin();
+            documentaryDispositionAddNodeButton.disable();
+            
+            idDocDisposition = _storeNewNodeIntoDataBase({parentKey: activeNode.data.key, catalogName: newNode.title, nameKey: newNode.key, structureType: newNode.structureType, description: newNode.description});
+            
+            documentaryDispositionAddNodeButton.enable();
+            documentaryDispositionAddNodeButton.stopSpin();
+            
+            docDispCloseButton.enable();
+            
+            if(parseInt(idDocDisposition) > 0)
+                newNode.idDocDisposition = idDocDisposition;
+            else
+                return 0;
+        }
+        
         var childNode = activeNode.addChild(newNode);
-          
+        
         childNode.activate(true);
         
         var sectionTree = $('#sectionTree').dynatree("getRoot");
         var sectionTreeChildren = sectionTree.getChildren();
         var activeNodeSection;
-        
-        
-        
+
         if(sectionTreeChildren !== null)
             activeNodeSection = $('#sectionTree').dynatree("getTree").activateKey(activeKeyParent);
         else
@@ -657,8 +711,17 @@ var DocumentaryDispositionClass = function(){
         var childNodeSection = activeNodeSection.addChild(newNode);
        
        childNodeSection.activate(true);
+       
+       dialogRef.close();
     };
     
+    /*
+     * @description Agrega un elemento a Sección, en el catálogo de Disposición 
+     *              Documental de manera dinámica y solo en memoria en el árbol de Sección.
+     * @param {type} docDispositionData Contiene los datos para agregar un nuevo elemento
+     *                                  al catálogo de disposición documental.
+     * @returns {Number}
+     */
     _addSeccion = function(dialogRef){
         var docDispositionData = _getDocumentaryDispositionData();  
         var activeNodeFondo = $('#fondoTree').dynatree("getActiveNode");
@@ -671,7 +734,6 @@ var DocumentaryDispositionClass = function(){
         if(_checkIfExistsKey(docDispositionData.catalogKey) === 1)
             return Advertencia("La clave <b>"+docDispositionData.catalogKey+"</b> que intenta ingresar ya existe");
         
-        dialogRef.close();
         
         if(sectionTree === null)
             return Advertencia("No se ha activado una <b>sección</b>");
@@ -696,8 +758,34 @@ var DocumentaryDispositionClass = function(){
             key: docDispositionData.catalogKey,
             structureType: "section",
             isFolder: true,
-            expand: true
+            expand: true,
+            icon: "/img/archival/seccion.png"
         };
+        
+        var idDocDisposition;
+        
+        if(parseInt(activeNodeSection.data.idDocDisposition) > 0){
+            console.log('Agregando Sección');
+            var docDispCloseButton = docDispoCatalogDialog.getButton('docDispCloseButton');
+            docDispCloseButton.disable();
+            
+            var documentaryDispositionAddNodeButton = docDispoCatalogDialog.getButton('documentaryDispositionButton');
+            documentaryDispositionAddNodeButton.spin();
+            documentaryDispositionAddNodeButton.disable();
+            
+            idDocDisposition = _storeNewNodeIntoDataBase({parentKey: activeNodeSection.data.key, catalogName: newNode.title, nameKey: newNode.key, structureType: newNode.structureType, description: newNode.description});
+            
+            documentaryDispositionAddNodeButton.enable();
+            documentaryDispositionAddNodeButton.stopSpin();
+            
+            docDispCloseButton.enable();
+            
+            if(parseInt(idDocDisposition) > 0)
+                newNode.idDocDisposition = idDocDisposition;
+            else
+                return 0;
+        }
+        
         var childNode = activeNodeSection.addChild(newNode);
           
         childNode.activate(true);
@@ -718,16 +806,23 @@ var DocumentaryDispositionClass = function(){
         childNodeSerie = serieTree.addChild(newNode);
         
         childNodeSerie.activate(true);
+        
+        dialogRef.close();
     };
     
+    /*
+     * @description Agrega un elemento a Serie, en el catálogo de Disposición 
+     *              Documental de manera dinámica y solo en memoria en el árbol de Serie.
+     * @param {type} docDispositionData Contiene los datos para agregar un nuevo elemento
+     *                                  al catálogo de disposición documental.
+     * @returns {Number}
+     */
     _addSerie = function(dialogRef){
         var docDispositionData = _getDocumentaryDispositionData();
         
         if(_checkIfExistsKey(docDispositionData.catalogKey) === 1)
             return Advertencia("La clave <b>"+docDispositionData.catalogKey+"</b> que intenta ingresar ya existe");
-        
-        dialogRef.close();
-        
+                
         var serieTree = $("#serieTree").dynatree("getRoot");
         
         if(serieTree === null)
@@ -743,24 +838,53 @@ var DocumentaryDispositionClass = function(){
         if(activeNodeSerie === null)
             return Advertencia("Debe seleccionar una  ó subserie");
         
-        var childNode = activeNodeSerie.addChild({
+        var newNode = {
             title: docDispositionData.catalogName,
             tooltip: docDispositionData.catalogDescript,
             description: docDispositionData.catalogDescript,
             key: docDispositionData.catalogKey,
             structureType: "serie",
             isFolder: true,
-            expand: true
-          });
-          
+            expand: true,
+            icon: "/img/archival/serie.png"
+        };
+        
+        var idDocDisposition;
+    
+        if(parseInt(activeNodeSerie.data.idDocDisposition) > 0){
+            console.log('Agregando Serie');
+            var docDispCloseButton = docDispoCatalogDialog.getButton('docDispCloseButton');
+            docDispCloseButton.disable();
+            
+            var documentaryDispositionAddNodeButton = docDispoCatalogDialog.getButton('documentaryDispositionButton');
+            documentaryDispositionAddNodeButton.spin();
+            documentaryDispositionAddNodeButton.disable();
+            
+            idDocDisposition = _storeNewNodeIntoDataBase({parentKey: activeNodeSerie.data.key, catalogName: newNode.title, nameKey: newNode.key, structureType: newNode.structureType, description: newNode.description});
+            
+            documentaryDispositionAddNodeButton.enable();
+            documentaryDispositionAddNodeButton.stopSpin();
+            
+            docDispCloseButton.enable();
+            
+            if(parseInt(idDocDisposition) > 0)
+                newNode.idDocDisposition = idDocDisposition;
+            else
+                return 0;
+        }  
+        
+        var childNode = activeNodeSerie.addChild(newNode);
+            
         childNode.activate(true);
+        
+        dialogRef.close();
     };
     
     /*
      * @describe(Construye el catálogo de disposición documental definido por 
      * el usuario.)
      */
-    _buildDocumentaryDispositionCatalog = function(){
+    _buildDocumentaryDispositionCatalog = function(dialogRef){
         console.log("Construyendo catálogo de disposición documental");
         
         var fondoTree = $('#fondoTree').dynatree("getRoot");
@@ -772,14 +896,13 @@ var DocumentaryDispositionClass = function(){
         
         if(fondoTree.getChildren() === null)
             return Advertencia("Debe ingresar un <b>Fondo</b>");
+        
         if(sectionTree.getChildren().length === 0)
             return Advertencia("Debe ingresar una <b>Serie</b>");
-        if(serieTree.getChildren().length === 0)
-            return Advertencia("Debe ingresar una <b>Serie</b>");
-        
+  
         var catalogXmlStructure = _getCatalogXmlStructure(fondoTree, sectionTree, serieTree);
         
-        _buildNewArchivalDispositionCatalog(catalogXmlStructure);
+        _buildNewArchivalDispositionCatalog(catalogXmlStructure, dialogRef);
         
         return 1;
     };
@@ -823,7 +946,7 @@ var DocumentaryDispositionClass = function(){
                                     <description>"+directory.data.description+"</description>\n\
                                     <key>"+directory.data.key+"</key>\n\
                                 </node>";
-                console.log(xmlStructure);
+//                console.log(xmlStructure);
                 sectionDirKey = directory.data.key;
                                 
             }
@@ -843,7 +966,7 @@ var DocumentaryDispositionClass = function(){
                                     <description>"+directory.data.description+"</description>\n\
                                     <key>"+directory.data.key+"</key>\n\
                                 </node>";
-                console.log(xmlStructure);
+//                console.log(xmlStructure);
             }
             
             if(directory.getChildren() !== null){
@@ -880,17 +1003,14 @@ var DocumentaryDispositionClass = function(){
                                         <description>"+serieDirectory.data.description+"</description>\n\
                                         <key>"+serieDirectory.data.key+"</key>\n\
                                     </node>";
-                    console.log(xmlStructure);
-                    console.log(serieDirectory.data.title+" type: "+serieDirectory.data.structureType);
+//                    console.log(xmlStructure);
 
                     if(serieDirectory.getChildren() !== null){
                         var serieChildren = serieDirectory.getChildren();
                         serieDirectories = serieDirectories.concat(serieChildren);
                     }
-
                 }
             }
-            
         }
         
         xmlStructure+="</docDispositionCatalog>";
@@ -898,7 +1018,7 @@ var DocumentaryDispositionClass = function(){
         return xmlStructure;
     };     
      
-    _buildNewArchivalDispositionCatalog = function(catalogXmlStructure){
+    _buildNewArchivalDispositionCatalog = function(catalogXmlStructure, dialogRef){
         var self = this;
         
         $.ajax({
@@ -915,6 +1035,8 @@ var DocumentaryDispositionClass = function(){
             $(xml).find('docuDispositionCatalogCreated').each(function(){
                 var mensaje = $(this).find('Mensaje').text();
                 Notificacion(mensaje);
+                dialogRef.close();
+                _buildDocumentaryDispositionConsole();
             });
             
             $(xml).find("Error").each(function()

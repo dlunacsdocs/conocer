@@ -34,8 +34,38 @@ class Archival {
                 case 'getDocDispositionCatalogStructure': $this->getDocDispositionCatalogStructure($userData); break;
                 case 'modifyDocDispCatalogNode': $this->modifyDocDispCatalogNode($userData); break;
                 case 'deleteDocDispoCatalogNode': $this->_deleteDocDispoCatalogNode($userData); break;
+                case 'storeNewNodeIntoDataBase': $this->storeNewNodeIntoDataBase($userData); break;
             }
         }
+    }
+    
+    private function storeNewNodeIntoDataBase($userData){
+        $DB = new DataBase();
+        
+        $instanceName = $userData['dataBaseName'];
+        $catalogName = filter_input(INPUT_POST, "catalogName");
+        $nameKey = filter_input(INPUT_POST, "nameKey");
+        $nodeType = filter_input(INPUT_POST, "nodeType");
+        $description = filter_input(INPUT_POST, "description");
+        $parentKey = filter_input(INPUT_POST, "parentKey");
+        
+        $insert = "INSERT INTO CSDocs_DocumentaryDisposition (Name, NameKey, "
+                . "Description, NodeType, ParentKey) VALUES ('$catalogName', '$nameKey', '$description', '$nodeType', '$parentKey')";
+
+        $newIdDocDisposition = $DB->ConsultaInsertReturnId($instanceName, $insert);
+        
+        if(!((int)$newIdDocDisposition > 0))
+                return XML::XMLReponse ("Error", 1, "<p><b>Error/<b> al intentar agregar el nuevo elemento</p>Detalles:<br>$newIdDocDisposition");
+    
+        $doc  = new DOMDocument('1.0','utf-8');
+        $doc->formatOutput = true;
+        $root = $doc->createElement("newIdDocDisposition", $newIdDocDisposition);
+        $doc->appendChild($root);   
+        $Mensaje = $doc->createElement("Mensaje", "Elemento añadido correctamente");
+        $root->appendChild($Mensaje);
+        header ("Content-Type:text/xml");
+        echo $doc->saveXML();  
+        
     }
     
     private function _deleteDocDispoCatalogNode($userData){
