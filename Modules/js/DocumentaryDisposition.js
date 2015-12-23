@@ -362,8 +362,8 @@ var DocumentaryDispositionClass = function(){
      */
     _deleteDocDispositionCatalogNode = function(){
         var node = null;
-        var optionName = $('#documentaryDispositionNavTab .nav-tabs a').attr('optionName');
-        
+        var optionName = $('#documentaryDispositionNavTab .nav-tabs li.active a').attr('optionName');
+        console.log("deleteDocDispositionCatalogNode: "+optionName);
         if(String(optionName).toLowerCase() === 'fondo'){
             node = $('#fondoTree').dynatree('getActiveNode');
             if(node === null)
@@ -407,7 +407,10 @@ var DocumentaryDispositionClass = function(){
                     action:function(dialogRef){
                         
                         if(String(optionName).toLowerCase() === 'fondo'){
-
+                            
+                            if(parseInt(node.data.idDocDisposition) > 0)
+                                _deleteDocDispoCatalogNode( node);
+                            
                             node.remove();
 
                             node = $('#sectionTree').dynatree('getActiveNode');
@@ -417,7 +420,7 @@ var DocumentaryDispositionClass = function(){
                         }
                         
                         if(String(optionName).toLowerCase() === 'seccion'){
-
+                            _deleteDocDispoCatalogNode( node);
                             node.remove();
 
                             node = $('#serieTree').dynatree('getActiveNode');
@@ -426,8 +429,10 @@ var DocumentaryDispositionClass = function(){
                                 node.remove();
                         }
                         
-                        if(String(optionName).toLowerCase() === 'serie')
+                        if(String(optionName).toLowerCase() === 'serie'){
+                            _deleteDocDispoCatalogNode( node);
                             node.remove();
+                        }
                         
                         dialogRef.close();
                     }
@@ -520,6 +525,57 @@ var DocumentaryDispositionClass = function(){
         url: "Modules/php/Archival.php",
         data: {option: "modifyDocDispCatalogNode", idDocDisposition:data.idDocDisposition, catalogName: data.catalogName, nameKey: data.nameKey, 
             nodeType: data.structureType, description: data.description, parentKey: data.parentKey}, 
+        success:  function(xml)
+        {           
+            if($.parseXML( xml )===null){errorMessage(xml); return 0;}else xml=$.parseXML( xml );
+     
+            $(xml).find("Error").each(function()
+            {
+                var mensaje=$(this).find("Mensaje").text();
+                errorMessage(mensaje);
+            });                 
+
+        },
+        beforeSend:function(){},
+        error: function(jqXHR, textStatus, errorThrown){errorMessage(textStatus +"<br>"+ errorThrown);}
+        });       
+    };
+    
+    _deleteDocDispoCatalogNode = function(node){
+        console.log("Eliminando Elemento ");
+        var xml = "<delete version='1.0' encoding='UTF-8'>";
+        var children = node.getChildren();
+        
+        xml+=   '<node>\n\
+                        <idDocDisposition>'+node.data.idDocDisposition+'</idDocDisposition>\n\
+                </node>'; 
+        
+        if(children !== null){
+            for(var cont = 0; cont < children.length; cont++){
+                console.log(children[cont]);
+                var subChildren = children[cont].getChildren();
+                
+                if(subChildren !== null && subChildren !== undefined)
+                    children = children.concat(subChildren);
+                         
+                console.log("Eliminando");
+                console.log(children[cont].data.title);
+
+                xml+=  '<node>\n\
+                                <idDocDisposition>'+children[cont].data.idDocDisposition+'</idDocDisposition>\n\
+                        </node>';              
+            }
+        }
+        
+        xml+="</delete>";
+        
+        $.ajax({
+        async: false, 
+        cache: false,
+        dataType: "html", 
+        type: 'POST',   
+        url: "Modules/php/Archival.php",
+        data: {option: "deleteDocDispoCatalogNode", xml: xml},
         success:  function(xml)
         {           
             if($.parseXML( xml )===null){errorMessage(xml); return 0;}else xml=$.parseXML( xml );

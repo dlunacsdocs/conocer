@@ -33,8 +33,38 @@ class Archival {
                 case "buildNewArchivalDispositionCatalog": $this->buildNewArchivalDispositionCatalog($userData); break;
                 case 'getDocDispositionCatalogStructure': $this->getDocDispositionCatalogStructure($userData); break;
                 case 'modifyDocDispCatalogNode': $this->modifyDocDispCatalogNode($userData); break;
+                case 'deleteDocDispoCatalogNode': $this->_deleteDocDispoCatalogNode($userData); break;
             }
         }
+    }
+    
+    private function _deleteDocDispoCatalogNode($userData){
+        $db = new DataBase();
+        
+        $dataBaseName = $userData['dataBaseName'];
+        $xmlString = filter_input(INPUT_POST, "xml");
+        $delete = "DELETE FROM CSDocs_DocumentaryDisposition WHERE ";
+        
+        
+        if(!($xml = simplexml_load_string($xmlString))){
+            $errorOutput = "";
+            foreach(libxml_get_errors() as $error) {
+                $errorOutput.=$error->message."<br>";
+            }
+            
+            return XML::XMLReponse ("Error", 0, "<p><b>Error</b> la estructura XML no se ha formado correctamente. No se logró eliminar el elemento. </p><br>Detalles:<br>$errorOutput");
+        }
+        
+        foreach ($xml->node as $node){
+            $delete.= "idDocumentaryDisposition = $node->idDocDisposition OR ";
+        }
+        
+        $deleteString = trim($delete, "OR ");
+        
+        if(($result = $db->ConsultaQuery($dataBaseName, $deleteString)) != 1)
+                return XML::XMLReponse ("Error", 0, "<p><b>Error<b> al intentar eliminar el elemento</p>Detalles:<br>$result");
+        
+        XML::XMLReponse("deleted", 1, "Elemento eliminado con éxito");
     }
     
     private function buildNewArchivalDispositionCatalog($userData){
