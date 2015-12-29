@@ -22,3 +22,4 @@ var InstanceManager = new ClassInstanceManager();
 /* Modulos */
 var archival;
 var documentaryDisposition;
+var documentaryValidity;

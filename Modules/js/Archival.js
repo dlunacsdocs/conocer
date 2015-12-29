@@ -9,7 +9,8 @@
 var ArchivalClass = function(){
     
     _getModules = function(){
-        _getDocumentaryDisposition();
+        _getDocumentaryDisposition();     
+        _getDocumentaryValidity();
     };
     
     /*
@@ -31,16 +32,32 @@ var ArchivalClass = function(){
         return status;
     };
     
+    _getDocumentaryValidity = function(){
+        var status = false;
+        $.getScript( "Modules/js/DocumentaryValidity.js" )
+            .done(function( script, textStatus ) {
+              status = true;
+              documentaryValidity = new DocumentaryValidity();
+              documentaryValidity.setActionToLinkDocumentaryValidity();
+            })
+            .fail(function( jqxhr, settings, exception ) {
+            });
+        
+        return status;
+    };
+    
 };
 
 ArchivalClass.prototype.buildModule = function(){
     console.log("Construyendo Módulo Archivística...");
     
     var li = $('<li>',{class: "here LinkArchival"});
+    var vigenciDocLi = $('<li>', {class: "here LinkDocumentaryValidity"}).append('<a href = "#">Vigencia Documental</a>');
     
-    var dispDoc = $('<li>',{class:"LinkDocumentaryDisposition"}).append('<a href="#">Catálogo de Disposición Documental</a>');
+    var dispDoc = $('<li>',{class:"LinkDocumentaryDisposition"}).append('<a href="#">Cat. de Dispos. Documental</a>');
     var sublist = $('<ul>',{class:"sublist"}).append(dispDoc);
-        
+    sublist.append(vigenciDocLi);
+    
     var a = $('<a>', {href:"#Disposición Documental"}).append("Archivística");
     
     li.append(a);
