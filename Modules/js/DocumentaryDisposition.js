@@ -607,8 +607,8 @@ var DocumentaryDispositionClass = function(){
         xml+="</delete>";
         console.log(xml);       
 
-//        if(parseInt(node.data.idDocDisposition) > 0)
-//            _deleteDocDispoCatalogNode(xml);
+        if(parseInt(node.data.idDocDisposition) > 0)
+            _deleteDocDispoCatalogNode(xml);
     };
     
     _deleteSerie = function(node){
@@ -646,8 +646,8 @@ var DocumentaryDispositionClass = function(){
         
         console.log(xml);
         
-//        if(parseInt(node.data.idDocDisposition) > 0)
-//            _deleteDocDispoCatalogNode(xml);
+        if(parseInt(node.data.idDocDisposition) > 0)
+            _deleteDocDispoCatalogNode(xml);
         
     };
     

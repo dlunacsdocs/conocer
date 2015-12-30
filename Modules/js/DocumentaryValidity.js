@@ -23,7 +23,7 @@ var DocumentaryValidity = function(){
         sectionTable.append(thead);
         
         var serieTable = $('<table>',{class:"table table-striped table-bordered table-hover table-condensed display hover", id: "serieTable"});
-        thead = $('<thead>').append('<tr><th>Clave Serie</th><th>Descripción</th></tr>');
+        thead = $('<thead>').append('<tr><th>Clave Serie</th><th>Descripción</th><th>A</th><th>L</th><th>F</th><th>AT</th><th>AC</th><th>AD</th><th>TOT</th><th>E</th><th>C</th><th>M</th><th>P</th><th>R</th><th>C</th><th>PR</th></tr>');
         serieTable.append(thead);
         
         panel.append(fondoTable);
