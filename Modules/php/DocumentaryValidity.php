@@ -29,9 +29,24 @@ class DocumentaryValidity {
             $userData = Session::getSessionParameters();
             
             switch (filter_input(INPUT_POST, "option")){
-
+                case 'getStructureSchema': $this->getStructureSchema($userData); break;
             }
         }
+    }
+    
+    private function getStructureSchema($userData){
+        $db = new DataBase();
+        
+        $instanceName = $userData['dataBaseName'];
+        
+        $select = "SELECT * FROM CSDocs_DocumentaryDisposition";
+        
+        $result = $db->ConsultaSelect($instanceName, $select);
+        
+        if($result['Estado'] != 1)
+            return XML::XMLReponse ("Error", 0, "<p><b>Error</b> al obtener el esquema de Validez Documental</p>");
+        
+        XML::XmlArrayResponse("structureSchema", "schema", $result['ArrayDatos']);
     }
 }
 
