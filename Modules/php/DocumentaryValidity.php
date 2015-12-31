@@ -39,7 +39,18 @@ class DocumentaryValidity {
         
         $instanceName = $userData['dataBaseName'];
         
-        $select = "SELECT * FROM CSDocs_DocumentaryDisposition";
+        $select = "
+                SELECT disp.idDocumentaryDisposition, disp.Name, disp.NameKey, 
+                disp.Description, disp.NodeType, disp.ParentKey, val.idDocValidity, 
+                val.Administrativo, val.Legal, val.Fiscal, val.ArchivoTramite, 
+                val.ArchivoConcentracion, val.ArchivoDesconcentracion, val.Total, 
+                leg.FoundationKey, val.Eliminacion, val.Concentracion, 
+                val.Muestreo, val.Publica, val.Reservada, val.confidencial, 
+                val.ParcialMenteReservada 
+                FROM CSDocs_DocumentaryDisposition disp LEFT JOIN CSDocs_DocumentValidity val 
+                ON disp.idDocumentaryDisposition = val.idLegalFoundation 
+                LEFT JOIN CSDOcs_LegalFoundation leg ON val.idLegalFoundation =    leg.idLegalFoundation
+                ";
         
         $result = $db->ConsultaSelect($instanceName, $select);
         

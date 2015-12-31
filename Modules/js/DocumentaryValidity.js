@@ -2,10 +2,19 @@
 /* global BootstrapDialog, LanguajeDataTable */
 
 /**
+ * @description Constructor de la clase DocumentaryValidity.
+ * @returns {DocumentaryValidity}
+ */
+function DocumentaryValidity(){
+    
+}
+
+/**
  * @description Clase que construye el modulo de Validez Documental.
  * @returns {DocumentaryValidity}
  */
 var DocumentaryValidity = function(){
+    "use strict";
     var self = this;
     var fondoTabledT;
     var fondoTableDT;
@@ -13,13 +22,23 @@ var DocumentaryValidity = function(){
     var sectionTableDT;
     var serieTabledT;
     var serieTableDT;
+   
+   /**
+    * @description Activa la acción de abrir la interfaz de Vigencia Documental Sobre el menú de Vigencia Documental.
+    * @returns {undefined}
+    */
+    this.setActionToLinkDocumentaryValidity = function(){
+        $('.LinkDocumentaryValidity').click(function(){
+            _buildInterface();
+        });
+    };
     
     /**
      * @description Construye la interfaz de Validez Documental.
      * @returns {undefined}
      */
    
-    this.buildInterface = function(){
+    var _buildInterface = function(){
         
         var tabbable = $('<div>',{});
         
@@ -31,7 +50,7 @@ var DocumentaryValidity = function(){
         
         var fondoDiv = $('<div>',{id:"fondoTree", class:"tab-pane active"});
         var sectionDiv = $('<div>',{id: "sectionTree", class:"tab-pane"});
-        var serieDiv = $('<div>',{id: "serieTree", class:"tab-pane"});
+        var serieDiv = $('<div>',{id: "serieTree", class:"tab-pane", style: "width: 100%; height:100%; overflow-x:auto;"});
         
         var tabContent = $('<div>', {class:"tab-content"});
                       
@@ -77,9 +96,21 @@ var DocumentaryValidity = function(){
                                 
                 if(typeof schema === 'object')
                     _setDataIntoTables(schema);
+            },
+            onclose: function(dialogRef){
+                freeVariables();
             }
         });
         
+    };
+    
+    var freeVariables = function(){
+        fondoTabledT = undefined;
+        fondoTableDT = undefined;
+        sectionTabledT = undefined;
+        sectionTableDT = undefined;
+        serieTabledT = undefined;
+        serieTableDT = undefined;
     };
     
     /**
@@ -125,7 +156,7 @@ var DocumentaryValidity = function(){
         });  
 
         sectionTableDT = new $.fn.dataTable.Api('#sectionTable');
-        
+    
         serieTabledT = $('#serieTable').dataTable(
         {
             "sDom": 'lfTrtip',
@@ -196,8 +227,7 @@ var DocumentaryValidity = function(){
                 _addSection($(this));
             if(String(structureType).toLowerCase() === 'serie')
                 _addSerie($(this));
-            
-            
+                       
         });
         
     };
@@ -234,16 +264,40 @@ var DocumentaryValidity = function(){
      * @returns {undefined}
      */
     var _addSerie = function(serie){
+        var data = [];
         
+        var idDocDisposition = $(serie).find('idDocumentaryDisposition').text();
+        var name = $(serie).find('Name').text();
+        var nameKey = $(serie).find('NameKey').text();
+        var description = $(serie).find('Description').text();
+        var nodeType = $(serie).find('NodeType').text();
+        var parentKey = $(serie).find('ParentKey').text();
+        var idDocValidity = $(serie).find('idDocValidity').text();
+        var administrativo = $(serie).find('Administrativo').text();
+        var legal = $(serie).find('Legal').text();
+        var fiscal = $(serie).find('Fiscal').text();
+        var archivoTramite = $(serie).find('ArchivoTramite').text();
+        var archivoConcentracion = $(serie).find('ArchivoConcentracion').text();
+        var archivoDesconcentracion = $(serie).find('ArchivoDesconcentracion').text();
+        var total = $(serie).find('Total').text();
+        var foundationKey = $(serie).find('FoundationKey').text();
+        var eliminacion = $(serie).find('Eliminacion').text();
+        var concentracion = $(serie).find('Concentracion').text();
+        var muestreo = $(serie).find('Muestreo').text();
+        var publica = $(serie).find('Publica').text();
+        var reservada = $(serie).find('Reservada').text();
+        var confidencial = $(serie).find('Confidencial').text();
+        var parcialmenteReservada = $(serie).find('ParcialmenteReservada').text();
+        
+        data = [nameKey, description, administrativo, legal, fiscal, archivoTramite,
+        archivoConcentracion, archivoDesconcentracion, total, foundationKey, eliminacion,
+        concentracion, muestreo, publica, reservada, confidencial, parcialmenteReservada];
+    
+        var ai = serieTableDT.row.add(data).draw();
+        var n = serieTabledT.fnSettings().aoData[ ai[0] ].nTr;
+        n.setAttribute('idDocDisposition',idDocDisposition);
+        n.setAttribute('idDocValidity',idDocValidity);
+
     };
             
-};
-
-
-DocumentaryValidity.prototype.setActionToLinkDocumentaryValidity = function(){
-    var self = this;
-    
-    $('.LinkDocumentaryValidity').click(function(){
-        self.buildInterface();
-    });
 };
