@@ -266,86 +266,125 @@ class DataBase {
             
 //            echo $ResultPermissions = ($this->CreateTablePermissions($nombre_instancia))? "<p>Se construyo <b>Permissions</b></p>":"<p>Error al crear Permissions $ResultPermissions</p>";
             
-            $TablaCatalogos="CREATE TABLE IF NOT EXISTS CSDocs_Catalogos ("
-                    . "IdCatalogo INT(11) NOT NULL AUTO_INCREMENT,"
-                    . "IdRepositorio INT(11) NOT NULL,"
-                    . "NombreCatalogo VARCHAR(100) NOT NULL,"
-                    . "PRIMARY KEY(IdCatalogo)"
-                    . ")DEFAULT CHARSET=utf8";
-            
-            if(($catalogos=$this->ConsultaQuery($DataBaseName, $TablaCatalogos))!=1)
-                return "<p><b>Error</b> al crear <b>Catálogos</b></p>";
-            
-            $TablaGlobalRepositorios="CREATE TABLE IF NOT EXISTS RepositorioGlobal ("
-                    . "IdGlobal INT NOT NULL AUTO_INCREMENT,"
+        $TablaCatalogos="CREATE TABLE IF NOT EXISTS CSDocs_Catalogos ("
+                . "IdCatalogo INT(11) NOT NULL AUTO_INCREMENT,"
+                . "IdRepositorio INT(11) NOT NULL,"
+                . "NombreCatalogo VARCHAR(100) NOT NULL,"
+                . "PRIMARY KEY(IdCatalogo)"
+                . ")DEFAULT CHARSET=utf8";
+
+        if(($catalogos=$this->ConsultaQuery($DataBaseName, $TablaCatalogos))!=1)
+            return "<p><b>Error</b> al crear <b>Catálogos</b></p>";
+
+        $TablaGlobalRepositorios="CREATE TABLE IF NOT EXISTS RepositorioGlobal ("
+                . "IdGlobal INT NOT NULL AUTO_INCREMENT,"
 //                    . "IdRepositorio INT NOT NULL,"
-                    . "IdFile INT NOT NULL,"
-                    . "IdEmpresa INT(11) NOT NULL,"  
-                    . "IdRepositorio INT NOT NULL,"
-                    . "IdDirectory INT NOT NULL,"       
-                    . "NombreEmpresa TEXT NOT NULL,"
-                    . "NombreRepositorio VARCHAR(100),"
-                    . "NombreArchivo VARCHAR(250) NOT NULL,"
-                    . "TipoArchivo VARCHAR(10) NOT NULL, "
-                    . "RutaArchivo TEXT NOT NULL,"
-                    . "UsuarioPublicador VARCHAR(50) NOT NULL,"
-                    . "FechaIngreso DATETIME NOT NULL,"
-                    . "Full TEXT NOT NULL,"
-                    . "PRIMARY KEY (IdGlobal),"
-                    . "FULLTEXT (Full)"
-                    . ")ENGINE = MYISAM DEFAULT CHARSET=utf8 COLLATE=utf8_spanish_ci";
+                . "IdFile INT NOT NULL,"
+                . "IdEmpresa INT(11) NOT NULL,"  
+                . "IdRepositorio INT NOT NULL,"
+                . "IdDirectory INT NOT NULL,"       
+                . "NombreEmpresa TEXT NOT NULL,"
+                . "NombreRepositorio VARCHAR(100),"
+                . "NombreArchivo VARCHAR(250) NOT NULL,"
+                . "TipoArchivo VARCHAR(10) NOT NULL, "
+                . "RutaArchivo TEXT NOT NULL,"
+                . "UsuarioPublicador VARCHAR(50) NOT NULL,"
+                . "FechaIngreso DATETIME NOT NULL,"
+                . "Full TEXT NOT NULL,"
+                . "PRIMARY KEY (IdGlobal),"
+                . "FULLTEXT (Full)"
+                . ")ENGINE = MYISAM DEFAULT CHARSET=utf8 COLLATE=utf8_spanish_ci";
             
-            if(($EstadoTablaGlobal=$this->ConsultaQuery($DataBaseName, $TablaGlobalRepositorios))!=1)
-                return "<p><b>Error</b> al crear <b>Global</b></p>";
+        if(($EstadoTablaGlobal=$this->ConsultaQuery($DataBaseName, $TablaGlobalRepositorios))!=1)
+            return "<p><b>Error</b> al crear <b>Global</b></p>";
+
+        $TablaNotas="CREATE TABLE IF NOT EXISTS CSDocs_Notes ("
+                . "IdNote INT NOT NULL AUTO_INCREMENT,"
+                . "IdUser INT NOT NULL,"
+                . "UserName VARCHAR(50) NOT NULL,"
+                . "IdRepository INT NOT NULL,"
+                . "IdFile INT(11) NOT NULL,"
+                . "CreationDate DATETIME NOT NULL,"
+                . "Text TEXT NOT NULL,"
+                . "Page INT(10) NOT NULL,"
+                . "ApprovalStatus INT(1) NOT NULL DEFAULT '0'," 
+                . "UserApproved INT(5) NOT NULL DEFAULT '0',"                               
+                . "PRIMARY KEY (IdNote)"
+                . ")DEFAULT CHARSET=utf8";
+
+        if(($EstadoTablaNotas = $this->ConsultaQuery($DataBaseName, $TablaNotas))!=1)
+            return "<p><b>Error al crear <b>Notas</p> en $DataBaseName. $EstadoTablaNotas</p>";        
+
+        $TablaSmtp="CREATE TABLE IF NOT EXISTS CSDocs_Correos ("
+                . "IdCorreo INT(11) NOT NULL AUTO_INCREMENT,"
+                . "IdUsuario INT(11) NOT NULL,"
+                . "NombreCuenta VARCHAR(100) NOT NULL,"
+                . "Password VARCHAR(100) NOT NULL,"
+                . "Servidor VARCHAR(200) NOT NULL,"
+                . "Smtp VARCHAR(200) NOT NULL,"
+                . "Seguridad VARCHAR(20) NOT NULL,"
+                . "Auth INT(1) NOT NULL,"
+                . "TituloMostrar VARCHAR(100) NOT NULL,"
+                . "Puerto INT(10) NOT NULL,"
+                . "HostImap VARCHAR(150) NOT NULL,"
+                . "PRIMARY KEY (IdCorreo)"
+                . ")DEFAULT CHARSET=utf8";
+
+        if(($EstadoTablaCorreos=$this->ConsultaQuery($DataBaseName, $TablaSmtp))!=1)
+            return "<p><b>Error</b> al crear <b>Correo</b> en $DataBaseName. $EstadoTablaCorreos</p>";
             
-            $TablaNotas="CREATE TABLE IF NOT EXISTS CSDocs_Notes ("
-                    . "IdNote INT NOT NULL AUTO_INCREMENT,"
-                    . "IdUser INT NOT NULL,"
-                    . "UserName VARCHAR(50) NOT NULL,"
-                    . "IdRepository INT NOT NULL,"
-                    . "IdFile INT(11) NOT NULL,"
-                    . "CreationDate DATETIME NOT NULL,"
-                    . "Text TEXT NOT NULL,"
-                    . "Page INT(10) NOT NULL,"
-                    . "ApprovalStatus INT(1) NOT NULL DEFAULT '0'," 
-                    . "UserApproved INT(5) NOT NULL DEFAULT '0',"                               
-                    . "PRIMARY KEY (IdNote)"
-                    . ")DEFAULT CHARSET=utf8";
-            
-            if(($EstadoTablaNotas = $this->ConsultaQuery($DataBaseName, $TablaNotas))!=1)
-                return "<p><b>Error al crear <b>Notas</p> en $DataBaseName. $EstadoTablaNotas</p>";        
-            
-            $TablaSmtp="CREATE TABLE IF NOT EXISTS CSDocs_Correos ("
-                    . "IdCorreo INT(11) NOT NULL AUTO_INCREMENT,"
-                    . "IdUsuario INT(11) NOT NULL,"
-                    . "NombreCuenta VARCHAR(100) NOT NULL,"
-                    . "Password VARCHAR(100) NOT NULL,"
-                    . "Servidor VARCHAR(200) NOT NULL,"
-                    . "Smtp VARCHAR(200) NOT NULL,"
-                    . "Seguridad VARCHAR(20) NOT NULL,"
-                    . "Auth INT(1) NOT NULL,"
-                    . "TituloMostrar VARCHAR(100) NOT NULL,"
-                    . "Puerto INT(10) NOT NULL,"
-                    . "HostImap VARCHAR(150) NOT NULL,"
-                    . "PRIMARY KEY (IdCorreo)"
-                    . ")DEFAULT CHARSET=utf8";
-            
-            if(($EstadoTablaCorreos=$this->ConsultaQuery($DataBaseName, $TablaSmtp))!=1)
-                return "<p><b>Error</b> al crear <b>Correo</b> en $DataBaseName. $EstadoTablaCorreos</p>";
-            
-            $docDisposition = "CREATE TABLE IF NOT EXISTS CSDocs_DocumentaryDisposition ("
-                . "idDocumentaryDisposition INT NOT NULL AUTO_INCREMENT,"
-                    . "Name VARCHAR(250) NOT NULL,"
-                    . "NameKey VARCHAR(60) NOT NULL, "
-                    . "Description VARCHAR(255) NOT NULL,"
-                    . "NodeType VARCHAR(10) NOT NULL,"
-                    . "ParentKey VARCHAR(25),"
-                    . "UNIQUE (NameKey),"
-                    . "PRIMARY KEY (idDocumentaryDisposition)"
-                . ") DEFAULT CHARSET=utf8";
+        $docDisposition = "CREATE TABLE IF NOT EXISTS CSDocs_DocumentaryDisposition ("
+            . "idDocumentaryDisposition INT NOT NULL AUTO_INCREMENT,"
+                . "Name VARCHAR(250) NOT NULL,"
+                . "NameKey VARCHAR(60) NOT NULL, "
+                . "Description VARCHAR(255) NOT NULL,"
+                . "NodeType VARCHAR(10) NOT NULL,"
+                . "ParentKey VARCHAR(25),"
+                . "UNIQUE (NameKey),"
+                . "PRIMARY KEY (idDocumentaryDisposition)"
+            . ") DEFAULT CHARSET=utf8";
         
         if(($resultDocDisposition = $this->ConsultaQuery($DataBaseName, $docDisposition)) != 1)
                 return "<p><b>Error</b> al intentar construir <b>Disposición Documental</b>. Detalles: $resultDocDisposition</p>";
+        
+        $legalFoundation = "CREATE TABLE IF NOT EXISTS CSDOcs_LegalFoundation (
+            idLegalFoundation INT NOT NULL AUTO_INCREMENT,
+            FoundationKey VARCHAR(50) NOT NULL,
+            Description TEXT,
+            PRIMARY KEY (idLegalFoundation)
+            ) DEFAULT CHARSET = utf8";
+        
+        if(($resultLegalFoundation = $this->ConsultaQuery($DataBaseName, $legalFoundation)) != 1)
+                return "<p><b>Error</b> al intentar crear Fundamento Legal</p> Detalles:<br> $resultLegalFoundation";
+        
+        $documentaryValidity = "
+            CREATE TABLE IF NOT EXISTS CSDocs_DocumentValidity(
+            idDocValidity INT NOT NULL AUTO_INCREMENT,
+            idDocDisposition INT NOT NULL,
+            Administrativo VARCHAR(30),
+            Legal VARCHAR(30),
+            Fiscal VARCHAR(30),
+            ArchivoTramite INT(4),
+            ArchivoConcentracion INT(4),
+            ArchivoDesconcentracion INT(4),
+            Total INT(4),
+            idLegalFoundation INT NOT NULL,
+            Eliminacion VARCHAR(30),
+            Concentracion VARCHAR(30),
+            Muestreo VARCHAR(30),
+            Publica VARCHAR(30),
+            Reservada VARCHAR(30),
+            Confidencial VARCHAR(30),
+            ParcialmenteReservada VARCHAR(30),
+            TotalExpedientes INT,
+            INDEX (idDocDisposition, idLegalFoundation),
+            PRIMARY KEY (idDocValidity),
+            FOREIGN KEY (idDocDisposition) REFERENCES CSDocs_DocumentaryDisposition (idDocumentaryDisposition) ON DELETE CASCADE,
+            FOREIGN KEY (idLegalFoundation) REFERENCES CSDOcs_LegalFoundation (idLegalFoundation)
+            ) DEFAULT CHARSET = utf8";
+        
+        if(($resultDocumentaryValidity = $this->ConsultaQuery($DataBaseName, $documentaryValidity)) != 1)
+                return "<p><b>Error</b> al intentar crear Validez Documental</p> Detalles:<br> $resultDocumentaryValidity";
         
         return 1;
     }

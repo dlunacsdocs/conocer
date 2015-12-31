@@ -98,8 +98,8 @@ var WidthDialogMetadatas = GetWidthDialogMetadatas();
 var DimensionsDialogMetadatas = { width: WidthDialogMetadatas, minWidth:GetMinSize(WidthDialogMetadatas), height:HeightDialogNewRegister, minHeight:GetMinSize(HeightDialogNewRegister), modal:true};
 
 var LanguajeDataTable = {
-    "sLengthMenu": "Mostrar _MENU_ registros por página",
-    "sZeroRecords": "No se encontraron resultados",
+    "sLengthMenu": "Mostrar _MENU_ registros",
+    "sZeroRecords": "No hay datos que mostrar",
     "sInfo": "Mostrados _START_ de _END_ de _TOTAL_ registro(s)",
     "sInfoEmpty": "Mostrados 0 de 0 of 0 registros",
     "sInfoFiltered": "(Filtrando desde _MAX_ total registros)",

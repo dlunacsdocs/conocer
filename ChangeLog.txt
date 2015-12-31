@@ -16,3 +16,7 @@ Creación 25/11/15
 
 07/12/2015
 3.- Creación de Tabla Disposición Documental
+
+30/12/2015
+4.- Creación Tabla Validez Documental.
+5.- Creación Tabla Fundamento Legal
