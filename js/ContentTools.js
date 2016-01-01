@@ -12,15 +12,6 @@ var DirectorioOrigen = '', DirectorioDestino = '', IdDirectorioOrigen = 0, IdDir
 var Catalogs = new ClassCatalogAdministrator();
 $(document).ready(function()
 {        
-   $('.CMNewDirectory').click(function()
-   {
-       var node = $("#contentTree").dynatree("getActiveNode");
-        if( node ){
-            addChild();            
-        }else{
-            Advertencia("Seleccione un directorio");
-        }
-   });
    
    $('.CMModifyDirectory').click(function()
    {

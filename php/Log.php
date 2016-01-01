@@ -149,8 +149,9 @@ class Log {
            
         if (!empty($_SERVER['HTTP_X_FORWARDED_FOR']))
             return $_SERVER['HTTP_X_FORWARDED_FOR'];
-       
-        return $_SERVER['REMOTE_ADDR'];
+            
+        if(isset($_SERVER['REMOTE_ADDR']))
+            return $_SERVER['REMOTE_ADDR'];
     }
 }
 

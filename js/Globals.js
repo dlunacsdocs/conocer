@@ -180,14 +180,14 @@ function objetoAjax() {
 }
 
 var GlobalDatePicker = {
-    defaultDate: "+1w",
-    dateFormat: 'yy-mm-dd',
-    changeMonth: true,
-    numberOfMonths: 3,
-    isRTL: true,
-    onClose: function (selectedDate) {
-        $("#proveedor_fecha2").datepicker("option", "minDate", selectedDate);
-    }
+//    defaultDate: "+1w",
+//    dateFormat: 'yy-mm-dd',
+//    changeMonth: true,
+//    numberOfMonths: 3,
+//    isRTL: true,
+//    onClose: function (selectedDate) {
+//        
+//    }
 };
 
 $.datepicker.regional['es'] = {
@@ -207,6 +207,7 @@ $.datepicker.regional['es'] = {
     showMonthAfterYear: false,
     yearSuffix: ''
 };
+
 $.datepicker.setDefaults($.datepicker.regional['es']);
 
 
