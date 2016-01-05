@@ -467,7 +467,7 @@ var DocumentaryDispositionClass = function(){
             xml+=   '<node>\n\
                         <idDocDisposition>'+node.data.idDocDisposition+'</idDocDisposition>\n\
                     </node>'; 
-
+            console.log("Eliminando "+node.data.title);
             var sectionChildren = sectionNode.getChildren();
             if(sectionChildren !== null){
                 
@@ -549,60 +549,62 @@ var DocumentaryDispositionClass = function(){
                 
                 sectionLimitOfDelete.push(node);
 
-                /* Se eliminan los nodos de cada Estructura (Fondo, Sección y Serie) */
                 
-                for(sectionCont = 0; sectionCont < sectionLimitOfDelete.length; sectionCont++){
-                    var sectionNodeToDeleting = sectionLimitOfDelete[sectionCont];
-                    var serieNodeToDeleting = null;
-                    var fondoNodeToDelete = null;
-             
-                    if(String(sectionNodeToDeleting.data.structureType).toLowerCase() === 'section'){                        
-                        sectionNodeToDeleting = $('#sectionTree').dynatree('getTree').getNodeByKey(sectionNodeToDeleting.data.key);
-                        
-                        if(sectionNodeToDeleting !== null){
-                            serieNodeToDeleting = $('#serieTree').dynatree('getTree').getNodeByKey(sectionNodeToDeleting.data.key);
-
-                            if(serieNodeToDeleting !== null)
-                                serieNodeToDeleting.remove();
-
-                            if(sectionNodeToDeleting !== null)
-                                sectionNodeToDeleting.remove();
-                        }
-                                                
-                        continue;
-                    }   
-                    
-                    if(String(sectionNodeToDeleting.data.structureType).toLowerCase() === 'serie'){
-                        serieNodeToDeleting = $('#serieTree').dynatree('getTree').getNodeByKey(sectionNodeToDeleting.data.key);
-
-                        if(serieNodeToDeleting !== null)
-                            serieNodeToDeleting.remove();
-                    }
-
-                }
-                
-                /* Se eliminan los nodos de la estructura de Fondo */
-                for(sectionCont = 0; sectionCont < fondoToDelete.length; sectionCont++){
-                    var sectionNodeToDeleting = fondoToDelete[sectionCont];
-                    var serieNodeToDeleting = null;
-                    var fondoNodeToDelete = null;
-                    
-                    if(String(sectionNodeToDeleting.data.structureType).toLowerCase() === 'fondo'){
-                        fondoNodeToDelete = $('#fondoTree').dynatree('getTree').getNodeByKey(sectionNodeToDeleting.data.key);
-                        
-                        sectionNodeToDeleting = $('#sectionTree').dynatree('getTree').getNodeByKey(sectionNodeToDeleting.data.key);
-                        if(sectionNodeToDeleting !== null)
-                            sectionNodeToDeleting.remove();
-                        
-                        if(fondoNodeToDelete !== null)
-                            fondoNodeToDelete.remove();
-
-                        continue;
-                    }         
-
-                }          
             }
         }
+        
+        /* Se eliminan los nodos de cada Estructura (Fondo, Sección y Serie) */
+                
+        for(sectionCont = 0; sectionCont < sectionLimitOfDelete.length; sectionCont++){
+            var sectionNodeToDeleting = sectionLimitOfDelete[sectionCont];
+            var serieNodeToDeleting = null;
+            var fondoNodeToDelete = null;
+
+            if(String(sectionNodeToDeleting.data.structureType).toLowerCase() === 'section'){                        
+                sectionNodeToDeleting = $('#sectionTree').dynatree('getTree').getNodeByKey(sectionNodeToDeleting.data.key);
+
+                if(sectionNodeToDeleting !== null){
+                    serieNodeToDeleting = $('#serieTree').dynatree('getTree').getNodeByKey(sectionNodeToDeleting.data.key);
+
+                    if(serieNodeToDeleting !== null)
+                        serieNodeToDeleting.remove();
+
+                    if(sectionNodeToDeleting !== null)
+                        sectionNodeToDeleting.remove();
+                }
+
+                continue;
+            }   
+
+            if(String(sectionNodeToDeleting.data.structureType).toLowerCase() === 'serie'){
+                serieNodeToDeleting = $('#serieTree').dynatree('getTree').getNodeByKey(sectionNodeToDeleting.data.key);
+
+                if(serieNodeToDeleting !== null)
+                    serieNodeToDeleting.remove();
+            }
+
+        }
+                
+        /* Se eliminan los nodos de la estructura de Fondo */
+        for(sectionCont = 0; sectionCont < fondoToDelete.length; sectionCont++){
+            var sectionNodeToDeleting = fondoToDelete[sectionCont];
+            var serieNodeToDeleting = null;
+            var fondoNodeToDelete = null;
+            console.log("Eliminando "+sectionNodeToDeleting.data.title);
+            if(String(sectionNodeToDeleting.data.structureType).toLowerCase() === 'fondo'){
+                fondoNodeToDelete = $('#fondoTree').dynatree('getTree').getNodeByKey(sectionNodeToDeleting.data.key);
+
+                sectionNodeToDeleting = $('#sectionTree').dynatree('getTree').getNodeByKey(sectionNodeToDeleting.data.key);
+                if(sectionNodeToDeleting !== null)
+                    sectionNodeToDeleting.remove();
+
+                if(fondoNodeToDelete !== null)
+                    fondoNodeToDelete.remove();
+
+                continue;
+            }         
+
+        }          
         
         xml+="</delete>";
         console.log(xml);       

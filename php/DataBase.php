@@ -377,14 +377,17 @@ class DataBase {
             Confidencial VARCHAR(30),
             ParcialmenteReservada VARCHAR(30),
             TotalExpedientes INT,
-            INDEX (idDocDisposition, idLegalFoundation),
+            INDEX (idDocDisposition),
             PRIMARY KEY (idDocValidity),
-            FOREIGN KEY (idDocDisposition) REFERENCES CSDocs_DocumentaryDisposition (idDocumentaryDisposition) ON DELETE CASCADE,
-            FOREIGN KEY (idLegalFoundation) REFERENCES CSDOcs_LegalFoundation (idLegalFoundation)
+            FOREIGN KEY (idDocDisposition) REFERENCES CSDocs_DocumentaryDisposition (idDocumentaryDisposition) ON DELETE CASCADE
             ) DEFAULT CHARSET = utf8";
         
         if(($resultDocumentaryValidity = $this->ConsultaQuery($DataBaseName, $documentaryValidity)) != 1)
                 return "<p><b>Error</b> al intentar crear Validez Documental</p> Detalles:<br> $resultDocumentaryValidity";
+        
+        $documentaryValidityTrigger = "
+                CREATE TRIGGER insertIntoDocumentaryValidity AFTER INSERT ON CSDocs_DocumentaryDisposition FOR EACH ROW INSERT INTO CSDocs_DocumentValidity (idDocDisposition) VALUES (NEW.idDocumentaryDisposition)
+                ";
         
         return 1;
     }

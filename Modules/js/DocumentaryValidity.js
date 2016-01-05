@@ -170,10 +170,40 @@ var DocumentaryValidity = function(){
                         "aButtons":    [ "csv", "xls", "pdf", "copy" ]
                     }                          
                 ]
-            }                              
+            },
+            "fnCreatedRow": function( nRow, aData, iDataIndex ) {
+                editingSerieRow(nRow);    /* Función que se invoca para editar una celda de la tabla catálogo */
+            }
         });  
 
-        serieTableDT = new $.fn.dataTable.Api('#serieTable');
+        serieTableDT = new $.fn.dataTable.Api('#serieTable');   
+    };
+    
+    var editingSerieRow = function(nRow){
+        $(nRow).children().each(function(index){
+            if(index > 0)   /* No puede cambiarse la clave de la serie */
+                $(this).editable( '../Modules/php/DocumentaryValidity.php', {                  
+                    tooltip   : 'Click para editar...',
+                    id:"idDocDisposition",
+                    name:"columnName",
+                    submitdata: {
+                        option: "modifyColumnOfDocValidity",
+                        idDocDisposition: ""
+                    },
+                    "height": "25px",
+                    "width": "100%",
+                    "callback": function( sValue, y ) {
+                        if($.parseXML( sValue ) === null){errorMessage(sValue); return 0;}else sValue = $.parseXML(sValue);
+        
+                        $(sValue).find("Error").each(function(){
+                            var mensaje = $(this).find("Mensaje").text();
+                            errorMessage(mensaje);
+                        });             
+                        /* Redraw the table from the new data on the server */
+                        serieTabledT.fnDraw();
+                    }
+                } );
+        }); 
     };
     
     /**

@@ -30,6 +30,7 @@ class DocumentaryValidity {
             
             switch (filter_input(INPUT_POST, "option")){
                 case 'getStructureSchema': $this->getStructureSchema($userData); break;
+                case 'modifyColumnOfDocValidity': $this->modifyColumnOfDocValidity($userData); break;
             }
         }
     }
@@ -59,6 +60,11 @@ class DocumentaryValidity {
         
         XML::XmlArrayResponse("structureSchema", "schema", $result['ArrayDatos']);
     }
+    
+    private function modifyColumnOfDocValidity(){
+        return XML::XMLReponse("Dan", 0, "Hola dan");
+    }
+    
 }
 
 $DocumentaryValidity = new DocumentaryValidity();

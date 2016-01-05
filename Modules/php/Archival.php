@@ -59,10 +59,12 @@ class Archival {
     
         $doc  = new DOMDocument('1.0','utf-8');
         $doc->formatOutput = true;
-        $root = $doc->createElement("newIdDocDisposition", $newIdDocDisposition);
-        $doc->appendChild($root);   
+        $root = $doc->createElement("storeResponse");
+        $newIdDocDispositionXml = $doc->createElement("newIdDocDisposition", $newIdDocDisposition);
+        $root->appendChild($newIdDocDispositionXml);
         $Mensaje = $doc->createElement("Mensaje", "Elemento añadido correctamente");
         $root->appendChild($Mensaje);
+        $doc->appendChild($root);   
         header ("Content-Type:text/xml");
         echo $doc->saveXML();  
         
