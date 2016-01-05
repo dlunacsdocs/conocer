@@ -721,7 +721,6 @@ function EmptyTrash()
                             <IdDirectory>'+ $(this).attr('id') +'</IdDirectory>\n\
                             <IdParent>' + IdParent + '</IdParent>\n\
                         </Directory>';
-            if(!(IdParent>0)){Flag=1; Advertencia('<p>El directorio destino de uno o más elementos no existe, por favor seleccione manualmente la ruta destino.</p>'); return;}
         }    
         
         if(active ===1)
@@ -736,7 +735,6 @@ function EmptyTrash()
                             <IdDirectory>'+ IdDirectory +'</IdDirectory>\n\
                             <RutaArchivo>'+ RutaArchivo +'</RutaArchivo>\n\
                         </File>';
-            if(!(IdDirectory>0)){Flag=1; Advertencia('<p>El directorio destino de uno o más elementos no existe, por favor seleccione manualmente la ruta destino.</p>'); return;}
         }
         
     });
@@ -790,7 +788,7 @@ function EmptyTrash()
                 
                 $('body').append('<div id ="'+KeyProcess+'"> <div id = "progress_'+KeyProcess+'"></div> <div id ="detail_'+KeyProcess+'"></div> </div>');
                 $('#detail_'+KeyProcess).append('<div class="loading"><img src="../img/loadinfologin.gif"></div>');
-                $('#'+KeyProcess).dialog({title:"Eliminando Documentos", width:350, height:200, minWidth:350, minHeight:200,
+                $('#'+KeyProcess).dialog({title:"Restaurando Documentos", width:350, height:200, minWidth:350, minHeight:200,
                 buttons:{"Cancelar":{click:function(){CancelService(PathStatus,PathAdvancing,KeyProcess);$(this).dialog('close');clearInterval(Process[KeyProcess]);},text:"Cancelar"}}
                 });
                 $('#'+KeyProcess).dialog({ dialogClass: 'no-close' });
@@ -938,7 +936,6 @@ function CheckProgress(OperationName,PathAdvancing,KeyProcess)
                 
                 Directories+='<p>  '+$Ok.find("Directory").text()+'  </p> <br>\n';                
                 Notificacion(TituloNotificacion,MensajeNotificacion+Directories);
-                CM_getTree();
             });                            
              
       },

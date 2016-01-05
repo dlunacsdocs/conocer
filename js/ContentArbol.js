@@ -5,14 +5,123 @@
  */
 
 /* Refresh del árbol */
-/* global EnvironmentData */
+/* global EnvironmentData, BootstrapDialog */
 
 $(document).ready(function(){
+    $('.CMNewDirectory').click(function()
+    {
+        if($('#contentTree').is(":empty"))
+            return Advertencia("Debe consultar un repositorio y seleccionar un directorio para agregar uno nuevo.");
+        
+       var node = $("#contentTree").dynatree("getActiveNode");
+        if( typeof node  === 'object'){
+            var contentArbol = new ContentArbol();
+            contentArbol.addNewDirectoryPanel();
+            
+        }else
+            Advertencia("Seleccione un directorio");
+    });
+    
     $('#TreeRefresh').click(function()
     {
+        $(this).hide();
         CM_getTree();
+        $(this).show();
     });   
 });
+
+var ContentArbol = function(){
+    
+    var form = $('<input>',{type: "text", class: "form-control"});
+   
+    var div = $('<div>', {class: "form-group"});
+    div.append("Nombre: ");
+    div.append(form);
+
+    this.addNewDirectoryPanel = function(){
+        var dialog = BootstrapDialog.show({
+            title: 'Nuevo directorio',
+            message: div,
+            closable: true,
+            closeByBackdrop: true,
+            closeByKeyboard: true,
+            size: BootstrapDialog.SIZE_SMALL,
+            buttons: [{
+                label: 'Cancelar',
+                action: function(dialogRef){
+                    dialogRef.close();
+                }
+            }, {
+                label: 'Agregar',
+                cssClass: "btn-primary",
+                action: function(dialogRef){      
+                    
+                    var button = this;
+                    var title = form.val();
+                    
+                    if(String(title).trim().length === 0)
+                        return Advertencia("El nombre no puede quedar vacio");
+                    
+                    button.spin();
+                    var activeNode = $('#contentTree').dynatree('getActiveNode');
+                    var node = activeNode.addChild({isFolder: true, title: title});
+                    
+                    addNewDirectory(node);
+                    
+                    button.stopSpin();
+                    dialogRef.close();
+                }
+            }],
+            onshown: function(dialogRef){
+                form.focus();
+            }
+        });
+    };
+    
+    var addNewDirectory = function(node){
+        var pathNode = node.getKeyPath();
+        var NameDirectory = node.data.title;
+        node.data.unselectable = true; 
+        node.activate(true);
+        node.focus(true);  
+
+        $(".contentDetailTools").attr('disabled', 'disabled');
+
+        var NombreRepositorio = $('#CM_select_repositorios option:selected').html();
+
+       $.ajax({
+          async:false, 
+          cache:false,
+          dataType:"html", 
+          type: 'POST',   
+          url: "php/Tree.php",
+          data: "opcion=InsertDir&NombreRepositorio="+NombreRepositorio+"&NameDirectory="+NameDirectory+"&Path="+pathNode, 
+          success:  function(xml){
+
+               if($.parseXML( xml )===null){  alert(error); return 0;}else xml=$.parseXML( xml );
+
+               $(xml).find("NewDirectory").each(function()
+                {               
+                    var $NewDirectory=$(this);
+                    var id = $NewDirectory.find("IdNewDir").text();                               
+
+                    node.data.key = id;
+
+                    console.log("Nuevo id en directorio "+node.data.key);       
+                });
+
+                $(xml).find("Error").each(function()
+                {
+                    var mensaje=$(this).find("Mensaje").text();
+                    errorMessage(mensaje);
+                    node.remove();
+                });
+
+          },
+          error:function(objXMLHttpRequest){node.remove(); errorMessage(objXMLHttpRequest);}
+        });
+    };
+};
 
 /*******************************************************************************
  * 
@@ -23,43 +132,42 @@ $(document).ready(function(){
 function CM_getTree()
 {
     
-    var IdRepositorio=$('#CM_select_repositorios').val();
-    var NombreRepositorio=$('#CM_select_repositorios option:selected').html();
+    var IdRepositorio = $('#CM_select_repositorios').val();
+    var NombreRepositorio = $('#CM_select_repositorios option:selected').html();
         
-    if(!(IdRepositorio>0)){return;}
+    if(!(parseInt(IdRepositorio) > 0))
+        return Advertencia("El id del repositorio no es válido");;
     
-    $('#contentTree').append('<div class="loading TreLoading"><img src="../img/loadinfologin.gif"></div>');
+    $('.TreeRefresh').append('<div class="loading TreLoading"><img src="../img/loadinfologin.gif"></div>');
     
-    var ajax=objetoAjax();
-    ajax.open("POST", 'php/Tree.php',true);
-    ajax.setRequestHeader("Content-Type", "application/x-www-form-urlencoded;charset=utf-8;");
-    ajax.send("opcion=getTree"+'&NombreRepositorio='+NombreRepositorio);
-    ajax.onreadystatechange=function() 
-    {
-       if (ajax.readyState===4 && ajax.status===200) 
-       {    
-           $('.TreLoading').remove();
-          if(ajax.responseXML===null){Error(ajax.responseText);return;}     
-          
-           var xml = ajax.responseXML;           
+    $.ajax({
+        async:false, 
+        cache:false,
+        dataType:"html", 
+        type: 'POST',   
+        url: "php/Tree.php",
+        data: "opcion=getTree"+'&NombreRepositorio='+NombreRepositorio,
+        success:  function(xml)
+        {     
+            $('.TreLoading').remove();
+            if($.parseXML( xml )===null){Salida(xml); return 0;}else xml=$.parseXML( xml );         
+
            var emptyTest = $('#contentTree').is(':empty');
-           if(!emptyTest){$('#contentTree').dynatree("destroy");$('#contentTree').empty();}
+           
+           if(!emptyTest){
+               $('#contentTree').dynatree("destroy");
+               $('#contentTree').empty();
+           }
            
            var cont=0;
-           var IdParent=0;
-           var IdDirectoryParent=0;
-           var ArrayDirectories=new Array();
            
-           if($(xml).find("Tree").length>0)
-           {
+           if($(xml).find("Tree").length>0){
                $(xml).find("Directory").each(function()
                 {
-                   var $Directory=$(this);
-                   var id=$Directory.find("IdDirectory").text();
+                   var $Directory = $(this);
+                   var id = $Directory.find("IdDirectory").text();
                    var title = $Directory.find("Title").text();
                    var IdParent2 = $Directory.find("IdParent").text();
-                   var Path=$Directory.find("Path").text();
-                   var IdDirectoryParent2=id;
 
                    /*   Se dibujael arbol en el CM (Content Management) */
                    if(cont===0)
@@ -73,26 +181,31 @@ function CM_getTree()
 
               var arbol=  InitDynatree(); 
            }           
-          
-          $(xml).find("Error").each(function()
+            
+            $(xml).find("Error").each(function()
             {
-                var $Error=$(this);
-                var estado=$Error.find("Estado").text();
-                var mensaje=$Error.find("Mensaje").text();
-                Error(mensaje);
-            });  
-       } 
-   };
+                var mensaje = $(this).find("Mensaje").text();
+                errorMessage(mensaje);
+            });                   
+
+        },
+        beforeSend:function(){},
+        error: function(jqXHR, textStatus, errorThrown){
+            $('.TreLoading').remove();
+            errorMessage(textStatus +"<br>"+ errorThrown);
+        }
+    });    
 }
 
 function InitDynatree()
 {
     var isMac = /Mac/.test(navigator.platform);
-       var arbol= $("#contentTree").dynatree(
+    var arbol= $("#contentTree").dynatree(
         {
             generateIds: false,
             keyboard: true,
-            expand: true, minExpandLevel: 2,
+            expand: true, 
+            minExpandLevel: 2,
             onClick: function(node, event) {
                 node.sortChildren(cmp, false);
                 GetFiles(node.data.key);                    
@@ -121,8 +234,7 @@ function InitDynatree()
         
         $("#contentTree").dynatree("getTree").activateKey("1");
         var node =  $("#contentTree").dynatree("getActiveNode");
-        if(node)
-        {
+        if(node !== null){
             node.sortChildren(cmp, false);
             GetFiles(node.data.key); 
         }
@@ -141,12 +253,15 @@ function editNode(node){
     tree = node.tree;
     var IdParent=node.getParent();
 
-    IdParent=IdParent.data.key;
-    if(!(IdParent>0)){Error("No se puede realizar esta acción sobre este elemento."); return;}
-  // Disable dynatree mouse- and key handling
-  tree.$widget.unbind();
-  // Replace node with <input>
-  $(".dynatree-title", node.span).html("<input id='editNode' onkeyup=\"ValidatingNodesOfTree(this)\" value='" + prevTitle + "'>");
+    IdParent = IdParent.data.key;
+    
+    if(!(parseInt(IdParent) > 0))
+        return errorMessage("No se puede editar el directorio raíz del repositorio.");
+    
+    // Disable dynatree mouse- and key handling
+    tree.$widget.unbind();
+    // Replace node with <input>
+    $(".dynatree-title", node.span).html("<input id = 'editNode' onkeyup=\"ValidatingNodesOfTree(this)\" value='" + prevTitle + "'>");
   
   // Focus <input> and bind keyboard handler
   $("input#editNode")
@@ -170,6 +285,8 @@ function editNode(node){
       // Accept new value, when user leaves <input>
       var title = $("input#editNode").val();      
       node.setTitle(title);
+      CM_ModifyDir(node.data.key,IdParent,title);
+      
       // Re-enable mouse and keyboard handlling
       tree.$widget.bind();
       node.focus();            
@@ -179,8 +296,8 @@ function editNode(node){
 
 function CM_ModifyDir(IdDirectory,IdParentDirectory,NameDirectory)
 {
-    var IdRepositorio=$('#CM_select_repositorios').val();
-    var NombreRepositorio=$('#CM_select_repositorios option:selected').html();
+    var IdRepositorio = $('#CM_select_repositorios').val();
+    var NombreRepositorio = $('#CM_select_repositorios option:selected').html();
     var IdEmpresa = $('#CM_select_empresas option:selected').attr('id');
     IdEmpresa = parseInt(IdEmpresa);
     
@@ -407,108 +524,6 @@ function CancelDeleteDir(PathStatus,PathAdvancing)
       },
       beforeSend:function(){},
       error:function(objXMLHttpRequest){Error(objXMLHttpRequest);$('#DeletePathAdvancing').dialog('close');}
-    });
-}
-
-function CM_InsertDir(IdParentDirectory,NameDirectory,Path)
-{    
-    var node = $("#contentTree").dynatree("getActiveNode");
-    node.data.unselectable = true; 
-    $(".contentDetailTools").attr('disabled', 'disabled');
-    var IdRepositorio=$('#CM_select_repositorios').val();
-    var NombreRepositorio=$('#CM_select_repositorios option:selected').html();
-    var IdEmpresa = $('#CM_select_empresas option:selected').attr('id');
-    IdEmpresa = parseInt(IdEmpresa);
-
-   $.ajax({
-      async:false, 
-      cache:false,
-      dataType:"html", 
-      type: 'POST',   
-      url: "php/Tree.php",
-      data: "opcion=InsertDir&NombreRepositorio="+NombreRepositorio+"&NameDirectory="+NameDirectory+"&Path="+Path, 
-      success:  function(xml){
-          node.remove();
-           if($.parseXML( xml )===null){  alert(error); return 0;}else xml=$.parseXML( xml );
-         
-           $(xml).find("NewDirectory").each(function()
-            {               
-                var $NewDirectory=$(this);
-                var id = $NewDirectory.find("IdNewDir").text();                               
-               
-                var newNode_ = { title:NameDirectory,isFolder: true, key:id};
-                var newNode = node.getParent().addChild(newNode_);    
-                newNode.activate(true);
-                newNode.focus(true);
-                           
-            });
-            
-            $(xml).find("Error").each(function()
-            {
-                var mensaje=$(this).find("Mensaje").text();
-                errorMessage(mensaje);
-            });
-            
-      },
-      error:function(objXMLHttpRequest){node.remove(); errorMessage(objXMLHttpRequest);}
-    });
-}
-/* Agrega un directorio Nuevo */
-function addChild()
-{
-    var newNode = { title: "Nueva Carpeta",isFolder: true};
-    var activeNode = $("#contentTree").dynatree("getActiveNode");
-    var node = activeNode.addChild(newNode);
-    var Path=node.getKeyPath();
-    node.activate(true);
-    node.focus(true);
-//    editNode(node);
-        
-    var prevTitle = node.data.title,  
-    tree = node.tree;
-    var IdParent=node.getParent();
-    IdParent=IdParent.data.key;
-  // Disable dynatree mouse- and key handling
-  tree.$widget.unbind();
-  // Replace node with <input>
-  $(".dynatree-title", node.span).html("<input id='editNode' onkeyup=\"ValidatingNodesOfTree(this)\" value='" + prevTitle + "'>");
-//  $(":text").keyup(function(){valid(this);});
-  // Focus <input> and bind keyboard handler
-  $("input#editNode")
-    .select()
-    .focus()
-    .keydown(function(event){
-      switch( event.which )
-      {
-          
-        case 27: // [esc]
-          // discard changes on [esc]
-          $("input#editNode").val(prevTitle);
-          node.remove();
-          return;
-  //        $(this).blur();        
-          break;
-          
-        case 13: // [enter]
-          // simulate blur to accept new value
-          /* Se crea el directorio en la BD */      
-          var title = $("input#editNode").val();
-          $(this).blur();
-          CM_InsertDir(IdParent,title,Path);
-          break;            
-      }
-    }).focusout(function()
-    {        
-        var title = $("input#editNode").val();
-        if(prevTitle===title){CM_InsertDir(IdParent,title,node.getKeyPath());}
-    }).blur(function(event){
-      // Accept new value, when user leaves <input> 
-      
-      var title = $("input#editNode").val();
-      node.setTitle(title);      
-      // Re-enable mouse and keyboard handlling
-      tree.$widget.bind();
-      node.focus();              
     });
 }
 
