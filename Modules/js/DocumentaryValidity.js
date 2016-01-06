@@ -74,7 +74,15 @@ var DocumentaryValidity = function(){
         sectionTable.append(thead);
         
         var serieTable = $('<table>',{class:"table table-striped table-bordered table-hover table-condensed display hover", id: "serieTable"});
-        thead = $('<thead>').append('<tr><th>Clave Serie</th><th>Descripción</th><th>A</th><th>L</th><th>F</th><th>AT</th><th>AC</th><th>AD</th><th>TOT</th><th>FL</th><th>E</th><th>C</th><th>M</th><th>P</th><th>R</th><th>C</th><th>PR</th></tr>');
+        thead = $('<thead>').append('\
+            <tr><th columnName = "NameKey">Clave Serie</th><th columnName = "Description">Descripción</th>\n\
+            <th columnName = "Administrativo">A</th><th columnName = "Legal">L</th><th columnName = "Fiscal">F</th>\n\
+            <th columnName = "ArchivoTramite">AT</th><th columnName = "ArchivoConcentracion">AC</th>\n\
+            <th columnName = "ArchivoDesconcentracion">AD</th><th columnName = "Total">TOT</th>\n\
+            <th columnName = "idLegalFoundation">FL</th><th columnName = "Eliminacion">E</th>\n\
+            <th columnName = "Concentracion">C</th><th columnName = "Muestreo">M</th><th columnName = "Publica">P</th>\n\
+            <th columnName = "Reservada">R</th><th columnName = "Confidencial">C</th>\n\
+            <th columnName = "ParcialmenteReservada">PR</th></tr>');
         serieTable.append(thead);
         
         fondoDiv.append("<br>").append(fondoTable);
@@ -127,7 +135,7 @@ var DocumentaryValidity = function(){
             "bInfo":false, "autoWidth" : false, "oLanguage":LanguajeDataTable,
             "tableTools": {
                 "aButtons": [
-                    {"sExtends":"text", "sButtonText": "Boton", "fnClick" :function(){}},
+//                    {"sExtends":"text", "sButtonText": "Boton", "fnClick" :function(){}},
                     {
                         "sExtends":    "collection",
                         "sButtonText": "Más...",
@@ -145,7 +153,7 @@ var DocumentaryValidity = function(){
             "bInfo":false, "autoWidth" : false, "oLanguage":LanguajeDataTable,
             "tableTools": {
                 "aButtons": [
-                    {"sExtends":"text", "sButtonText": "Boton", "fnClick" :function(){}},
+//                    {"sExtends":"text", "sButtonText": "Boton", "fnClick" :function(){}},
                     {
                         "sExtends":    "collection",
                         "sButtonText": "Más...",
@@ -163,11 +171,11 @@ var DocumentaryValidity = function(){
             "bInfo":false, "autoWidth" : false, "oLanguage":LanguajeDataTable,
             "tableTools": {
                 "aButtons": [
-                    {"sExtends":"text", "sButtonText": "Boton", "fnClick" :function(){}},
+//                    {"sExtends":"text", "sButtonText": "Boton", "fnClick" :function(){}},
                     {
                         "sExtends":    "collection",
                         "sButtonText": "Más...",
-                        "aButtons":    [ "csv", "xls", "pdf", "copy" ]
+                        "aButtons":    [ "csv", "xls", "pdf", "copy", "print" ]
                     }                          
                 ]
             },
@@ -181,25 +189,43 @@ var DocumentaryValidity = function(){
     
     var editingSerieRow = function(nRow){
         $(nRow).children().each(function(index){
-            if(index > 0)   /* No puede cambiarse la clave de la serie */
+            var tr = $(this);
+            var type = "text";
+            var data = "";
+            var onblur = "cancel";
+            if(index >=5 && index <= 8){
+                
+                type = "select";
+                data = {11:11,10:10,9:9, 8:8, 7:7, 6:6, 5:5, 4:4, 3:3, 2:2, 1:1, "":""};
+                onblur = "submit";
+            }
+            
+            /* No puede cambiarse la clave de la serie 
+             * No puede editarse el total de expedientes*/
+            if(index > 0 && index !== 16 && index !== 8)   
                 $(this).editable( '../Modules/php/DocumentaryValidity.php', {                  
                     tooltip   : 'Click para editar...',
-                    id:"idDocDisposition",
-                    name:"columnName",
+                    name:"value",
+                    method: "POST", 
+                    type: type,
+                    onblur:onblur,
+                    indicator: "Almacenando....",
+                    data:data,
                     submitdata: {
                         option: "modifyColumnOfDocValidity",
-                        idDocDisposition: ""
+                        idDocValidity: function(){
+                            return tr.parent().attr('idDocValidity'); 
+                        },
+                        columName: function(){
+                            var header = serieTableDT.column( index ).header();
+                            console.log(header);
+                            return $(header).attr('columnName');
+                        }
                     },
+                    placeholder: "",
                     "height": "25px",
                     "width": "100%",
-                    "callback": function( sValue, y ) {
-                        if($.parseXML( sValue ) === null){errorMessage(sValue); return 0;}else sValue = $.parseXML(sValue);
-        
-                        $(sValue).find("Error").each(function(){
-                            var mensaje = $(this).find("Mensaje").text();
-                            errorMessage(mensaje);
-                        });             
-                        /* Redraw the table from the new data on the server */
+                    "callback": function( sValue, y ) {       
                         serieTabledT.fnDraw();
                     }
                 } );
