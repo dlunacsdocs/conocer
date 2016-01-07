@@ -361,21 +361,21 @@ class DataBase {
             CREATE TABLE IF NOT EXISTS CSDocs_DocumentValidity(
             idDocValidity INT NOT NULL AUTO_INCREMENT,
             idDocDisposition INT NOT NULL,
-            Administrativo VARCHAR(30),
-            Legal VARCHAR(30),
-            Fiscal VARCHAR(30),
-            ArchivoTramite INT(4),
-            ArchivoConcentracion INT(4),
-            ArchivoDesconcentracion INT(4),
+            Administrativo INT(3) DEFAULT 0,
+            Legal INT(3) DEFAULT 0,
+            Fiscal INT(3) DEFAULT 0,
+            ArchivoTramite INT(3) DEFAULT 0,
+            ArchivoConcentracion INT(3) DEFAULT 0,
+            ArchivoDesconcentracion INT(3) DEFAULT 0,
             Total INT(4),
-            idLegalFoundation INT NOT NULL,
-            Eliminacion VARCHAR(30),
-            Concentracion VARCHAR(30),
-            Muestreo VARCHAR(30),
-            Publica VARCHAR(30),
-            Reservada VARCHAR(30),
-            Confidencial VARCHAR(30),
-            ParcialmenteReservada VARCHAR(30),
+            idLegalFoundation INT NOT NULL DEFAULT 0,
+            Eliminacion INT(3) DEFAULT 0,
+            Concentracion INT(3) DEFAULT 0,
+            Muestreo INT(3) DEFAULT 0,
+            Publica INT(3) DEFAULT 0,
+            Reservada INT(3) DEFAULT 0,
+            Confidencial INT(3) DEFAULT 0,
+            ParcialmenteReservada INT(3) DEFAULT 0,
             TotalExpedientes INT,
             INDEX (idDocDisposition),
             PRIMARY KEY (idDocValidity),
@@ -388,6 +388,9 @@ class DataBase {
         $documentaryValidityTrigger = "
                 CREATE TRIGGER insertIntoDocumentaryValidity AFTER INSERT ON CSDocs_DocumentaryDisposition FOR EACH ROW INSERT INTO CSDocs_DocumentValidity (idDocDisposition) VALUES (NEW.idDocumentaryDisposition)
                 ";
+        
+        if(($triggerResult = $this->ConsultaQuery($DataBaseName, $documentaryValidityTrigger)) != 1)
+                return "<p><b>Error</b> al crear disparador en <b>Vigencia Documental</b></p>";
         
         return 1;
     }

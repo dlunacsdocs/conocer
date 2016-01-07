@@ -82,7 +82,7 @@ var DocumentaryValidity = function(){
             <th columnName = "idLegalFoundation">FL</th><th columnName = "Eliminacion">E</th>\n\
             <th columnName = "Concentracion">C</th><th columnName = "Muestreo">M</th><th columnName = "Publica">P</th>\n\
             <th columnName = "Reservada">R</th><th columnName = "Confidencial">C</th>\n\
-            <th columnName = "ParcialmenteReservada">PR</th></tr>');
+            <th columnName = "ParcialmenteReservada">PR</th><th class = "TotalExpedientes">TE</th></tr>');
         serieTable.append(thead);
         
         fondoDiv.append("<br>").append(fondoTable);
@@ -192,17 +192,17 @@ var DocumentaryValidity = function(){
             var tr = $(this);
             var type = "text";
             var data = "";
-            var onblur = "cancel";
-            if(index >=5 && index <= 8){
-                
-                type = "select";
-                data = {11:11,10:10,9:9, 8:8, 7:7, 6:6, 5:5, 4:4, 3:3, 2:2, 1:1, "":""};
-                onblur = "submit";
-            }
+            var onblur = "submit";
+//            if(index >=5 && index <= 8){
+//                
+//                type = "select";
+//                data = {11:11,10:10,9:9, 8:8, 7:7, 6:6, 5:5, 4:4, 3:3, 2:2, 1:1, "":""};
+//                onblur = "submit";
+//            }
             
             /* No puede cambiarse la clave de la serie 
              * No puede editarse el total de expedientes*/
-            if(index > 0 && index !== 16 && index !== 8)   
+            if(index > 1 && index !== 17 && index !== 8)   
                 $(this).editable( '../Modules/php/DocumentaryValidity.php', {                  
                     tooltip   : 'Click para editar...',
                     name:"value",
@@ -220,6 +220,40 @@ var DocumentaryValidity = function(){
                             var header = serieTableDT.column( index ).header();
                             console.log(header);
                             return $(header).attr('columnName');
+                        }
+                    },
+                    onsubmit: function(settings, original){
+                        var newVal;
+                        if(type === 'text')
+                            newVal = $('input',this).val();
+                        if(type === 'select')
+                            newVal = $('select',this).val();
+                        if(newVal === undefined){
+                            Advertencia("No fué posible obtener el nuevo valor");
+                            return false;
+                        }
+                      
+                        if(isNaN(newVal)){
+                            Advertencia("Debe ingresar un tipo de dato numérico");   
+                            original.reset();
+                            return false;
+                        }
+                        
+                        if(newVal > 999){
+                            Advertencia("El tipo de dato sobrepasa el rango soportado");
+                            original.reset();
+                            return false;
+                        }
+                        
+                        if(newVal < 0){
+                            Advertencia("No puede ser negativo");
+                            original.reset();
+                            return false;
+                        }
+                        
+                        if (original.revert === $('input',this).val()) {
+                            original.reset();
+                            return false;
                         }
                     },
                     placeholder: "",
@@ -344,10 +378,12 @@ var DocumentaryValidity = function(){
         var reservada = $(serie).find('Reservada').text();
         var confidencial = $(serie).find('Confidencial').text();
         var parcialmenteReservada = $(serie).find('ParcialmenteReservada').text();
+        var totalExpedientes = $(serie).find('TotalExpedientes').text();
         
         data = [nameKey, description, administrativo, legal, fiscal, archivoTramite,
         archivoConcentracion, archivoDesconcentracion, total, foundationKey, eliminacion,
-        concentracion, muestreo, publica, reservada, confidencial, parcialmenteReservada];
+        concentracion, muestreo, publica, reservada, confidencial, parcialmenteReservada,
+        totalExpedientes];
     
         var ai = serieTableDT.row.add(data).draw();
         var n = serieTabledT.fnSettings().aoData[ ai[0] ].nTr;
