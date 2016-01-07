@@ -102,8 +102,10 @@ var DocumentaryValidity = function(){
                 _buildTablesIntoInterface(dialogRef);
                 var schema  = _getStructureScheme();
                                 
-                if(typeof schema === 'object')
+                if(typeof schema === 'object'){
                     _setDataIntoTables(schema);
+                    _setTotal();
+                }
             },
             onclose: function(dialogRef){
                 freeVariables();
@@ -261,6 +263,7 @@ var DocumentaryValidity = function(){
                     "width": "100%",
                     "callback": function( sValue, y ) {       
                         serieTabledT.fnDraw();
+                        _setTotal();
                     }
                 } );
         }); 
@@ -391,5 +394,29 @@ var DocumentaryValidity = function(){
         n.setAttribute('idDocValidity',idDocValidity);
 
     };
+         
+    var _setTotal = function(){
+        console.log("setTotal");
+        var atColumn = serieTableDT.column(5).data();
+        var acColumn = serieTableDT.column(6).data();
+        var adColumn = serieTableDT.column(7).data();
+        
+        
+        for(var cont = 0; cont < atColumn.length; cont++){
+            var atValue = atColumn[cont];
+            var acValue = acColumn[cont];
+            var adValue = adColumn[cont];
+            var rowTotal = 0;
             
+            var tr = serieTabledT.find('tr')[cont+1];
+            console.log(tr);
+            if(!isNaN(atValue) && !isNaN(acValue) && !isNaN(adValue)){
+                rowTotal = parseInt(atValue) + parseInt(acValue) + parseInt(adValue);
+
+                serieTabledT.fnUpdate([rowTotal],tr,8,true);   
+            }
+                
+            
+        }
+    };  
 };
