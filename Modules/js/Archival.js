@@ -11,6 +11,7 @@ var ArchivalClass = function(){
     _getModules = function(){
         _getDocumentaryDisposition();     
         _getDocumentaryValidity();
+        _getLegalFoundation();
     };
     
     /*
@@ -46,6 +47,24 @@ var ArchivalClass = function(){
         return status;
     };
     
+    /***
+     * @description Obtiene el script para ejecutar las funciones de la clase Fundamento Legal.
+     * @returns {Boolean}
+     */
+    var _getLegalFoundation = function(){
+        var status = false;
+        $.getScript( "Modules/js/LegalFoundation.js" )
+            .done(function( script, textStatus ) {
+              status = true;
+              legalFoundation = new LegalFoundation();
+              legalFoundation.setActionToLink();
+            })
+            .fail(function( jqxhr, settings, exception ) {
+            });
+        
+        return status;
+    };
+    
 };
 
 ArchivalClass.prototype.buildModule = function(){
@@ -53,10 +72,11 @@ ArchivalClass.prototype.buildModule = function(){
     
     var li = $('<li>',{class: "here LinkArchival"});
     var vigenciDocLi = $('<li>', {class: "here LinkDocumentaryValidity"}).append('<a href = "#">Vigencia Documental</a>');
-    
+    var fundamentoLegal = $('<li>', {class: "here LinkLegalFoundation"}).append('<a href = "#">Fundamento Legal</a>');
     var dispDoc = $('<li>',{class:"LinkDocumentaryDisposition"}).append('<a href="#">Cat. de Dispos. Documental</a>');
     var sublist = $('<ul>',{class:"sublist"}).append(dispDoc);
     sublist.append(vigenciDocLi);
+    sublist.append(fundamentoLegal);
     
     var a = $('<a>', {href:"#Disposición Documental"}).append("Archivística");
     

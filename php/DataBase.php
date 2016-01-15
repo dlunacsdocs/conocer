@@ -347,11 +347,12 @@ class DataBase {
         if(($resultDocDisposition = $this->ConsultaQuery($DataBaseName, $docDisposition)) != 1)
                 return "<p><b>Error</b> al intentar construir <b>Disposición Documental</b>. Detalles: $resultDocDisposition</p>";
         
-        $legalFoundation = "CREATE TABLE IF NOT EXISTS CSDOcs_LegalFoundation (
+        $legalFoundation = "CREATE TABLE IF NOT EXISTS CSDocs_LegalFoundation (
             idLegalFoundation INT NOT NULL AUTO_INCREMENT,
             FoundationKey VARCHAR(50) NOT NULL,
             Description TEXT,
-            PRIMARY KEY (idLegalFoundation)
+            PRIMARY KEY (idLegalFoundation),
+            UNIQUE (FoundationKey)
             ) DEFAULT CHARSET = utf8";
         
         if(($resultLegalFoundation = $this->ConsultaQuery($DataBaseName, $legalFoundation)) != 1)

@@ -23,3 +23,4 @@ var InstanceManager = new ClassInstanceManager();
 var archival;
 var documentaryDisposition;
 var documentaryValidity;
+var legalFoundation;
