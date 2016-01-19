@@ -50,13 +50,13 @@ class DocumentaryValidity {
                 val.Publica, val.Reservada, val.confidencial, val.ParcialMenteReservada 
                 FROM CSDocs_DocumentaryDisposition disp LEFT JOIN CSDocs_DocumentValidity val 
                 ON disp.idDocumentaryDisposition = val.idDocDisposition 
-                LEFT JOIN CSDOcs_LegalFoundation leg ON val.idLegalFoundation = leg.idLegalFoundation
+                LEFT JOIN CSDocs_LegalFoundation leg ON val.idLegalFoundation = leg.idLegalFoundation
                 ";
         
         $result = $this->db->ConsultaSelect($instanceName, $select);
         
         if($result['Estado'] != 1)
-            return XML::XMLReponse ("Error", 0, "<p><b>Error</b> al obtener el esquema de Validez Documental</p>");
+            return XML::XMLReponse ("Error", 0, "<p><b>Error</b> al obtener el esquema de Validez Documental</p>Detalles:<br>".$result['Estado']);
         
         XML::XmlArrayResponse("structureSchema", "schema", $result['ArrayDatos']);
     }

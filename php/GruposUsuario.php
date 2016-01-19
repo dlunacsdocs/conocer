@@ -10,6 +10,8 @@ require_once 'DataBase.php';
 require_once 'XML.php';
 require_once 'DesignerForms.php';
 require_once 'Log.php';
+require_once 'Session.php';
+
 
 class Grupos {
     public function __construct() {
@@ -17,55 +19,57 @@ class Grupos {
     }
     private function Ajax()
     {
-        switch (filter_input(INPUT_POST, "opcion"))
-        {
-            case 'NewGroup':$this->NewGroup(); break;
-            case 'DeleteGroup':$this->DeleteGroup(); break;
-            case 'ModifyGroup':$this->ModifyGroup(); break;      
-            case 'GetUsersGroups': $this->GetUsersGroups();break;            
-            case "GetGroupMemebers":$this->GetGroupMemebers();break;
-            case 'GetUsersWithoutGroup':$this->GetUsersWithoutGroup(); break;
-            case 'AddUsersToGroup':$this->AddUsersToGroup(); break;
-            case 'DeleteGroupMembers':$this->DeleteGroupMembers(); break;
-            default: break;
-        }      
+        if(filter_input(INPUT_POST, "opcion")!=NULL and filter_input(INPUT_POST, "opcion")!=FALSE){
+            
+            $idSession = Session::getIdSession();
+        
+            if($idSession == null)
+                return XML::XMLReponse ("Error", 0, "Repository::No existe una sesión activa, por favor vuelva a iniciar sesión");
+
+            $userData = Session::getSessionParameters();
+                             
+            switch (filter_input(INPUT_POST, "opcion"))
+            {
+                case 'NewGroup':$this->NewGroup($userData); break;
+                case 'DeleteGroup':$this->DeleteGroup(); break;
+                case 'ModifyGroup':$this->ModifyGroup($userData); break;      
+                case 'GetUsersGroups': $this->GetUsersGroups();break;            
+                case "GetGroupMemebers":$this->GetGroupMemebers();break;
+                case 'GetUsersWithoutGroup':$this->GetUsersWithoutGroup(); break;
+                case 'AddUsersToGroup':$this->AddUsersToGroup(); break;
+                case 'DeleteGroupMembers':$this->DeleteGroupMembers(); break;
+                default: break;
+            }  
+        }
     }   
             
-    private function NewGroup()
+    private function NewGroup($userData)
     {
-        $XML =new XML();
         $BD = new DataBase();
         $Log = new Log();
-        $DataBaseName = filter_input(INPUT_POST, "DataBaseName");
-        $IdUser = filter_input(INPUT_POST, "IdUsuario");
-        $NombreUsuario =  filter_input(INPUT_POST, "NombreUsuario");        
-        $Nombre = filter_input(INPUT_POST, "Nombre");
-        $Descripcion = filter_input(INPUT_POST, "Descripcion");
+        
+        $DataBaseName = $userData['dataBaseName'];
+        $IdUser = $userData['idUser'];
+        $NombreUsuario = $userData['userName'];
+        $Nombre = filter_input(INPUT_POST, "name");
+        $Descripcion = filter_input(INPUT_POST, "description");
         
         $InsertNewGroup = "INSERT INTO GruposUsuario (Nombre,Descripcion) VALUES ('$Nombre', '$Descripcion')";
 
         $ExistGroup = "SELECT *FROM GruposUsuario WHERE Nombre = '$Nombre'";
         
         $ResultExistGroup = $BD->ConsultaSelect($DataBaseName, $ExistGroup);
+        
         if($ResultExistGroup['Estado']!=1)
-        {
-            $XML->ResponseXML("Error", 0, "<p><b>Error</b> al descartar un grupo duplicado. ".$ResultExistGroup['Estado']."</p>");
-            return 0;
-        }
+            return XML::XMLReponse("Error", 0, "<p><b>Error</b> al descartar un grupo duplicado. ".$ResultExistGroup['Estado']."</p>");
         
         $NoExist = intval($ResultExistGroup['ArrayDatos']);
         
         if($NoExist>0)
-        {
-            $XML->ResponseXML("SystemAlert", 0, "El grupo que ingreso ya se encuentra registrado o es un grupo reservado del sistema");
-            return 0;
-        }
+            return XML::XMLReponse("SystemAlert", 0, "El grupo que ingreso ya se encuentra registrado o es un grupo reservado del sistema");
         
         if(!($IdNewGroup = $BD->ConsultaInsertReturnId($DataBaseName, $InsertNewGroup))>0)
-        {
-            $XML->ResponseXML("Error", 0, "<p><b>Error</b> al registrar un nuevo <b>Grupo de Usuarios</b>. $IdNewGroup");
-            return 0;
-        }
+            return XML::XMLReponse("Error", 0, "<p><b>Error</b> al registrar un nuevo <b>Grupo de Usuarios</b>. $IdNewGroup");
                 
         $doc  = new DOMDocument('1.0','utf-8');
         $doc->formatOutput = true;
@@ -115,14 +119,14 @@ class Grupos {
         $Log->Write("44", $IdUser, $NombreUsuario, " '$NombreGrupo'", $DataBaseName);
     }
     
-    private function ModifyGroup()
+    private function ModifyGroup($userData)
     {
-        $XML =new XML();
         $BD = new DataBase();
         $Log = new Log();
-        $DataBaseName = filter_input(INPUT_POST, "DataBaseName");
-        $IdUser = filter_input(INPUT_POST, "IdUsuario");
-        $NombreUsuario =  filter_input(INPUT_POST, "NombreUsuario");
+        
+        $DataBaseName = $userData['dataBaseName'];
+        $IdUser = $userData['userName'];
+        $NombreUsuario =  $userData['userName'];
         $IdGroup = filter_input(INPUT_POST, "IdGroup");
         $NuevoNombreGrupo = filter_input(INPUT_POST, "NewGroupName");
         $Descripcion = filter_input(INPUT_POST, "NewGroupDescription");
@@ -130,38 +134,25 @@ class Grupos {
         $NombreGrupo = filter_input(INPUT_POST, "NombreGrupo");        
         
         if(strcasecmp($NombreGrupo, "Administradores")==0 or strcasecmp($NuevoNombreGrupo, "Administradores")==0 or strcasecmp($IdGroup, "1")==0)
-        {
-            $XML->ResponseXML("SystemAlert", 0, "El nombre del grupo es un elemento del sistema y no puede modificarse");
-            return 0;
-        }
+            return XML::XMLReponse("SystemAlert", 0, "El nombre del grupo es un elemento del sistema y no puede modificarse");
         
         $ExistGroup = "SELECT *FROM GruposUsuario WHERE Nombre = '$NuevoNombreGrupo'";
         $UpdateGroup = "UPDATE GruposUsuario SET Nombre = '$NuevoNombreGrupo', Descripcion = '$Descripcion' WHERE IdGrupo = $IdGroup";
         
-        if(strcasecmp($OldGroupName, $NombreGrupo)==0)
-        {
+        if(strcasecmp($NuevoNombreGrupo, $NombreGrupo)!= 0){
             $ResultExistGroup = $BD->ConsultaSelect($DataBaseName, $ExistGroup);
             if($ResultExistGroup['Estado']!=1)
-            {
-                $XML->ResponseXML("Error", 0, "<p><b>Error</b> al descartar un grupo duplicado. ".$ResultExistGroup['Estado']."</p>");
-                return 0;
-            }
+                return XML::XMLReponse("Error", 0, "<p><b>Error</b> al descartar un grupo duplicado. ".$ResultExistGroup['Estado']."</p>");
         }
         
         
         $NoExist = intval($ResultExistGroup['ArrayDatos']);
         
         if($NoExist>0)
-        {
-            $XML->ResponseXML("Duplicate", 0, "El grupo que ingreso ya se encuentra registrado o es un grupo reservado del sistema");
-            return 0;
-        }
+            return XML::XMLReponse("Duplicate", 0, "El grupo que ingreso ya se encuentra registrado o es un grupo reservado del sistema");
         
         if(($ResultUpdate = $BD->ConsultaQuery($DataBaseName, $UpdateGroup))!=1)
-        {
-            $XML->ResponseXML("Error", 0, "<p><b>Error</b> al actualizar la información. $ResultUpdate</p>");
-            return 0;
-        }
+            XML::XMLReponse("Error", 0, "<p><b>Error</b> al actualizar la información. $ResultUpdate</p>");
         
         $doc  = new DOMDocument('1.0','utf-8');
         $doc->formatOutput = true;
