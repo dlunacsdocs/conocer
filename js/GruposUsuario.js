@@ -4,7 +4,7 @@
  * Clase que administra los Grupos de Usuario (Creación, modificación, borrado y  permisos por grupo)
  ---------------------------------------------------------------------------------------------------------*/
 
-/* global EnvironmentData, BotonesWindow, OptionDataTable, Repository, Tree, LanguajeDataTable */
+/* global EnvironmentData, BotonesWindow, OptionDataTable, Repository, Tree, LanguajeDataTable, BootstrapDialog */
 
 var TableGroupsdT;
 var TableGroupsDT;
@@ -24,27 +24,6 @@ var ClassUsersGroups = function()
     this.IdGrupo = undefined;
     this.NombreGrupo = undefined;    
     this.Descripcion = undefined;       
-   
-    _ShowsGroupsHierarchy = function()
-    {
-        $('.DivHierarchy').remove();
-        $('body').append('<div class = "DivHierarchy" style = "display:none"><div class = "titulo_ventana">Jerarquía</div></div>');               
-        $('.DivHierarchy').append('<div class = "TreeSpace"><div id = "HierarchyTree"></div></div> <div id = "WSHierarchyTree" class = "WorkSpaceWithTree"></div>');
-        
-        $('#HierarchyTree').append('<ul><li id = "TH_00" data = "icon: \'user.png\'" class = "folder"> Marco <ul id = "TH_0"></ul></ul>');        
-        $('#TH_0').append('<li id="MSR_1" class="folder" data="icon: \'user.png\'">Eduardo<ul id="1_MSR"></ul>');             
-        $('#TH_0').append('<li id="MSR_2" class="folder" data="icon: \'user.png\'">Fernanda<ul id="2_MSR"></ul>');
-        $('#TH_0').append('<li id="MSR_3" class="folder" data="icon: \'user.png\'">Rocio<ul id="3_MSR"></ul>');
-                 
-        $('#HierarchyTree').dynatree({generateIds: false, expand: true, minExpandLevel: 3,
-            onFocus: function(node, event)
-            {
-                
-            }
-        });                
-        $('.DivHierarchy').dialog({title:"Jerarquía del Grupo "+this.NombreGrupo, width:(($(window).width())-100), height:500, minWidth:500, minHeight:400}).dialogExtend(BotonesWindow);
-        
-    };
 
     _BuildTableGroups = function(xml)
     {            
@@ -74,58 +53,87 @@ var ClassUsersGroups = function()
         TableGroupsdT.find('tbody tr:eq(0)').click();  /* Activa la primera fila  */
     };
     
-    _NewGroup = function()
-    {        
-        $('.AddNewGroup').remove();
-        $('body').append('<div class = "AddNewGroup"></div>');        
-        $('.AddNewGroup').append('<div class = "titulo_ventana">Información del Nuevo Grupo</div><table id = "TableNewGroup"></table>');
-        $('#TableNewGroup').append('<tr><td>Nombre</td><td><input type = "text" name = "Nombre" id = "NewGroup_Nombre" class = "required FormStandart" FieldType = "varchar" FieldLength = "50"></td></tr>');
-        $('#TableNewGroup').append('<tr><td>Descripción</td><td><input type = "text" name = "Descripcion" id = "NewGroup_Descripcion" class = "FormStandart" FieldType = "text"></td></tr>');
+    _NewGroup = function(){     
         
-        var Forms = $('.AddNewGroup input.FormStandart');
-        var FieldsValidator = new ClassFieldsValidator();   
-        FieldsValidator.InspectCharacters(Forms);
+        var content = $('<div>');
+        var formGroup = $('<div>',{class:"form-group"});
+        var groupNameLabel = $('<label>').append("Nombre");
+        var groupNameForm = $('<input>',{type:"text", id:"NewGroup_Nombre", class:"form-control", FieldType: "varchar", FieldLength: "50"});
+        formGroup.append(groupNameLabel);
+        formGroup.append(groupNameForm);
+        content.append(formGroup);
         
-        $('.AddNewGroup').dialog({title:"Nuevo Grupo de Usuarios", width:500, height:400, minWidth:400, minHeight:300, modal:true,
-            buttons:
-            {
-                "Agregar":{text:"Aceptar", "click":function(){ _AddNewGroup();}},
-                "Cancelar":{text:"Cancelar", "click":function(){$(this).dialog('close');}}
+        formGroup = $('<div>',{class:"form-group"});
+        var groupDescriptionLabel = $('<label>').append("Descripción");
+        var groupDescriptionForm = $('<input>',{type:"text", class:"form-control", id:"NewGroup_Descripcion", FieldType: "text"});
+        formGroup.append(groupDescriptionLabel);
+        formGroup.append(groupDescriptionForm);
+        content.append(formGroup);
+        
+        BootstrapDialog.show({
+            title: 'Nuevo Grupo de Usuarios',
+            size: BootstrapDialog.SIZE_SMALL,
+            message: content,
+            buttons: [
+                {
+                    label: 'Cerrar',
+                    action: function(dialogRef){
+                        dialogRef.close();
+                    }
+                },
+                {
+                    label: 'Agregar',
+                    cssClass:"btn-primary",
+                    action: function(dialogRef){     
+                        var button = this;
+                        button.spin();
+                        button.disable();
+                        _AddNewGroup(dialogRef);
+                        
+                    }
+                }
+            ],
+            onshown: function(dialogRef){
+                $('#NewGroup_Nombre').focus();
+                var modalBody = dialogRef.getModalBody();
+                
+                var Forms = modalBody.find('input');
+                var FieldsValidator = new ClassFieldsValidator();   
+                FieldsValidator.InspectCharacters(Forms);
             }
-        });        
-        
-        $(":text").keyup(function(){valid(this);});
+        });
+
     };
     
-    var _AddNewGroup = function()
-    {
-        var self = this;
-        var StringNewGroup = '';
-                        
-        $('.AddNewGroup :text').each(function()
-        {            
-            $(this).tooltip();
-            $('#NewGroup_Nombre').attr('title',"");                                            
-            StringNewGroup+= "&"+$(this).attr("name")+"="+$(this).val();                    
-        });        
+    var _AddNewGroup = function(dialogRef){
+        var self = this;                               
 
-        var Forms = $('.AddNewGroup input');
+        var modalBody = dialogRef.getModalBody();
+        var Forms = modalBody.find('input');
         var FieldsValidator = new ClassFieldsValidator();   
         var validation = FieldsValidator.ValidateFields(Forms);
         console.log("Validación campos Agregar nuevo Grupo "+ self.NombreGrupo +" "+validation);
         if(validation===0)
             return 0;
-                        
+                    
+        var name = $('#NewGroup_Nombre').val();
+        var description = $('#NewGroup_Descripcion').val();
+        
+        if(String(name).length === 0)
+            return Advertencia("El campo <b>Nombre</b> es obligatorio");
+        
+        
         $.ajax({
         async:true, 
         cache:false,
         dataType:"html", 
         type: 'POST',   
         url: "php/GruposUsuario.php",
-        data: "opcion=NewGroup&DataBaseName="+EnvironmentData.DataBaseName+'&IdUsuario='+EnvironmentData.IdUsuario+'&NombreUsuario='+EnvironmentData.NombreUsuario+StringNewGroup, 
+        data: {"opcion":"NewGroup", name:name, description:description}, 
         success:  function(xml)
         {           
-            if($.parseXML( xml )===null){Error(xml); return 0;}else xml=$.parseXML( xml );
+            dialogRef.close();
+            if($.parseXML( xml )===null){errorMessage(xml); return 0;}else xml=$.parseXML( xml );
 
             $(xml).find("NewGroup").each(function()
             {
@@ -164,82 +172,113 @@ var ClassUsersGroups = function()
 
         },
         beforeSend:function(){},
-        error: function(jqXHR, textStatus, errorThrown){Error(textStatus +"<br>"+ errorThrown);}
+        error: function(jqXHR, textStatus, errorThrown){
+            errorMessage(textStatus +"<br>"+ errorThrown);
+            dialogRef.close();
+        }
         });       
     };
     
     _ShowGroupData = function()
     {
         if(!(_CheckActiveGroup()))
-            return 0;          
+            return 0;      
         
-        $('.DivEditGroup').remove();
-        $('body').append('<div class = "DivEditGroup"></div>');
-        $('.DivEditGroup').append('<div class = "titulo_ventana">Información del Grupo <b>'+ NombreGrupo +'</b></div><table class = "TableEditGroup"></table>');
-        $('.TableEditGroup').append('<tr><td>Nombre</td><td><input type = "text" name = "NewGroupName" id = "NewGroup_Nombre" value = "'+ NombreGrupo +'" class = "required FormStandart" FieldType = "varchar" FieldLength = "50"></td></tr>');
-        $('.TableEditGroup').append('<tr><td>Descripción</td><td><input type = "text" name = "NewGroupDescription" id = "NewGroup_Descripcion" value = "'+Descripcion+'" class = "FormStandart" FieldType = "text"></td></tr>');
+        var content = $('<div>');
+        var formGroup = $('<div>',{class:"form-group"});
+        var groupNameLabel = $('<label>').append("Nombre");
+        var groupNameForm = $('<input>',{type:"text", id:"NewGroup_Nombre", class:"form-control", FieldType: "varchar", FieldLength: "50", value:NombreGrupo});
+        formGroup.append(groupNameLabel);
+        formGroup.append(groupNameForm);
+        content.append(formGroup);
         
-        var Forms = $('.DivEditGroup input.FormStandart');
-        var FieldsValidator = new ClassFieldsValidator();   
-        FieldsValidator.InspectCharacters(Forms);
+        formGroup = $('<div>',{class:"form-group"});
+        var groupDescriptionLabel = $('<label>').append("Descripción");
+        var groupDescriptionForm = $('<input>',{type:"text",class:"form-control", id:"NewGroup_Descripcion", FieldType: "text", value:Descripcion});
+        formGroup.append(groupDescriptionLabel);
+        formGroup.append(groupDescriptionForm);
+        content.append(formGroup);
         
-        $('.DivEditGroup').dialog({title:"Editar Grupo de Usuarios", width:500, height:400, minWidth:400, minHeight:300, modal:true,
-            buttons:
-            {
-                "Agregar":{text:"Modificar Datos", "click":function(){ _ConfirmModifyGroup();}},
-                "Cerrar":{text:"Cerrar", "click":function(){$(this).dialog('close');}}
-            }
-        });                
-    };
-    
-    var _ConfirmModifyGroup = function()
-    {
-        var self = this;
-        var Forms = $('.DivEditGroup input.FormStandart');
-        var FieldsValidator = new ClassFieldsValidator();   
-        var validation = FieldsValidator.ValidateFields(Forms);
-        console.log("Validación campos Editar Grupo "+ self.NombreGrupo +" "+validation);
-        if(validation===0)
-            return 0;
-        
-        
-        $('.ConfirmModifyGroup').remove();
-        $('body').append('<div class = "ConfirmModifyGroup"></div>');
-        $('.ConfirmModifyGroup').append('<center><img src="img/caution.png"></center>');
-        $('.ConfirmModifyGroup').append('<p>Realmente desea modificar el Grupo <b>'+self.NombreGrupo+'</b></p>');
-        $('.ConfirmModifyGroup').dialog({width:300, height:300, minWidth:300, minHeight:250,draggable:false, modal:true, title:"Mensaje de Confirmación",
-            buttons:{
-                "Modificar":{text:"Modificar", click:function(){$(this).dialog('destroy'); _ModifyGroup();}},
-                "Cancelar":{text:"Cancelar", click:function(){$(this).dialog('destroy');}}
+        BootstrapDialog.show({
+            title: 'Información del Grupo '+NombreGrupo,
+            size: BootstrapDialog.SIZE_SMALL,
+            message: content,
+            buttons: [
+                {
+                    label: 'Cerrar',
+                    action: function(dialogRef){
+                        dialogRef.close();
+                    }
+                },
+                {
+                    label: 'Modificar',
+                    cssClass:"btn-warning",
+                    action: function(dialogRef){     
+                        var button = this;
+                        
+                        BootstrapDialog.show({
+                            title: 'Mensaje de Confirmación',
+                            size: BootstrapDialog.SIZE_SMALL,
+                            type: BootstrapDialog.TYPE_WARNING,
+                            message: "¿Realmente desea Cambiar la información?",
+                            buttons: [
+                                {
+                                    label: 'Cancelar',
+                                    action: function(confirmDialog){
+                                        confirmDialog.close();
+                                    }
+                                },
+                                {
+                                    label: 'Modificar',
+                                    cssClass:"btn-warning",
+                                    action: function(confirmDialog){   
+                                        button.spin();
+                                        button.disable();
+                                        confirmDialog.close();
+                                        _ModifyGroup(dialogRef);
+                                        button.disable();
+                                        dialogRef.close();
+                                    }
+                                }
+                            ],
+                            onshown: function(dialogRef){
+
+                            }
+                        });
+                        
+                    }
+                }
+            ],
+            onshown: function(dialogRef){
+                $('#NewGroup_Nombre').focus();
+                var modalBody = dialogRef.getModalBody();
+                
+                var Forms = modalBody.find('input');
+                var FieldsValidator = new ClassFieldsValidator();   
+                FieldsValidator.InspectCharacters(Forms);
             }
         });
+                   
     };
     
-    var _ModifyGroup = function()
+  
+    var _ModifyGroup = function(dialogRef)
     {
-        var FlagMistake = 0;
-        var StringModifyGroup = '';
+        var modalBody = dialogRef.getModalBody();
+        var Forms = modalBody.find('input');
+        var FieldsValidator = new ClassFieldsValidator();   
+        var validation = FieldsValidator.ValidateFields(Forms);
         
-        $('.DivEditGroup :text').each(function()
-        {            
-            $(this).tooltip();
-            $(this).attr('title','');
-            if($(this).hasClass('required'))
-                if($(this).val().length===0)
-                {
-                    FlagMistake = 1;
-                    if(!$(this).hasClass('RequiredActivo'))
-                        $(this).addClass('RequiredActivo');
-                }
-                                
-            StringModifyGroup+= "&"+$(this).attr("name")+"="+$(this).val();        
-            
-        });        
-
-        if(FlagMistake===1)
+        console.log("Validación campos Modificar Grupo "+ self.NombreGrupo +" "+validation);
+        
+        if(validation===0)
             return 0;
+                    
+        var name = $('#NewGroup_Nombre').val();
+        var description = $('#NewGroup_Descripcion').val();
         
-        $('#WS_Users').append('<div class="PlaceWaiting" id = "UsersPlaceWaiting"><img src="../img/loadinfologin.gif"></div>');
+        if(String(name).length === 0)
+            return Advertencia("El campo <b>Nombre</b> es obligatorio");
                         
         $.ajax({
         async:true, 
@@ -247,11 +286,11 @@ var ClassUsersGroups = function()
         dataType:"html", 
         type: 'POST',   
         url: "php/GruposUsuario.php",
-        data: "opcion=ModifyGroup&DataBaseName="+EnvironmentData.DataBaseName+'&IdUsuario='+EnvironmentData.IdUsuario+'&NombreUsuario='+EnvironmentData.NombreUsuario+'&IdGroup='+IdGrupo+StringModifyGroup+"&NombreGrupo="+NombreGrupo, 
+        data: {"opcion":"ModifyGroup", NewGroupName:name, NewGroupDescription:description, NombreGrupo:NombreGrupo, IdGroup:IdGrupo}, 
         success:  function(xml)
         {           
             $('#UsersPlaceWaiting').remove();
-            if($.parseXML( xml )===null){Error(xml); return 0;}else xml=$.parseXML( xml );
+            if($.parseXML( xml )===null){errorMessage(xml); return 0;}else xml=$.parseXML( xml );
 
             $(xml).find("Modify").each(function()
             {
@@ -276,8 +315,8 @@ var ClassUsersGroups = function()
             
             $(xml).find('Duplicate').each(function()
             {
-                var Mensaje = $(this).find('Mensaje').tetx();
-                Notificacion(Mensaje);
+                var Mensaje = $(this).find('Mensaje').text();
+                Advertencia(Mensaje);
             });
             
             $(xml).find('SystemAlert').each(function()
@@ -293,30 +332,51 @@ var ClassUsersGroups = function()
                 var $Error=$(this);
                 var estado=$Error.find("Estado").text();
                 var mensaje=$Error.find("Mensaje").text();
-                Error(mensaje);
+                errorMessage(mensaje);
             });                 
 
         },
         beforeSend:function(){},
-        error: function(jqXHR, textStatus, errorThrown){$('#UsersPlaceWaiting').remove(); Error(textStatus +"<br>"+ errorThrown);}
+        error: function(jqXHR, textStatus, errorThrown){$('#UsersPlaceWaiting').remove(); errorMessage(textStatus +"<br>"+ errorThrown);}
         });          
     };
     
     _ConfirmDelete = function()
     {        
+        var self = this;
+        
         if(!(_CheckActiveGroup()))
             return 0;
-
-        $('#ConfirmDeleteGroup').remove();
-        $('body').append('<div id = "ConfirmDeleteGroup"></div>');
-        $('#ConfirmDeleteGroup').append('<center><img src="img/caution.png"></center>');
-        $('#ConfirmDeleteGroup').append('<p>Realmente desea eliminar el Grupo <b>'+this.NombreGrupo+'</b></p>');
-        $('#ConfirmDeleteGroup').dialog({width:300, height:300, minWidth:300, minHeight:250,draggable:false, modal:true, title:"Mensaje de Confirmación",
-            buttons:{
-                "Eliminar":{text:"Eliminar", click:function(){$(this).dialog('close'); _DeleteGroup();}},
-                "Cancelar":{text:"Cancelar", click:function(){$(this).dialog('close');}}
+        
+        BootstrapDialog.show({
+            title: 'Mensaje de Confirmación',
+            size: BootstrapDialog.SIZE_SMALL,
+            type: BootstrapDialog.TYPE_DANGER,
+            message: '<p>Realmente desea eliminar el Grupo <b>'+self.NombreGrupo+'</b></p>',
+            buttons: [
+                {
+                    label: 'Cerrar',
+                    action: function(dialogRef){
+                        dialogRef.close();
+                    }
+                },
+                {
+                    label: 'Eliminar',
+                    cssClass:"btn-danger",
+                    action: function(dialogRef){     
+                        var button = this;
+                        button.spin();
+                        button.disable();
+                         _DeleteGroup();
+                         dialogRef.close();
+                    }
+                }
+            ],
+            onshown: function(dialogRef){
+               
             }
-        });                               
+        });
+                          
     };
     
     var _DeleteGroup = function()
@@ -333,7 +393,7 @@ var ClassUsersGroups = function()
         success:  function(xml)
         {           
             $('#UsersPlaceWaiting').remove();
-            if($.parseXML( xml )===null){Error(xml); return 0;}else xml=$.parseXML( xml );
+            if($.parseXML( xml )===null){errorMessage(xml); return 0;}else xml=$.parseXML( xml );
 
             $(xml).find("Deleted").each(function()
             {
@@ -348,12 +408,12 @@ var ClassUsersGroups = function()
                 var $Error=$(this);
                 var estado=$Error.find("Estado").text();
                 var mensaje=$Error.find("Mensaje").text();
-                Error(mensaje);
+                errorMessage(mensaje);
             });                 
 
         },
         beforeSend:function(){},
-        error: function(jqXHR, textStatus, errorThrown){$('#UsersPlaceWaiting').remove(); Error(textStatus +"<br>"+ errorThrown);}
+        error: function(jqXHR, textStatus, errorThrown){$('#UsersPlaceWaiting').remove(); errorMessage(textStatus +"<br>"+ errorThrown);}
         });          
     };
         
@@ -377,11 +437,10 @@ var ClassUsersGroups = function()
                 "aButtons": [
                     {"sExtends":"text", "sButtonText": "Agregar", "fnClick" :function(){_ShowUsersWithoutGroup();}},
                     {"sExtends":"text", "sButtonText": "Quitar", "fnClick" :function(){_ConfirmDeleteGroupMembers();}},
-                    {"sExtends": "copy","sButtonText": "Copiar Tabla"},
                     {
                         "sExtends":    "collection",
                         "sButtonText": "Exportar...",
-                        "aButtons":    [ "csv", "xls", "pdf" ]
+                        "aButtons":    [ "csv", "xls", "pdf", "copy" ]
                     }                          
                 ]
             }    });  
@@ -426,7 +485,7 @@ var ClassUsersGroups = function()
         data: "opcion=GetGroupMemebers&DataBaseName="+EnvironmentData.DataBaseName+'&IdUsuario='+EnvironmentData.IdUsuario+'&NombreUsuario='+EnvironmentData.NombreUsuario+'&IdGrupo='+EnvironmentData.IdGrupo+ "&NombreGrupo = "+ EnvironmentData.NombreGrupo+"&IdGrupoUsuario="+this.IdGrupo+"&NombreGrupoUsuario="+this.NombreGrupo, 
         success:  function(xml)
         {            
-            if($.parseXML( xml )===null){$('#UsersPlaceWaiting').remove(); Error(xml); return 0;}else xml=$.parseXML( xml );         
+            if($.parseXML( xml )===null){$('#UsersPlaceWaiting').remove(); errorMessage(xml); return 0;}else xml=$.parseXML( xml );         
             
             if($(xml).find("Member").length>0)
                 Integrantes = xml;
@@ -434,13 +493,13 @@ var ClassUsersGroups = function()
             $(xml).find("Error").each(function()
             {
                 var mensaje=$(this).find("Mensaje").text();
-                Error(mensaje);
+                errorMessage(mensaje);
                 $('#UsersPlaceWaiting').remove();
             });                 
 
         },
         beforeSend:function(){},
-        error: function(jqXHR, textStatus, errorThrown){$('#UsersPlaceWaiting').remove(); Error(textStatus +"<br>"+ errorThrown);}
+        error: function(jqXHR, textStatus, errorThrown){$('#UsersPlaceWaiting').remove(); errorMessage(textStatus +"<br>"+ errorThrown);}
         });   
         
         return Integrantes;
@@ -463,11 +522,10 @@ var ClassUsersGroups = function()
             "bInfo":false, "autoWidth" : false, "oLanguage":LanguajeDataTable,
             "tableTools": {
                 "aButtons": [
-                    {"sExtends": "copy","sButtonText": "Copiar Tabla"},
                     {
                         "sExtends":    "collection",
                         "sButtonText": "Exportar...",
-                        "aButtons":    [ "csv", "xls", "pdf" ]
+                        "aButtons":    [ "csv", "xls", "pdf", "copy" ]
                     }                          
                 ]
             } });  
@@ -512,7 +570,7 @@ var ClassUsersGroups = function()
         data: "opcion=GetUsersWithoutGroup&DataBaseName="+EnvironmentData.DataBaseName+'&IdUsuario='+EnvironmentData.IdUsuario+'&NombreUsuario='+EnvironmentData.NombreUsuario+'&IdGrupo='+EnvironmentData.IdGrupo, 
         success:  function(xml)
         {            
-            if($.parseXML( xml )===null){$('#UsersPlaceWaiting').remove(); Error(xml); return 0;}else xml=$.parseXML( xml );         
+            if($.parseXML( xml )===null){$('#UsersPlaceWaiting').remove(); errorMessage(xml); return 0;}else xml=$.parseXML( xml );         
             
             if($(xml).find("Member").length>0)
                 Users = xml;
@@ -520,13 +578,13 @@ var ClassUsersGroups = function()
             $(xml).find("Error").each(function()
             {
                 var mensaje=$(this).find("Mensaje").text();
-                Error(mensaje);
+                errorMessage(mensaje);
                 $('#UsersPlaceWaiting').remove();
             });                 
 
         },
         beforeSend:function(){},
-        error: function(jqXHR, textStatus, errorThrown){$('#UsersPlaceWaiting').remove(); Error(textStatus +"<br>"+ errorThrown);}
+        error: function(jqXHR, textStatus, errorThrown){$('#UsersPlaceWaiting').remove(); errorMessage(textStatus +"<br>"+ errorThrown);}
         });   
         
         return Users;
@@ -570,7 +628,7 @@ var ClassUsersGroups = function()
         {           
             $('#UsersPlaceWaiting').remove();
             $('.PanelUsersWithoutGroup').dialog('destroy');
-            if($.parseXML( xml )===null){Error(xml); return 0;}else xml=$.parseXML( xml );
+            if($.parseXML( xml )===null){errorMessage(xml); return 0;}else xml=$.parseXML( xml );
 
             $(xml).find("Added").each(function()
             {
@@ -595,12 +653,12 @@ var ClassUsersGroups = function()
             $(xml).find("Error").each(function()
             {
                 var mensaje=$(this).find("Mensaje").text();
-                Error(mensaje);
+                errorMessage(mensaje);
             });                 
 
         },
         beforeSend:function(){},
-        error: function(jqXHR, textStatus, errorThrown){$('#UsersPlaceWaiting').remove(); Error(textStatus +"<br>"+ errorThrown);}
+        error: function(jqXHR, textStatus, errorThrown){$('#UsersPlaceWaiting').remove(); errorMessage(textStatus +"<br>"+ errorThrown);}
         });          
         
     };
@@ -651,7 +709,7 @@ var ClassUsersGroups = function()
         success:  function(xml)
         {           
             $('#UsersPlaceWaiting').remove();
-            if($.parseXML( xml )===null){Error(xml); return 0;}else xml=$.parseXML( xml );
+            if($.parseXML( xml )===null){errorMessage(xml); return 0;}else xml=$.parseXML( xml );
 
             $(xml).find("Deleted").each(function()
             {
@@ -666,12 +724,12 @@ var ClassUsersGroups = function()
             $(xml).find("Error").each(function()
             {
                 var mensaje=$(this).find("Mensaje").text();
-                Error(mensaje);
+                errorMessage(mensaje);
             });                 
 
         },
         beforeSend:function(){},
-        error: function(jqXHR, textStatus, errorThrown){$('#UsersPlaceWaiting').remove(); Error(textStatus +"<br>"+ errorThrown);}
+        error: function(jqXHR, textStatus, errorThrown){$('#UsersPlaceWaiting').remove(); errorMessage(textStatus +"<br>"+ errorThrown);}
         });          
     };
     
@@ -1159,11 +1217,10 @@ ClassUsersGroups.prototype.ShowsGroupsUsers = function()
                     {"sExtends":"text", "sButtonText": "Eliminar", "fnClick" :function(){_ConfirmDelete();}},
                     {"sExtends":"text", "sButtonText": "Miembros", "fnClick" :function(){_Members();}},
                     {"sExtends":"text", "sButtonText": "Permisos", "fnClick" :function(){_CreatePermissionsPanel();}},
-                    {"sExtends": "copy","sButtonText": "Copiar Tabla"},
                     {
                         "sExtends":    "collection",
                         "sButtonText": "Exportar...",
-                        "aButtons":    [ "csv", "xls", "pdf" ]
+                        "aButtons":    [ "csv", "xls", "pdf", "copy" ]
                     }                          
                 ]
             }    });    
