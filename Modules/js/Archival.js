@@ -12,6 +12,7 @@ var ArchivalClass = function(){
         _getDocumentaryDisposition();     
         _getDocumentaryValidity();
         _getLegalFoundation();
+        _getAdministrativeUnit();
     };
     
     /*
@@ -65,6 +66,20 @@ var ArchivalClass = function(){
         return status;
     };
     
+    var _getAdministrativeUnit = function(){
+        var status = false;
+        $.getScript( "Modules/js/AdministrativeUnit.js" )
+            .done(function( script, textStatus ) {
+              status = true;
+              administrativeUnit = new AdministrativeUnit();
+              administrativeUnit.setActionToLink();
+            })
+            .fail(function( jqxhr, settings, exception ) {
+            });
+        
+        return status;
+    };
+    
 };
 
 ArchivalClass.prototype.buildModule = function(){
@@ -74,9 +89,12 @@ ArchivalClass.prototype.buildModule = function(){
     var vigenciDocLi = $('<li>', {class: "here LinkDocumentaryValidity"}).append('<a href = "#">Vigencia Documental</a>');
     var fundamentoLegal = $('<li>', {class: "here LinkLegalFoundation"}).append('<a href = "#">Fundamento Legal</a>');
     var dispDoc = $('<li>',{class:"LinkDocumentaryDisposition"}).append('<a href="#">Cat. de Dispos. Documental</a>');
+    var administrativeUnit = $('<li>',{class:"LinkAdministrativeUnit"}).append('<a href="#">Unidad Administrativa</a>');
+    
     var sublist = $('<ul>',{class:"sublist"}).append(dispDoc);
     sublist.append(vigenciDocLi);
     sublist.append(fundamentoLegal);
+    sublist.append(administrativeUnit);
     
     var a = $('<a>', {href:"#Disposición Documental"}).append("Archivística");
     
