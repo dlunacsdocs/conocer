@@ -341,7 +341,7 @@ var ClassUsersGroups = function()
         });          
     };
     
-    _ConfirmDelete = function()
+    var _ConfirmDelete = function()
     {        
         var self = this;
         
@@ -423,53 +423,58 @@ var ClassUsersGroups = function()
         if(!(_CheckActiveGroup()))
             return 0;
         
-        $('#WS_Users').append('<div class="PlaceWaiting" id = "UsersPlaceWaiting"><img src="../img/loadinfologin.gif"></div>');
+        var table = $('<table>',{id:"GroupMembers",class:"table table-striped table-bordered table-hover table-condensed"});
+        var thead = $('<thead>').append("<tr><th>Usuario</th><th>Descripción</th></tr>");
+        table.append(thead);
         
-        $('.PanelGroupsMembers').remove();
-        $('body').append('<div class = "PanelGroupsMembers" style = "display:none"></div>');
-        $('.PanelGroupsMembers').append('<div class="titulo_ventana">Integrantes de grupo</div>');       
-        $('.PanelGroupsMembers').append('<table id = "GroupMembers" class = "table table-striped table-bordered table-hover table-condensed"><thead><tr><th>Usuario</th><th>Descripción</th></tr></thead><tbody></tbody></table>');
-        
-        TableGroupMembersdT = $('#GroupMembers').dataTable({
-            "sDom": 'lfTrtip',
-            "bInfo":false, "autoWidth" : false, "oLanguage":LanguajeDataTable,
-            "tableTools": {
-                "aButtons": [
-                    {"sExtends":"text", "sButtonText": "Agregar", "fnClick" :function(){_ShowUsersWithoutGroup();}},
-                    {"sExtends":"text", "sButtonText": "Quitar", "fnClick" :function(){_ConfirmDeleteGroupMembers();}},
-                    {
-                        "sExtends":    "collection",
-                        "sButtonText": "Exportar...",
-                        "aButtons":    [ "csv", "xls", "pdf", "copy" ]
-                    }                          
-                ]
-            }    });  
-        TableGroupMembersDT = new $.fn.dataTable.Api('#GroupMembers');
-        
-        var XmlGruposUsuario = _GetGroupMemebers();
-        
-        $(XmlGruposUsuario).find("Member").each(function()
-        {
-            var IdUsuario = $(this).find('IdUsuario').text();
-            var NombreUsuario = $(this).find('Login').text();
-            var Descripcion = $(this).find('Descripcion').text();
-            
-            var Data = [NombreUsuario, Descripcion];
-            
-            var ai = TableGroupMembersDT.row.add(Data).draw();
-            var n = TableGroupMembersdT.fnSettings().aoData[ ai[0] ].nTr;
-            n.setAttribute('id',IdUsuario);
-        });        
-        
-        $('#GroupMembers tbody').on( 'click', 'tr', function () {
-            $(this).toggleClass('selected');
-        } );  
+        BootstrapDialog.show({
+            title: 'Integrantes del grupo '+NombreGrupo,
+            size: BootstrapDialog.SIZE_NORMAL,
+            message: table,
+            buttons: [
 
-        $('.PanelGroupsMembers').dialog({title:"Integrantes del grupo \""+ this.NombreGrupo +"\"", width: 450, height:450, minWidth:450, minHeight:400, modal:true, buttons:{
-                "Cerrar":{text:"Cerrar", click:function(){$(this).dialog('close');}}
-        }});
-    
-        $('#UsersPlaceWaiting').remove();
+            ],
+            onshown: function(dialogRef){
+                TableGroupMembersdT = $('#GroupMembers').dataTable({
+                    "sDom": 'lfTrtip',
+                    "bInfo":false, "autoWidth" : false, "oLanguage":LanguajeDataTable,
+                    "tableTools": {
+                        "aButtons": [
+                            {"sExtends":"text", "sButtonText": "Agregar", "fnClick" :function(){_ShowUsersWithoutGroup();}},
+                            {"sExtends":"text", "sButtonText": "Quitar", "fnClick" :function(){_ConfirmDeleteGroupMembers();}},
+                            {
+                                "sExtends":    "collection",
+                                "sButtonText": "Exportar...",
+                                "aButtons":    [ "csv", "xls", "pdf", "copy" ]
+                            }                          
+                        ]
+                    }    });  
+                
+                TableGroupMembersDT = new $.fn.dataTable.Api('#GroupMembers');
+
+                var XmlGruposUsuario = _GetGroupMemebers();
+
+                $(XmlGruposUsuario).find("Member").each(function()
+                {
+                    var IdUsuario = $(this).find('IdUsuario').text();
+                    var NombreUsuario = $(this).find('Login').text();
+                    var Descripcion = $(this).find('Descripcion').text();
+
+                    var Data = [NombreUsuario, Descripcion];
+
+                    var ai = TableGroupMembersDT.row.add(Data).draw();
+                    var n = TableGroupMembersdT.fnSettings().aoData[ ai[0] ].nTr;
+                    n.setAttribute('id',IdUsuario);
+                });   
+                
+                $('#GroupMembers tbody').on( 'click', 'tr', function () {
+                    $(this).toggleClass('selected');
+                });  
+                
+            }
+            
+            
+        });
         
     };
     
@@ -510,52 +515,70 @@ var ClassUsersGroups = function()
         if(!(_CheckActiveGroup()))
             return 0;
         
-        $('.PanelGroupsMembers').append('<div class="PlaceWaiting" id = "UsersPlaceWaiting"><img src="../img/loadinfologin.gif"></div>');
+        var table = $('<table>',{id:"UsersWithoutGroup", class:"table table-striped table-bordered table-hover table-condensed"});
+        var thead = $('<thead>').append('<tr><th>Usuario</th><th>Descripción</th></tr>');
+        table.append(thead);
         
-        $('.PanelUsersWithoutGroup').remove();
-        $('body').append('<div class = "PanelUsersWithoutGroup" style = "display:none"></div>');
-        $('.PanelUsersWithoutGroup').append('<div class="titulo_ventana">Integrantes de grupo</div>');       
-        $('.PanelUsersWithoutGroup').append('<table id = "UsersWithoutGroup" class = "table table-striped table-bordered table-hover table-condensed"><thead><tr><th>Usuario</th><th>Descripción</th></tr></thead><tbody></tbody></table>');
-        
-        TableUsersWithoutGroupdT = $('#UsersWithoutGroup').dataTable({
-            "sDom": 'lfTrtip',
-            "bInfo":false, "autoWidth" : false, "oLanguage":LanguajeDataTable,
-            "tableTools": {
-                "aButtons": [
-                    {
-                        "sExtends":    "collection",
-                        "sButtonText": "Exportar...",
-                        "aButtons":    [ "csv", "xls", "pdf", "copy" ]
-                    }                          
-                ]
-            } });  
-        TableUsersWithoutGroupDT = new $.fn.dataTable.Api('#UsersWithoutGroup');
+        BootstrapDialog.show({
+            title: 'Usuarios sin grupo',
+            size: BootstrapDialog.SIZE_NORMAL,
+            type: BootstrapDialog.TYPE_INFO,
+            message: table,
+            buttons: [
+                {
+                    label: 'Cerrar',
+                    action: function(dialogRef){
+                        dialogRef.close();
+                    }
+                },
+                {
+                    label: 'Agregar',
+                    cssClass:"btn-primary",
+                    action: function(dialogRef){     
+                        var button = this;
+                        button.spin();
+                        button.disable();
+                        _AddUsersToGroup();
+                        dialogRef.close();
+                    }
+                }
+            ],
+            onshown: function(dialogRef){
+                TableUsersWithoutGroupdT = $('#UsersWithoutGroup').dataTable({
+                    "sDom": 'lfTrtip',
+                    "bInfo":false, "autoWidth" : false, "oLanguage":LanguajeDataTable,
+                    "tableTools": {
+                        "aButtons": [
+                            {
+                                "sExtends":    "collection",
+                                "sButtonText": "Exportar...",
+                                "aButtons":    [ "csv", "xls", "pdf", "copy" ]
+                            }                          
+                        ]
+                    } });  
+                TableUsersWithoutGroupDT = new $.fn.dataTable.Api('#UsersWithoutGroup');
+
+                var XmlUsers = _GetUsersWithoutGroup();
+
+                $(XmlUsers).find("Member").each(function()
+                {
+                    var IdUsuario = $(this).find('IdUsuario').text();
+                    var NombreUsuario = $(this).find('Login').text();
+                    var Descripcion = $(this).find('Descripcion').text();
+
+                    var Data = [NombreUsuario, Descripcion];
+
+                    var ai = TableUsersWithoutGroupDT.row.add(Data).draw();
+                    var n = TableUsersWithoutGroupdT.fnSettings().aoData[ ai[0] ].nTr;
+                    n.setAttribute('id',IdUsuario);
+                });
                 
-        var XmlUsers = _GetUsersWithoutGroup();
-        
-        $(XmlUsers).find("Member").each(function()
-        {
-            var IdUsuario = $(this).find('IdUsuario').text();
-            var NombreUsuario = $(this).find('Login').text();
-            var Descripcion = $(this).find('Descripcion').text();
-            
-            var Data = [NombreUsuario, Descripcion];
-            
-            var ai = TableUsersWithoutGroupDT.row.add(Data).draw();
-            var n = TableUsersWithoutGroupdT.fnSettings().aoData[ ai[0] ].nTr;
-            n.setAttribute('id',IdUsuario);
+                $('#UsersWithoutGroup tbody').on( 'click', 'tr', function () {
+                    $(this).toggleClass('selected');
+                });  
+            }
         });
-        
-        
-        $('.PanelUsersWithoutGroup').dialog({title:"Seleccione usuarios", width: 550, height:350, minWidth:550, minHeight:350, modal:true, buttons:{
-                "Ok":{text:"Ok", click:function(){_AddUsersToGroup();}}
-        }});
-            
-        $('#UsersWithoutGroup tbody').on( 'click', 'tr', function () {
-            $(this).toggleClass('selected');
-        });  
-    
-        $('#UsersPlaceWaiting').remove();
+
     };
     
     var _GetUsersWithoutGroup = function()
@@ -665,20 +688,32 @@ var ClassUsersGroups = function()
     
     var _ConfirmDeleteGroupMembers = function()
     {
-        $('.ConfirmDeleteGroupMembers').remove();
-        $('body').append('<div class = "ConfirmDeleteGroupMembers"></div>');        
-        $('.ConfirmDeleteGroupMembers').append('<p>Se eliminararán los usuarios seleccionados del grupo <b>'+NombreGrupo+'</b>. ¿Desea continuar?</p>');        
-        $('.ConfirmDeleteGroupMembers').dialog({title:"Mensaje de confirmación", width:300, height:200, minWidth:300, minHeight:200, modal:true, buttons:{
-                "Cancelar":{text:"Cancelar", click:function(){  $(this).dialog('destroy');  }},
-                "Aceptar":{text:"Aceptar", click:function(){$(this).dialog('destroy'); _DeleteGroupMembers();   }}
-        }});
+        BootstrapDialog.show({
+            title: 'Quitar integrantes de '+NombreGrupo,
+            size: BootstrapDialog.SIZE_SMALL,
+            type: BootstrapDialog.TYPE_DANGER,
+            message: "<p>Se eliminararán los usuarios seleccionados del grupo <b>"+NombreGrupo+"</b>. ¿Desea continuar?</p>",
+            buttons: [
+                {
+                    label:"Eliminar",
+                    action:function(dialogRef){
+                        var button = this;
+                        button.spin();
+                        button.disable();
+                        _DeleteGroupMembers();
+                        dialogRef.close();
+                    }
+                }
+            ],
+            onshown: function(dialogRef){
+     
+            }
+        });
         
     };
     
     var _DeleteGroupMembers = function()
-    {        
-        $('.PanelGroupsMembers').append('<div class="PlaceWaiting" id = "UsersPlaceWaiting"><img src="../img/loadinfologin.gif"></div>');
-        
+    {                
         var UsersXml = "<Users version='1.0' encoding='UTF-8'>";
         $('#GroupMembers tr.selected').each(function ()
         {
@@ -708,7 +743,6 @@ var ClassUsersGroups = function()
         data: "opcion=DeleteGroupMembers&DataBaseName="+EnvironmentData.DataBaseName+'&IdUsuario='+EnvironmentData.IdUsuario+'&NombreUsuario='+EnvironmentData.NombreUsuario+'&IdGrupo='+this.IdGrupo+'&NombreGrupo='+this.NombreGrupo+'&UsersXml='+UsersXml, 
         success:  function(xml)
         {           
-            $('#UsersPlaceWaiting').remove();
             if($.parseXML( xml )===null){errorMessage(xml); return 0;}else xml=$.parseXML( xml );
 
             $(xml).find("Deleted").each(function()
@@ -729,7 +763,7 @@ var ClassUsersGroups = function()
 
         },
         beforeSend:function(){},
-        error: function(jqXHR, textStatus, errorThrown){$('#UsersPlaceWaiting').remove(); errorMessage(textStatus +"<br>"+ errorThrown);}
+        error: function(jqXHR, textStatus, errorThrown){ errorMessage(textStatus +"<br>"+ errorThrown);}
         });          
     };
     
