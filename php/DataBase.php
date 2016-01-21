@@ -261,10 +261,7 @@ class DataBase {
             
             if(($estado=$this->ConsultaQuery($DataBaseName, $TablaRepositorio))!=1)
                 return "<p><b>Error</b> al crear <b>Repositorios</b> en $DataBaseName. $TablaRepositorio</p>";
-                                
-//            echo $ResulTRoles=($this->CreateTableRoles($nombre_instancia)) ? "<p>Se construyó <b>Roles</b> </p>" : "<p><b>Error</b> al crear la tabla Roles de Usuario</p>";
-            
-//            echo $ResultPermissions = ($this->CreateTablePermissions($nombre_instancia))? "<p>Se construyo <b>Permissions</b></p>":"<p>Error al crear Permissions $ResultPermissions</p>";
+                                            
             
         $TablaCatalogos="CREATE TABLE IF NOT EXISTS CSDocs_Catalogos ("
                 . "IdCatalogo INT(11) NOT NULL AUTO_INCREMENT,"
@@ -333,16 +330,17 @@ class DataBase {
         if(($EstadoTablaCorreos=$this->ConsultaQuery($DataBaseName, $TablaSmtp))!=1)
             return "<p><b>Error</b> al crear <b>Correo</b> en $DataBaseName. $EstadoTablaCorreos</p>";
             
-        $docDisposition = "CREATE TABLE IF NOT EXISTS CSDocs_DocumentaryDisposition ("
-            . "idDocumentaryDisposition INT NOT NULL AUTO_INCREMENT,"
-                . "Name VARCHAR(250) NOT NULL,"
-                . "NameKey VARCHAR(60) NOT NULL, "
-                . "Description VARCHAR(255) NOT NULL,"
-                . "NodeType VARCHAR(10) NOT NULL,"
-                . "ParentKey VARCHAR(25),"
-                . "UNIQUE (NameKey),"
-                . "PRIMARY KEY (idDocumentaryDisposition)"
-            . ") DEFAULT CHARSET=utf8";
+        $docDisposition = "CREATE TABLE IF NOT EXISTS CSDocs_DocumentaryDisposition (
+            idDocumentaryDisposition INT NOT NULL AUTO_INCREMENT,
+                Name VARCHAR(250) NOT NULL,
+                NameKey VARCHAR(60) NOT NULL, 
+                Description VARCHAR(255) NOT NULL,
+                NodeType VARCHAR(10) NOT NULL,
+                ParentKey VARCHAR(25),
+                idAdministrativeUnit INT DEFAULT 0,
+                UNIQUE (NameKey),
+                PRIMARY KEY (idDocumentaryDisposition)
+            ) DEFAULT CHARSET=utf8";
         
         if(($resultDocDisposition = $this->ConsultaQuery($DataBaseName, $docDisposition)) != 1)
                 return "<p><b>Error</b> al intentar construir <b>Disposición Documental</b>. Detalles: $resultDocDisposition</p>";
@@ -392,6 +390,18 @@ class DataBase {
         
         if(($triggerResult = $this->ConsultaQuery($DataBaseName, $documentaryValidityTrigger)) != 1)
                 return "<p><b>Error</b> al crear disparador en <b>Vigencia Documental</b></p>";
+        
+        $administrativeUnit = "CREATE TABLE IF NOT EXISTS CSDocs_AdministrativeUnit(
+                idAdminUnit INT NOT NULL AUTO_INCREMENT,
+                Name VARCHAR (50) NOT NULL,
+                Description TEXT,      
+                idParent INT,
+                idUserGroup INT,
+                PRIMARY KEY (idAdminUnit)
+                )";
+        
+        if(($administrativeUnitResult = $this->ConsultaQuery($DataBaseName, $administrativeUnit)) != 1)
+                return "<p><b>Error</b> al crear <b>Unidad Administrativa</b></p> Detalles:<br>$administrativeUnitResult";
         
         return 1;
     }
