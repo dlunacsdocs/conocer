@@ -12,16 +12,30 @@ var AdministrativeUnit = function(){
     };
     
     var buildConsole = function(){
+        var tabbable = $('<div>');
+ 
+        var navTab = $('<ul>', {class:"nav nav-tabs"});
+        
+        var adminUnitLi = $('<li>', {class:"active"}).append('<a href="#adminUnitDiv" data-toggle="tab"><span class = "archivalAdministrativeUnitIcon"></span> Unidad Administrativa</a>');
+        var serieLi = $('<li>').append('<a href="#adminUnitSerie" data-toggle="tab"><span class = "archivalSectionIcon"></span> Serie</a>');
+        
+        var adminUnitDiv = $('<div>',{class:"tab-pane active", id:"adminUnitDiv"});
+        var serieDiv = $('<div>',{class:"tab-pane", id:"adminUnitSerie"});
+        
+        var tabContent = $('<div>', {class:"tab-content"});
+        
         var content = $('<div>');
         var navTabBar = $('<nav>',{class:"navbar navbar-default"});
         var container = $('<div>',{ class: "container-fluid"});
         var navHeader = $('<div>', {class: "navbar-header"});
+        
         container.append(navHeader);
         container.append('<div class = "btn-group-sm" role="group">\n\
                             <button class = "btn btn-success navbar-btn newAdminUnit"><span class = "glyphicon glyphicon-plus"></span></button>\n\
                             <button class = "btn btn-warning navbar-btn editAdminUnit"><span class = "glyphicon glyphicon-edit"></span></button>\n\
                             <button class = "btn btn-danger navbar-btn removeAdminUnit"><span class = "glyphicon glyphicon-remove"></span></button>\n\
                          </div>');        
+        
         navTabBar.append(container);
         
         content.append(navTabBar);
@@ -30,11 +44,22 @@ var AdministrativeUnit = function(){
         
         content.append(adminUnit);
         
+        adminUnitDiv.append(content);
+        
+        tabContent.append(adminUnitDiv);
+        tabContent.append(serieDiv);
+        
+        navTab.append(adminUnitLi);
+        navTab.append(serieLi);
+             
+        tabbable.append(navTab);
+        tabbable.append(tabContent);
+        
         var dialog = BootstrapDialog.show({
             title: 'Unidad Administrativa',
             size: BootstrapDialog.SIZE_NORMAL,
             type:BootstrapDialog.TYPE_PRIMARY,
-            message: content,
+            message: tabbable,
             closable: true,
             buttons: [
                 
@@ -58,7 +83,7 @@ var AdministrativeUnit = function(){
                 }
                 
                 $('.newAdminUnit').click(function(){
-                    newAdminUnit();
+                    tree.newAdminUnit();
                 });
                 $('.editAdminUnit').click(function(){
                     tree.editAdminUnit();
@@ -358,121 +383,128 @@ var AdministrativeUnit = function(){
             });   
             
             return status;
-        }
+        },
+        newAdminUnit: function(){
         
-    };
-    
-    var newAdminUnit = function(){
-        
-        var activeNode = $('#adminUnitTree').dynatree('getActiveNode');
-                        
-        if(typeof activeNode !== 'object')
-            return Advertencia("Debe seleccionar al menos el elemento Raíz");
-        
-        var content = $('<div>');
-        var formGroup = $('<div>',{class:"form-group"});
-        var nameLabel = $('<label>').append("Nombre");
-        var nameForm = $('<input>',{class:"form-control", id:"adminUnitName"});
-        formGroup.append(nameLabel);
-        formGroup.append(nameForm);
-        content.append(formGroup);
-        
-        formGroup = $('<div>',{class:"form-group"});
-        var descriptionLabel = $('<label>').append("Descripción");
-        var descriptionForm = $('<input>',{class:"form-control", id:"adminUnitDescription"});
-        formGroup.append(descriptionLabel);
-        formGroup.append(descriptionForm);
-        content.append(formGroup);
-        
-        var dialog = BootstrapDialog.show({
-            title: 'Nueva Unidad Administrativa',
-            size: BootstrapDialog.SIZE_SMALL,
-            type:BootstrapDialog.TYPE_PRIMARY,
-            message: content,
-            closable: true,
-            buttons: [
-                {
-                    label:"Cancelar",
-                    action: function(dialogRef){
-                        dialogRef.close();
-                    }
-                },
-                {
-                    label:"Agregar",
-                    cssClass: "btn-primary",
-                    action: function(dialogRef){
-                        var button = this;             
-                        button.spin();
-                        button.disable();
-                        
-                        if(_addNewAdminUnit(activeNode))
-                            dialogRef.close();
-                        
-                        button.stopSpin();
-                        button.enable();
-                    }
-                }
-                
-            ],
-            onshown: function(dialogRef){
-                nameForm.focus();
-            },
-            onclose: function(dialogRef){
-                
-            }
-        });
-    };
-    
-    var _addNewAdminUnit = function(activeNode){
-        var status = 0;
-        var name = $.trim($('#adminUnitName').val());
-        var description = $.trim($('#adminUnitDescription').val());
-        var idParent = activeNode.data.key;
+            var activeNode = $('#adminUnitTree').dynatree('getActiveNode');
 
-        if(String(name).length === 0)
-            return Advertencia("El campo <b>Nombre</b> es obligatorio");
-        
-        $.ajax({
-        async: false, 
-        cache: false,
-        dataType: "html", 
-        type: 'POST',   
-        url: "Modules/php/AdministrativeUnit.php",
-        data: {option: "addNewAdminUnit", name:name, description:description, idParent:idParent}, 
-        success:  function(xml)
-        {           
-            if($.parseXML( xml )===null){errorMessage(xml); return 0;}else xml=$.parseXML( xml );
-            
-            $(xml).find('newAdminUnitAdded').each(function(){
-                var idAdminUnit = $(this).find('idAdminUnit').text();
-                if(parseInt(idAdminUnit) > 0){
-                    status = 1;
-                    var child = activeNode.addChild({
-                        title:name,
-                        key:idAdminUnit,
-                        description:description,
-                        isFolder:true,
-                        expand: true,
-                        icon: "/img/archival/department.png"
-                    });
-                    
-                    child.activate(true);
+            if(typeof activeNode !== 'object')
+                return Advertencia("Debe seleccionar al menos el elemento Raíz");
+
+            var content = $('<div>');
+            var formGroup = $('<div>',{class:"form-group"});
+            var nameLabel = $('<label>').append("Nombre");
+            var nameForm = $('<input>',{class:"form-control", id:"adminUnitName"});
+            formGroup.append(nameLabel);
+            formGroup.append(nameForm);
+            content.append(formGroup);
+
+            formGroup = $('<div>',{class:"form-group"});
+            var descriptionLabel = $('<label>').append("Descripción");
+            var descriptionForm = $('<input>',{class:"form-control", id:"adminUnitDescription"});
+            formGroup.append(descriptionLabel);
+            formGroup.append(descriptionForm);
+            content.append(formGroup);
+
+            var dialog = BootstrapDialog.show({
+                title: 'Nueva Unidad Administrativa',
+                size: BootstrapDialog.SIZE_SMALL,
+                type:BootstrapDialog.TYPE_PRIMARY,
+                message: content,
+                closable: true,
+                buttons: [
+                    {
+                        label:"Cancelar",
+                        action: function(dialogRef){
+                            dialogRef.close();
+                        }
+                    },
+                    {
+                        label:"Agregar",
+                        cssClass: "btn-primary",
+                        action: function(dialogRef){
+                            var button = this;             
+                            button.spin();
+                            button.disable();
+
+                            if(tree.addNewAdminUnit(activeNode))
+                                dialogRef.close();
+
+                            button.stopSpin();
+                            button.enable();
+                        }
+                    }
+
+                ],
+                onshown: function(dialogRef){
+                    nameForm.focus();
+                },
+                onclose: function(dialogRef){
+
                 }
             });
-            
-            $(xml).find("Error").each(function()
-            {
-                var mensaje=$(this).find("Mensaje").text();
-                errorMessage(mensaje);
-            });                 
-
         },
-        beforeSend:function(){},
-        error: function(jqXHR, textStatus, errorThrown){errorMessage(textStatus +"<br>"+ errorThrown);}
-        });    
-        
-        return status;
-        
-    };
+        addNewAdminUnit: function(activeNode){
+            var status = 0;
+            var name = $.trim($('#adminUnitName').val());
+            var description = $.trim($('#adminUnitDescription').val());
+            var idParent = activeNode.data.key;
 
+            if(String(name).length === 0)
+                return Advertencia("El campo <b>Nombre</b> es obligatorio");
+
+            $.ajax({
+            async: false, 
+            cache: false,
+            dataType: "html", 
+            type: 'POST',   
+            url: "Modules/php/AdministrativeUnit.php",
+            data: {option: "addNewAdminUnit", name:name, description:description, idParent:idParent}, 
+            success:  function(xml)
+            {           
+                if($.parseXML( xml )===null){errorMessage(xml); return 0;}else xml=$.parseXML( xml );
+
+                $(xml).find('newAdminUnitAdded').each(function(){
+                    var idAdminUnit = $(this).find('idAdminUnit').text();
+                    if(parseInt(idAdminUnit) > 0){
+                        status = 1;
+                        var child = activeNode.addChild({
+                            title:name,
+                            key:idAdminUnit,
+                            description:description,
+                            isFolder:true,
+                            expand: true,
+                            icon: "/img/archival/department.png"
+                        });
+
+                        child.activate(true);
+                    }
+                });
+
+                $(xml).find("Error").each(function()
+                {
+                    var mensaje=$(this).find("Mensaje").text();
+                    errorMessage(mensaje);
+                });                 
+
+            },
+            beforeSend:function(){},
+            error: function(jqXHR, textStatus, errorThrown){errorMessage(textStatus +"<br>"+ errorThrown);}
+            });    
+
+            return status;
+
+        }
+    };
+   
+   /**
+    * @description Objeto con las funciones necesarias para ligar a Serie con unidades administrativas.
+    * @type type
+    */
+   var serie = {
+       getSeries: function(){
+           
+       }
+   };
+   
 };

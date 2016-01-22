@@ -807,3 +807,12 @@ span.archivalSerieIcon{
     color: red;
     display: inline-block;
 }
+
+span.archivalAdministrativeUnitIcon{
+    background: url(../img/archival/department.png) no-repeat;
+    width: 24px;
+    height: 24px;   
+    color: red;
+    display: inline-block;
+    
+}
