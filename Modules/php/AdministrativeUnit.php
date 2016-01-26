@@ -36,6 +36,9 @@ class AdministrativeUnit {
                 case 'deleteAdminUnit': $this->deleteAdminUnit($userData); break;
                 case 'mergeAdminUnitAndSerie': $this->mergeAdminUnitAndSerie($userData); break;
                 case 'getSeriesStructure': $this->getSeriesStructure($userData); break;
+                case 'mergeUserGroupAndAdminUnit': $this->mergeUserGroupAndAdminUnit($userData); break;
+                case 'getAdminUnitWithoutSerie': $this->getAdminUnitWithoutSerie($userData); break;
+                case 'removeAdminUnit': $this->removeAdminUnit($userData); break;
             }
         }
     }
@@ -130,11 +133,11 @@ class AdministrativeUnit {
         $idAdminUnit = filter_input(INPUT_POST, "idAdminUnit");
         $idSerie = filter_input(INPUT_POST, "idSerie");
         
-        $insert = "INSERT INTO CSDocs_AdminUnit_DocDisposition (idAdminUnit, idDocDisposition)
-                 VALUES ($idAdminUnit, $idSerie)";
+        $insert = "UPDATE CSDocs_AdministrativeUnit SET IdSerie = $idSerie WHERE idAdminUnit = $idAdminUnit
+                ";
         
         if(($insertResult = $this->db->ConsultaQuery($instanceName, $insert)) != 1)
-                return XML::XMLReponse ("dondeMerge", 1, "<p><b>Error</b> al intentar realizar la fusión</p>Detalles:<br>$insertResult");
+                return XML::XMLReponse ("Error", 1, "<p><b>Error</b> al intentar realizar la fusión</p>Detalles:<br>$insertResult");
     
         XML::XMLReponse("doneMerge", 1, "Fusión realizada");
     }
@@ -148,11 +151,10 @@ class AdministrativeUnit {
         $instanceName = $userData['dataBaseName'];
         
         $select = "
-            SELECT doc.idDocumentaryDisposition, doc.Name, doc.NameKey, doc.Description, 
-            adm_doc.idAdminUnit_DocDisposition, au.idAdminUnit, au.Name, gu.IdGrupo, gu.Nombre
+            SELECT doc.idDocumentaryDisposition, doc.Name, doc.NameKey, 
+            doc.Description, au.idAdminUnit, au.Name, gu.IdGrupo, gu.Nombre
             FROM CSDocs_DocumentaryDisposition doc 
-            LEFT JOIN CSDocs_AdminUnit_DocDisposition adm_doc ON doc.idDocumentaryDisposition = adm_doc.idDocDisposition 
-            LEFT JOIN CSDocs_AdministrativeUnit au ON adm_doc.idAdminUnit = au.idAdminUnit
+            LEFT JOIN CSDocs_AdministrativeUnit au ON doc.idDocumentaryDisposition = au.idSerie
             LEFT JOIN GruposUsuario gu ON au.idUserGroup = gu.IdGrupo
             WHERE doc.NodeType = 'serie'
             ";
@@ -180,15 +182,13 @@ class AdministrativeUnit {
                 $bloque->appendChild($nameKey);
                 $description = $doc->createElement("Description",$row[3]);
                 $bloque->appendChild($description);
-                $idAdminUnit_DocDisposition = $doc->createElement("idAdminUnit_DocDisposition",$row[4]);
-                $bloque->appendChild($idAdminUnit_DocDisposition);
-                $idAdminUnit = $doc->createElement("idAdminUnit", $row[5]);
+                $idAdminUnit = $doc->createElement("idAdminUnit", $row[4]);
                 $bloque->appendChild($idAdminUnit);
-                $adminUnitName = $doc->createElement("adminUnitName", $row[6]);
+                $adminUnitName = $doc->createElement("adminUnitName", $row[5]);
                 $bloque->appendChild($adminUnitName);
-                $idUserGroup = $doc->createElement("idUserGroup", $row[7]);
+                $idUserGroup = $doc->createElement("idUserGroup", $row[6]);
                 $bloque->appendChild($idUserGroup);
-                $userGroupName = $doc->createElement("userGroupName", $row[8]);
+                $userGroupName = $doc->createElement("userGroupName", $row[7]);
                 $bloque->appendChild($userGroupName);
                 
                 $root->appendChild($bloque);
@@ -197,7 +197,36 @@ class AdministrativeUnit {
         header ("Content-Type:text/xml");
         echo $doc->saveXML();
         
-//        XML::XmlArrayResponse("Serie", "serie", $seriesArray['ArrayDatos']);
+    }
+    
+    private function getAdminUnitWithoutSerie($userData){
+        $instanceName = $userData['dataBaseName'];
+        
+        $select = "SELECT *FROM CSDocs_AdministrativeUnit WHERE idSerie = 0";
+        
+        $selectResult = $this->db->ConsultaSelect($instanceName, $select);
+        
+        if($selectResult['Estado'] != 1)
+            return XML::XMLReponse ("Error", 0, "<p><b>Error</b> al intentar obtener a Unidad Administrativa</p>Detalles:<br>".$selectResult['Estado']);
+    
+        XML::XmlArrayResponse("administrativeUnit", "area", $selectResult['ArrayDatos']);
+    }
+    
+    private function mergeUserGroupAndAdminUnit($userData){
+        var_dump($_POST);
+    }
+    
+    private function removeAdminUnit($userData){
+        $instanceName = $userData['dataBaseName'];
+        
+        $idAdminUnit = filter_input(INPUT_POST, "idAdminUnit");
+        
+        $update = "UPDATE CSDocs_AdministrativeUnit SET IdSerie = 0, idUserGroup = 0 WHERE idAdminUnit = $idAdminUnit";
+        
+        if(($updateResult = $this->db->ConsultaQuery($instanceName, $update)) != 1)
+                return XML::XMLReponse ("dondeMerge", 1, "<p><b>Error</b> al intentar eliminar la relación entre la serie y la Unidad Administrativa</p>Detalles:<br>$updateResult");
+    
+        XML::XMLReponse("adminUnitRemoved", 1, "Relación eliminada con la Unidad Administrativa");
     }
     
 }

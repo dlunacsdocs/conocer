@@ -53,6 +53,45 @@ var ClassUsersGroups = function()
         TableGroupsdT.find('tbody tr:eq(0)').click();  /* Activa la primera fila  */
     };
     
+    /**
+     * @description Obtiene el listado de Grupos de Usuario.
+     * @returns {xml Grupos de Usuario.}
+     */
+    this.getUserGroups = function(){
+        var userGroups = null;
+        
+        $.ajax({
+        async:false, 
+        cache:false,
+        dataType:"html", 
+        type: 'POST',   
+        url: "php/GruposUsuario.php",
+        data: "opcion=GetUsersGroups", 
+        success:  function(xml)
+        {           
+            if($.parseXML( xml )===null){Error(xml); return 0;}else xml=$.parseXML( xml );
+
+            if($(xml).find("Grupo").length>0)
+                userGroups = xml;
+
+            $(xml).find("Error").each(function()
+            {
+                var $Error=$(this);
+                var estado=$Error.find("Estado").text();
+                var mensaje=$Error.find("Mensaje").text();
+                Error(mensaje);
+            });                 
+
+        },
+        beforeSend:function(){},
+        error: function(jqXHR, textStatus, errorThrown){
+                    errorMessage(textStatus +"<br>"+ errorThrown);
+                }
+        });       
+        
+        return userGroups;
+    };
+    
     _NewGroup = function(){     
         
         var content = $('<div>');
@@ -1239,7 +1278,6 @@ ClassUsersGroups.prototype.ShowsGroupsUsers = function()
        
        $('#WS_Users').empty();       
        $('#WS_Users').append('<div class="titulo_ventana">Grupos de Usuario</div>');
-       $('#WS_Users').append('<div class="LoadingGroups loading"><img src="../img/loadinfologin.gif"></div>');
        $('#WS_Users').append('<table id="TableUsersGroups" class="table table-striped table-bordered table-hover table-condensed"><thead><tr><th>Nombre del Grupo</th><th>Descripción</th></tr></thead><tbdoy></tbody></table>');
 
        TableGroupsdT = $('#TableUsersGroups').dataTable({"sDom": 'lfTrtip',
@@ -1261,33 +1299,6 @@ ClassUsersGroups.prototype.ShowsGroupsUsers = function()
 
        TableGroupsDT = new $.fn.dataTable.Api('#TableUsersGroups');
        
-       $.ajax({
-       async:true, 
-       cache:false,
-       dataType:"html", 
-       type: 'POST',   
-       url: "php/GruposUsuario.php",
-       data: "opcion=GetUsersGroups&DataBaseName="+EnvironmentData.DataBaseName+'&IdUsuario='+EnvironmentData.IdUsuario+'&NombreUsuario='+EnvironmentData.NombreUsuario, 
-       success:  function(xml)
-       {           
-           if($.parseXML( xml )===null){Error(xml); return 0;}else xml=$.parseXML( xml );
-
-           if($(xml).find("Grupo").length>0)
-               _BuildTableGroups(xml);          
-           else
-               $('.LoadingGroups').remove();
-                
-
-           $(xml).find("Error").each(function()
-           {
-               var $Error=$(this);
-               var estado=$Error.find("Estado").text();
-               var mensaje=$Error.find("Mensaje").text();
-               Error(mensaje);
-           });                 
-
-       },
-       beforeSend:function(){},
-       error:function(objXMLHttpRequest){$('.LoadingGroups').remove();}
-       });       
+       var userGroups = self.getUserGroups();
+       _BuildTableGroups(userGroups);
    };

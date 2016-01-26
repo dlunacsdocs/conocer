@@ -1,273 +1,335 @@
 /* global BootstrapDialog */
 
-var AdministrativeUnit = function(){
+var AdministrativeUnit = function () {
     /**
      * @description Agrega la acción de respuesta al dar click sobre la opción de menú de "Unidad Administrativa".
      * @returns {undefined}
      */
-    this.setActionToLink = function(){
-        $('.LinkAdministrativeUnit').click(function(){
+    this.setActionToLink = function () {
+        $('.LinkAdministrativeUnit').click(function () {
             buildConsole();
-        });   
+        });
     };
-    
-    var buildConsole = function(){
-                                /* --- TAB UNIDAD ADMINISTRATIVA --- */
+
+    var buildConsole = function () {
+        /* --- TAB UNIDAD ADMINISTRATIVA --- */
         var tabbable = $('<div>');
- 
-        var navTab = $('<ul>', {class:"nav nav-tabs"});
-        
-        var adminUnitLi = $('<li>', {class:"active"}).append('<a href="#adminUnitDiv" data-toggle="tab"><span class = "archivalAdministrativeUnitIcon"></span> Unidad Administrativa</a>');
+
+        var navTab = $('<ul>', {class: "nav nav-tabs"});
+
+        var adminUnitLi = $('<li>', {class: "active"}).append('<a href="#adminUnitDiv" data-toggle="tab"><span class = "archivalAdministrativeUnitIcon"></span> Unidad Administrativa</a>');
         var serieLi = $('<li>').append('<a href="#adminUnitSerie" data-toggle="tab"><span class = "archivalSectionIcon"></span> Serie</a>');
-        
-        var adminUnitDiv = $('<div>',{class:"tab-pane active", id:"adminUnitDiv"});
-        var serieDiv = $('<div>',{class:"tab-pane", id:"adminUnitSerie"});
-        
-        var tabContent = $('<div>', {class:"tab-content"});
-        
+
+        var adminUnitDiv = $('<div>', {class: "tab-pane active", id: "adminUnitDiv"});
+        var serieDiv = $('<div>', {class: "tab-pane", id: "adminUnitSerie"});
+
+        var tabContent = $('<div>', {class: "tab-content"});
+
         var content = $('<div>');
-        var navTabBar = $('<nav>',{class:"navbar navbar-default"});
-        var container = $('<div>',{ class: "container-fluid"});
+        var navTabBar = $('<nav>', {class: "navbar navbar-default"});
+        var container = $('<div>', {class: "container-fluid"});
         var navHeader = $('<div>', {class: "navbar-header"});
-        
+
         container.append(navHeader);
         container.append('<div class = "btn-group-sm" role="group">\n\
                             <button class = "btn btn-success navbar-btn newAdminUnit"><span class = "glyphicon glyphicon-plus"></span></button>\n\
                             <button class = "btn btn-warning navbar-btn editAdminUnit"><span class = "glyphicon glyphicon-edit"></span></button>\n\
                             <button class = "btn btn-danger navbar-btn removeAdminUnit"><span class = "glyphicon glyphicon-remove"></span></button>\n\
-                         </div>');        
-        
+                         </div>');
+
         navTabBar.append(container);
-        
+
         content.append(navTabBar);
-        
-        var adminUnit = $('<div>',{id:"adminUnitTree"});
-        
+
+        var adminUnit = $('<div>', {id: "adminUnitTree"});
+
         content.append(adminUnit);
 
         adminUnitDiv.append(content);
-        
-                                /* --- TAB SERIE --- */
-        
+
+        /* --- TAB SERIE --- */
+
         content = $('<div>');
-        navTabBar = $('<nav>',{class:"navbar navbar-default"});
-        container = $('<div>',{ class: "container-fluid"});
+        navTabBar = $('<nav>', {class: "navbar navbar-default"});
+        container = $('<div>', {class: "container-fluid"});
         navHeader = $('<div>', {class: "navbar-header"});
-        
+
         container.append(navHeader);
         container.append('<div class = "btn-group-sm" role="group">\n\
                             <button class = "btn btn-success navbar-btn newAdminUnitOfSerie"><span class = "glyphicon glyphicon-plus"></span></button>\n\
                             <button class = "btn btn-danger navbar-btn removeAdminUnitOfSerie"><span class = "glyphicon glyphicon-remove"></span></button>\n\
-                         </div>');        
-        
-        navTabBar.append(container);   
-        content.append(navTabBar);  
+                         </div>');
+
+        navTabBar.append(container);
+        content.append(navTabBar);
         serieDiv.append(content);
-             
+
         tabContent.append(adminUnitDiv);
         tabContent.append(serieDiv);
-        
+
         navTab.append(adminUnitLi);
         navTab.append(serieLi);
-             
+
         tabbable.append(navTab);
         tabbable.append(tabContent);
-        
+
         var dialog = BootstrapDialog.show({
             title: 'Unidad Administrativa',
             size: BootstrapDialog.SIZE_NORMAL,
-            type:BootstrapDialog.TYPE_PRIMARY,
+            type: BootstrapDialog.TYPE_PRIMARY,
             message: tabbable,
             closable: true,
             buttons: [
-                
             ],
-            onshown: function(dialogRef){
+            onshown: function (dialogRef) {
                 adminUnit.dynatree();
                 var root = $('#adminUnitTree').dynatree('getRoot');
-                if(typeof root === 'object'){
+                if (typeof root === 'object') {
                     var child = root.addChild({
-                        title:"Unidades Administrativas",
-                        key:0,
-                        isFolder:true,
+                        title: "Unidades Administrativas",
+                        key: 0,
+                        isFolder: true,
                         expand: true,
                         icon: "/img/archival/department.png"
                     });
                     child.activate(true);
-                    
+
                     var treeStructure = tree.getTreeStructure();
-                    if(typeof treeStructure === 'object')
+                    if (typeof treeStructure === 'object')
                         tree.build(treeStructure);
                 }
-                
-                $('.newAdminUnit').click(function(){
+
+                $('.newAdminUnit').click(function () {
                     tree.newAdminUnit();
                 });
-                $('.editAdminUnit').click(function(){
+                $('.editAdminUnit').click(function () {
                     tree.editAdminUnit();
                 });
-                $('.removeAdminUnit').click(function(){
+                $('.removeAdminUnit').click(function () {
                     tree.removeAdminUnit();
                 });
-                
-                $('.removeAdminUnitOfSerie').click(function(){
-                    serie.removeMergeOfAdminUnit();
-                });
-                
-                $('.newAdminUnitOfSerie').click(function(){
-                    serie.mergeAdminUnitInterface();
-                });
-                
-                /* Inicio de Serie */
-                
-                $('#adminUnitSerie').dynatree();
-                
-                var serieRoot = $('#adminUnitSerie').dynatree('getRoot');
-                
-                if(typeof serieRoot !== 'object')
-                    return errorMessage("No fué posible obtener la raíz de la estructura <b>Serie</b>");
-                
-                var serieChild = serieRoot.addChild({
-                    title: "Series",
-                    key:0,
-                    isFolder:true,
-                    expand: true,
-                    icon: "/img/archival/serie.png"
+
+                $('.removeAdminUnitOfSerie').click(function () {
+                    var activeNode = $('#adminUnitSerie').dynatree('getActiveNode');
+                    if (typeof activeNode !== 'object')
+                        return 0;
+                    
+                    if (activeNode.data.type === 'serie') {
+                    }
+                    else if (activeNode.data.type === 'adminUnit')
+                        serie.removeAdminUnitConfirmation(activeNode);                    
                     
                 });
-                
+
+                $('.newAdminUnitOfSerie').click(function () {
+                    var activeNode = $('#adminUnitSerie').dynatree('getActiveNode');
+                    if (typeof activeNode !== 'object')
+                        return 0;
+
+                    if (activeNode.data.type === 'serie') {
+                        if (activeNode.getChildren() === null)
+                            serie.mergeAdminUnitInterface();
+                    }
+                    else
+                    if (activeNode.data.type === 'adminUnit')
+                        tree.mergeUserGroupAndAdminUnit(activeNode);
+
+                });
+
+                /* Inicio de Serie */
+
+                $('#adminUnitSerie').dynatree();
+
+                var serieRoot = $('#adminUnitSerie').dynatree('getRoot');
+
+                if (typeof serieRoot !== 'object')
+                    return errorMessage("No fué posible obtener la raíz de la estructura <b>Serie</b>");
+
+                var serieChild = serieRoot.addChild({
+                    title: "Series",
+                    key: 0,
+                    isFolder: true,
+                    expand: true,
+                    icon: "/img/archival/serie.png"
+
+                });
+
                 serieChild.activate(true);
-                
+
                 var series = serie.getSeriesStructure();
-                if(typeof serie === 'object')
+                if (typeof serie === 'object')
                     serie.buildTree(series);
-                
+
             },
-            onclose: function(dialogRef){
-                
+            onclose: function (dialogRef) {
+
             }
         });
     };
-    
+
     /**
      * @description Objeto que almacena los métodos relacionados con la estructura de Unidades Administrativas.
      * @type type
      */
     var tree = {
-        getTreeStructure: function(){
-            
-            var structure = null;
-            
-            $.ajax({
-            async: false, 
-            cache: false,
-            dataType: "html", 
-            type: 'POST',   
-            url: "Modules/php/AdministrativeUnit.php",
-            data: {option: "getAdministrativeUnitStructure"}, 
-            success:  function(xml)
-            {           
-                if($.parseXML( xml )===null){errorMessage(xml); return 0;}else xml=$.parseXML( xml );
-                
-                if($(xml).find("area").length > 0)
-                    structure = xml;
-                
-                $(xml).find("Error").each(function()
-                {
-                    var mensaje=$(this).find("Mensaje").text();
-                    errorMessage(mensaje);
-                });                 
+        getTreeStructure: function () {
 
-            },
-            beforeSend:function(){},
-            error: function(jqXHR, textStatus, errorThrown){errorMessage(textStatus +"<br>"+ errorThrown);}
-            });  
-            
+            var structure = null;
+
+            $.ajax({
+                async: false,
+                cache: false,
+                dataType: "html",
+                type: 'POST',
+                url: "Modules/php/AdministrativeUnit.php",
+                data: {option: "getAdministrativeUnitStructure"},
+                success: function (xml)
+                {
+                    if ($.parseXML(xml) === null) {
+                        errorMessage(xml);
+                        return 0;
+                    } else
+                        xml = $.parseXML(xml);
+
+                    if ($(xml).find("area").length > 0)
+                        structure = xml;
+
+                    $(xml).find("Error").each(function ()
+                    {
+                        var mensaje = $(this).find("Mensaje").text();
+                        errorMessage(mensaje);
+                    });
+
+                },
+                beforeSend: function () {
+                },
+                error: function (jqXHR, textStatus, errorThrown) {
+                    errorMessage(textStatus + "<br>" + errorThrown);
+                }
+            });
+
             return structure;
         },
-        build: function(structure){
-            $(structure).find('area').each(function(){
+        getAdminUnitWithoutSerie: function () {
+            var structure = null;
+
+            $.ajax({
+                async: false,
+                cache: false,
+                dataType: "html",
+                type: 'POST',
+                url: "Modules/php/AdministrativeUnit.php",
+                data: {option: "getAdminUnitWithoutSerie"},
+                success: function (xml)
+                {
+                    if ($.parseXML(xml) === null) {
+                        errorMessage(xml);
+                        return 0;
+                    } else
+                        xml = $.parseXML(xml);
+
+                    if ($(xml).find("area").length > 0)
+                        structure = xml;
+
+                    $(xml).find("Error").each(function ()
+                    {
+                        var mensaje = $(this).find("Mensaje").text();
+                        errorMessage(mensaje);
+                    });
+
+                },
+                beforeSend: function () {
+                },
+                error: function (jqXHR, textStatus, errorThrown) {
+                    errorMessage(textStatus + "<br>" + errorThrown);
+                }
+            });
+
+            return structure;
+        },
+        build: function (structure) {
+            $(structure).find('area').each(function () {
                 var idAdminUnit = $(this).find('idAdminUnit').text();
                 var name = $(this).find('Name').text();
                 var description = $(this).find('Description').text();
                 var idParent = $(this).find('idParent').text();
-                
+
                 var parent = $('#adminUnitTree').dynatree('getTree').getNodeByKey(idParent);
-                if(typeof parent === 'object')
+                if (typeof parent === 'object')
                     parent.addChild({
-                        title:name,
-                        key:idAdminUnit,
+                        title: name,
+                        key: idAdminUnit,
                         description: description,
-                        isFolder:true,
+                        isFolder: true,
                         expand: true,
                         icon: "/img/archival/department.png"
-                    });           
+                    });
             });
         },
-        editAdminUnit: function(){
+        editAdminUnit: function () {
             var activeNode = $('#adminUnitTree').dynatree('getActiveNode');
 
-            if(typeof activeNode !== 'object')
+            if (typeof activeNode !== 'object')
                 return Advertencia("Debe seleccionar una Unidad Administrativa");
-            
-            if(parseInt(activeNode.data.key) === 0)
+
+            if (parseInt(activeNode.data.key) === 0)
                 return 0;
-            
+
             var content = $('<div>');
-            var formGroup = $('<div>',{class:"form-group"});
+            var formGroup = $('<div>', {class: "form-group"});
             var nameLabel = $('<label>').append("Nombre");
-            var nameForm = $('<input>',{class:"form-control", id:"adminUnitName", value: activeNode.data.title});
+            var nameForm = $('<input>', {class: "form-control", id: "adminUnitName", value: activeNode.data.title});
             formGroup.append(nameLabel);
             formGroup.append(nameForm);
             content.append(formGroup);
 
-            formGroup = $('<div>',{class:"form-group"});
+            formGroup = $('<div>', {class: "form-group"});
             var descriptionLabel = $('<label>').append("Descripción");
-            var descriptionForm = $('<input>',{class:"form-control", id:"adminUnitDescription", value: activeNode.data.description});
+            var descriptionForm = $('<input>', {class: "form-control", id: "adminUnitDescription", value: activeNode.data.description});
             formGroup.append(descriptionLabel);
             formGroup.append(descriptionForm);
             content.append(formGroup);
-        
+
             var dialog = BootstrapDialog.show({
                 title: 'Nueva Unidad Administrativa',
                 size: BootstrapDialog.SIZE_SMALL,
-                type:BootstrapDialog.TYPE_INFO,
+                type: BootstrapDialog.TYPE_INFO,
                 message: content,
                 closable: true,
                 buttons: [
                     {
-                        label:"Cancelar",
-                        action: function(dialogRef){
+                        label: "Cancelar",
+                        action: function (dialogRef) {
                             dialogRef.close();
                         }
                     },
                     {
-                        label:"Modificar",
+                        label: "Modificar",
                         cssClass: "btn-warning",
-                        action: function(dialogRef){
+                        action: function (dialogRef) {
                             var button = this;
                             BootstrapDialog.show({
                                 title: 'Confirmación para Modificar',
                                 size: BootstrapDialog.SIZE_SMALL,
-                                type:BootstrapDialog.TYPE_WARNING,
-                                message: "<p>Realmente desea Modificar la información de la Unidad Administrativa <b>"+activeNode.data.title+"</b></p>",
+                                type: BootstrapDialog.TYPE_WARNING,
+                                message: "<p>Realmente desea Modificar la información de la Unidad Administrativa <b>" + activeNode.data.title + "</b></p>",
                                 closable: true,
                                 buttons: [
                                     {
-                                        label:"Cancelar",
-                                        action: function(confirmDialog){
+                                        label: "Cancelar",
+                                        action: function (confirmDialog) {
                                             confirmDialog.close();
                                         }
                                     },
                                     {
-                                        label:"Modificar",
+                                        label: "Modificar",
                                         cssClass: "btn-warning",
-                                        action: function(confirmDialog){
+                                        action: function (confirmDialog) {
                                             confirmDialog.close();
                                             button.spin();
                                             button.disable();
 
-                                            if(tree.modifyAdminUnit(activeNode))
+                                            if (tree.modifyAdminUnit(activeNode))
                                                 dialogRef.close();
 
                                             button.stopSpin();
@@ -276,182 +338,196 @@ var AdministrativeUnit = function(){
                                     }
 
                                 ],
-                                onshown: function(confirmDialog){
+                                onshown: function (confirmDialog) {
                                 },
-                                onclose: function(confirmDialog){
+                                onclose: function (confirmDialog) {
 
                                 }
-                            });                    
+                            });
                         }
                     }
 
                 ],
-                onshown: function(dialogRef){
+                onshown: function (dialogRef) {
                     nameForm.focus();
                 },
-                onclose: function(dialogRef){
+                onclose: function (dialogRef) {
 
                 }
             });
         },
-        modifyAdminUnit: function(activeNode){
+        modifyAdminUnit: function (activeNode) {
             var status = 0;
             var name = $.trim($('#adminUnitName').val());
             var description = $.trim($('#adminUnitDescription').val());
             var idAdminUnit = activeNode.data.key;
 
             $.ajax({
-            async: false, 
-            cache: false,
-            dataType: "html", 
-            type: 'POST',   
-            url: "Modules/php/AdministrativeUnit.php",
-            data: {option: "modifyAdminUnit", idAdminUnit:idAdminUnit, name:name, description:description}, 
-            success:  function(xml)
-            {           
-                if($.parseXML( xml )===null){errorMessage(xml); return 0;}else xml=$.parseXML( xml );
-                
-                $(xml).find('adminUnitModified').each(function(){
-                    status = 1;
-                    activeNode.data.title = name;
-                    activeNode.data.description = description;
-                    activeNode.render();
-                });
-
-                $(xml).find("Error").each(function()
+                async: false,
+                cache: false,
+                dataType: "html",
+                type: 'POST',
+                url: "Modules/php/AdministrativeUnit.php",
+                data: {option: "modifyAdminUnit", idAdminUnit: idAdminUnit, name: name, description: description},
+                success: function (xml)
                 {
-                    var mensaje=$(this).find("Mensaje").text();
-                    errorMessage(mensaje);
-                });                 
+                    if ($.parseXML(xml) === null) {
+                        errorMessage(xml);
+                        return 0;
+                    } else
+                        xml = $.parseXML(xml);
 
-            },
-            beforeSend:function(){},
-            error: function(jqXHR, textStatus, errorThrown){errorMessage(textStatus +"<br>"+ errorThrown);}
-            });   
-            
+                    $(xml).find('adminUnitModified').each(function () {
+                        status = 1;
+                        activeNode.data.title = name;
+                        activeNode.data.description = description;
+                        activeNode.render();
+                    });
+
+                    $(xml).find("Error").each(function ()
+                    {
+                        var mensaje = $(this).find("Mensaje").text();
+                        errorMessage(mensaje);
+                    });
+
+                },
+                beforeSend: function () {
+                },
+                error: function (jqXHR, textStatus, errorThrown) {
+                    errorMessage(textStatus + "<br>" + errorThrown);
+                }
+            });
+
             return status;
 
         },
-        removeAdminUnit: function(){
+        removeAdminUnit: function () {
             var activeNode = $('#adminUnitTree').dynatree('getActiveNode');
 
-            if(typeof activeNode !== 'object')
+            if (typeof activeNode !== 'object')
                 return Advertencia("Debe seleccionar una Unidad Administrativa");
-            
+
             BootstrapDialog.show({
-            title: 'Mensaje de Confirmación',
-            size: BootstrapDialog.SIZE_SMALL,
-            type:BootstrapDialog.TYPE_DANGER,
-            message: "<p>Realmente desea eliminar la Unidad Administrativa <b>"+activeNode.data.title+"</b>?</p>",
-            closable: true,
-            buttons: [
-                {
-                    label:"Cancelar",
-                    action: function(dialogRef){
-                        dialogRef.close();
+                title: 'Mensaje de Confirmación',
+                size: BootstrapDialog.SIZE_SMALL,
+                type: BootstrapDialog.TYPE_DANGER,
+                message: "<p>Realmente desea eliminar la Unidad Administrativa <b>" + activeNode.data.title + "</b>?</p>",
+                closable: true,
+                buttons: [
+                    {
+                        label: "Cancelar",
+                        action: function (dialogRef) {
+                            dialogRef.close();
+                        }
+                    },
+                    {
+                        label: "Eliminar",
+                        cssClass: "btn-danger",
+                        action: function (dialogRef) {
+                            var button = this;
+                            button.spin();
+                            button.disable();
+                            tree.deleteAdminUnit();
+                            dialogRef.close();
+                        }
                     }
+                ],
+                onshown: function (dialogRef) {
+
                 },
-                {
-                    label: "Eliminar",
-                    cssClass:"btn-danger",
-                    action: function(dialogRef){
-                        var button = this;
-                        button.spin();
-                        button.disable();
-                        tree.deleteAdminUnit();
-                        dialogRef.close();
-                    }
+                onclose: function (dialogRef) {
+
                 }
-            ],
-            onshown: function(dialogRef){
-                
-            },
-            onclose: function(dialogRef){
-                
-            }
-        });
+            });
         },
-        deleteAdminUnit: function(){
+        deleteAdminUnit: function () {
             var status = 0;
-            
+
             var activeNode = $('#adminUnitTree').dynatree('getActiveNode');
 
-            if(typeof activeNode !== 'object')
+            if (typeof activeNode !== 'object')
                 return Advertencia("Debe seleccionar una Unidad Administrativa");
-            
-            if(parseInt(activeNode.data.key) === 0)
+
+            if (parseInt(activeNode.data.key) === 0)
                 return Advertencia("Debe seleccionar una Unidad Administrativa");
-            
-            var xml = "<delete version='1.0' encoding='UTF-8'>";        
-            
-            xml+= "<administrativeUnit>\n\
-                        <idAdminUnit>"+activeNode.data.key+"</idAdminUnit>\n\
+
+            var xml = "<delete version='1.0' encoding='UTF-8'>";
+
+            xml += "<administrativeUnit>\n\
+                        <idAdminUnit>" + activeNode.data.key + "</idAdminUnit>\n\
                    </administrativeUnit>";
-            
+
             var children = activeNode.getChildren();
-            if(children !== null)
-                for(var cont = 0; cont < children.length; cont++){
+            if (children !== null)
+                for (var cont = 0; cont < children.length; cont++) {
                     var child = children[cont];
-                    
-                    xml+= "<administrativeUnit>\n\
-                                <idAdminUnit>"+child.data.key+"</idAdminUnit>\n\
+
+                    xml += "<administrativeUnit>\n\
+                                <idAdminUnit>" + child.data.key + "</idAdminUnit>\n\
                            </administrativeUnit>";
-                    
+
                     var areaChildren = children[cont].getChildren();
-                    if(areaChildren !== null)
+                    if (areaChildren !== null)
                         children = children.concat(areaChildren);
                 }
-            
-            xml+= "</delete>";
-                      
+
+            xml += "</delete>";
+
 
             $.ajax({
-            async: false, 
-            cache: false,
-            dataType: "html", 
-            type: 'POST',   
-            url: "Modules/php/AdministrativeUnit.php",
-            data: {option: "deleteAdminUnit", xml:xml}, 
-            success:  function(xml)
-            {           
-                if($.parseXML( xml )===null){errorMessage(xml); return 0;}else xml=$.parseXML( xml );
-                
-                $(xml).find('adminUnitDeleted').each(function(){
-                    status = 1;
-                    activeNode.remove();
-                });
-
-                $(xml).find("Error").each(function()
+                async: false,
+                cache: false,
+                dataType: "html",
+                type: 'POST',
+                url: "Modules/php/AdministrativeUnit.php",
+                data: {option: "deleteAdminUnit", xml: xml},
+                success: function (xml)
                 {
-                    var mensaje=$(this).find("Mensaje").text();
-                    errorMessage(mensaje);
-                });                 
+                    if ($.parseXML(xml) === null) {
+                        errorMessage(xml);
+                        return 0;
+                    } else
+                        xml = $.parseXML(xml);
 
-            },
-            beforeSend:function(){},
-            error: function(jqXHR, textStatus, errorThrown){errorMessage(textStatus +"<br>"+ errorThrown);}
-            });   
-            
+                    $(xml).find('adminUnitDeleted').each(function () {
+                        status = 1;
+                        activeNode.remove();
+                    });
+
+                    $(xml).find("Error").each(function ()
+                    {
+                        var mensaje = $(this).find("Mensaje").text();
+                        errorMessage(mensaje);
+                    });
+
+                },
+                beforeSend: function () {
+                },
+                error: function (jqXHR, textStatus, errorThrown) {
+                    errorMessage(textStatus + "<br>" + errorThrown);
+                }
+            });
+
             return status;
         },
-        newAdminUnit: function(){
-        
+        newAdminUnit: function () {
+
             var activeNode = $('#adminUnitTree').dynatree('getActiveNode');
 
-            if(typeof activeNode !== 'object')
+            if (typeof activeNode !== 'object')
                 return Advertencia("Debe seleccionar al menos el elemento Raíz");
 
             var content = $('<div>');
-            var formGroup = $('<div>',{class:"form-group"});
+            var formGroup = $('<div>', {class: "form-group"});
             var nameLabel = $('<label>').append("Nombre");
-            var nameForm = $('<input>',{class:"form-control", id:"adminUnitName"});
+            var nameForm = $('<input>', {class: "form-control", id: "adminUnitName"});
             formGroup.append(nameLabel);
             formGroup.append(nameForm);
             content.append(formGroup);
 
-            formGroup = $('<div>',{class:"form-group"});
+            formGroup = $('<div>', {class: "form-group"});
             var descriptionLabel = $('<label>').append("Descripción");
-            var descriptionForm = $('<input>',{class:"form-control", id:"adminUnitDescription"});
+            var descriptionForm = $('<input>', {class: "form-control", id: "adminUnitDescription"});
             formGroup.append(descriptionLabel);
             formGroup.append(descriptionForm);
             content.append(formGroup);
@@ -459,25 +535,25 @@ var AdministrativeUnit = function(){
             var dialog = BootstrapDialog.show({
                 title: 'Nueva Unidad Administrativa',
                 size: BootstrapDialog.SIZE_SMALL,
-                type:BootstrapDialog.TYPE_PRIMARY,
+                type: BootstrapDialog.TYPE_PRIMARY,
                 message: content,
                 closable: true,
                 buttons: [
                     {
-                        label:"Cancelar",
-                        action: function(dialogRef){
+                        label: "Cancelar",
+                        action: function (dialogRef) {
                             dialogRef.close();
                         }
                     },
                     {
-                        label:"Agregar",
+                        label: "Agregar",
                         cssClass: "btn-primary",
-                        action: function(dialogRef){
-                            var button = this;             
+                        action: function (dialogRef) {
+                            var button = this;
                             button.spin();
                             button.disable();
 
-                            if(tree.addNewAdminUnit(activeNode))
+                            if (tree.addNewAdminUnit(activeNode))
                                 dialogRef.close();
 
                             button.stopSpin();
@@ -486,162 +562,237 @@ var AdministrativeUnit = function(){
                     }
 
                 ],
-                onshown: function(dialogRef){
+                onshown: function (dialogRef) {
                     nameForm.focus();
                 },
-                onclose: function(dialogRef){
+                onclose: function (dialogRef) {
 
                 }
             });
         },
-        addNewAdminUnit: function(activeNode){
+        addNewAdminUnit: function (activeNode) {
             var status = 0;
             var name = $.trim($('#adminUnitName').val());
             var description = $.trim($('#adminUnitDescription').val());
             var idParent = activeNode.data.key;
 
-            if(String(name).length === 0)
+            if (String(name).length === 0)
                 return Advertencia("El campo <b>Nombre</b> es obligatorio");
 
             $.ajax({
-            async: false, 
-            cache: false,
-            dataType: "html", 
-            type: 'POST',   
-            url: "Modules/php/AdministrativeUnit.php",
-            data: {option: "addNewAdminUnit", name:name, description:description, idParent:idParent}, 
-            success:  function(xml)
-            {           
-                if($.parseXML( xml )===null){errorMessage(xml); return 0;}else xml=$.parseXML( xml );
-
-                $(xml).find('newAdminUnitAdded').each(function(){
-                    var idAdminUnit = $(this).find('idAdminUnit').text();
-                    if(parseInt(idAdminUnit) > 0){
-                        status = 1;
-                        var child = activeNode.addChild({
-                            title:name,
-                            key:idAdminUnit,
-                            description:description,
-                            isFolder:true,
-                            expand: true,
-                            icon: "/img/archival/department.png"
-                        });
-
-                        child.activate(true);
-                    }
-                });
-
-                $(xml).find("Error").each(function()
+                async: false,
+                cache: false,
+                dataType: "html",
+                type: 'POST',
+                url: "Modules/php/AdministrativeUnit.php",
+                data: {option: "addNewAdminUnit", name: name, description: description, idParent: idParent},
+                success: function (xml)
                 {
-                    var mensaje=$(this).find("Mensaje").text();
-                    errorMessage(mensaje);
-                });                 
+                    if ($.parseXML(xml) === null) {
+                        errorMessage(xml);
+                        return 0;
+                    } else
+                        xml = $.parseXML(xml);
 
-            },
-            beforeSend:function(){},
-            error: function(jqXHR, textStatus, errorThrown){errorMessage(textStatus +"<br>"+ errorThrown);}
-            });    
+                    $(xml).find('newAdminUnitAdded').each(function () {
+                        var idAdminUnit = $(this).find('idAdminUnit').text();
+                        if (parseInt(idAdminUnit) > 0) {
+                            status = 1;
+                            var child = activeNode.addChild({
+                                title: name,
+                                key: idAdminUnit,
+                                description: description,
+                                isFolder: true,
+                                expand: true,
+                                icon: "/img/archival/department.png"
+                            });
+
+                            child.activate(true);
+                        }
+                    });
+
+                    $(xml).find("Error").each(function ()
+                    {
+                        var mensaje = $(this).find("Mensaje").text();
+                        errorMessage(mensaje);
+                    });
+
+                },
+                beforeSend: function () {
+                },
+                error: function (jqXHR, textStatus, errorThrown) {
+                    errorMessage(textStatus + "<br>" + errorThrown);
+                }
+            });
 
             return status;
 
+        },
+        mergeUserGroupAndAdminUnit: function (activeNode) {
+            var content = $('<div>');
+
+            var formGroup = $('<div>', {class: "form-group"});
+            var formGroupNameLabel = $('<label>', {}).append("Grupo de Usuario");
+            var formGroupNameSelect = $('<select>', {class: "form-control", id: "groupNameForm"});
+
+            formGroup.append(formGroupNameLabel);
+            formGroup.append(formGroupNameSelect);
+
+            content.append(formGroup);
+
+            BootstrapDialog.show({
+                title: 'Unificar con Grupo de Usuario',
+                size: BootstrapDialog.SIZE_SMALL,
+                message: content,
+                buttons: [
+                    {
+                        id: "close",
+                        label: 'Cerrar',
+                        action: function (dialogRef) {
+                            dialogRef.close();
+                        }
+                    },
+                    {
+                        label: 'Unificar',
+                        cssClass: "btn-primary",
+                        action: function (dialogRef) {
+                            var buttonClose = dialogRef.getButton('close');
+                            var button = this;
+
+                            button.spin();
+                            button.disable();
+                            buttonClose.disable();
+
+                            if (userGroup.mergeUserGroupAndAdminUnit(activeNode))
+                                dialogRef.close();
+
+                            buttonClose.enable();
+                            button.stopSpin();
+                            button.enable();
+                        }
+                    }
+                ],
+                onshown: function (dialogRef) {
+                    var UserGroup = new ClassUsersGroups();
+                    var userGroups = UserGroup.getUserGroups();
+
+                    $(userGroups).find("Grupo").each(function () {
+                        var $Grupo = $(this);
+                        var IdGrupo = $Grupo.find("IdGrupo").text();
+                        var NombreGrupo = $Grupo.find("Nombre").text();
+                        var Descripcion = $Grupo.find("Descripcion").text();
+
+                        var option = $('<option>', {idGroup: IdGrupo, name: NombreGrupo}).append(NombreGrupo);
+                        formGroupNameSelect.append(option);
+                    });
+                }
+            });
         }
     };
-   
-   /**
-    * @description Objeto con las funciones necesarias para ligar a Serie con unidades administrativas.
-    * @type type
-    */
-   var serie = {
-       getSeriesStructure: function(){
-           var series = null;
-           
-           $.ajax({
-            async: false, 
-            cache: false,
-            dataType: "html", 
-            type: 'POST',   
-            url: "Modules/php/AdministrativeUnit.php",
-            data: {option: "getSeriesStructure"}, 
-            success:  function(xml)
-            {           
-                if($.parseXML( xml )===null){errorMessage(xml); return 0;}else xml=$.parseXML( xml );
 
-                if($(xml).find("serie").length > 0)
-                    series = xml;
-                    
-                $(xml).find("Error").each(function()
+    /**
+     * @description Objeto con las funciones necesarias para ligar a Serie con unidades administrativas.
+     * @type type
+     */
+    var serie = {
+        getSeriesStructure: function () {
+            var series = null;
+
+            $.ajax({
+                async: false,
+                cache: false,
+                dataType: "html",
+                type: 'POST',
+                url: "Modules/php/AdministrativeUnit.php",
+                data: {option: "getSeriesStructure"},
+                success: function (xml)
                 {
-                    var mensaje=$(this).find("Mensaje").text();
-                    errorMessage(mensaje);
-                });                 
-            },
-            beforeSend:function(){},
-            error: function(jqXHR, textStatus, errorThrown){errorMessage(textStatus +"<br>"+ errorThrown);}
-            });    
-            
+                    if ($.parseXML(xml) === null) {
+                        errorMessage(xml);
+                        return 0;
+                    } else
+                        xml = $.parseXML(xml);
+
+                    if ($(xml).find("serie").length > 0)
+                        series = xml;
+
+                    $(xml).find("Error").each(function ()
+                    {
+                        var mensaje = $(this).find("Mensaje").text();
+                        errorMessage(mensaje);
+                    });
+                },
+                beforeSend: function () {
+                },
+                error: function (jqXHR, textStatus, errorThrown) {
+                    errorMessage(textStatus + "<br>" + errorThrown);
+                }
+            });
+
             return series;
-       },
-       buildTree: function(series){
-           var serieRoot = $('#adminUnitSerie').dynatree('getTree').getNodeByKey('0');
-                
-            if(typeof serieRoot !== 'object')
+        },
+        buildTree: function (series) {
+            var serieRoot = $('#adminUnitSerie').dynatree('getTree').getNodeByKey('0');
+
+            if (typeof serieRoot !== 'object')
                 return errorMessage("No fué posible obtener la raíz de la estructura <b>Serie</b>");
 
-           $(series).find('serie').each(function(){
-               var serie = $(this);
-               var idDocDisposition = $(serie).find('idDocumentaryDisposition').text();
-               var name = $(serie).find('Name').text();
-               var description = $(serie).find('Description').text();
-               var key = $(serie).find('NameKey').text();
-               var idAdminUnit_DocDisposition = $(serie).find('idAdminUnit_DocDisposition').text();
-               var idAdminUnit = $(serie).find('idAdminUnit').text();
-               var adminUnitName = $(serie).find('adminUnitName').text();
-               var idUserGroup = $(serie).find('idUserGroup').text();
-               var userGroupName = $(serie).find('userGroupName').text();
-               
-               var serieChild = serieRoot.addChild({
+            $(series).find('serie').each(function () {
+                var serie = $(this);
+                var idDocDisposition = $(serie).find('idDocumentaryDisposition').text();
+                var name = $(serie).find('Name').text();
+                var description = $(serie).find('Description').text();
+                var key = $(serie).find('NameKey').text();
+                var idAdminUnit_DocDisposition = $(serie).find('idAdminUnit_DocDisposition').text();
+                var idAdminUnit = $(serie).find('idAdminUnit').text();
+                var adminUnitName = $(serie).find('adminUnitName').text();
+                var idUserGroup = $(serie).find('idUserGroup').text();
+                var userGroupName = $(serie).find('userGroupName').text();
+
+                var serieChild = serieRoot.addChild({
                     title: name,
-                    key: idDocDisposition,
+                    key: "serie_"+idDocDisposition,
                     nameKey: key,
                     description: description,
-                    isFolder:true,
+                    isFolder: true,
                     expand: true,
                     icon: "/img/archival/serie.png",
-                    type:"serie"
-               });
-               
-               if(parseInt(idAdminUnit) > 0){
-                   var adminUnitChild = serieChild.addChild({
+                    type: "serie"
+                });
+
+                if (parseInt(idAdminUnit) > 0) {
+                    var adminUnitChild = serieChild.addChild({
                         title: adminUnitName,
-                        key: idAdminUnit,
-                        isFolder:true,
+                        key: "adminUnit_"+idAdminUnit,
+                        isFolder: true,
                         expand: true,
                         icon: "/img/archival/department.png",
-                        type:"adminUnit"
-                   });
-               }
-               
-           });
-       },
-       mergeAdminUnitInterface: function(){
-           
-           var serieTree = $('#adminUnitSerie').dynatree('getActiveNode');
-           var idSerie = serieTree.data.key;
-           
-           if(!parseInt(idSerie) > 0)
-               return 0;
-           
-           var content = $('<div>');
-           
-           var formGroup = $('<div>',{class: "form-group"});
-           var adminUnitNameLabel = $('<label>',{}).append("Unidad Administrativa");
-           var adminUnitNameSelect = $('<select>', {class: "form-control", id: "adminUnitNameMerge"});
-           
-           formGroup.append(adminUnitNameLabel);
-           formGroup.append(adminUnitNameSelect);
-           
-           content.append(formGroup);
-           
+                        type: "adminUnit"
+                    });
+                }
+
+            });
+        },
+        mergeAdminUnitInterface: function () {
+
+            var serieTree = $('#adminUnitSerie').dynatree('getActiveNode');
+            var idSerie = serieTree.data.key;
+            idSerie = String(idSerie).replace("serie_", "");
+            
+            if (!parseInt(idSerie) > 0)
+                return 0;
+
+            var content = $('<div>');
+
+            var formGroup = $('<div>', {class: "form-group"});
+            var adminUnitNameLabel = $('<label>', {}).append("Unidad Administrativa");
+            var adminUnitNameSelect = $('<select>', {class: "form-control", id: "adminUnitNameMerge"});
+
+            formGroup.append(adminUnitNameLabel);
+            formGroup.append(adminUnitNameSelect);
+
+            content.append(formGroup);
+
             BootstrapDialog.show({
                 title: 'Unificar con Unidad Administrativa',
                 size: BootstrapDialog.SIZE_SMALL,
@@ -649,110 +800,258 @@ var AdministrativeUnit = function(){
                 buttons: [
                     {
                         label: 'Cerrar',
-                        action: function(dialogRef){
+                        action: function (dialogRef) {
                             dialogRef.close();
                         }
                     },
                     {
                         label: 'Unificar',
-                        cssClass:"btn-primary",
-                        action: function(dialogRef){                    
+                        cssClass: "btn-primary",
+                        action: function (dialogRef) {
                             var button = this;
                             button.spin();
                             button.disable();
-                            
-                            if(serie.mergeAdminUnitAndSerie())
+
+                            if (serie.mergeAdminUnitAndSerie())
                                 dialogRef.close();
-                            
+
                             button.stopSpin();
                             button.enable();
                         }
                     }
                 ],
-                onshown: function(dialogRef){
-                    var adminUnit = tree.getTreeStructure();
-                    
-                    if(!typeof adminUnit === 'object')
-                        return 0;                 
-                    
-                    $(adminUnit).find('area').each(function(){
+                onshown: function (dialogRef) {
+                    var adminUnit = tree.getAdminUnitWithoutSerie();
+
+                    if (!typeof adminUnit === 'object')
+                        return 0;
+
+                    $(adminUnit).find('area').each(function () {
                         var idAdminUnit = $(this).find('idAdminUnit').text();
                         var name = $(this).find('Name').text();
                         var description = $(this).find('Description').text();
                         var idParent = $(this).find('idParent').text();
                         var nameKey = $(this).find('NameKey').text();
-                        
-                        var option = $('<option>', {id: idAdminUnit, nameKey:nameKey, name:name}).append(name);
+
+                        var option = $('<option>', {id: idAdminUnit, nameKey: nameKey, name: name}).append(name);
                         adminUnitNameSelect.append(option);
                     });
-                    
-                    if($('#adminUnitNameMerge option').size() === 0)
+
+                    if ($('#adminUnitNameMerge option').size() === 0)
                         return Advertencia("<p>No existen <b>Unidades Administrativas</b></p>");
-                    
+
                 }
             });
-       },
-        mergeAdminUnitAndSerie: function(){         
+        },
+        mergeAdminUnitAndSerie: function () {
             var status = 0;
             var adminUnitNameSelect = $('#adminUnitNameMerge option:selected');
             var idAdminUnit = parseInt(adminUnitNameSelect.attr('id'));
             var name = adminUnitNameSelect.attr('name');
             var nameKey = adminUnitNameSelect.attr('nameKey');
-            
+
             var activeNode = $('#adminUnitSerie').dynatree('getActiveNode');
-           
-            if(typeof activeNode !== 'object')
+
+            if (typeof activeNode !== 'object')
                 return errorMessage("<p>No fué posible obtener la serie activa</p>");
-           
-            if(!idAdminUnit > 0)
-                return Advertencia("Debe seleccionar una Unidad Administrativa");
-           
+
+            if (!parseInt(idAdminUnit) > 0)
+                return Advertencia("<p>No fué posible obtener el identificador de la Unidad Administrativa</p>");
+
             var idSerie = activeNode.data.key;
-           
+            idSerie = String(idSerie).replace("serie_", "");
+            
+            if(!parseInt(idSerie) > 0)
+                return Advertencia("<p>No fué posible obtener el identificador de la Serie</p>");
+
             $.ajax({
-                async: false, 
+                async: false,
                 cache: false,
-                dataType: "html", 
-                type: 'POST',   
+                dataType: "html",
+                type: 'POST',
                 url: "Modules/php/AdministrativeUnit.php",
-                data: {option: "mergeAdminUnitAndSerie", idAdminUnit:idAdminUnit, idSerie:idSerie},
-                success:  function(xml){           
+                data: {option: "mergeAdminUnitAndSerie", idAdminUnit: idAdminUnit, idSerie: idSerie},
+                success: function (xml) {
 
-                    if($.parseXML( xml )===null){errorMessage(xml); return 0;}else xml=$.parseXML( xml );
+                    if ($.parseXML(xml) === null) {
+                        errorMessage(xml);
+                        return 0;
+                    } else
+                        xml = $.parseXML(xml);
 
-                    if($(xml).find("doneMerge").length > 0){                  
+                    if ($(xml).find("doneMerge").length > 0) {
                         status = 1;
 
                         var child = activeNode.addChild({
                             title: name,
-                            key: idAdminUnit,
+                            key: "adminUnit_"+idAdminUnit,
                             nameKey: nameKey,
-                            isFolder:true,
+                            isFolder: true,
+                            expand: true,
+                            icon: "/img/archival/department.png",
+                            type: "adminUnit"
+                        });
+
+                        child.activate(true);
+                    }
+
+                    $(xml).find("Error").each(function ()
+                    {
+                        var mensaje = $(this).find("Mensaje").text();
+                        errorMessage(mensaje);
+                    });
+                },
+                beforeSend: function () {
+                },
+                error: function (jqXHR, textStatus, errorThrown) {
+                    errorMessage(textStatus + "<br>" + errorThrown);
+                }
+            });
+
+            return status;
+        },
+        removeAdminUnitConfirmation: function (activeNodeSerie) {
+            var parent = activeNodeSerie.getParent();
+                     
+            BootstrapDialog.show({
+                title: 'Mensaje de Confirmación',
+                size: BootstrapDialog.SIZE_SMALL,
+                type: BootstrapDialog.TYPE_DANGER,
+                message: "¿Realmente desea eliminar la relación entre la serie <b>" + parent.data.title + "</b> y la Unidad Administrativa <b>"+activeNodeSerie.data.title+"</b>?",
+                buttons: [
+                    {
+                        label: 'Cancelar',
+                        id:"cancel",
+                        action: function (dialogRef) {
+                            dialogRef.close();
+                        }
+                    },
+                    {
+                        label: 'Eliminar',
+                        cssClass: "btn-danger",
+                        action: function (dialogRef) {
+                            var button = this;
+                            var buttonCancel = dialogRef.getButton('cancel');
+                            button.spin();
+                            button.disable();
+                            buttonCancel.disable();
+                            
+                            if(serie.removeAdminUnit(activeNodeSerie))
+                                dialogRef.close();
+                                      
+                            button.stopSpin();
+                            button.enable();
+                            buttonCancel.enable();
+                        }
+                    }
+                ],
+                onshown: function (dialogRef) {
+
+                }
+            });
+        },
+        removeAdminUnit: function (activeNode) {
+            var status = 1;
+            
+            var idAdminUnit = activeNode.data.key;
+            idAdminUnit = String(idAdminUnit).replace ("adminUnit_", "");
+            
+            
+            $.ajax({
+                async: false,
+                cache: false,
+                dataType: "html",
+                type: 'POST',
+                url: "Modules/php/AdministrativeUnit.php",
+                data: {option: "removeAdminUnit", idAdminUnit: idAdminUnit},
+                success: function (xml) {
+
+                    if ($.parseXML(xml) === null) {
+                        errorMessage(xml);
+                        return 0;
+                    } else
+                        xml = $.parseXML(xml);
+
+                    if ($(xml).find("adminUnitRemoved").length > 0) {
+                        status = 1;
+
+                        activeNode.remove();
+                    }
+
+                    $(xml).find("Error").each(function ()
+                    {
+                        var mensaje = $(this).find("Mensaje").text();
+                        errorMessage(mensaje);
+                    });
+                },
+                beforeSend: function () {
+                },
+                error: function (jqXHR, textStatus, errorThrown) {
+                    errorMessage(textStatus + "<br>" + errorThrown);
+                }
+            });
+            
+            return status;
+        }
+    };
+
+    /**
+     * @description Operaciones realizadas para grupos de usuario.
+     * @type type
+     */
+    var userGroup = {
+        mergeUserGroupAndAdminUnit: function (activeNode) {
+            var status = 0;
+
+            var idGroup = activeNode.data.key;
+            var idAdminUnit = activeNode.getParent().data.key;
+            var groupName = $('#groupNameForm option:selected').attr('name');
+
+            $.ajax({
+                async: false,
+                cache: false,
+                dataType: "html",
+                type: 'POST',
+                url: "Modules/php/AdministrativeUnit.php",
+                data: {option: "mergeUserGroupAndAdminUnit", idGroup: idGroup, idAdminUnit: idAdminUnit},
+                success: function (xml) {
+
+                    if ($.parseXML(xml) === null) {
+                        errorMessage(xml);
+                        return 0;
+                    } else
+                        xml = $.parseXML(xml);
+
+                    if ($(xml).find("doneMerge").length > 0) {
+                        status = 1;
+
+                        var child = activeNode.addChild({
+                            title: groupName,
+                            key: "Group_"+idGroup,
+                            isFolder: true,
                             expand: true,
                             icon: "/img/archival/department.png",
                             type: "administrativeUnit"
                         });
-                        
+
                         child.activate(true);
                     }
 
-                    $(xml).find("Error").each(function()
+                    $(xml).find("Error").each(function ()
                     {
-                        var mensaje=$(this).find("Mensaje").text();
+                        var mensaje = $(this).find("Mensaje").text();
                         errorMessage(mensaje);
-                    });                 
+                    });
                 },
-                beforeSend:function(){},
-                error: function(jqXHR, textStatus, errorThrown){
-                    errorMessage(textStatus +"<br>"+ errorThrown);
+                beforeSend: function () {
+                },
+                error: function (jqXHR, textStatus, errorThrown) {
+                    errorMessage(textStatus + "<br>" + errorThrown);
                 }
-            });    
-            
+            });
+
             return status;
-       },
-       removeMergeOfAdminUnit: function(){
-           
-       }
-   };
-   
+        }
+    };
+
 };

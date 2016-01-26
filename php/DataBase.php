@@ -337,7 +337,6 @@ class DataBase {
                 Description VARCHAR(255) NOT NULL,
                 NodeType VARCHAR(10) NOT NULL,
                 ParentKey VARCHAR(25),
-                idAdministrativeUnit INT DEFAULT 0,
                 UNIQUE (NameKey),
                 PRIMARY KEY (idDocumentaryDisposition)
             ) DEFAULT CHARSET=utf8";
@@ -396,22 +395,14 @@ class DataBase {
                 Name VARCHAR (50) NOT NULL,
                 Description TEXT,      
                 idParent INT,
-                idUserGroup INT,
+                idUserGroup INT DEFAULT 0,
+                idSerie INT DEFAULT 0,
                 PRIMARY KEY (idAdminUnit)
                 ) DEFAULT CHARSET = utf8";
         
         if(($administrativeUnitResult = $this->ConsultaQuery($DataBaseName, $administrativeUnit)) != 1)
                 return "<p><b>Error</b> al crear <b>Unidad Administrativa</b></p> Detalles:<br>$administrativeUnitResult";
         
-        $adminUnit_docValidity = "CREATE TABLE IF NOT EXISTS CSDocs_AdminUnit_DocDisposition(
-                idAdminUnit_DocDisposition INT AUTO_INCREMENT NOT NULL,
-                idAdminUnit INT NOT NULL,
-                idDocDisposition INT NOT NULL,
-                PRIMARY KEY (idAdminUnit_DocDisposition)
-                ) DEFAULT CHARSET = utf8";
-        
-        if(($adminUnit_docValidityResult = $this->ConsultaQuery($DataBaseName, $adminUnit_docValidity)) != 1)
-                return "<p><b>Error</b> al crear <b>Unidad Administrativa - Disposición Documental</b></p>";
         
         return 1;
     }
