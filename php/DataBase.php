@@ -398,10 +398,20 @@ class DataBase {
                 idParent INT,
                 idUserGroup INT,
                 PRIMARY KEY (idAdminUnit)
-                )";
+                ) DEFAULT CHARSET = utf8";
         
         if(($administrativeUnitResult = $this->ConsultaQuery($DataBaseName, $administrativeUnit)) != 1)
                 return "<p><b>Error</b> al crear <b>Unidad Administrativa</b></p> Detalles:<br>$administrativeUnitResult";
+        
+        $adminUnit_docValidity = "CREATE TABLE IF NOT EXISTS CSDocs_AdminUnit_DocDisposition(
+                idAdminUnit_DocDisposition INT AUTO_INCREMENT NOT NULL,
+                idAdminUnit INT NOT NULL,
+                idDocDisposition INT NOT NULL,
+                PRIMARY KEY (idAdminUnit_DocDisposition)
+                ) DEFAULT CHARSET = utf8";
+        
+        if(($adminUnit_docValidityResult = $this->ConsultaQuery($DataBaseName, $adminUnit_docValidity)) != 1)
+                return "<p><b>Error</b> al crear <b>Unidad Administrativa - Disposición Documental</b></p>";
         
         return 1;
     }
@@ -1782,7 +1792,7 @@ function ExistRegister($DataBaseName,$Table,$field,$Value)
      *          ArrayDatos=>  'Resultado de Consulta'
      * 
      *******************************************************************************/
-    function ConsultaSelect($bd,$query)
+    function ConsultaSelect($bd,$query, $associativeArray = 1)
     {
         $estado=true;
         $ResultadoConsulta=array();
@@ -1803,7 +1813,10 @@ function ExistRegister($DataBaseName,$Table,$field,$Value)
             }
             else
             {
-                while(($ResultadoConsulta[] = mysql_fetch_assoc($select)) || array_pop($ResultadoConsulta)); 
+                if($associativeArray)
+                    while(($ResultadoConsulta[] = mysql_fetch_assoc($select)) || array_pop($ResultadoConsulta)); 
+                else
+                    while(($ResultadoConsulta[] = mysql_fetch_array($select)) || array_pop($ResultadoConsulta)); 
             }
         
         
