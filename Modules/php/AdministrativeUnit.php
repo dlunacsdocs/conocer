@@ -39,6 +39,7 @@ class AdministrativeUnit {
                 case 'mergeUserGroupAndAdminUnit': $this->mergeUserGroupAndAdminUnit($userData); break;
                 case 'getAdminUnitWithoutSerie': $this->getAdminUnitWithoutSerie($userData); break;
                 case 'removeAdminUnit': $this->removeAdminUnit($userData); break;
+                case 'removeMergeUserGroupAndAdminUnit': $this->removeMergeUserGroupAndAdminUnit($userData); break;
             }
         }
     }
@@ -213,7 +214,17 @@ class AdministrativeUnit {
     }
     
     private function mergeUserGroupAndAdminUnit($userData){
-        var_dump($_POST);
+        $instanceName = $userData['dataBaseName'];
+        
+        $idUserGroup = filter_input(INPUT_POST, "idUserGroup");
+        $idAdminUnit = filter_input(INPUT_POST, "idAdminUnit");
+        
+        $update = "UPDATE CSDocs_AdministrativeUnit SET idUserGroup = $idUserGroup WHERE idAdminUnit = $idAdminUnit";
+        
+        if(($updateResult = $this->db->ConsultaQuery($instanceName, $update)) != 1)
+                return XML::XMLReponse ("Error", 0, "<p><b>Error</b> al intentar crear la relación entre la Unidad Administrativa y el Grupo de Usuario Seleccionado</p>Detalles:<br><br>$updateResult");
+    
+        XML::XMLReponse("doneMerge", 1, "Relación creada.");
     }
     
     private function removeAdminUnit($userData){
@@ -227,6 +238,20 @@ class AdministrativeUnit {
                 return XML::XMLReponse ("dondeMerge", 1, "<p><b>Error</b> al intentar eliminar la relación entre la serie y la Unidad Administrativa</p>Detalles:<br>$updateResult");
     
         XML::XMLReponse("adminUnitRemoved", 1, "Relación eliminada con la Unidad Administrativa");
+    }
+    
+    private function removeMergeUserGroupAndAdminUnit($userData){
+        $instanceName = $userData['dataBaseName'];
+        
+        $idUserGroup = filter_input(INPUT_POST, "idUserGroup");
+        $idAdminUnit = filter_input(INPUT_POST, "idAdminUnit");
+        
+        $update = "UPDATE CSDocs_AdministrativeUnit SET idUserGroup = 0 WHERE idAdminUnit = $idAdminUnit";
+        
+        if(($updateResult = $this->db->ConsultaQuery($instanceName, $update)) != 1)
+                return XML::XMLReponse ("Error", 0, "<p><b>Error</b> al intentar eliminar relación entre el Grupo de Usuario y la Unidad Administrativa</p>Detalles:<br>$updateResult");
+    
+        XML::XMLReponse("removed", 1, "Relación eliminada");
     }
     
 }

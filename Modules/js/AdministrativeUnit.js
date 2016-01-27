@@ -32,9 +32,9 @@ var AdministrativeUnit = function () {
 
         container.append(navHeader);
         container.append('<div class = "btn-group-sm" role="group">\n\
-                            <button class = "btn btn-success navbar-btn newAdminUnit"><span class = "glyphicon glyphicon-plus"></span></button>\n\
-                            <button class = "btn btn-warning navbar-btn editAdminUnit"><span class = "glyphicon glyphicon-edit"></span></button>\n\
-                            <button class = "btn btn-danger navbar-btn removeAdminUnit"><span class = "glyphicon glyphicon-remove"></span></button>\n\
+                            <a class = "btn btn-success navbar-btn newAdminUnit"><span class = "glyphicon glyphicon-plus"></span> Nuevo</a>\n\
+                            <a class = "btn btn-warning navbar-btn editAdminUnit"><span class = "glyphicon glyphicon-edit"></span> Editar</a>\n\
+                            <a class = "btn btn-danger navbar-btn removeAdminUnit"><span class = "glyphicon glyphicon-remove"></span> Eliminar</a>\n\
                          </div>');
 
         navTabBar.append(container);
@@ -56,8 +56,8 @@ var AdministrativeUnit = function () {
 
         container.append(navHeader);
         container.append('<div class = "btn-group-sm" role="group">\n\
-                            <button class = "btn btn-success navbar-btn newAdminUnitOfSerie"><span class = "glyphicon glyphicon-plus"></span></button>\n\
-                            <button class = "btn btn-danger navbar-btn removeAdminUnitOfSerie"><span class = "glyphicon glyphicon-remove"></span></button>\n\
+                            <a class = "btn btn-success navbar-btn newAdminUnitOfSerie"><i class="fa fa-link fa-lg"></i> Unificar</a>\n\
+                            <a class = "btn btn-danger navbar-btn removeAdminUnitOfSerie"><i class="fa fa-chain-broken fa-lg"></i> Desenlazar</a>\n\
                          </div>');
 
         navTabBar.append(container);
@@ -79,11 +79,27 @@ var AdministrativeUnit = function () {
             type: BootstrapDialog.TYPE_PRIMARY,
             message: tabbable,
             closable: true,
+            closeByBackdrop: false,
             buttons: [
             ],
             onshown: function (dialogRef) {
-                adminUnit.dynatree();
+                
+                adminUnit.dynatree({
+                    onActivate: function(node){
+                        if (parseInt(node.data.key) === 0){
+                            $('.editAdminUnit').addClass('disabled');
+                            $('.removeAdminUnit').addClass('disabled');
+                        }
+                        else{
+                            $('.editAdminUnit').removeClass('disabled');
+                            $('.removeAdminUnit').removeClass('disabled');
+                        }
+                            
+                    }
+                });
+                
                 var root = $('#adminUnitTree').dynatree('getRoot');
+                
                 if (typeof root === 'object') {
                     var child = root.addChild({
                         title: "Unidades Administrativas",
@@ -118,7 +134,8 @@ var AdministrativeUnit = function () {
                     }
                     else if (activeNode.data.type === 'adminUnit')
                         serie.removeAdminUnitConfirmation(activeNode);                    
-                    
+                    else if(activeNode.data.type === 'userGroup')
+                        userGroup.removeMergeUserGroupAndAdminUnitConfirmation(activeNode);
                 });
 
                 $('.newAdminUnitOfSerie').click(function () {
@@ -131,14 +148,35 @@ var AdministrativeUnit = function () {
                             serie.mergeAdminUnitInterface();
                     }
                     else
-                    if (activeNode.data.type === 'adminUnit')
-                        tree.mergeUserGroupAndAdminUnit(activeNode);
-
+                    if (activeNode.data.type === 'adminUnit'){
+                        if(activeNode.getChildren() === null)
+                            tree.mergeUserGroupAndAdminUnit(activeNode);
+                    }
+                    
                 });
 
                 /* Inicio de Serie */
 
-                $('#adminUnitSerie').dynatree();
+                $('#adminUnitSerie').dynatree({
+                    onActivate: function(node){
+                        if(node.data.type === 'serie'){
+                            $('.newAdminUnitOfSerie').removeClass('disabled').html('<i class="fa fa-link fa-lg"></i> Unidad Administrativa');
+                            $('.removeAdminUnitOfSerie').removeClass('disabled');
+                        }
+                        else if(node.data.type === 'adminUnit'){
+                            $('.newAdminUnitOfSerie').removeClass('disabled').html('<i class="fa fa-link fa-lg"></i> Grupo Usuario');
+                            $('.removeAdminUnitOfSerie').removeClass('disabled');
+                        }
+                        else if(node.data.type === 'userGroup'){
+                            $('.newAdminUnitOfSerie').addClass('disabled');
+                            $('.removeAdminUnitOfSerie').removeClass('disabled');
+                        }
+                        else{
+                            $('.newAdminUnitOfSerie').addClass('disabled');
+                            $('.removeAdminUnitOfSerie').addClass('disabled');
+                        }
+                    }
+                });
 
                 var serieRoot = $('#adminUnitSerie').dynatree('getRoot');
 
@@ -296,13 +334,8 @@ var AdministrativeUnit = function () {
                 type: BootstrapDialog.TYPE_INFO,
                 message: content,
                 closable: true,
+                closeByBackdrop: true,
                 buttons: [
-                    {
-                        label: "Cancelar",
-                        action: function (dialogRef) {
-                            dialogRef.close();
-                        }
-                    },
                     {
                         label: "Modificar",
                         cssClass: "btn-warning",
@@ -326,12 +359,14 @@ var AdministrativeUnit = function () {
                                         cssClass: "btn-warning",
                                         action: function (confirmDialog) {
                                             confirmDialog.close();
+                                            dialogRef.setClosable(false);
                                             button.spin();
                                             button.disable();
 
                                             if (tree.modifyAdminUnit(activeNode))
                                                 dialogRef.close();
-
+                                            
+                                            dialogRef.setClosable(true);
                                             button.stopSpin();
                                             button.enable();
                                         }
@@ -413,22 +448,22 @@ var AdministrativeUnit = function () {
                 type: BootstrapDialog.TYPE_DANGER,
                 message: "<p>Realmente desea eliminar la Unidad Administrativa <b>" + activeNode.data.title + "</b>?</p>",
                 closable: true,
+                closeByBackdrop: true,
                 buttons: [
-                    {
-                        label: "Cancelar",
-                        action: function (dialogRef) {
-                            dialogRef.close();
-                        }
-                    },
                     {
                         label: "Eliminar",
                         cssClass: "btn-danger",
                         action: function (dialogRef) {
                             var button = this;
+                            dialogRef.setClosable(false);
                             button.spin();
                             button.disable();
-                            tree.deleteAdminUnit();
-                            dialogRef.close();
+                            if(tree.deleteAdminUnit())
+                                dialogRef.close();
+                            
+                            button.stopSpin();
+                            button.enable();
+                            dialogRef.setClosable(true);
                         }
                     }
                 ],
@@ -538,13 +573,8 @@ var AdministrativeUnit = function () {
                 type: BootstrapDialog.TYPE_PRIMARY,
                 message: content,
                 closable: true,
+                closeByBackdrop: true,
                 buttons: [
-                    {
-                        label: "Cancelar",
-                        action: function (dialogRef) {
-                            dialogRef.close();
-                        }
-                    },
                     {
                         label: "Agregar",
                         cssClass: "btn-primary",
@@ -552,10 +582,12 @@ var AdministrativeUnit = function () {
                             var button = this;
                             button.spin();
                             button.disable();
+                            dialogRef.setClosable(false);
 
                             if (tree.addNewAdminUnit(activeNode))
                                 dialogRef.close();
 
+                            dialogRef.setClosable(true);
                             button.stopSpin();
                             button.enable();
                         }
@@ -643,32 +675,25 @@ var AdministrativeUnit = function () {
             BootstrapDialog.show({
                 title: 'Unificar con Grupo de Usuario',
                 size: BootstrapDialog.SIZE_SMALL,
+                closeByBackdrop: true,
                 message: content,
                 buttons: [
                     {
-                        id: "close",
-                        label: 'Cerrar',
-                        action: function (dialogRef) {
-                            dialogRef.close();
-                        }
-                    },
-                    {
+                        icon: 'fa fa-link fa-lg',
                         label: 'Unificar',
                         cssClass: "btn-primary",
                         action: function (dialogRef) {
-                            var buttonClose = dialogRef.getButton('close');
                             var button = this;
 
                             button.spin();
-                            button.disable();
-                            buttonClose.disable();
-
+                            dialogRef.enableButtons(false);
+                            dialogRef.setClosable(false);
+                            
                             if (userGroup.mergeUserGroupAndAdminUnit(activeNode))
                                 dialogRef.close();
-
-                            buttonClose.enable();
+                                
                             button.stopSpin();
-                            button.enable();
+                            dialogRef.setClosable(true);
                         }
                     }
                 ],
@@ -682,7 +707,7 @@ var AdministrativeUnit = function () {
                         var NombreGrupo = $Grupo.find("Nombre").text();
                         var Descripcion = $Grupo.find("Descripcion").text();
 
-                        var option = $('<option>', {idGroup: IdGrupo, name: NombreGrupo}).append(NombreGrupo);
+                        var option = $('<option>', {idUserGroup: IdGrupo, name: NombreGrupo}).append(NombreGrupo);
                         formGroupNameSelect.append(option);
                     });
                 }
@@ -769,6 +794,18 @@ var AdministrativeUnit = function () {
                         icon: "/img/archival/department.png",
                         type: "adminUnit"
                     });
+                    
+                    if(parseInt(idUserGroup) > 0){
+                        var userGroupChild = adminUnitChild.addChild({
+                            title: userGroupName,
+//                            key: "userGroup_"+idUserGroup,
+                            isFolder: true,
+                            expand: true,
+                            icon: "/img/userGroup.png",
+                            type: "userGroup",
+                            idUserGroup: idUserGroup
+                        });
+                    }
                 }
 
             });
@@ -797,13 +834,8 @@ var AdministrativeUnit = function () {
                 title: 'Unificar con Unidad Administrativa',
                 size: BootstrapDialog.SIZE_SMALL,
                 message: content,
+                closeByBackdrop: true,
                 buttons: [
-                    {
-                        label: 'Cerrar',
-                        action: function (dialogRef) {
-                            dialogRef.close();
-                        }
-                    },
                     {
                         label: 'Unificar',
                         cssClass: "btn-primary",
@@ -811,10 +843,12 @@ var AdministrativeUnit = function () {
                             var button = this;
                             button.spin();
                             button.disable();
-
+                            dialogRef.setClosable(false);
+                            
                             if (serie.mergeAdminUnitAndSerie())
                                 dialogRef.close();
-
+                            
+                            dialogRef.setClosable(true);
                             button.stopSpin();
                             button.enable();
                         }
@@ -1003,17 +1037,21 @@ var AdministrativeUnit = function () {
         mergeUserGroupAndAdminUnit: function (activeNode) {
             var status = 0;
 
-            var idGroup = activeNode.data.key;
-            var idAdminUnit = activeNode.getParent().data.key;
+            var idUserGroup = $('#groupNameForm option:selected').attr('idUserGroup');
+            var idAdminUnit = activeNode.data.key;
+            idAdminUnit = String(idAdminUnit).replace("adminUnit_","");
             var groupName = $('#groupNameForm option:selected').attr('name');
-
+            
+            if(!parseInt(idAdminUnit) > 0)
+                return Advertencia("No pudo ser obtenido el identificador de la Unidad Administrativa Seleccionada");
+            
             $.ajax({
                 async: false,
                 cache: false,
                 dataType: "html",
                 type: 'POST',
                 url: "Modules/php/AdministrativeUnit.php",
-                data: {option: "mergeUserGroupAndAdminUnit", idGroup: idGroup, idAdminUnit: idAdminUnit},
+                data: {option: "mergeUserGroupAndAdminUnit", idUserGroup: idUserGroup, idAdminUnit: idAdminUnit},
                 success: function (xml) {
 
                     if ($.parseXML(xml) === null) {
@@ -1027,11 +1065,12 @@ var AdministrativeUnit = function () {
 
                         var child = activeNode.addChild({
                             title: groupName,
-                            key: "Group_"+idGroup,
+//                            key: "userGroup_"+idUserGroup,
                             isFolder: true,
                             expand: true,
-                            icon: "/img/archival/department.png",
-                            type: "administrativeUnit"
+                            icon: "/img/userGroup.png",
+                            type: "userGroup",
+                            idUserGroup: idUserGroup
                         });
 
                         child.activate(true);
@@ -1050,6 +1089,92 @@ var AdministrativeUnit = function () {
                 }
             });
 
+            return status;
+        },
+        removeMergeUserGroupAndAdminUnitConfirmation: function(activeNode){
+            var parent = activeNode.getParent();
+            
+            if(typeof parent !== 'object')
+                return Advertencia("No fué posible obtener el nodo padre del grupo seleccionado");
+            
+            BootstrapDialog.show({
+                title: 'Mensaje de Confirmación',
+                type: BootstrapDialog.TYPE_DANGER,
+                size: BootstrapDialog.SIZE_SMALL,
+                message: "¿Realmente desea desenlazar al grupo <b>"+activeNode.data.title+"</b> de la Unidad Administrativa <b>"+parent.data.title+"</b>?",
+                closeByBackdrop: true,
+                buttons: [
+                    {
+                        label: 'Desenlazar',
+                        cssClass: "btn-danger",
+                        action: function (dialogRef) {
+                            var button = this;
+                            button.spin();
+                            button.disable();
+                            dialogRef.setClosable(false);
+                            
+                            if (userGroup.removeMergeUserGroupAndAdminUnit(activeNode))
+                                dialogRef.close();
+                            
+                            dialogRef.setClosable(true);
+                            button.stopSpin();
+                            button.enable();
+                        }
+                    }
+                ],
+                onshown: function (dialogRef) {
+
+
+                }
+            });
+        },
+        removeMergeUserGroupAndAdminUnit: function(activeNode){
+            var status = 0;
+            
+            var idUserGroup = activeNode.data.idUserGroup;
+            var idAdminUnit = activeNode.getParent().data.key;
+            idAdminUnit = String(idAdminUnit).replace("adminUnit_","");
+            
+            if(!parseInt(idUserGroup) > 0)
+                return Advertencia("No fue posible obtener el identificador del Grupo");
+            
+            if(!parseInt(idAdminUnit) > 0)
+                return Advertencia("No fue posible obtener el identificador de la Unidad Administrativa");
+            
+            $.ajax({
+                async: false,
+                cache: false,
+                dataType: "html",
+                type: 'POST',
+                url: "Modules/php/AdministrativeUnit.php",
+                data: {option: "removeMergeUserGroupAndAdminUnit", idUserGroup: idUserGroup, idAdminUnit: idAdminUnit},
+                success: function (xml) {
+
+                    if ($.parseXML(xml) === null) {
+                        errorMessage(xml);
+                        return 0;
+                    } else
+                        xml = $.parseXML(xml);
+
+                    if ($(xml).find("removed").length > 0) {
+                        activeNode.remove();
+                        status = 1;
+                        
+                    }
+
+                    $(xml).find("Error").each(function ()
+                    {
+                        var mensaje = $(this).find("Mensaje").text();
+                        errorMessage(mensaje);
+                    });
+                },
+                beforeSend: function () {
+                },
+                error: function (jqXHR, textStatus, errorThrown) {
+                    errorMessage(textStatus + "<br>" + errorThrown);
+                }
+            });
+            
             return status;
         }
     };
