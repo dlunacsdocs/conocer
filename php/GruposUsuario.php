@@ -33,7 +33,7 @@ class Grupos {
                 case 'NewGroup':$this->NewGroup($userData); break;
                 case 'DeleteGroup':$this->DeleteGroup(); break;
                 case 'ModifyGroup':$this->ModifyGroup($userData); break;      
-                case 'GetUsersGroups': $this->GetUsersGroups();break;            
+                case 'GetUsersGroups': $this->GetUsersGroups($userData);break;   
                 case "GetGroupMemebers":$this->GetGroupMemebers();break;
                 case 'GetUsersWithoutGroup':$this->GetUsersWithoutGroup(); break;
                 case 'AddUsersToGroup':$this->AddUsersToGroup(); break;
@@ -175,19 +175,21 @@ class Grupos {
     }
     
     
-    private function GetUsersGroups()
+    private function GetUsersGroups($userData)
     {
-        $XML=new XML();
-        $BD= new DataBase();
-        $DataBaseName=  filter_input(INPUT_POST, "DataBaseName");
-        $Consulta="SELECT *FROM GruposUsuario";
-        $Usuarios=$BD->ConsultaSelect($DataBaseName, $Consulta);
+        $BD = new DataBase();
+        
+        $DataBaseName = $userData['dataBaseName'];
+        $Consulta = "SELECT *FROM GruposUsuario";
+        $Usuarios = $BD->ConsultaSelect($DataBaseName, $Consulta);
 
-        if($Usuarios['Estado']!=true){$XML->ResponseXML("Error", 0, "<p>Ocurrió un error al consultar los usuarios ".$Consulta['Estado']."</p>"); return;}
-        if(!(count($Usuarios['ArrayDatos'])>0)){$XML->ResponseXML("Error", 0, "No existen Usuarios Registrados"); return;}       
-//        var_dump($Usuarios);
-        /*  Devolución de repuesta en XML */
-        $XML->ResponseXmlFromArray("Grupos", "Grupo", $Usuarios['ArrayDatos']);
+        if($Usuarios['Estado']!=true)
+            return XML::XMLReponse("Error", 0, "<p>Ocurrió un error al consultar los usuarios ".$Consulta['Estado']."</p>");
+        
+        if(!(count($Usuarios['ArrayDatos'])>0))
+            return XML::XMLReponse("Error", 0, "No existen Usuarios Registrados");     
+
+        XML::XmlArrayResponse("Grupos", "Grupo", $Usuarios['ArrayDatos']);
         
     }
     
