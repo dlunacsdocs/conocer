@@ -341,7 +341,7 @@ var ClassUsersGroups = function()
         });          
     };
     
-    var _ConfirmDelete = function()
+    _ConfirmDelete = function()
     {        
         var self = this;
         
