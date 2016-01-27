@@ -840,7 +840,8 @@ var ClassUsersGroups = function()
     
     var _PermissionsRepositoriesUserGroups = function()
     {
-        var XmlRepositories = Repository.GetRepositories(0);
+        var reporisoty = new ClassRepository();
+        var XmlRepositories = reporisoty.GetRepositories(0);
      
         if(!$.isXMLDoc(XmlRepositories))
         {
