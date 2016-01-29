@@ -12,7 +12,7 @@ $(document).ready(function()
 {        
     $('#form_engine').keydown(function( event )
     {
-      if ( event.which == 13 ) {
+      if ( event.which === 13 ) {
          EngineSearch();
       }
     });   
@@ -24,9 +24,11 @@ $(document).ready(function()
  */
 function EngineSearch()
 {    
-    var Search=$('#form_engine').val();
+    var Search = $.trim($('#form_engine').val());
     
-    if(!(Search.length>0)){return;}
+    if(!(Search.length > 0))
+        return;
+    
     Loading();
     
     $.ajax({
@@ -35,7 +37,7 @@ function EngineSearch()
       dataType:"html", 
       type: 'POST',   
       url: "php/ContentManagement.php",
-      data: "opcion=EngineSearch&DataBaseName="+EnvironmentData.DataBaseName+'&IdUser='+EnvironmentData.IdUsuario+'&IdGroup='+ EnvironmentData.IdGrupo+'&Search='+Search, 
+      data: {opcion: "EngineSearch",Search: Search},
       success:  function(xml){
           $('#Loading').dialog('close');
              if($.parseXML( xml )===null){Error(xml);return 0;}else xml=$.parseXML( xml );

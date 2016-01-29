@@ -3,14 +3,6 @@
  * To change this template file, choose Tools | Templates
  * and open the template in the editor.
  */
-$(document).ready(function ()
-{
-
-    $(":text").keyup(function ()
-    {
-        valid(this);
-    });
-});
 
 var Process = new Array();
 var _NombreUsuario = '';

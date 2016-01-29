@@ -319,9 +319,6 @@ function DetailModify(XmlDetalle,DocumentEnvironment)
 {                             
     var CatalogosXml = '';    
     var active = $( "#tabs" ).tabs( "option", "active" );               
-    var node = $("#contentTree").dynatree("getActiveNode");
-
-    if(!node){Advertencia("Seleccione un directorio"); return 0;}
         
     $('#div_detalle').append('<div class="Loading" id = "CMModifyDetail"><img src="../img/loadinfologin.gif"></div>');
                
