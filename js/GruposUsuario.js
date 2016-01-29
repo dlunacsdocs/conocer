@@ -809,96 +809,109 @@ var ClassUsersGroups = function()
     /*--------------------------------------------------------------------------
      *                  Permisos del Sistema Por Grupos 
      ---------------------------------------------------------------------------*/
-    _CreatePermissionsPanel = function()
+    this.showPermissionsPanel = function(idGroup)
     {
-        var self = this;
-        $('#PanelPermissionsUserGroups').remove();
-        $('body').append('\
-            <div id = "PanelPermissionsUserGroups" style = "display:none">\n\
-                <div id = "GroupPermissionsPanel" class = "UserGroupContentTab">\n\
-                    <ul>\n\
-                        <li id = "li_UserGroupPermissionsRepositories"><a href = "#UserGroupsPermissionsRepositories">Repositorios</a></li>\n\
-                        <li id = "li_UserGroupPermissionsAdministration"><a href = "#UserGroupsPermissionsAdministration">Administración</a></li>\n\
-                    </ul>\n\
-                    <div id = "UserGroupsPermissionsRepositories" class = "UserGroupContent">\n\
-                        <div id = "SM_Permissions" class = "TreeRepositoriesUserGroups"></div>\n\
-                        <div id = "TreeToolsOptions" class = "TreeMenusUserGroups"></div>\n\
-                    </div>\n\
-                    <div id = "UserGroupsPermissionsAdministration" class = "UserGroupContent">\n\
-                        <div class = "TreeRepositoriesUserGroups"></div>\n\
-                        <div class = "TreeMenusUserGroups"></div>\n\
-                    </div>\n\
-                </div>\n\
-            </div>');
+        var self = this;     
         
-        $('#WS_Users').append('<div class="PlaceWaiting" id = "UsersPlaceWaiting"><img src="../img/loadinfologin.gif"></div>');
+        var tabbable = $('<div>');
+
+        var navTab = $('<ul>', {class: "nav nav-tabs"});
+
+        var adminUnitLi = $('<li>', {class: "active"}).append('<a href="#userGroupsPermissions" data-toggle="tab"><i class="fa fa-cogs fa-lg"></i> Permisos</a>');
+
+        var userGroupsPermissions = $('<div>', {class: "tab-pane active", id: "userGroupsPermissions"});
+
+        var tabContent = $('<div>', {class: "tab-content"});
+
+        var content = $('<div>');
         
-        $( "#GroupPermissionsPanel").tabs();
-       $( "#GroupPermissionsPanel li" ).removeClass( "ui-corner-top" );
-       _PermissionsRepositoriesUserGroups();
-    };
+        var repositoryTree = $('<div>',{id:"SM_Permissions"}).append('<div id = "TreeRepositoriesUserGroups"><ul><li id = "0_MSR" data = "icon: \'Catalogo.png\'" class = "folder"> Repositorios <ul id = "MSR_0"></ul></ul></div>');
+        var permissionsTreeRepositories = $('<div>',{id:"TreeToolsOptions"});
+        
+        content.append(repositoryTree);
+        content.append(permissionsTreeRepositories);
+        
+        userGroupsPermissions.append(content);
+
+        tabContent.append(userGroupsPermissions);
+
+        navTab.append(adminUnitLi);
+
+        tabbable.append(navTab);
+        tabbable.append(tabContent);
     
-    var _PermissionsRepositoriesUserGroups = function()
-    {
-        var XmlRepositories = Repository.GetRepositories(0);
-     
-        if(!$.isXMLDoc(XmlRepositories))
-        {
-            $('#UsersPlaceWaiting').remove();
-            return 0;   
-        }
-                         
-        $('#SM_Permissions').append('<div id = "TreeRepositoriesUserGroups"><ul><li id = "0_MSR" data = "icon: \'Catalogo.png\'" class = "folder"> Repositorios <ul id = "MSR_0"></ul></ul></div>');
+        var dialog = BootstrapDialog.show({
+            title: 'Control de Permisos para el grupo <b>'+ this.NombreGrupo + '</b>',
+            size: BootstrapDialog.SIZE_NORMAL,
+            type: BootstrapDialog.TYPE_PRIMARY,
+            message: tabbable,
+            closable: true,
+            closeByBackdrop: false,
+            buttons: [
+                {
+                    label: "Aplicar",
+                    cssClass: "btn-primary",
+                    action: function (dialogRef) {
+                        var button = this;
+                        button.spin();
+                        button.disable();
+                        
+                        _ApplyPermissionsSettings(idGroup);
+                        
+                        button.stopSpin();
+                        button.enable();
+                    }
+                }
+            ],
+            onshown: function (dialogRef) {
+                var reporisoty = new ClassRepository();
+                var XmlRepositories = reporisoty.GetRepositories(0);
                 
-        $(XmlRepositories).find("Repository").each(function()
-        {
-            var IdRepositorio = $(this).find('IdRepositorio').text();
-            var Nombre = $(this).find('NombreRepositorio').text();
-            var ClaveEmpresa = $(this).find('ClaveEmpresa').text();
-            console.log("Ingresando al menú el repositorio "+Nombre);
-            $('#MSR_0').append('<li id="MSR_'+IdRepositorio+'" class="folder" data="icon: \'Repositorio.png\'">'+Nombre+'<ul id="'+IdRepositorio+'_MSR"></ul>');             
-        });    
-        
-        $('#TreeRepositoriesUserGroups').dynatree({generateIds: false, expand: true, selectMode: 3, checkbox: true, minExpandLevel: 3,
-            onClick: function(node, event){
-                if( node.getEventTargetType(event) === "checkbox" )
-                    node.activate();
-                if( node.getEventTargetType(event) === "title" )
-                    if(!node.bSelected)
-                        node.toggleSelect();
-                node.sortChildren(cmp, false);  
-//                console.log('OnClick en '+node.data.title);
+                $(XmlRepositories).find("Repository").each(function(){
+                    var IdRepositorio = $(this).find('IdRepositorio').text();
+                    var Nombre = $(this).find('NombreRepositorio').text();
+                    var ClaveEmpresa = $(this).find('ClaveEmpresa').text();
+                    console.log("Ingresando al menú el repositorio "+Nombre);
+                    $('#MSR_0').append('<li id="MSR_'+IdRepositorio+'" class="folder" data="icon: \'Repositorio.png\'">'+Nombre+'<ul id="'+IdRepositorio+'_MSR"></ul>');             
+                });    
+                
+                $('#TreeRepositoriesUserGroups').dynatree({generateIds: false, expand: true, selectMode: 3, checkbox: true, minExpandLevel: 3,
+                    onClick: function(node, event){
+                        if( node.getEventTargetType(event) === "checkbox" )
+                            node.activate();
+                        if( node.getEventTargetType(event) === "title" )
+                            if(!node.bSelected)
+                                node.toggleSelect();
+                        node.sortChildren(cmp, false);  
+        //                console.log('OnClick en '+node.data.title);
+                    },
+                    onActivate: function(node, event)
+                    {                             
+                        node.sortChildren(cmp, false); 
+                        _GetAccessPermissionsListOfRepository(node);   /* Obtiene los permisos sobre el repositorio */
+                    },
+                    onCreate: function(node, event)
+                    {
+                        node.sortChildren(cmp, false);
+                    }
+                });    
+
+                var RepositoriesTree = $('#TreeRepositoriesUserGroups').dynatree("getTree");  /* crea el árbol izquierdo (repositorios)*/
+                var ShowToolsOptions = _ShowToolsOptions();   /* Muestra la lista de menús del sistema */
+                _GetRepositoryAccessList(RepositoriesTree);    /* Permisos de acceso (check) árbol izquierdo (repositorios)*/            
+        ////        
+                var rootNode = RepositoriesTree.getNodeByKey("0_MSR");  
+
+                var RepositoryChildren = rootNode.getChildren();
+                if(typeof RepositoryChildren === 'object')
+                    RepositoryChildren[0].activate();               /* Se activa el primer repositorio */
+
             },
-            onActivate: function(node, event)
-            {                             
-                node.sortChildren(cmp, false); 
-                _GetAccessPermissionsListOfRepository(node);   /* Obtiene los permisos sobre el repositorio */
-            },
-            onCreate: function(node, event)
-            {
-                node.sortChildren(cmp, false);
+            onclose: function (dialogRef) {
+
             }
-        });    
-        
-        var RepositoriesTree = $('#TreeRepositoriesUserGroups').dynatree("getTree");  /* crea el árbol izquierdo (repositorios)*/
-        var ShowToolsOptions = _ShowToolsOptions();   /* Muestra la lista de menús del sistema */
-        _GetRepositoryAccessList(RepositoriesTree);    /* Permisos de acceso (check) árbol izquierdo (repositorios)*/            
-////        
-        var rootNode = RepositoriesTree.getNodeByKey("0_MSR");  
-      
-        var RepositoryChildren = rootNode.getChildren();
-        
-        
-        $('#PanelPermissionsUserGroups').dialog({title:"Control de Permisos para el grupo \""+ this.NombreGrupo +"\"", width: 650, height:600, minWidth:650, minHeight:400, buttons:{
-                "Aplicar":{text:"Aplicar", click:function(){_ApplyPermissionsSettings();}},
-                "Cerrar":function(){$(this).dialog('close');}
-        }});
-    
-    $('#UsersPlaceWaiting').remove();    
-    if(RepositoryChildren !== null && RepositoryChildren !== undefined)
-        RepositoryChildren[0].activate();               /* Se activa el primer repositorio */
-        
-        
+        });        
+
     };
     
     /* Operaciones que el usuario puede realizar */
@@ -1017,7 +1030,7 @@ var ClassUsersGroups = function()
    };
    
    /*---------------------------------------------------------------------------
-    * Regresa los accesos a los repositorios a los cuales el grupo seleccionado
+    * @description Regresa los accesos a los repositorios a los cuales el grupo seleccionado
     * tiene permiso de acceso
     * 
     * @param {type} RepositoriesTree
@@ -1120,39 +1133,44 @@ var ClassUsersGroups = function()
         });       
     };
       
-  var _ApplyPermissionsSettings = function()
-   {              
-       var node =  $("#TreeRepositoriesUserGroups").dynatree("getActiveNode");
-       var SplitId = node.data.key;
-       SplitId = String(SplitId.split("MSR_"));
-       var IdRepositorio = SplitId.replace(",","");
-       var NombreRepositorio = node.data.title;
-       if(!(IdRepositorio>0))
-        return; 
+  var _ApplyPermissionsSettings = function(idGroup)
+   {            
+        var self = this;
+        var node =  $("#TreeRepositoriesUserGroups").dynatree("getActiveNode");
+        var IdRepositorio = node.data.key;  
+        var NombreRepositorio = node.data.title;
        
-       var SelectedRepositoriesTree  = Tree.GetSelectedNodes('#TreeRepositoriesUserGroups');
-       var UnselectedRepositories = Tree.GetUncheckNodes('#TreeRepositoriesUserGroups');
-       var SelectedMenus = Tree.GetSelectedNodes('.PermissionsToolsOptions');
-       var UnselectedMenus = Tree.GetUncheckNodes('.PermissionsToolsOptions');
-       var SettingsXml = undefined;
+        IdRepositorio = String(IdRepositorio).replace("MSR_","");
+        
+        if(!parseInt(IdRepositorio) > 0)
+            return Advertencia("No fue posible obtener el identificador del repositorio para aplicar los permisos.");; 
        
-       if(SelectedMenus === 0 || SelectedRepositoriesTree ===0)
-           return 0;
+        if(!parseInt(idGroup) > 0)
+           return Advertencia("No fue posible obtener el identificador del grupo seleccionado para aplicar los permisos");
        
-       SettingsXml="<Settings version='1.0' encoding='UTF-8'>";
+        var SelectedRepositoriesTree  = Tree.GetSelectedNodes('#TreeRepositoriesUserGroups');
+        var UnselectedRepositories = Tree.GetUncheckNodes('#TreeRepositoriesUserGroups');
+        var SelectedMenus = Tree.GetSelectedNodes('.PermissionsToolsOptions');
+        var UnselectedMenus = Tree.GetUncheckNodes('.PermissionsToolsOptions');
+        var SettingsXml = undefined;
        
-       $.each(SelectedRepositoriesTree, function()
-       {        
-           var SplitId = this.data.key;
-           SplitId = String(SplitId.split("MSR_"));
-           var Id = SplitId.replace(",","");
-           if(!(Id>0))
-            return;
-           SettingsXml+="<AccessToTheRepository>";
-           SettingsXml+= "<IdRepository>"+Id+'</IdRepository>';
-           SettingsXml+= "<RepositoryTitle>"+this.data.title+'</RepositoryTitle>';
-           SettingsXml+= "</AccessToTheRepository>";
-       });
+        if(SelectedMenus === 0 || SelectedRepositoriesTree ===0)
+            return 0;
+       
+        SettingsXml="<Settings version='1.0' encoding='UTF-8'>";
+       
+        $.each(SelectedRepositoriesTree, function()
+        {        
+            var SplitId = this.data.key;
+            SplitId = String(SplitId.split("MSR_"));
+            var Id = SplitId.replace(",","");
+            if(!(Id>0))
+                return;
+            SettingsXml+="<AccessToTheRepository>";
+            SettingsXml+= "<IdRepository>"+Id+'</IdRepository>';
+            SettingsXml+= "<RepositoryTitle>"+this.data.title+'</RepositoryTitle>';
+            SettingsXml+= "</AccessToTheRepository>";
+        });
        
        $.each(UnselectedRepositories, function()
        {        
@@ -1201,7 +1219,7 @@ var ClassUsersGroups = function()
         dataType:"html", 
         type: 'POST',   
         url: "php/Permissions.php",
-        data: "opcion=ApplyPermissionsSettingsOfGroup&DataBaseName="+EnvironmentData.DataBaseName+'&IdUsuario='+EnvironmentData.IdUsuario+'&NombreUsuario='+EnvironmentData.NombreUsuario+'&EnvironIdGrupo='+EnvironmentData.IdGrupo+'&EnvironNombreGrupo='+EnvironmentData.NombreGrupo+'&IdRepositorio='+IdRepositorio+'&NombreRepositorio='+NombreRepositorio+'&IdGrupo='+this.IdGrupo+'&NombreGrupo='+this.NombreGrupo+'&SettingsXml='+SettingsXml, 
+        data: 'opcion=ApplyPermissionsSettingsOfGroup&IdRepositorio='+IdRepositorio+'&NombreRepositorio='+NombreRepositorio+'&IdGrupo='+idGroup+'&SettingsXml='+SettingsXml, 
         success:  function(xml)
         {            
             if($.parseXML( xml )===null){$('#UsersPlaceWaiting').remove(); Error(xml); return 0;}else xml=$.parseXML( xml );         
@@ -1288,7 +1306,7 @@ ClassUsersGroups.prototype.ShowsGroupsUsers = function()
                     {"sExtends":"text", "sButtonText": "Editar", "fnClick" :function(){_ShowGroupData();}},
                     {"sExtends":"text", "sButtonText": "Eliminar", "fnClick" :function(){_ConfirmDelete();}},
                     {"sExtends":"text", "sButtonText": "Miembros", "fnClick" :function(){_Members();}},
-                    {"sExtends":"text", "sButtonText": "Permisos", "fnClick" :function(){_CreatePermissionsPanel();}},
+                    {"sExtends":"text", "sButtonText": "Permisos", "fnClick" :function(){self.showPermissionsPanel(IdGrupo);}},
                     {
                         "sExtends":    "collection",
                         "sButtonText": "Exportar...",
