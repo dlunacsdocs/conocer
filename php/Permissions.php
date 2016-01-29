@@ -9,25 +9,37 @@
 require_once 'DataBase.php';
 require_once "Log.php";
 require_once "XML.php";
+require_once "Session.php";
+
 
 $RoutFile = dirname(getcwd());        
 
 class Permissions {
+    private $db;
     public function __construct() {
-        $this->ajax();
+        $this->db = new DataBase();
     }
-    
-    private function ajax()
+    public function ajax()
     {
-        switch (filter_input(INPUT_POST, "opcion"))
-        {
+        if(filter_input(INPUT_POST, "opcion")!=NULL and filter_input(INPUT_POST, "opcion")!=FALSE){
             
-            case 'GetUserPermissions':$this->GetUserPermissions(); break;
-            case 'ApplyPermissionsSettingsOfGroup':$this->ApplyPermissionsSettingsOfGroup(); break;
-            case 'GetPermissionsMenuList': $this->GetPermissionsMenuList(); break;
-            case 'GetRepositoryAccessList':$this->GetRepositoryAccessList(); break;
-            case 'GetAccessPermissionsList':$this->GetAccessPermissionsList(); break;
-            case 'GetToolsOptions':$this->GetToolsOptions(); break;            
+            $idSession = Session::getIdSession();
+        
+            if($idSession == null)
+                return XML::XMLReponse ("Error", 0, "Permissions::No existe una sesión activa, por favor vuelva a iniciar sesión");
+
+            $userData = Session::getSessionParameters();
+            
+            switch (filter_input(INPUT_POST, "opcion"))
+            {
+
+                case 'GetUserPermissions':$this->GetUserPermissions(); break;
+                case 'ApplyPermissionsSettingsOfGroup':$this->ApplyPermissionsSettingsOfGroup($userData); break;
+                case 'GetPermissionsMenuList': $this->GetPermissionsMenuList(); break;
+                case 'GetRepositoryAccessList':$this->GetRepositoryAccessList(); break;
+                case 'GetAccessPermissionsList':$this->GetAccessPermissionsList(); break;
+                case 'GetToolsOptions':$this->GetToolsOptions(); break;            
+            }
         }
     }
     
@@ -203,33 +215,23 @@ class Permissions {
     }
     
     
-    private function ApplyPermissionsSettingsOfGroup()
+    private function ApplyPermissionsSettingsOfGroup($userData)
     {
-        $XML =new XML();
-        $BD = new DataBase();
-//        $Log = new Log();
-        $DataBaseName = filter_input(INPUT_POST, "DataBaseName");
+        $DataBaseName = $userData['dataBaseName'];
+        
+        $idUser = $userData['idUser'];
         $IdRepositorio = filter_input(INPUT_POST, "IdRepositorio");
-//        $NombreRepositorio = filter_input(INPUT_POST, "NombreRepositorio");
-//        $IdUsuario = filter_input(INPUT_POST, "IdUsuario");
-//        $NombreUsuario =  filter_input(INPUT_POST, "NombreUsuario");     
-//        $EnvironIdGrupo = filter_input(INPUT_POST, "EnvironIdGrupo");
-//        $EnvironNombreGrupo = filter_input(INPUT_POST, "EnvironNombreGrupo");
         $SettingsXml = filter_input(INPUT_POST, "SettingsXml");
         $IdGroup = filter_input(INPUT_POST, "IdGrupo");
         
+        if(!(int) $idUser == 1)
+            return XML::XMLReponse ("Error", 0, "Solo el usuario root puede realizar cambios en permisos de grupo");
+        
         if(!($xml=  simplexml_load_string($SettingsXml)))
-        {
-            echo "<p>Error</p>";
-            $XML->ResponseXML("Error", 0, "<p>El servidor no recibió correctamente la información</p>");
-            return 0;
-        }
+            return XML::XMLReponse("Error", 0, "<p>El servidor no recibió correctamente la información</p>");
         
         if($IdGroup == 1)
-        {
-            $XML->ResponseXML("SystemError", 0, "<p>No pueden modificarse los permisos de este grupo ya que pertenece al sistema.</p>");
-            return 0;
-        }
+            return XML::XMLReponse("SystemError", 0, "<p>No pueden modificarse los permisos de este grupo ya que pertenece al sistema.</p>");
         
         /* --------------- Configuraciones sobre Menus ------------- */  
             
@@ -242,20 +244,16 @@ class Permissions {
         $NewPermissionsRepository = array();
         
         $QSelectPermissions = "SELECT *FROM SystemMenuControl WHERE IdGrupo = $IdGroup AND IdRepositorio = $IdRepositorio";
-        $ResultSelectPermissions = $BD->ConsultaSelect($DataBaseName, $QSelectPermissions);
-        if($ResultSelectPermissions['Estado']!=1)
-        {
-            $XML->ResponseXML("Error", 0, "<p><b>Error</b> al obtener el listado completo de permissos del repositorio seleccionado</p><br><br>Detalles:<br><br>".$ResultSelectPermissions['Estado']);
-            return 0;
-        }
+        $ResultSelectPermissions = $this->db->ConsultaSelect($DataBaseName, $QSelectPermissions);
         
-        for($cont = 0; $cont < count($ResultSelectPermissions['ArrayDatos']) ; $cont++)
-        {
+        if($ResultSelectPermissions['Estado']!=1)
+            return XML::XMLReponse("Error", 0, "<p><b>Error</b> al obtener el listado completo de permissos del repositorio seleccionado</p><br><br>Detalles:<br><br>".$ResultSelectPermissions['Estado']);
+        
+        for($cont = 0; $cont < count($ResultSelectPermissions['ArrayDatos']) ; $cont++){
             $OldPermissionsMenu[$ResultSelectPermissions['ArrayDatos'][$cont]['IdMenu']] = $ResultSelectPermissions['ArrayDatos'][$cont]['IdMenu'];
         }        
         
-        foreach ($xml->AccessMenu as $value)
-        {
+        foreach ($xml->AccessMenu as $value){
             $Indice = (int)$value->IdMenu;
             $NewPermissionsMenu[$Indice] =(int)$value->IdMenu;
         }
@@ -272,11 +270,8 @@ class Permissions {
         $WithoutAccessMenu = trim($WithoutAccessMenu_, "OR");
                      
         if(count($xml->WithoutAccessMenu)>0)
-            if(($ResultWithoutAccessMenu = $BD->ConsultaQuery($DataBaseName, $WithoutAccessMenu))!=1)
-            {
-                $XML->ResponseXML("Error", 0, "<p><b>Error</b> al denegar acceso a los Menus Seleccionados</p>.<br><br>Detalles:<br><br> $ResultWithoutAccessMenu");
-                return 0;
-            }        
+            if(($ResultWithoutAccessMenu = $this->db->ConsultaQuery($DataBaseName, $WithoutAccessMenu))!=1)
+                return XML::XMLReponse("Error", 0, "<p><b>Error</b> al denegar acceso a los Menus Seleccionados</p>.<br><br>Detalles:<br><br> $ResultWithoutAccessMenu");
                 
         $InsertIntoSystemMenuControl_ = "INSERT INTO SystemMenuControl (IdMenu, IdGrupo, IdRepositorio) VALUES ";
         $ValuesInsertIntoSystemMenu = '';
@@ -289,24 +284,18 @@ class Permissions {
         $InsertIntoSystemMenuControl = $InsertIntoSystemMenuControl_. trim($ValuesInsertIntoSystemMenu, ",");
         
         if(strcasecmp($ValuesInsertIntoSystemMenu, '')!=0)
-            if(($ResultInsertIntoSystemMenuControl = $BD->ConsultaQuery($DataBaseName, $InsertIntoSystemMenuControl))!=1)
-            {
-                $XML->ResponseXML("Error", 0, "<p><b>Error</b> al aplicar la configuración en los menùs seleccionados.</p><br>Detalles:<br><br> $ResultInsertIntoSystemMenuControl</p>");
-                return 0;
-            }
+            if(($ResultInsertIntoSystemMenuControl = $this->db->ConsultaQuery($DataBaseName, $InsertIntoSystemMenuControl))!=1)
+                XML::XMLReponse("Error", 0, "<p><b>Error</b> al aplicar la configuración en los menùs seleccionados.</p><br>Detalles:<br><br> $ResultInsertIntoSystemMenuControl</p>");
             
         /* ------------------- Permissos sobre Repositorio ------------------- */
         $SelectRepositories = "SELECT * FROM RepositoryControl WHERE IdGrupo = $IdGroup";
-        $ResultSelectRepositories = $BD->ConsultaSelect($DataBaseName, $SelectRepositories);
+        $ResultSelectRepositories = $this->db->ConsultaSelect($DataBaseName, $SelectRepositories);
+        
         if($ResultSelectRepositories['Estado']!=1)
-        {
-            $XML->ResponseXML("Error", 0, "<p><b>Error</b> al obtener los permissos de repositorio sobre el grupo.</p><br><br>Detalles:<br><br>".$ResultSelectRepositories['Estado']);
-            return 0;
-        }
+            return XML::XMLReponse("Error", 0, "<p><b>Error</b> al obtener los permissos de repositorio sobre el grupo.</p><br><br>Detalles:<br><br>".$ResultSelectRepositories['Estado']);
         
         for($cont = 0; $cont < count($ResultSelectRepositories['ArrayDatos']); $cont++)
         {
-            
             $NewPermissionsRepository[$ResultSelectRepositories['ArrayDatos'][$cont]['IdRepositorio']] = $ResultSelectRepositories['ArrayDatos'][$cont]['IdRepositorio'];
         }
         
@@ -328,11 +317,8 @@ class Permissions {
         $InsertIntoRepositoryControl = $InsertIntoRepositoryControl_. trim($ValuesInsertToRepositoryControl, ",");
                        
         if(strcasecmp($ValuesInsertToRepositoryControl, '')!=0)
-            if(($ResultInsertIntoRepositoryControl = $BD->ConsultaQuery($DataBaseName, $InsertIntoRepositoryControl))!=1)
-            {
-                $XML->ResponseXML("Error", 0, "<p>Error al registrar el acceso a repositorios. $ResultInsertIntoRepositoryControl</p>");
-                return 0;
-            }               
+            if(($ResultInsertIntoRepositoryControl = $this->db->ConsultaQuery($DataBaseName, $InsertIntoRepositoryControl))!=1)
+                XML::XMLReponse("Error", 0, "<p>Error al registrar el acceso a repositorios. $ResultInsertIntoRepositoryControl</p>");
             
         $WithoutAccessRepository_ = " DELETE FROM RepositoryControl WHERE (";          
         $DeleteAccessToMenus_ = "DELETE FROM SystemMenuControl WHERE (";
@@ -351,20 +337,14 @@ class Permissions {
                        
         if(count($xml->WithoutAccessToTheRepository)>0)
         {
-            if(($ResultWithoutAccessRepository = $BD->ConsultaQuery($DataBaseName, $WithoutAccessRepository))!=1)
-            {
-                $XML->ResponseXML("Error", 0, "<p>Error al denegar acceso a los repositorios seleccionados. $ResultWithoutAccessRepository</p>");
-                return 0;
-            }
+            if(($ResultWithoutAccessRepository = $this->db->ConsultaQuery($DataBaseName, $WithoutAccessRepository))!=1)
+                XML::XMLReponse("Error", 0, "<p>Error al denegar acceso a los repositorios seleccionados. $ResultWithoutAccessRepository</p>");
 
-            if(($ResultWithoutAccessToMenus = $BD->ConsultaQuery($DataBaseName, $DeleteAccessToMenus))!=1)
-            {
-                $XML->ResponseXML("Error", 0, "<p><b>Error</b> al eliminar la configuración anterior del repositorio.</p><br><br>Detalles:<br><br> $ResultWithoutAccessToMenus");
-                return 0;
-            }
+            if(($ResultWithoutAccessToMenus = $this->db->ConsultaQuery($DataBaseName, $DeleteAccessToMenus))!=1)
+                XML::XMLReponse("Error", 0, "<p><b>Error</b> al eliminar la configuración anterior del repositorio.</p><br><br>Detalles:<br><br> $ResultWithoutAccessToMenus");
         }
                                             
-        $XML->ResponseXML("ApplySettings", 1, "<p>Configuración Aplicada con éxito</p>");
+        XML::XMLReponse("ApplySettings", 1, "<p>Configuración Aplicada con éxito</p>");
     }
     
     private function GetRepositoryAccessList()
@@ -372,10 +352,10 @@ class Permissions {
         $XML=new XML();
         $BD= new DataBase();
         $DataBaseName=  filter_input(INPUT_POST, "DataBaseName");
-        $IdUsuario = filter_input(INPUT_POST, "IdUsuario");
-        $NombreUsuario = filter_input(INPUT_POST, "NombreUsuario");
-        $EnvironIdGrupo = filter_input(INPUT_POST, "EnvironIdGrupo");
-        $EnvironNombreGrupo = filter_input(INPUT_POST,"EnvironNombreGrupo");
+//        $IdUsuario = filter_input(INPUT_POST, "IdUsuario");
+//        $NombreUsuario = filter_input(INPUT_POST, "NombreUsuario");
+//        $EnvironIdGrupo = filter_input(INPUT_POST, "EnvironIdGrupo");
+//        $EnvironNombreGrupo = filter_input(INPUT_POST,"EnvironNombreGrupo");
         $IdGrupo= filter_input(INPUT_POST, "IdGrupo");
         $NombreGrupo = filter_input(INPUT_POST, "NombreGrupo");
         
@@ -476,3 +456,4 @@ class Permissions {
 }
 
 $Permissions = new Permissions();
+$Permissions->ajax();
