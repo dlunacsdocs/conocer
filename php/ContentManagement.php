@@ -28,12 +28,7 @@ class ContentManagement {
         $this->db = new DataBase();
     }
     public function ajax()
-    {  
-        switch (filter_input(INPUT_GET, "opcion"))
-        {
-            case 'DownloadZip':$this->DownloadZip();break;
-        }
-        
+    {   
         if(filter_input(INPUT_POST, "opcion")!=NULL and filter_input(INPUT_POST, "opcion")!=FALSE){
             
             $idSession = Session::getIdSession();
@@ -42,6 +37,11 @@ class ContentManagement {
                 return XML::XMLReponse ("Error", 0, "ContentManagement::No existe una sesión activa, por favor vuelva a iniciar sesión");
 
                 $userData = Session::getSessionParameters();
+                
+                switch (filter_input(INPUT_GET, "opcion"))
+                {
+                    case 'DownloadZip':$this->DownloadZip(); break;
+                }
                 
                 switch (filter_input(INPUT_POST, "opcion")) {
 
