@@ -23,10 +23,11 @@ require_once 'Catalog.php';
 require_once 'Notes.php';
 
 class ContentManagement {
+    private $db;
     public function __construct() {
-        $this->ajax();
+        $this->db = new DataBase();
     }
-    private function ajax()
+    public function ajax()
     {  
         switch (filter_input(INPUT_GET, "opcion"))
         {
@@ -49,7 +50,7 @@ class ContentManagement {
                 case 'UploadFile': $this->UploadFile(); break;             
                 case 'UploadMetadatas':$this->UploadMetadatas(); break;
                 case 'getCatalogos':$this->getCatalogos();break;
-                case 'EngineSearch':$this->EngineSearch();break;
+                case 'EngineSearch':$this->EngineSearch($userData);break;
                 case 'GetFiles':$this->GetFiles();break;
                 case 'FileEdit':$this->FileEdit($userData);break;
                 case 'GetDetalle':$this->GetDetalle($userData);break;
@@ -815,9 +816,6 @@ class ContentManagement {
     
     private function DetailModify($userData)
     {                
-        $XML=new XML();
-        $BD= new DataBase();
-        $Log = new Log();
         $Notes = new Notes();
         
         $DataBaseName = $userData['dataBaseName'];
@@ -838,44 +836,40 @@ class ContentManagement {
         $FullText=''; /* Campo devuelto a la vista para insertarlo en la Tabla (Repositorio) */
         $CampoFullText="";     /* Contiene el resumen de todos los campos del repositorio y de los catálogos (Para la búsqueda) */
         $campoFullReturn='';/* Campo FullText que se retorna a la vista de usuario */
-        foreach ($xml->Detalle as $campo)
-        {
+        
+        foreach ($xml->Detalle as $campo){
             $type=$campo->type;
             $value=$campo->value;
-            if(strcasecmp($campo->name,"Full")==0){continue;}
-            if(strcasecmp($campo->name,"RutaArchivo")==0){ continue;}
-            if(strcasecmp($type,"int")==0 or strcasecmp($type,"integer")==0 or strcasecmp($type,"float")==0 or strcasecmp($type,"double")==0) /* Si detecta un tipo numerico */
-            {
+            
+            if(strcasecmp($campo->name,"Full")==0)
+                    continue;
+            
+            if(strcasecmp($campo->name,"RutaArchivo")==0)
+                    continue;
+            
+            if(strcasecmp($type,"int")==0 or strcasecmp($type,"integer")==0 or strcasecmp($type,"float")==0 or strcasecmp($type,"double")==0) /* Si detecta un tipo numerico */{
                 if(!(is_numeric("$value")))
-                {
                     $CadenaUpdate.=$campo->name."=0,";
-                }else
-                {
+                else
                     $CadenaUpdate.=$campo->name."=$campo->value,";
-                }
 
             }
             else    /* Demás tipos de datos llevan ' ' */
-            {
                 $CadenaUpdate.=$campo->name."='".$campo->value."'".",";
-            }                                       
-             if($campo->value!='0')   /* Se evitan los campos por default que contengan 0 */
-             {
-                
+            
+            if($campo->value!='0'){    /* Se evitan los campos por default que contengan 0 */
                  $CampoFullText.=$value." , ";
                  $campoFullReturn.=$value." , ";
              }  
         }
         
-        if(count($xml->Catalogo)>0)  /* Los campos catálogo son tipo INT */
-        {
-            foreach ($xml->Catalogo as $campo)
-            {
+        if(count($xml->Catalogo)>0)    /* Los campos catálogo son tipo INT */
+            foreach ($xml->Catalogo as $campo){
                 $CadenaUpdate.=$campo->name."=$campo->value,";
                 $CampoFullText.=$campo->TextoSelect." , ";
                 $campoFullReturn.=$campo->TextoSelect." , ";
             }
-        }
+        
         $CadenaUpdate=trim($CadenaUpdate,',');
         
         $CampoFullText=  trim($CampoFullText,' , ');
@@ -900,8 +894,7 @@ class ContentManagement {
         
 //        echo $CadenaUpdate."<br><br>";
                 
-        if(($ResultUpdate = $BD->ConsultaQuery($DataBaseName, $CadenaUpdate))==1)
-        {
+        if(($ResultUpdate = $this->db->ConsultaQuery($DataBaseName, $CadenaUpdate))==1){
             $UpdateRepositorioGlobal='';                        
             
             if($IdGlobal>0)
@@ -909,8 +902,7 @@ class ContentManagement {
             else
                 $UpdateRepositorioGlobal = "UPDATE RepositorioGlobal SET Full = $CampoFullText WHERE IdFile = $IdFile AND IdRepositorio = $IdRepositorio";
             
-            if(($ResultUpdateRepositorioGlobal = $BD->ConsultaQuery($DataBaseName, $UpdateRepositorioGlobal))==1)
-            {                
+            if(($ResultUpdateRepositorioGlobal = $this->db->ConsultaQuery($DataBaseName, $UpdateRepositorioGlobal))==1){                
                 $doc  = new DOMDocument('1.0','utf-8');
                 $doc->formatOutput = true;
                 $root = $doc->createElement("DetailModify");
@@ -922,16 +914,16 @@ class ContentManagement {
                 header ("Content-Type:text/xml");
                 echo $doc->saveXML();   
                 
-                $Log ->Write("39", $IdUsuario, $NombreUsuario, " \"$NombreArchivo\"", $DataBaseName);
+                Log::WriteEvent("39", $IdUsuario, $NombreUsuario, " \"$NombreArchivo\"", $DataBaseName);
                 
 //                echo $UpdateRepositorioGlobal;
                 
             }
             else
-                $XML->ResponseXML ("Error", 0, "Error al actualizar los datos. $ResultUpdateRepositorioGlobal. <p>$UpdateRepositorioGlobal</p>");            
+                return XML::XMLReponse ("Error", 0, "Error al actualizar los datos. $ResultUpdateRepositorioGlobal. <p>$UpdateRepositorioGlobal</p>");            
         }
         else
-            $XML->ResponseXML("Error", 0, "Error al Intentar actualar los Datos. ".$ResultUpdate);
+            return XML::XMLReponse("Error", 0, "Error al Intentar actualar los Datos. ".$ResultUpdate);
     }
     /***************************************************************************
      *  Se devuelven los campos para ser mostrados en la vista de usuario, los campos
@@ -1478,27 +1470,25 @@ class ContentManagement {
      *  Motor de Búsqueda
      * 
      */
-    private function EngineSearch()
+    private function EngineSearch($userData)
     {          
-        $Log = new Log();
-        $XML = new XML();
-        $BD = new DataBase();
         $Search = filter_input(INPUT_POST, "Search");
-        $DataBaseName = filter_input(INPUT_POST, "DataBaseName");
-        $NombreUsuario = filter_input(INPUT_POST, "UserName");
-        $IdUsuario = filter_input(INPUT_POST, "IdUser");
-        $IdGroup = filter_input(INPUT_POST, "IdGroup");
+        $DataBaseName = $userData['dataBaseName'];
+        $NombreUsuario = $userData['userName'];
+        $IdUsuario = $userData['idUser'];
+        $IdGroup = $userData['idGroup'];
         
         $ConsultaBusqueda = 'SELECT * FROM RepositorioGlobal rg INNER JOIN RepositoryControl rc ON rg.IdRepositorio = rc.IdRepositorio WHERE MATCH (rg.Full) AGAINST (\''.$Search.'\' IN BOOLEAN MODE) AND rc.IdGrupo = '.$IdGroup;
-//        echo $ConsultaBusqueda;
-//        return;
-        $Resultado = $BD->ConsultaSelect($DataBaseName, $ConsultaBusqueda);        
 
-        if($Resultado['Estado']!= 1){$XML->ResponseXML("Error", 0, $Resultado['Estado']); return 0;}
+        $Resultado = $this->db->ConsultaSelect($DataBaseName, $ConsultaBusqueda);        
 
-        $XML->ResponseXmlFromArray("Busqueda", "Resultado", $Resultado['ArrayDatos']);                           
+        if($Resultado['Estado']!= 1)
+            return XML::XMLReponse("Error", 0, $Resultado['Estado']); 
+
+        Log::WriteEvent("28", $IdUsuario, $NombreUsuario , " $Search", $DataBaseName);
         
-        $Log->Write("28", $IdUsuario, $NombreUsuario , " $Search", $DataBaseName);
+        XML::XmlArrayResponse("Busqueda", "Resultado", $Resultado['ArrayDatos']);                           
+        
     }
     
  
@@ -1882,4 +1872,6 @@ class ContentManagement {
     }
         
 }
-$content=new ContentManagement();
+
+$content = new ContentManagement();
+$content->ajax();

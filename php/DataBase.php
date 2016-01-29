@@ -14,9 +14,10 @@ $RoutFile = dirname(getcwd());
 class DataBase {
     public static $idDataBaseName = 0;
     public static $dataBaseName = null;
+    
     function Conexion()
     {
-        
+        $RoutFile = dirname(getcwd());        
         if(file_exists("../Configuracion/Conexion/BD.ini")){echo "<p>No existe el archivo de Conexión.</p>"; return 0;}
             $Conexion=parse_ini_file ("../Configuracion/ConexionBD/BD.ini",true);
 
@@ -286,7 +287,7 @@ class DataBase {
                     . "RutaArchivo TEXT NOT NULL,"
                     . "UsuarioPublicador VARCHAR(50) NOT NULL,"
                     . "FechaIngreso DATETIME NOT NULL,"
-                    . "Full TEXT NOT NULL,"
+                    . "Full TEXT CHARACTER SET latin1 COLLATE latin1_fulltext_ci NOT NULL,"
                     . "PRIMARY KEY (IdGlobal),"
                     . "FULLTEXT (Full)"
                     . ")ENGINE = MYISAM DEFAULT CHARSET=utf8 COLLATE=utf8_spanish_ci";
@@ -818,15 +819,19 @@ class DataBase {
                 else
                     $required="DEFAULT '0'";
                 
-                if($estructura['long']>0)
-                {
+                if($estructura['long']>0){
                     $tabla_repositorio.=$estructura->getName()." ".$estructura['type']. "(".$estructura['long'].") $required, "; 
                     $tabla_temporal_repositorio.=$estructura->getName()." ".$estructura['type']. "(".$estructura['long'].") $required, ";
                 }
-                else
-                {
-                    $tabla_repositorio.=$estructura->getName()." ".$estructura['type']." $required , "; 
-                    $tabla_temporal_repositorio.=$estructura->getName()." ".$estructura['type']." $required , ";
+                else{
+                    if(strcasecmp($estructura->getName(), "full") == 0){
+                        $tabla_repositorio.= $estructura->getName()." ".$estructura['type']." CHARACTER SET latin1 COLLATE latin1_fulltext_ci $required , ";
+                        $tabla_temporal_repositorio.= $estructura->getName()." ".$estructura['type']." CHARACTER SET latin1 COLLATE latin1_fulltext_ci $required , ";
+                    }
+                    else{
+                        $tabla_repositorio.=$estructura->getName()." ".$estructura['type']." $required , "; 
+                        $tabla_temporal_repositorio.=$estructura->getName()." ".$estructura['type']." $required , ";
+                    }
                 }
 
             }
