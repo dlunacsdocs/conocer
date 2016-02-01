@@ -152,6 +152,8 @@ var AdministrativeUnit = function () {
                         if(activeNode.getChildren() === null)
                             tree.mergeUserGroupAndAdminUnit(activeNode);
                     }
+                    else if(activeNode.data.type === 'userGroup')
+                        userGroup.showPermissions(activeNode);
                     
                 });
 
@@ -164,11 +166,11 @@ var AdministrativeUnit = function () {
                             $('.removeAdminUnitOfSerie').removeClass('disabled');
                         }
                         else if(node.data.type === 'adminUnit'){
-                            $('.newAdminUnitOfSerie').removeClass('disabled').html('<i class="fa fa-link fa-lg"></i> Grupo Usuario');
+                            $('.newAdminUnitOfSerie').removeClass('disabled').html('<i class="fa fa-link fa-lg"></i> Grupos de Usuario');
                             $('.removeAdminUnitOfSerie').removeClass('disabled');
                         }
                         else if(node.data.type === 'userGroup'){
-                            $('.newAdminUnitOfSerie').addClass('disabled');
+                            $('.newAdminUnitOfSerie').removeClass('disabled').html('<i class="fa fa-cogs fa-lg"></i> Permisos');
                             $('.removeAdminUnitOfSerie').removeClass('disabled');
                         }
                         else{
@@ -1176,6 +1178,16 @@ var AdministrativeUnit = function () {
             });
             
             return status;
+        },
+        showPermissions: function(activeUserGroup){
+            var idUserGroup = activeUserGroup.data.idUserGroup;
+            var userGroupName = activeUserGroup.data.title;
+            
+            if(!parseInt(idUserGroup) > 0)
+                return Advertencia("No fue posible recuperar el identificador del grupo de usuario seleccionado.");
+            
+            var UsersGroups = new ClassUsersGroups();
+            UsersGroups.showPermissionsPanel(idUserGroup, userGroupName);
         }
     };
 

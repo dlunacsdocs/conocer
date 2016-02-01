@@ -809,7 +809,7 @@ var ClassUsersGroups = function()
     /*--------------------------------------------------------------------------
      *                  Permisos del Sistema Por Grupos 
      ---------------------------------------------------------------------------*/
-    this.showPermissionsPanel = function(idGroup)
+    this.showPermissionsPanel = function(idGroup, userGroupName)
     {
         var self = this;     
         
@@ -841,7 +841,7 @@ var ClassUsersGroups = function()
         tabbable.append(tabContent);
     
         var dialog = BootstrapDialog.show({
-            title: 'Control de Permisos para el grupo <b>'+ this.NombreGrupo + '</b>',
+            title: 'Control de Permisos para el grupo <b>'+ userGroupName + '</b>',
             size: BootstrapDialog.SIZE_NORMAL,
             type: BootstrapDialog.TYPE_PRIMARY,
             message: tabbable,
@@ -888,7 +888,7 @@ var ClassUsersGroups = function()
                     onActivate: function(node, event)
                     {                             
                         node.sortChildren(cmp, false); 
-                        _GetAccessPermissionsListOfRepository(node);   /* Obtiene los permisos sobre el repositorio */
+                        _GetAccessPermissionsListOfRepository(node, idGroup, userGroupName);   /* Obtiene los permisos sobre el repositorio */
                     },
                     onCreate: function(node, event)
                     {
@@ -898,7 +898,7 @@ var ClassUsersGroups = function()
 
                 var RepositoriesTree = $('#TreeRepositoriesUserGroups').dynatree("getTree");  /* crea el árbol izquierdo (repositorios)*/
                 var ShowToolsOptions = _ShowToolsOptions();   /* Muestra la lista de menús del sistema */
-                _GetRepositoryAccessList(RepositoriesTree);    /* Permisos de acceso (check) árbol izquierdo (repositorios)*/            
+                _GetRepositoryAccessList(RepositoriesTree, idGroup, userGroupName);    /* Permisos de acceso (check) árbol izquierdo (repositorios)*/            
         ////        
                 var rootNode = RepositoriesTree.getNodeByKey("0_MSR");  
 
@@ -917,8 +917,6 @@ var ClassUsersGroups = function()
     /* Operaciones que el usuario puede realizar */
     var _ShowToolsOptions = function()
     {
-        if(!(_CheckActiveGroup()))
-            return 0;
                               
         $.ajax({
         async:false, 
@@ -926,7 +924,7 @@ var ClassUsersGroups = function()
         dataType:"html", 
         type: 'POST',   
         url: "php/Permissions.php",
-        data: "opcion=GetToolsOptions&DataBaseName="+EnvironmentData.DataBaseName+'&IdUsuario='+EnvironmentData.IdUsuario+'&NombreUsuario='+EnvironmentData.NombreUsuario+'&IdGroup='+IdGrupo+'&NombreGrupo='+NombreGrupo+'&MenuType', 
+        data: 'opcion=GetToolsOptions', 
         success:  function(xml)
         {            
             if($.parseXML( xml )===null){$('#UsersPlaceWaiting').remove(); Error(xml); return 0;}else xml=$.parseXML( xml );
@@ -1036,7 +1034,7 @@ var ClassUsersGroups = function()
     * @param {type} RepositoriesTree
     * @returns {undefined}
     ---------------------------------------------------------------------------*/
-   var _GetRepositoryAccessList = function(RepositoriesTree)  
+   var _GetRepositoryAccessList = function(RepositoriesTree, idUserGroup, userGroupName)  
    {
        $('.PermissionsPanel').append('<div class="PlaceWaiting" id = "UsersPlaceWaiting"><img src="../img/loadinfologin.gif"></div>');
        
@@ -1046,7 +1044,7 @@ var ClassUsersGroups = function()
         dataType:"html", 
         type: 'POST',   
         url: "php/Permissions.php",
-        data: "opcion=GetRepositoryAccessList&DataBaseName="+EnvironmentData.DataBaseName+'&IdUsuario='+EnvironmentData.IdUsuario+'&NombreUsuario='+EnvironmentData.NombreUsuario+'&EnvironIdGrupo='+EnvironmentData.IdGrupo+'&EnvironNombreGrupo='+EnvironmentData.NombreGrupo+'&IdGrupo='+IdGrupo+'&NombreGrupo='+NombreGrupo, 
+        data: 'opcion=GetRepositoryAccessList&idUserGroup='+idUserGroup+'&userGroupName='+userGroupName, 
         success:  function(xml)
         {            
             $('#UsersPlaceWaiting').remove();
@@ -1075,7 +1073,7 @@ var ClassUsersGroups = function()
         });       
    };
    
-    var _GetAccessPermissionsListOfRepository = function(node)
+    var _GetAccessPermissionsListOfRepository = function(node, idUserGroup, userGroupName)
     {
         $('#GroupPermissionsPanel').append('<div class="Loading" id = "UsersPlaceWaiting"><img src="../img/loadinfologin.gif"></div>');
         
@@ -1103,7 +1101,7 @@ var ClassUsersGroups = function()
         dataType:"html", 
         type: 'POST',   
         url: "php/Permissions.php",
-        data: "opcion=GetAccessPermissionsList&DataBaseName="+EnvironmentData.DataBaseName+'&IdUsuario='+EnvironmentData.IdUsuario+'&NombreUsuario='+EnvironmentData.NombreUsuario+'&EnvironIdGrupo='+EnvironmentData.IdGrupo+'&EnvironNombreGrupo='+EnvironmentData.NombreGrupo+'&IdRepositorio='+IdRepositorio+'&NombreRepositorio='+node.data.title+'&IdGrupo='+IdGrupo+'&NombreGrupo='+NombreGrupo, 
+        data: 'opcion=GetAccessPermissionsList&IdRepositorio='+IdRepositorio+'&NombreRepositorio='+node.data.title+'&IdGrupo='+idUserGroup+'&NombreGrupo='+userGroupName, 
         success:  function(xml)
         {            
             $('#UsersPlaceWaiting').remove();
@@ -1306,7 +1304,7 @@ ClassUsersGroups.prototype.ShowsGroupsUsers = function()
                     {"sExtends":"text", "sButtonText": "Editar", "fnClick" :function(){_ShowGroupData();}},
                     {"sExtends":"text", "sButtonText": "Eliminar", "fnClick" :function(){_ConfirmDelete();}},
                     {"sExtends":"text", "sButtonText": "Miembros", "fnClick" :function(){_Members();}},
-                    {"sExtends":"text", "sButtonText": "Permisos", "fnClick" :function(){self.showPermissionsPanel(IdGrupo);}},
+                    {"sExtends":"text", "sButtonText": "Permisos", "fnClick" :function(){self.showPermissionsPanel(IdGrupo, NombreGrupo);}},
                     {
                         "sExtends":    "collection",
                         "sButtonText": "Exportar...",
