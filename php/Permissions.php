@@ -36,22 +36,16 @@ class Permissions {
                 case 'GetUserPermissions':$this->GetUserPermissions(); break;
                 case 'ApplyPermissionsSettingsOfGroup':$this->ApplyPermissionsSettingsOfGroup($userData); break;
                 case 'GetPermissionsMenuList': $this->GetPermissionsMenuList(); break;
-                case 'GetRepositoryAccessList':$this->GetRepositoryAccessList(); break;
-                case 'GetAccessPermissionsList':$this->GetAccessPermissionsList(); break;
-                case 'GetToolsOptions':$this->GetToolsOptions(); break;            
+                case 'GetRepositoryAccessList':$this->GetRepositoryAccessList($userData); break;
+                case 'GetAccessPermissionsList':$this->GetAccessPermissionsList($userData); break;
+                case 'GetToolsOptions':$this->GetToolsOptions($userData); break;            
             }
         }
     }
     
-    function GetToolsOptions()
+    function GetToolsOptions($userData)
     {        
-        $XML =new XML();
-        $BD = new DataBase();
-        $DataBaseName = filter_input(INPUT_POST, "DataBaseName");
-        $IdUser = filter_input(INPUT_POST, "IdUsuario");
-        $NombreUsuario =  filter_input(INPUT_POST, "NombreUsuario");
-        $IdGroup = filter_input(INPUT_POST, "IdGroup");
-        $NombreGrupo = filter_input(INPUT_POST, "NombreGrupo");
+        $instanceName = $userData['dataBaseName'];
         
         /* La subconsulta selecciona al nodo herramientas como punto de partida para construir el árbol (Herramientas)    */
 
@@ -59,13 +53,10 @@ class Permissions {
                 . "WHERE c1.IdMenu>((SELECT c2.IdMenu FROM SystemMenu c2 WHERE c2.Nombre = 'Herramientas') -1 ) "   
                 . "ORDER BY c1.IdParent";   
         
-        $ResultSelect =  $BD->ConsultaSelect($DataBaseName, $SelelectMenus);
+        $ResultSelect = $this->db->ConsultaSelect($instanceName, $SelelectMenus);
         
         if($ResultSelect['Estado']!=1)
-        {
-            $XML->ResponseXML("Error", 0, "<p><b>Error</b> al obtener el listado de permisos del sistema. ". $ResultSelect['Estado'] ."</p>");
-            return;
-        }
+            XML::XMLReponse("Error", 0, "<p><b>Error</b> al obtener el listado de permisos del sistema. ". $ResultSelect['Estado'] ."</p>");
 
         $ArrayMenus = $ResultSelect['ArrayDatos'];       
                
@@ -347,26 +338,18 @@ class Permissions {
         XML::XMLReponse("ApplySettings", 1, "<p>Configuración Aplicada con éxito</p>");
     }
     
-    private function GetRepositoryAccessList()
+    private function GetRepositoryAccessList($userData)
     {
-        $XML=new XML();
-        $BD= new DataBase();
-        $DataBaseName=  filter_input(INPUT_POST, "DataBaseName");
-//        $IdUsuario = filter_input(INPUT_POST, "IdUsuario");
-//        $NombreUsuario = filter_input(INPUT_POST, "NombreUsuario");
-//        $EnvironIdGrupo = filter_input(INPUT_POST, "EnvironIdGrupo");
-//        $EnvironNombreGrupo = filter_input(INPUT_POST,"EnvironNombreGrupo");
-        $IdGrupo= filter_input(INPUT_POST, "IdGrupo");
-        $NombreGrupo = filter_input(INPUT_POST, "NombreGrupo");
+        $DataBaseName = $userData['dataBaseName'];
+
+        $IdGrupo = filter_input(INPUT_POST, "idUserGroup");
+        $NombreGrupo = filter_input(INPUT_POST, "userGroupName");
         
         $GetRepositoryPermissions = "SELECT *FROM RepositoryControl WHERE IdGrupo = $IdGrupo";
-        $ResultGetRepositoryPermissions = $BD->ConsultaSelect($DataBaseName, $GetRepositoryPermissions);
+        $ResultGetRepositoryPermissions = $this->db->ConsultaSelect($DataBaseName, $GetRepositoryPermissions);
 
         if($ResultGetRepositoryPermissions['Estado']!=1)
-        {
-            $XML->ResponseXML("Error", 0, "<p><b>Error</b> al obtener la configuración de permisos sobre repositorios en el grupo <b>$NombreGrupo</b>.</p><br>Detalles:<br><br>".$ResultGetRepositoryPermissions['Estado']);
-            return 0;
-        }
+            XML::XMLReponse("Error", 0, "<p><b>Error</b> al obtener la configuración de permisos sobre repositorios en el grupo <b>$NombreGrupo</b>.</p><br>Detalles:<br><br>".$ResultGetRepositoryPermissions['Estado']);
         
         $RepositoryPermissions = $ResultGetRepositoryPermissions['ArrayDatos'];
         
@@ -385,41 +368,31 @@ class Permissions {
         echo $doc->saveXML();
     }
     
-    private function GetAccessPermissionsList()
+    private function GetAccessPermissionsList($userData)
     {
-        $XML=new XML();
-        $BD= new DataBase();
-        $DataBaseName=  filter_input(INPUT_POST, "DataBaseName");
-//        $IdUsuario = filter_input(INPUT_POST, "IdUsuario");
-//        $NombreUsuario = filter_input(INPUT_POST, "NombreUsuario");
-//        $EnvironIdGrupo = filter_input(INPUT_POST, "EnvironIdGrupo");
-//        $EnvironNombreGrupo = filter_input(INPUT_POST,"EnvironNombreGrupo");
-        $IdGrupo= filter_input(INPUT_POST, "IdGrupo");
+        $DataBaseName = $userData['dataBaseName'];
+        $IdGrupo = filter_input(INPUT_POST, "IdGrupo");
         $NombreGrupo = filter_input(INPUT_POST, "NombreGrupo");
         $IdRepositorio = filter_input(INPUT_POST, "IdRepositorio");
 //        $NombreRepositorio = filter_input(INPUT_POST, "NombreRepositorio");
         
         $GetRepositoryPermissions='';
-        if($IdGrupo==1)
-        {
+        
+        if($IdGrupo==1){
             $GetRepositoryPermissions = "SELECT sm.IdMenu, sm.IdGrupo FROM SystemMenuControl sm "
                 . "INNER JOIN RepositoryControl rc ON sm.IdGrupo = rc.IdGrupo "
                 . "WHERE sm.IdGrupo = $IdGrupo AND rc.IdRepositorio = $IdRepositorio";
         }
-        else 
-        {
+        else{
             $GetRepositoryPermissions = "SELECT sm.IdMenu, sm.IdGrupo FROM SystemMenuControl sm "
                 . "INNER JOIN RepositoryControl rc ON sm.IdGrupo = rc.IdGrupo "
                 . "WHERE sm.IdGrupo = $IdGrupo AND rc.IdRepositorio = $IdRepositorio AND sm.IdRepositorio = $IdRepositorio";
         }                             
         
-        $ResultGetPermissions = $BD->ConsultaSelect($DataBaseName, $GetRepositoryPermissions);
+        $ResultGetPermissions = $this->db->ConsultaSelect($DataBaseName, $GetRepositoryPermissions);
 
         if($ResultGetPermissions['Estado']!=1)
-        {
-            $XML->ResponseXML("Error", 0, "<p><b>Error</b> al obtener la configuración de permisos sobre el grupo <b>$NombreGrupo</b>.</p><br>Detalles:<br><br>".$ResultGetPermissions['Estado']);
-            return 0;
-        }
+            XML::XMLReponse("Error", 0, "<p><b>Error</b> al obtener la configuración de permisos sobre el grupo <b>$NombreGrupo</b>.</p><br>Detalles:<br><br>".$ResultGetPermissions['Estado']);
         
         $Permissions = $ResultGetPermissions['ArrayDatos'];
         
