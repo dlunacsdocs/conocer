@@ -331,8 +331,7 @@ var ClassPermissions = function ()
         IdRepositorio = String(IdRepositorio).replace("MSR_", "");
 
         if (!parseInt(IdRepositorio) > 0)
-            return Advertencia("No fue posible obtener el identificador del repositorio para aplicar los permisos.");
-        ;
+            return Advertencia("Debe seleccionar un repositorio.");
 
         if (!parseInt(idGroup) > 0)
             return Advertencia("No fue posible obtener el identificador del grupo seleccionado para aplicar los permisos");

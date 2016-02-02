@@ -89,7 +89,7 @@ class Permissions {
         $DataBaseName = $userData['dataBaseName'];
         $IdUsuario = $userData['idUser'];
         $NombreUsuario =  $userData['userName'];
-        $IdGrupo = $userData['userName'];
+        $IdGrupo = $userData['idGroup'];
         $NombreGrupo = $userData['groupName'];
         $IdRepositorio = filter_input(INPUT_POST, "IdRepositorio");
         $RoutFile = dirname(getcwd());        
@@ -102,12 +102,15 @@ class Permissions {
         if(!file_exists("$RoutFile/Estructuras/$DataBaseName"))
             return XML::XMLReponse ("limitedAccess", 1, "Acceso a Diseñador de Formas");
         
-        if($IdGrupo>0)
+        if((int)$IdGrupo>0)
             $IfComeplement_.=" smc.IdGrupo = $IdGrupo AND";
         
-        if($IdRepositorio > 0)
+        if((int)$IdRepositorio > 0)
             $IfComeplement_.="  smc.IdRepositorio = $IdRepositorio AND";
-
+        
+        if(strlen($IfComeplement_) > 0)
+            $IfComeplement_ = " WHERE $IfComeplement_";
+        
         $IfComeplement = trim($IfComeplement_, "AND");        
         
         if(strcasecmp($IdUsuario, 1)==0 and strcasecmp($NombreUsuario, "root")==0)
@@ -117,8 +120,8 @@ class Permissions {
         else
             $QueryListPermissions = "SELECT smc.IdMenu, smc.IdGrupo, smc.IdUsuario, smc.IdRepositorio, sm.Nombre "
                                 . "FROM SystemMenuControl smc INNER JOIN SystemMenu sm ON smc.IdMenu = sm.IdMenu "
-                                . "WHERE $IfComeplement";        
-        
+                                . " $IfComeplement";        
+
         $ResultQueryListPermissions = $this->db->ConsultaSelect($DataBaseName, $QueryListPermissions);
         
         if($ResultQueryListPermissions['Estado']!=1)

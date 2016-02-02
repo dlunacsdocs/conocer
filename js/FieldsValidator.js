@@ -501,13 +501,13 @@ ClassFieldsValidator.prototype.GetDataLength = function(input)
 
 ClassFieldsValidator.prototype.TextRegularExpression = function(input)
 {
-    var RegularExpresion = /[^a-zA-Z0-9\_\*\$\#\@\!\¡\?\¿\=\<\>\.\,\;\:\-\"\°\+\%\\\/\sáéíóúñÁÉÍÓÚÑ]/g;
+    var RegularExpresion = /[^a-zA-Z0-9\_\*\$\#\@\!\¡\?\¿\=\<\>\.\,\;\:\-\"\´\°\+\%\\\/\sáéíóúñÁÉÍÓÚÑ]/g;
     input.value = input.value.replace(RegularExpresion,'');
 };
 
 ClassFieldsValidator.prototype.TestTextRegularExpression = function(input)
 {
-    var RegularExpresion = /^([a-zA-Z0-9\_\*\$\#\@\!\¡\?\¿\=\<\>\.\,\;\:\-\"\°\+\\%\\/\sáéíóúñÁÉÍÓÚÑ])+$/g;
+    var RegularExpresion = /^([a-zA-Z0-9\_\*\$\#\@\!\¡\?\¿\=\<\>\.\,\;\:\-\"\°\´\+\\%\\/\sáéíóúñÁÉÍÓÚÑ])+$/g;
     var Value = $(input).val();
     if(RegularExpresion.test(Value))
         return 1;

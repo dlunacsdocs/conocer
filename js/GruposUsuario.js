@@ -144,13 +144,10 @@ var ClassUsersGroups = function()
             title: 'Nuevo Grupo de Usuarios',
             size: BootstrapDialog.SIZE_SMALL,
             message: content,
+            closable: true,
+            closeByBackdrop: true,
+            closeByKeyboard: true,
             buttons: [
-                {
-                    label: 'Cerrar',
-                    action: function(dialogRef){
-                        dialogRef.close();
-                    }
-                },
                 {
                     label: 'Agregar',
                     cssClass:"btn-primary",
@@ -182,7 +179,7 @@ var ClassUsersGroups = function()
         var Forms = modalBody.find('input');
         var FieldsValidator = new ClassFieldsValidator();   
         var validation = FieldsValidator.ValidateFields(Forms);
-        console.log("Validación campos Agregar nuevo Grupo "+ self.NombreGrupo +" "+validation);
+        console.log("Validación campos Agregar nuevo Grupo "+ NombreGrupo +" "+validation);
         if(validation===0)
             return 0;
                     
@@ -339,7 +336,7 @@ var ClassUsersGroups = function()
         var FieldsValidator = new ClassFieldsValidator();   
         var validation = FieldsValidator.ValidateFields(Forms);
         
-        console.log("Validación campos Modificar Grupo "+ self.NombreGrupo +" "+validation);
+        console.log("Validación campos Modificar Grupo "+NombreGrupo +" "+validation);
         
         if(validation===0)
             return 0;
@@ -422,7 +419,7 @@ var ClassUsersGroups = function()
             title: 'Mensaje de Confirmación',
             size: BootstrapDialog.SIZE_SMALL,
             type: BootstrapDialog.TYPE_DANGER,
-            message: '<p>Realmente desea eliminar el Grupo <b>'+self.NombreGrupo+'</b></p>',
+            message: '<p>Realmente desea eliminar el Grupo <b>'+NombreGrupo+'</b></p>',
             buttons: [
                 {
                     label: 'Cerrar',
@@ -459,7 +456,7 @@ var ClassUsersGroups = function()
         dataType:"html", 
         type: 'POST',   
         url: "php/GruposUsuario.php",
-        data: "opcion=DeleteGroup&DataBaseName="+EnvironmentData.DataBaseName+'&IdUsuario='+EnvironmentData.IdUsuario+'&NombreUsuario='+EnvironmentData.NombreUsuario+'&IdGroup='+IdGrupo+'&NombreGrupo='+NombreGrupo, 
+        data: 'opcion=DeleteGroup&idGroup='+IdGrupo+'&groupName='+NombreGrupo, 
         success:  function(xml)
         {           
             $('#UsersPlaceWaiting').remove();
