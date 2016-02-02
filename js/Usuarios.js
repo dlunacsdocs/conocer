@@ -1,5 +1,5 @@
 
-/* global Users, UsersGroups, EnvironmentData, Struct, BotonesWindow, BootstrapDialog */
+/* global Users, EnvironmentData, Struct, BotonesWindow, BootstrapDialog */
 
 var CAWindowUsers={minHeight:500,minWidth:800,width:800, height:500};
 var TableUsersdT = undefined;
@@ -50,7 +50,9 @@ $(document).ready(function(){
    
    $('#tr_UsersList').click(function(){Users.CM_UsersList();});
    
-   $('#tr_GroupsUsers').click(function(){UsersGroups.ShowsGroupsUsers();});
+   $('#tr_GroupsUsers').click(function(){
+       var userGroupsClass = new ClassUsersGroups();
+       userGroupsClass.ShowsGroupsUsers();});
    
    $('#LinkCloseSession').click(function(){
        Users.closeUserSession();

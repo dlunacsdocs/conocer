@@ -5,7 +5,7 @@
  */
 var UserData = undefined;
 
-/* global Permissions, EnvironmentData, Users */
+/* global EnvironmentData, Users */
 
 /*******************************************************************************
  * 
@@ -14,6 +14,7 @@ var UserData = undefined;
 
 function login()
 {
+    var Permissions = new ClassPermissions();
     var User = $('#form_user').val();
     var Password = $('#form_password').val();
     var instancia = $('#select_login_instancias').val();
@@ -89,6 +90,7 @@ function login()
 
 function checkSessionExistance()
 {
+    var Permissions =  new ClassPermissions();
     var activeSession = false;
 
     $.ajax({

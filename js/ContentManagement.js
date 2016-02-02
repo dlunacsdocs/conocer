@@ -3,7 +3,7 @@
  * To change this template file, choose Tools | Templates
  * and open the template in the editor.
  */
-/* global Permissions, BotonesWindow, EnvironmentData, dHeight, dWidth, Enterprise, Repository */
+/* global BotonesWindow, EnvironmentData, dHeight, dWidth, Enterprise, Repository */
 
 var WindowContentManagement={width:dWidth, height:dHeight, title:"CSDocs", minWidth:800, minHeight:800,closeOnEscape:false};
 
@@ -60,7 +60,8 @@ $(document).ready(function()
            var IdRepositorio = $('#CM_select_repositorios').val();
            if(IdRepositorio>0)
            {
-               Permissions.ApplyUserPermissions(IdRepositorio);
+               var permissions = new ClassPermissions();
+               permissions.ApplyUserPermissions(IdRepositorio);
                CM_getTree();             
            }                
            else

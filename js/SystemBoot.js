@@ -1,6 +1,6 @@
 
 
-/* global EnvironmentData, Permissions, InstanceManager */
+/* global EnvironmentData, InstanceManager */
 
 $(document).ready(function() {
     
