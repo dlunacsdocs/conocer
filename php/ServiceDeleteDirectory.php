@@ -222,7 +222,7 @@ class ServiceDeleteDirectory {
             if($this->CheckIfWasRemoved($Path, $IdDirectory)){continue;}
             
             /* Se mueven los documentos contenidos en el directorio a la papelera de reciclaje */
-            if(!$this->GetFilesFromDirectory($ArrayStructureDefault,$ArrayStructureUser,$ArrayCatalogos['ArrayDatos'], $DataBaseName, $IdRepositorio, $NombreRepositorio, $IdDirectory, $IdUsuario, $NombreUsuario, $RouteFileAdvancing)){die("Error al obtener los documentos de $title".PHP_EOL);}
+            if(!$this->GetFilesFromDirectory($ArrayStructureDefault,$ArrayStructureUser,$ArrayCatalogos, $DataBaseName, $IdRepositorio, $NombreRepositorio, $IdDirectory, $IdUsuario, $NombreUsuario, $RouteFileAdvancing)){die("Error al obtener los documentos de $title".PHP_EOL);}
                         
             $MoveToTrash=$this->MoveDirectoryToTrash($DataBaseName,$NombreRepositorio, $IdDirectory,$IdParent, $IdUsuario, $NombreUsuario, 0, $title,$PathDirectory);           
 
@@ -254,7 +254,7 @@ class ServiceDeleteDirectory {
         
         if($this->CheckIfWasRemoved($Path, $IdDirectory)){return 0;}
         
-        if(!$this->GetFilesFromDirectory($ArrayStructureDefault,$ArrayStructureUser,$ArrayCatalogos['ArrayDatos'], $DataBaseName, $IdRepositorio, $NombreRepositorio, $IdDirectory, $IdUsuario, $NombreUsuario, $RouteFileAdvancing)){die("Error al obtener los documentos de $title".PHP_EOL);}
+        if(!$this->GetFilesFromDirectory($ArrayStructureDefault,$ArrayStructureUser,$ArrayCatalogos, $DataBaseName, $IdRepositorio, $NombreRepositorio, $IdDirectory, $IdUsuario, $NombreUsuario, $RouteFileAdvancing)){die("Error al obtener los documentos de $title".PHP_EOL);}
         
         /* FlagFather identifica al directorio como el padre de todos los subdirectorios que se movieron a la papelera
          * 1 = Directorio Padre
