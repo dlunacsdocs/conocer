@@ -722,8 +722,10 @@ var ClassUsers = function ()
             else
                 data.push(FieldValue);
         });
-
+        
         UserXml += '</AddUser>';
+        
+        data.push('');  /* Columna de Grupo */
 
         $.ajax({
             async: false,
