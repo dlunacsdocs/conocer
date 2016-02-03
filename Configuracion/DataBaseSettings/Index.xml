@@ -146,6 +146,7 @@ To make maintaining easier please:
     <order>Portuguese</order>
     <order>Spanish</order>
   </collation>
+  <collation name="latin1_fulltext_ci" id="62"/>
 </charset>
 
 <charset name="hp8">

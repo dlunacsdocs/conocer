@@ -527,7 +527,7 @@ var ClassPermissions = function ()
             success: function (xml)
             {
                 if ($.parseXML(xml) === null) {
-                    console.log(xml);
+//                    console.log(xml);
                     return 0;
                 } else
                     xml = $.parseXML(xml);

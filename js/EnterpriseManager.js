@@ -393,7 +393,7 @@ var ClassEnterprise = function ()
             var position = EnterprisedT.fnGetPosition(this); // getting the clicked row position
             FieldName = EnterprisedT.fnGetData(position)[0];
         });
-        
+
         BootstrapDialog.show({
             title: '<i class="fa fa-exclamation-triangle fa-lg"></i> Mensaje de Confirmación',
             type: BootstrapDialog.TYPE_DANGER,
@@ -415,11 +415,11 @@ var ClassEnterprise = function ()
 
                         if (_DeleteField())
                             dialogRef.close();
-
-                        dialogRef.enableButtons(true);
-                        dialogRef.setClosable(true);
-                        button.stopSpin();
-
+                        else{
+                            dialogRef.enableButtons(true);
+                            dialogRef.setClosable(true);
+                            button.stopSpin();
+                        }
                     }
                 },
                 {
@@ -432,7 +432,7 @@ var ClassEnterprise = function ()
             onshown: function (dialogRef) {
 
             }
-        });      
+        });
 
     };
 
@@ -445,7 +445,7 @@ var ClassEnterprise = function ()
         if (FieldSelected.length !== 1)
             return Advertencia("Debe seleccionar un campo");
 
-        EnterprisedT.$('tr.selected').each(function (){
+        EnterprisedT.$('tr.selected').each(function () {
             var position = EnterprisedT.fnGetPosition(this); // getting the clicked row position
             FieldName = EnterprisedT.fnGetData(position)[0];
         });
@@ -461,7 +461,7 @@ var ClassEnterprise = function ()
             data: data,
             success: function (xml)
             {
-                if ($.parseXML(xml) === null) 
+                if ($.parseXML(xml) === null)
                     return errorMessage(xml);
                 else
                     xml = $.parseXML(xml);
@@ -489,7 +489,7 @@ var ClassEnterprise = function ()
                 errorMessage(textStatus + "<br>" + errorThrown);
             }
         });
-        
+
         return status;
     };
 
@@ -522,11 +522,11 @@ var ClassEnterprise = function ()
 
                         if (_AddNewEnterprise(EnterpriseStructure, content))
                             dialogRef.close();
-
-                        dialogRef.enableButtons(true);
-                        dialogRef.setClosable(true);
-                        button.stopSpin();
-
+                        else{
+                            dialogRef.enableButtons(true);
+                            dialogRef.setClosable(true);
+                            button.stopSpin();
+                        }
                     }
                 },
                 {
@@ -725,10 +725,11 @@ var ClassEnterprise = function ()
 
                         if (_DeleteEnterprise(IdEnterprise, EnterpriseKey[0]))
                             dialogRef.close();
-
-                        dialogRef.enableButtons(true);
-                        dialogRef.setClosable(true);
-                        button.stopSpin();
+                        else{
+                            dialogRef.enableButtons(true);
+                            dialogRef.setClosable(true);
+                            button.stopSpin();
+                        }
 
                     }
                 },
@@ -873,13 +874,14 @@ var ClassEnterprise = function ()
                                         dialogRef.setClosable(false);
                                         button.spin();
                                         dialogModifier.close();
-                                        
+
                                         if (_ModifyEnterprise(content, IdEnterprise, EnterpriseStructure, RowIndexEnterpriseKey, index, EnterpriseKey))
                                             dialogRef.close();
-
-                                        dialogRef.enableButtons(true);
-                                        dialogRef.setClosable(true);
-                                        button.stopSpin();
+                                        else{
+                                            dialogRef.enableButtons(true);
+                                            dialogRef.setClosable(true);
+                                            button.stopSpin();
+                                        }
 
                                     }
                                 },
@@ -905,9 +907,9 @@ var ClassEnterprise = function ()
                 }
             ],
             onshown: function (dialogRef) {
-                var designer = new Designer();             
+                var designer = new Designer();
                 designer.buildFormsStructure(content, EnterpriseStructure);
-                
+
                 var aux = 0;
                 $(EnterpriseStructure).find("Campo").each(function ()
                 {
@@ -986,7 +988,7 @@ var ClassEnterprise = function ()
         var xml =
                 "<ModifyEnterprise version='1.0' encoding='UTF-8'>";
 
-        $(EnterpriseStructure).find("Campo").each(function (){
+        $(EnterpriseStructure).find("Campo").each(function () {
             var $Campo = $(this);
             var name = $Campo.find("name").text();
             var type = $Campo.find("type").text();
@@ -1028,14 +1030,14 @@ var ClassEnterprise = function ()
                 else
                     xml = $.parseXML(xml);
 
-                if ($(xml).find('ModifiedEnterprise').length > 0){
+                if ($(xml).find('ModifiedEnterprise').length > 0) {
                     status = 1;
                     var Mensaje = $(xml).find('Mensaje').text();
                     Notificacion(Mensaje);
                     EnterpriseDT.row(RowIndexEnterpriseKey).data(newData).draw();
                 }
 
-                $(xml).find("Error").each(function (){
+                $(xml).find("Error").each(function () {
                     var $Error = $(this);
                     var mensaje = $Error.find("Mensaje").text();
                     Error(mensaje);
@@ -1048,7 +1050,7 @@ var ClassEnterprise = function ()
                 errorMessage(textStatus + "<br>" + errorThrown);
             }
         });
-        
+
         return status;
     };
 

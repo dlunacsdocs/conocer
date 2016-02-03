@@ -112,20 +112,6 @@ class DataBase {
 
         $RoutFile = dirname(getcwd());
 
-        $indexXml = ".../$RoutFile/Configuracion/DataBase Settings/Index.xml";
-        $latinXml = ".../$RoutFile/Configuracion/DataBase Settings/latin1.xml";
-        $xmlDestin = "/volume1/@appstore/MariaDB/usr/share/mysql/charsets/";
-
-        if (!file_exists($indexXml))
-            return "<p>No existe el XML Index que contiene la nueva colección para indexación</p>";
-
-        if (!file_exists("$latinXml"))
-            return "<p>No existe el XML que contiene los elementos a indexar</p>";
-
-        copy($indexXml, $xmlDestin);
-
-        copy($latinXml, $xmlDestin);
-
         echo "<p>Creando Instancia $nombre_instancia y estructuras de control del sistema CSDocs...</p>";
 
         $query = "SELECT NombreInstancia FROM instancias WHERE NombreInstancia='$nombre_instancia'";
@@ -279,7 +265,7 @@ class DataBase {
                 . ")DEFAULT CHARSET=utf8";
 
         if (($catalogos = $this->ConsultaQuery($DataBaseName, $TablaCatalogos)) != 1)
-            return "<p><b>Error</b> al crear <b>Catálogos</b></p>";
+            return "<p><b>Error</b> al crear <b>Catálogos</b></p> Detalles: <br> $TablaCatalogos";
 
         $TablaGlobalRepositorios = "CREATE TABLE IF NOT EXISTS RepositorioGlobal ("
                 . "IdGlobal INT NOT NULL AUTO_INCREMENT,"
@@ -301,7 +287,7 @@ class DataBase {
                 . ")ENGINE = MYISAM DEFAULT CHARSET=utf8 COLLATE=utf8_spanish_ci";
 
         if (($EstadoTablaGlobal = $this->ConsultaQuery($DataBaseName, $TablaGlobalRepositorios)) != 1)
-            return "<p><b>Error</b> al crear <b>Global</b></p>";
+            return "<p><b>Error</b> al crear <b>Global</b></p> Detalles: <br> $EstadoTablaGlobal";
 
         $TablaNotas = "CREATE TABLE IF NOT EXISTS CSDocs_Notes ("
                 . "IdNote INT NOT NULL AUTO_INCREMENT,"

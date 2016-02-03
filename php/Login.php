@@ -108,7 +108,7 @@ class Login {
         $DataBaseName = filter_input(INPUT_POST, "DataBaseName");
         $IdDataBase = filter_input(INPUT_POST, "IdDataBase");
         
-        $idSession = Session::getIdSession();
+//        $idSession = Session::getIdSession();
 //        var_dump($idSession);
         $ResultSelect = null;
         
@@ -145,10 +145,7 @@ class Login {
         }
         else
             Session::$idSession = null;
-        
-        
-        
-            
+   
         $this->loginResponse($Resultado);
     }
     
