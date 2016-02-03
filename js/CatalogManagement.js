@@ -207,7 +207,7 @@ var ClassCatalogAdministrator = function ()
     {
         Loading();
         var ClaveEmpresa = $('#SelectEmpresasAddCatalogo').val();
-        var IdRepositorio = $('#SelectRepositoriosAddCatalogo').val()
+        var IdRepositorio = $('#SelectRepositoriosAddCatalogo').val();
         NombreRepositorio = $('#SelectRepositoriosAddCatalogo option:selected').html(),
                 xml_usuario = document.getElementById("InputFile_AddCatalogo"), archivo = xml_usuario.files;
 
