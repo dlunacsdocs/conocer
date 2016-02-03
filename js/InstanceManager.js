@@ -81,13 +81,12 @@ var ClassInstanceManager = function(){
             "bInfo":false, "autoWidth" : false, "oLanguage":LanguajeDataTable,
             "tableTools": {
                 "aButtons": [
-                    {"sExtends":"text", "sButtonText": "Nueva Instancia", "fnClick" :function(){_newInstanceModal();}},
-                    {"sExtends":"text", "sButtonText": "Eliminar Instancia", "fnClick" :function(){_confirmDeleteInstance();}},
-                    {"sExtends": "copy","sButtonText": "Copiar Tabla"},
+                    {"sExtends":"text", "sButtonText": '<i class="fa fa-plus-circle fa-lg"></i> Nueva Instancia', "fnClick" :function(){_newInstanceModal();}},
+                    {"sExtends":"text", "sButtonText": '<i class="fa fa-trash-o"></i> Eliminar', "fnClick" :function(){_confirmDeleteInstance();}},
                     {
                         "sExtends":    "collection",
-                        "sButtonText": "Exportar...",
-                        "aButtons":    [ "csv", "xls", "pdf" ]
+                        "sButtonText": '<i class="fa fa-floppy-o fa-lg"></i>',
+                        "aButtons":    [ "csv", "xls", "pdf", "copy" ]
                     }                          
                 ]
             }                              
