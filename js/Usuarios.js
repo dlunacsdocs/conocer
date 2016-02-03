@@ -77,10 +77,10 @@ function ExistRoot()
         data: "opcion=ExistRoot", 
         success:  function(xml)
         {            
-    //            if($.parseXML( xml )===null){$('#UsersPlaceWaiting').remove(); Error(xml); return 0;}else xml=$.parseXML( xml );                    
+    //            if($.parseXML( xml )===null){$('#UsersPlaceWaiting').remove(); errorMessage(xml); return 0;}else xml=$.parseXML( xml );                    
         },
         beforeSend:function(){},
-        error: function(jqXHR, textStatus, errorThrown){Error(textStatus +"<br>"+ errorThrown);}
+        error: function(jqXHR, textStatus, errorThrown){errorMessage(textStatus +"<br>"+ errorThrown);}
         });
 }
 
@@ -221,7 +221,7 @@ ClassUsers = function()
         success:  function(xml)
         {        
             $('#UsersPlaceWaiting').remove();
-            if($.parseXML( xml )===null){Error(xml); return 0;}else xml=$.parseXML( xml );         
+            if($.parseXML( xml )===null){errorMessage(xml); return 0;}else xml=$.parseXML( xml );         
 
             var cont=1;
            $(StructUser).find("Campo").each(function()
@@ -246,12 +246,12 @@ ClassUsers = function()
                 var $Error=$(this);
                 var estado=$Error.find("Estado").text();
                 var mensaje=$Error.find("Mensaje").text();
-                Error(mensaje);
+                errorMessage(mensaje);
             });                    
 
         },
         beforeSend:function(){},
-        error: function(jqXHR, textStatus, errorThrown){$('#UsersPlaceWaiting').remove(); Error(textStatus +"<br>"+ errorThrown);}
+        error: function(jqXHR, textStatus, errorThrown){$('#UsersPlaceWaiting').remove(); errorMessage(textStatus +"<br>"+ errorThrown);}
         });    
     };
     
@@ -312,7 +312,7 @@ ClassUsers = function()
         success:  function(xml)
         {            
             $('#UsersPlaceWaiting').remove();
-            if($.parseXML( xml )===null){Error(xml); return 0;}else xml=$.parseXML( xml );    
+            if($.parseXML( xml )===null){errorMessage(xml); return 0;}else xml=$.parseXML( xml );    
            $(xml).find("Modify").each(function()
                {               
                    var mensaje=$(this).find("Mensaje").text();                
@@ -333,12 +333,12 @@ ClassUsers = function()
                    var $Error=$(this);
                    var estado=$Error.find("Estado").text();
                    var mensaje=$Error.find("Mensaje").text();
-                   Error(mensaje);
+                   errorMessage(mensaje);
                });                          
 
         },
         beforeSend:function(){},
-        error: function(jqXHR, textStatus, errorThrown){$('#UsersPlaceWaiting').remove(); Error(textStatus +"<br>"+ errorThrown);}
+        error: function(jqXHR, textStatus, errorThrown){$('#UsersPlaceWaiting').remove(); errorMessage(textStatus +"<br>"+ errorThrown);}
         });   
    };
    
@@ -368,7 +368,7 @@ ClassUsers = function()
         success:  function(xml)
         {            
             $('#UsersPlaceWaiting').remove();
-            if($.parseXML( xml )===null){$('#UsersPlaceWaiting').remove(); Error(xml); return 0;}else xml=$.parseXML( xml );         
+            if($.parseXML( xml )===null){$('#UsersPlaceWaiting').remove(); errorMessage(xml); return 0;}else xml=$.parseXML( xml );         
            $(xml).find("RemoveUser").each(function()
             {               
                var $Usuario=$(this);
@@ -383,12 +383,12 @@ ClassUsers = function()
                 var $Error=$(this);
                 var estado=$Error.find("Estado").text();
                 var mensaje=$Error.find("Mensaje").text();
-                Error(mensaje);
+                errorMessage(mensaje);
             });                       
 
         },
         beforeSend:function(){},
-        error: function(jqXHR, textStatus, errorThrown){$('#UsersPlaceWaiting').remove(); Error(textStatus +"<br>"+ errorThrown);}
+        error: function(jqXHR, textStatus, errorThrown){$('#UsersPlaceWaiting').remove(); errorMessage(textStatus +"<br>"+ errorThrown);}
         });   
         
     };
@@ -559,7 +559,7 @@ ClassUsers = function()
         data: {opcion:"closeUserSession"}, 
         success:  function(xml)
         {            
-            if($.parseXML( xml )===null){ Error(xml); return 0;}else xml=$.parseXML( xml );         
+            if($.parseXML( xml )===null){ errorMessage(xml); return 0;}else xml=$.parseXML( xml );         
             
             $(xml).find('userSessionClosed').each(function()
             {
@@ -569,12 +569,12 @@ ClassUsers = function()
             $(xml).find("Error").each(function()
             {
                 var mensaje=$(this).find("Mensaje").text();
-                Error(mensaje);
+                errorMessage(mensaje);
             });                 
 
         },
         beforeSend:function(){},
-        error: function(jqXHR, textStatus, errorThrown){ Error(textStatus +"<br>"+ errorThrown);}
+        error: function(jqXHR, textStatus, errorThrown){ errorMessage(textStatus +"<br>"+ errorThrown);}
         });    
     };
        
@@ -629,7 +629,7 @@ ClassUsers.prototype.changeUserLoggedPassword = function(){
         data: {opcion:"changeUserPassword", newPassword : password1}, 
         success:  function(xml)
         {            
-            if($.parseXML( xml )===null){$('#UsersPlaceWaiting').remove(); Error(xml); return 0;}else xml=$.parseXML( xml );         
+            if($.parseXML( xml )===null){$('#UsersPlaceWaiting').remove(); errorMessage(xml); return 0;}else xml=$.parseXML( xml );         
 
             $(xml).find("passwordChanged").each(function(){
                 var mensaje = $(this).find("Mensaje").text();
@@ -642,13 +642,13 @@ ClassUsers.prototype.changeUserLoggedPassword = function(){
                 var $Error=$(this);
                 var estado=$Error.find("Estado").text();
                 var mensaje=$Error.find("Mensaje").text();
-                Error(mensaje);
+                errorMessage(mensaje);
                 $('#UsersPlaceWaiting').remove();
             });                 
 
         },
         beforeSend:function(){},
-        error: function(jqXHR, textStatus, errorThrown){$('#UsersPlaceWaiting').remove(); Error(textStatus +"<br>"+ errorThrown);}
+        error: function(jqXHR, textStatus, errorThrown){$('#UsersPlaceWaiting').remove(); errorMessage(textStatus +"<br>"+ errorThrown);}
         });    
     
 };
@@ -705,7 +705,7 @@ ClassUsers.prototype.changeUserLoggedPassword = function(){
         data: "opcion=UsersList&DataBaseName="+EnvironmentData.DataBaseName+'&IdUsuario='+EnvironmentData.IdUsuario+'&NombreUsuario='+EnvironmentData.NombreUsuario+'&IdGrupo='+EnvironmentData.IdGrupo, 
         success:  function(xml)
         {            
-            if($.parseXML( xml )===null){$('#UsersPlaceWaiting').remove(); Error(xml); return 0;}else xml=$.parseXML( xml );         
+            if($.parseXML( xml )===null){$('#UsersPlaceWaiting').remove(); errorMessage(xml); return 0;}else xml=$.parseXML( xml );         
 
             if($(xml).find("Usuario").length>0)                            
                 _BuildtableUsers(Struct,xml);
@@ -718,13 +718,13 @@ ClassUsers.prototype.changeUserLoggedPassword = function(){
                 var $Error=$(this);
                 var estado=$Error.find("Estado").text();
                 var mensaje=$Error.find("Mensaje").text();
-                Error(mensaje);
+                errorMessage(mensaje);
                 $('#UsersPlaceWaiting').remove();
             });                 
 
         },
         beforeSend:function(){},
-        error: function(jqXHR, textStatus, errorThrown){$('#UsersPlaceWaiting').remove(); Error(textStatus +"<br>"+ errorThrown);}
+        error: function(jqXHR, textStatus, errorThrown){$('#UsersPlaceWaiting').remove(); errorMessage(textStatus +"<br>"+ errorThrown);}
         });    
    };
    

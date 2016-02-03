@@ -100,7 +100,7 @@ var ClassUsersGroups = function()
         data: "opcion=GetUsersGroups", 
         success:  function(xml)
         {           
-            if($.parseXML( xml )===null){Error(xml); return 0;}else xml=$.parseXML( xml );
+            if($.parseXML( xml )===null){errorMessage(xml); return 0;}else xml=$.parseXML( xml );
 
             if($(xml).find("Grupo").length>0)
                 userGroups = xml;
@@ -110,7 +110,7 @@ var ClassUsersGroups = function()
                 var $Error=$(this);
                 var estado=$Error.find("Estado").text();
                 var mensaje=$Error.find("Mensaje").text();
-                Error(mensaje);
+                errorMessage(mensaje);
             });                 
 
         },
@@ -234,7 +234,7 @@ var ClassUsersGroups = function()
             $(xml).find("Error").each(function()
             {
                 var mensaje=$(this).find("Mensaje").text();
-                Error(mensaje);
+                errorMessage(mensaje);
             });                 
 
         },

@@ -107,11 +107,11 @@ function ListAccounts()
                 var $Instancias=$(this);
                 var estado=$Instancias.find("Estado").text();
                 var mensaje=$Instancias.find("Mensaje").text();
-                Error(mensaje);
+                errorMessage(mensaje);
             });
       },
       beforeSend:function(){},
-      error:function(objXMLHttpRequest){Error(objXMLHttpRequest);}
+      error:function(objXMLHttpRequest){errorMessage(objXMLHttpRequest);}
     });        
     return ListAccounts;
 }
@@ -186,11 +186,11 @@ function AddNewAccount()
                 var $Instancias=$(this);
                 var estado=$Instancias.find("Estado").text();
                 var mensaje=$Instancias.find("Mensaje").text();
-                Error(mensaje);
+                errorMessage(mensaje);
             });
       },
       beforeSend:function(){},
-      error:function(objXMLHttpRequest){Error(objXMLHttpRequest);}
+      error:function(objXMLHttpRequest){errorMessage(objXMLHttpRequest);}
     });        
 }
 
@@ -223,11 +223,11 @@ function DownloadFromAccount()
                 var $Instancias=$(this);
                 var estado=$Instancias.find("Estado").text();
                 var mensaje=$Instancias.find("Mensaje").text();
-                Error(mensaje);
+                errorMessage(mensaje);
             });
       },
       beforeSend:function(){},
-      error:function(objXMLHttpRequest){Error(objXMLHttpRequest); $('.loading').remove();}
+      error:function(objXMLHttpRequest){errorMessage(objXMLHttpRequest); $('.loading').remove();}
     });        
 }
 /*

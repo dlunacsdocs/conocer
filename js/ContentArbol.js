@@ -309,14 +309,14 @@ function CM_ModifyDir(IdDirectory,IdParentDirectory,NameDirectory)
     {
        if (ajax.readyState===4 && ajax.status===200) 
        {
-          if(ajax.responseXML===null){Error(ajax.responseText);return;}              
+          if(ajax.responseXML===null){errorMessage(ajax.responseText);return;}              
            var xml = ajax.responseXML;
             $(xml).find("Error").each(function()
             {
                 var $Error=$(this);
                 var estado=$Error.find("Estado").text();
                 var mensaje=$Error.find("Mensaje").text();
-                Error(mensaje);
+                errorMessage(mensaje);
             });            
        }       
    };
@@ -335,12 +335,12 @@ function CM_DeleteDir()
     $('#MensajeConfirmacion').dialog( "close" );
     
     var node = $("#contentTree").dynatree("getActiveNode");
-    if(!node){Error("Seleccione un Directorio"); return;}
+    if(!node){errorMessage("Seleccione un Directorio"); return;}
     var NameDirectory= node.data.title;
     var Path=node.getKeyPath();
     var IdDirectory=node.data.key;
     var IdParent_=node.getParent().data.key;
-    if(!(IdParent_>0)){Error("No se puede realizar esta acción sobre este elemento."); return;}
+    if(!(IdParent_>0)){errorMessage("No se puede realizar esta acción sobre este elemento."); return;}
     var IdRepositorio=$('#CM_select_repositorios').val();
     var NombreRepositorio=$('#CM_select_repositorios option:selected').html();
     var IdEmpresa = $('#CM_select_empresas option:selected').attr('id');
@@ -429,7 +429,7 @@ function CM_DeleteDir()
                 var $Error=$(this);
                 var estado=$Error.find("Estado").text();
                 var mensaje=$Error.find("Mensaje").text();
-                Error(mensaje);
+                errorMessage(mensaje);
             });            
        }        
    };
@@ -479,7 +479,7 @@ function ProgressOfDeleting(PathAdvancing,KeyProcess,title)
                 var estado=$Error.find("Estado").text();
                 var mensaje =$Error.find("Mensaje").text();
                 $('#'+KeyProcess).dialog('close');
-                Error(mensaje);
+                errorMessage(mensaje);
                 clearInterval(Process[KeyProcess]);
             });         
                         
@@ -491,7 +491,7 @@ function ProgressOfDeleting(PathAdvancing,KeyProcess,title)
             }            
       },
       beforeSend:function(){},
-      error:function(objXMLHttpRequest){Error(objXMLHttpRequest);$('#DeletePathAdvancing').dialog('close');clearInterval(Process[KeyProcess]);}
+      error:function(objXMLHttpRequest){errorMessage(objXMLHttpRequest);$('#DeletePathAdvancing').dialog('close');clearInterval(Process[KeyProcess]);}
     });
 }
 
@@ -518,12 +518,12 @@ function CancelDeleteDir(PathStatus,PathAdvancing)
                 var $Error=$(this);
                 var estado=$Error.find("Estado").text();
                 var mensaje=$Error.find("Mensaje").text();
-                Error(mensaje);
+                errorMessage(mensaje);
             });     
             
       },
       beforeSend:function(){},
-      error:function(objXMLHttpRequest){Error(objXMLHttpRequest);$('#DeletePathAdvancing').dialog('close');}
+      error:function(objXMLHttpRequest){errorMessage(objXMLHttpRequest);$('#DeletePathAdvancing').dialog('close');}
     });
 }
 

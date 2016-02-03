@@ -275,7 +275,7 @@ var ClassRepository = function()
             
         },
         beforeSend:function(){},
-        error: function(jqXHR, textStatus, errorThrown) {Error(textStatus +"<br>"+ errorThrown);}
+        error: function(jqXHR, textStatus, errorThrown) {errorMessage(textStatus +"<br>"+ errorThrown);}
         });             
         
         
@@ -537,7 +537,7 @@ var ClassRepository = function()
         data: data, 
         success:  function(xml)
         {            
-            if($.parseXML( xml )===null){Error(xml); return 0;}else xml=$.parseXML( xml );
+            if($.parseXML( xml )===null){errorMessage(xml); return 0;}else xml=$.parseXML( xml );
 
             if($(xml).find('DeletedRepository').length>0)
             {
@@ -555,12 +555,12 @@ var ClassRepository = function()
             {
                 var $Error=$(this);
                 var mensaje=$Error.find("Mensaje").text();
-                Error(mensaje);
+                errorMessage(mensaje);
             });                 
 
         },
         beforeSend:function(){},
-        error: function(jqXHR, textStatus, errorThrown) {Error(textStatus +"<br>"+ errorThrown);}
+        error: function(jqXHR, textStatus, errorThrown) {errorMessage(textStatus +"<br>"+ errorThrown);}
         });         
         
         $('#IconWaitingRepository').remove();
@@ -616,7 +616,7 @@ var ClassRepository = function()
         data: data, 
         success:  function(xml)
         {            
-            if($.parseXML( xml )===null){Error(xml); return 0;}else xml=$.parseXML( xml );
+            if($.parseXML( xml )===null){errorMessage(xml); return 0;}else xml=$.parseXML( xml );
 
             if($(xml).find('DeletedField').length>0)
             {
@@ -629,12 +629,12 @@ var ClassRepository = function()
             {
                 var $Error=$(this);
                 var mensaje=$Error.find("Mensaje").text();
-                Error(mensaje);
+                errorMessage(mensaje);
             });                 
 
         },
         beforeSend:function(){},
-        error: function(jqXHR, textStatus, errorThrown) {Error(textStatus +"<br>"+ errorThrown);}
+        error: function(jqXHR, textStatus, errorThrown) {errorMessage(textStatus +"<br>"+ errorThrown);}
         }); 
         
     };
@@ -694,12 +694,12 @@ var ClassRepository = function()
             {
                 var $Error=$(this);
                 var mensaje=$Error.find("Mensaje").text();
-                Error(mensaje);
+                errorMessage(mensaje);
             });                 
 
         },
         beforeSend:function(){},
-        error: function(jqXHR, textStatus, errorThrown) {Error(textStatus +"<br>"+ errorThrown);}
+        error: function(jqXHR, textStatus, errorThrown) {errorMessage(textStatus +"<br>"+ errorThrown);}
         });       
         
     };
@@ -750,7 +750,7 @@ var ClassRepository = function()
             Salida(xml);
         },
         beforeSend:function(){},
-        error: function(jqXHR, textStatus, errorThrown){Error(textStatus +"<br>"+ errorThrown);}
+        error: function(jqXHR, textStatus, errorThrown){errorMessage(textStatus +"<br>"+ errorThrown);}
       });
         
     };    
@@ -991,7 +991,7 @@ ClassRepository.prototype.GetRepositories = function(EnterpriseKey)
     data: data, 
     success:  function(xml)
     {            
-        if($.parseXML( xml )===null){Error(xml); return 0;}else xml=$.parseXML( xml );
+        if($.parseXML( xml )===null){errorMessage(xml); return 0;}else xml=$.parseXML( xml );
 
         RepositoriesXml = xml;
 
@@ -999,12 +999,12 @@ ClassRepository.prototype.GetRepositories = function(EnterpriseKey)
         {
             var $Error=$(this);
             var mensaje=$Error.find("Mensaje").text();
-            Error(mensaje);
+            errorMessage(mensaje);
         });                 
 
     },
     beforeSend:function(){},
-    error: function(jqXHR, textStatus, errorThrown) {Error(textStatus +"<br>"+ errorThrown);}
+    error: function(jqXHR, textStatus, errorThrown) {errorMessage(textStatus +"<br>"+ errorThrown);}
     });             
 
     return RepositoriesXml;

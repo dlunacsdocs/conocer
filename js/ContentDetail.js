@@ -45,7 +45,7 @@ function GetDetalle(Source, IdGlobal, IdFile)
       success:  function(xml)
       {                
           $('#Loading').dialog('close');       
-           if($.parseXML( xml )===null){Error(xml);return 0;}else xml=$.parseXML( xml );
+           if($.parseXML( xml )===null){errorMessage(xml);return 0;}else xml=$.parseXML( xml );
                                       
             $(xml).find("CampoRepositorio").each(function()
             {
@@ -147,11 +147,11 @@ function GetDetalle(Source, IdGlobal, IdFile)
                 var $Instancias=$(this);
                 var estado=$Instancias.find("Estado").text();
                 var mensaje=$Instancias.find("Mensaje").text();
-                Error(mensaje);
+                errorMessage(mensaje);
             });                      
       },
       beforeSend:function(){},
-      error:function(objXMLHttpRequest){$('#Loading').dialog('close'); Error(objXMLHttpRequest);}
+      error:function(objXMLHttpRequest){$('#Loading').dialog('close'); errorMessage(objXMLHttpRequest);}
     });
     
     return xml;
@@ -374,7 +374,7 @@ function DetailModify(XmlDetalle,DocumentEnvironment)
         
         $('#CMModifyDetail').remove();
         
-        if($.parseXML( xml )===null){Error(xml); return 0;}else xml=$.parseXML( xml );
+        if($.parseXML( xml )===null){errorMessage(xml); return 0;}else xml=$.parseXML( xml );
 
         $(xml).find("DetailModify").each(function()
         {
@@ -411,13 +411,13 @@ function DetailModify(XmlDetalle,DocumentEnvironment)
             var $Instancias=$(this);
             var estado=$Instancias.find("Estado").text();
             var mensaje=$Instancias.find("Mensaje").text();
-            Error(mensaje);
+            errorMessage(mensaje);
             return;
         });
 
     },
     beforeSend:function(){},
-    error: function(jqXHR, textStatus, errorThrown){$('#CMModifyDetail').remove();Error(textStatus +"<br>"+ errorThrown);}
+    error: function(jqXHR, textStatus, errorThrown){$('#CMModifyDetail').remove();errorMessage(textStatus +"<br>"+ errorThrown);}
   });
       
       $('#Loading').dialog('close');
@@ -451,7 +451,7 @@ function GetFiles(IdDirectory)
         url: "php/ContentManagement.php",
         data: 'opcion=GetFiles&DataBaseName='+EnvironmentData.DataBaseName+'&IdUser='+EnvironmentData.IdUsuario+'&UserName='+EnvironmentData.NombreUsuario+'&IdGroup='+EnvironmentData.IdGrupo+'&IdRepository='+IdRepositorio+'&RepositoryName='+NombreRepositorio+'&Search='+Search+"&IdDirectory="+IdDirectory, 
         success:  function(xml){
-            if($.parseXML( xml )===null){Error(xml); return 0;}else xml=$.parseXML( xml );
+            if($.parseXML( xml )===null){errorMessage(xml); return 0;}else xml=$.parseXML( xml );
             var emptyTest = $('#contentTree').is(':empty');
             if(!emptyTest)
             $("#contentTree").dynatree("enable");
@@ -460,14 +460,14 @@ function GetFiles(IdDirectory)
                 var $Instancias=$(this);
                 var estado=$Instancias.find("Estado").text();
                 var mensaje=$Instancias.find("Mensaje").text();
-                Error(mensaje);
+                errorMessage(mensaje);
                 return;
             });
 
             SetSearchResult(IdRepositorio,xml);                        
         },
         beforeSend:function(){},
-    error: function(jqXHR, textStatus, errorThrown){Error(textStatus +"<br>"+ errorThrown);}
+    error: function(jqXHR, textStatus, errorThrown){errorMessage(textStatus +"<br>"+ errorThrown);}
     });
 }
 
@@ -620,11 +620,11 @@ function CM_CargarArchivo()
                 var $Instancias=$(this);
                 var estado=$Instancias.find("Estado").text();
                 var mensaje=$Instancias.find("Mensaje").text();
-                Error(mensaje);
+                errorMessage(mensaje);
             });
       },
       beforeSend:function(){},
-      error:function(objXMLHttpRequest){Error(objXMLHttpRequest);}
+      error:function(objXMLHttpRequest){errorMessage(objXMLHttpRequest);}
     });
     return ArrayCatalogos;
   }
@@ -939,7 +939,7 @@ function CM_CargarArchivo()
       success:  function(xml)
       {
         $('#CMUpload').remove();
-        if($.parseXML( xml )===null){Error(xml);return 0;}else{ xml=$.parseXML( xml );}
+        if($.parseXML( xml )===null){errorMessage(xml);return 0;}else{ xml=$.parseXML( xml );}
         
         if($(xml).find("SetMetadatas").length>0)
             AddNewRow(IdRepositorio, xml);
@@ -948,12 +948,12 @@ function CM_CargarArchivo()
         $(xml).find("Error").each(function()
         {
             var mensaje = $(this).find("Mensaje").text();
-            Error(mensaje);
+            errorMessage(mensaje);
         });       
         
       },
       beforeSend:function(){},
-      error: function(jqXHR, textStatus, errorThrown){$('#CMUpload').remove();Error(textStatus +"<br>"+ errorThrown);}
+      error: function(jqXHR, textStatus, errorThrown){$('#CMUpload').remove();errorMessage(textStatus +"<br>"+ errorThrown);}
     });
    }
 
@@ -1044,10 +1044,10 @@ function getCatalogOptions(IdRepositorio,SelectCatalogos)
                 var $Instancias=$(this);
                 var estado=$Instancias.find("Estado").text();
                 var mensaje=$Instancias.find("Mensaje").text();
-                Error(mensaje);
+                errorMessage(mensaje);
             });
       },
       beforeSend:function(){},
-      error:function(objXMLHttpRequest){Error(objXMLHttpRequest);}
+      error:function(objXMLHttpRequest){errorMessage(objXMLHttpRequest);}
     });
 }                

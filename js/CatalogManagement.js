@@ -106,11 +106,11 @@ ClassCatalogAdministrator = function()
                 var $Instancias=$(this);
                 var estado=$Instancias.find("Estado").text();
                 var mensaje=$Instancias.find("Mensaje").text();
-                Error(mensaje);
+                errorMessage(mensaje);
             });     
         },
         beforeSend:function(){},
-        error: function(jqXHR, textStatus, errorThrown){Error(textStatus +"<br>"+ errorThrown);}
+        error: function(jqXHR, textStatus, errorThrown){errorMessage(textStatus +"<br>"+ errorThrown);}
         });
    };
 
@@ -251,7 +251,7 @@ ClassCatalogAdministrator = function()
                 "callback": function( xml, settings )
                 {                      
                     /* Redraw the table from the new data on the server */                     
-//                    if($.parseXML( xml )===null){ Error(xml); return 0;}else xml=$.parseXML( xml );
+//                    if($.parseXML( xml )===null){ errorMessage(xml); return 0;}else xml=$.parseXML( xml );
                 }
             } );
         });
@@ -316,7 +316,7 @@ ClassCatalogAdministrator = function()
          data: "opcion=AddNewRecord&XmlReponse="+XMLResponse+"&IdRepositorio="+IdRepositorio+'&repositoryName='+repositoryName+"&IdEmpresa="+IdEmpresa+"&CatalogName="+CatalogName, 
          success:  function(xml){
              $('#CatalogsPlaceWaiting').remove();
-            if($.parseXML( xml )===null){Error(xml);return 0;}else xml = $.parseXML( xml );
+            if($.parseXML( xml )===null){errorMessage(xml);return 0;}else xml = $.parseXML( xml );
             $(xml).find('AddNewRecord').each(function(){   
                 var Mensaje = $(this).find('Mensaje').text();
                 var IdCatalog = $(this).find('IdCatalog').text();
@@ -343,12 +343,12 @@ ClassCatalogAdministrator = function()
                 var $Instancias=$(this);
                 var estado=$Instancias.find("Estado").text();
                 var mensaje=$Instancias.find("Mensaje").text();
-                Error(mensaje);
+                errorMessage(mensaje);
                 xml = 0;
             });
          },
          beforeSend:function(){},
-         error: function(jqXHR, textStatus, errorThrown){$('#CatalogsPlaceWaiting').remove();Error(textStatus +"<br>"+ errorThrown);}
+         error: function(jqXHR, textStatus, errorThrown){$('#CatalogsPlaceWaiting').remove();errorMessage(textStatus +"<br>"+ errorThrown);}
        });
     };
     
@@ -630,7 +630,7 @@ ClassCatalogAdministrator = function()
          url: "php/Catalog.php",
          data: "opcion=AddNewColumn&"+'&CatalogName='+CatalogName+'&FieldName='+FieldName+'&FieldType='+FieldType+'&FieldLength='+FieldLength+'&RequiredField='+RequiredField+'&RepositoryName='+RepositoryName, 
          success:  function(xml){
-            if($.parseXML( xml )===null){Error(xml);return 0;}else xml = $.parseXML( xml );
+            if($.parseXML( xml )===null){errorMessage(xml);return 0;}else xml = $.parseXML( xml );
             
             $(xml).find('AddNewColumn').each(function()
             {
@@ -651,12 +651,12 @@ ClassCatalogAdministrator = function()
                 var $Instancias=$(this);
                 var estado=$Instancias.find("Estado").text();
                 var mensaje=$Instancias.find("Mensaje").text();
-                Error(mensaje);
+                errorMessage(mensaje);
                 xml = 0;
             });
          },
          beforeSend:function(){},
-         error:function(objXMLHttpRequest){Error(objXMLHttpRequest);}
+         error:function(objXMLHttpRequest){errorMessage(objXMLHttpRequest);}
        });
     };
                    
@@ -792,12 +792,12 @@ ClassCatalogAdministrator = function()
             {
                 var $Error=$(this);
                 var mensaje=$Error.find("Mensaje").text();
-                Error(mensaje);
+                errorMessage(mensaje);
             });                 
 
         },
         beforeSend:function(){},
-        error: function(jqXHR, textStatus, errorThrown) {Error(textStatus +"<br>"+ errorThrown);}
+        error: function(jqXHR, textStatus, errorThrown) {errorMessage(textStatus +"<br>"+ errorThrown);}
         });         
     };
     
@@ -972,7 +972,7 @@ ClassCatalogAdministrator = function()
          data: {opcion:"GetListCatalogos"}, 
          success:  function(xml){
              $('#Loading').dialog('close');
-            if($.parseXML( xml )===null){Error(xml);return 0;}else xml = $.parseXML( xml );
+            if($.parseXML( xml )===null){errorMessage(xml);return 0;}else xml = $.parseXML( xml );
             
               var cont=0;
               var ArrayDirectories=new Array();
@@ -1015,7 +1015,7 @@ ClassCatalogAdministrator = function()
                    var $Instancias=$(this);
                    var estado=$Instancias.find("Estado").text();
                    var mensaje=$Instancias.find("Mensaje").text();
-                   Error(mensaje);
+                   errorMessage(mensaje);
                });
 
                $("#tree_catalogos").dynatree({onActivate: function(node) {                    
@@ -1033,7 +1033,7 @@ ClassCatalogAdministrator = function()
                }});
          },
          beforeSend:function(){},
-         error: function(jqXHR, textStatus, errorThrown){$('#Loading').dialog('close');Error(textStatus +"<br>"+ errorThrown);}
+         error: function(jqXHR, textStatus, errorThrown){$('#Loading').dialog('close');errorMessage(textStatus +"<br>"+ errorThrown);}
        });
  
    };
@@ -1050,19 +1050,19 @@ ClassCatalogAdministrator = function()
          url: "php/Catalog.php",
          data: "opcion=GetCatalogRecordsInXml&CatalogType="+CatalogType +'&CatalogName='+CatalogName+'&repositoryName='+repositoryName, 
          success:  function(respuesta){
-            if($.parseXML( respuesta )===null){Error(respuesta);return 0;}else xml = $.parseXML( respuesta );
+            if($.parseXML( respuesta )===null){errorMessage(respuesta);return 0;}else xml = $.parseXML( respuesta );
 
             $(xml).find("Error").each(function()
             {
                 var $Instancias=$(this);
                 var estado=$Instancias.find("Estado").text();
                 var mensaje=$Instancias.find("Mensaje").text();
-                Error(mensaje);
+                errorMessage(mensaje);
                 xml = 0;
             });
          },
          beforeSend:function(){},
-         error:function(objXMLHttpRequest){Error(objXMLHttpRequest);}
+         error:function(objXMLHttpRequest){errorMessage(objXMLHttpRequest);}
        });
        
        return xml;
@@ -1179,7 +1179,7 @@ ClassCatalogAdministrator.prototype.getCatalogos = function(IdRepositorio,Select
     url: "php/ContentManagement.php",
     data: "opcion=getCatalogos&DataBaseName="+EnvironmentData.DataBaseName+'&IdUsuario='+EnvironmentData.IdUsuario+"&IdRepositorio="+IdRepositorio, 
     success:  function(xml){
-        if($.parseXML( xml )===null){Error(xml);return 0;}else xml = $.parseXML( xml );
+        if($.parseXML( xml )===null){errorMessage(xml);return 0;}else xml = $.parseXML( xml );
     
     $("#"+SelectCatalogos+" option").remove();
     $("#"+SelectCatalogos).append("<option value = \"0\">Seleccione un Catálogo</option>");
@@ -1197,10 +1197,10 @@ ClassCatalogAdministrator.prototype.getCatalogos = function(IdRepositorio,Select
         var $Instancias=$(this);
         var estado=$Instancias.find("Estado").text();
         var mensaje=$Instancias.find("Mensaje").text();
-        Error(mensaje);
+        errorMessage(mensaje);
     });
     },
     beforeSend:function(){},
-    error:function(objXMLHttpRequest){Error(objXMLHttpRequest);}
+    error:function(objXMLHttpRequest){errorMessage(objXMLHttpRequest);}
     });
 };

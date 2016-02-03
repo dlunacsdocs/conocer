@@ -75,7 +75,7 @@ function login()
             $(xml).find("Error").each(function ()
             {
                 var mensaje = $(this).find("Mensaje").text();
-                Error(mensaje);
+                errorMessage(mensaje);
             });
 
         },
@@ -83,7 +83,7 @@ function login()
         },
         error: function (jqXHR, textStatus, errorThrown) {
             $('.loading').remove();
-            Error(textStatus + "<br>" + errorThrown);
+            errorMessage(textStatus + "<br>" + errorThrown);
         }
     });
 }
@@ -149,7 +149,7 @@ function checkSessionExistance()
             $(xml).find("Error").each(function ()
             {
                 var mensaje = $(this).find("Mensaje").text();
-                Error(mensaje);
+                errorMessage(mensaje);
             });
 
         },
@@ -157,7 +157,7 @@ function checkSessionExistance()
         },
         error: function (jqXHR, textStatus, errorThrown) {
             $('.loading').remove();
-            Error(textStatus + "<br>" + errorThrown);
+            errorMessage(textStatus + "<br>" + errorThrown);
         }
     });
 

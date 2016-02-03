@@ -26,7 +26,7 @@ function GeStructure(TypeStructure)
         data: "opcion=GetStructure&TypeStructure=" + TypeStructure,
         success: function (respuesta) {
             if ($.parseXML(respuesta) === null) {
-                Error(respuesta);
+                errorMessage(respuesta);
                 return 0;
             } else
                 xml = $.parseXML(respuesta);
@@ -34,14 +34,14 @@ function GeStructure(TypeStructure)
             $(xml).find('Error').each(function ()
             {
                 var Mensaje = $(this).find('Mensaje').text();
-                Error(Mensaje);
+                errorMessage(Mensaje);
                 xml = undefined;
             });
         },
         beforeSend: function () {
         },
         error: function (objXMLHttpRequest) {
-            Error(objXMLHttpRequest);
+            errorMessage(objXMLHttpRequest);
         }
     });
     return xml;
@@ -69,7 +69,7 @@ function GetAllStructure(TypeStructure)
         beforeSend: function () {
         },
         error: function (objXMLHttpRequest) {
-            Error(objXMLHttpRequest);
+            errorMessage(objXMLHttpRequest);
         }
     });
     return xml;
@@ -155,7 +155,7 @@ function SetTableStructura(NombreRepositorio, tabla, Detalle)
         var $Instancias = $(this);
         var estado = $Instancias.find("Estado").text();
         var mensaje = $Instancias.find("Mensaje").text();
-        Error(mensaje);
+        errorMessage(mensaje);
     });
 
     return xml;
@@ -231,7 +231,7 @@ function BuildFullStructureTable(NombreRepositorio, tabla, Detalle)
         var $Instancias = $(this);
         var estado = $Instancias.find("Estado").text();
         var mensaje = $Instancias.find("Mensaje").text();
-        Error(mensaje);
+        errorMessage(mensaje);
     });
 
     return xml;

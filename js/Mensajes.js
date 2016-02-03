@@ -41,13 +41,13 @@ function Salida(mensaje)
             closable: false
         });
 }
-function Error(mensaje)
-{
-    $('#MensajeError').dialog(WindowError);
-    $('#MensajeError').empty();
-    $('#MensajeError').append('<center><img src="img/fallo.png"></center>');
-    $('#MensajeError').append(mensaje);
-}
+//function Error(mensaje)
+//{
+//    $('#MensajeError').dialog(WindowError);
+//    $('#MensajeError').empty();
+//    $('#MensajeError').append('<center><img src="img/fallo.png"></center>');
+//    $('#MensajeError').append(mensaje);
+//}
 
 function errorMessage(mensaje)
 {

@@ -131,7 +131,7 @@ var ClassPermissions = function ()
             {
                 if ($.parseXML(xml) === null) {
                     $('#UsersPlaceWaiting').remove();
-                    Error(xml);
+                    errorMessage(xml);
                     return 0;
                 } else
                     xml = $.parseXML(xml);
@@ -147,7 +147,7 @@ var ClassPermissions = function ()
                     var $Error = $(this);
                     var estado = $Error.find("Estado").text();
                     var mensaje = $Error.find("Mensaje").text();
-                    Error(mensaje);
+                    errorMessage(mensaje);
                     $('#UsersPlaceWaiting').remove();
                 });
 
@@ -156,7 +156,7 @@ var ClassPermissions = function ()
             },
             error: function (jqXHR, textStatus, errorThrown) {
                 $('#UsersPlaceWaiting').remove();
-                Error(textStatus + "<br>" + errorThrown);
+                errorMessage(textStatus + "<br>" + errorThrown);
             }
         });
     };
@@ -223,7 +223,7 @@ var ClassPermissions = function ()
             {
                 $('#UsersPlaceWaiting').remove();
                 if ($.parseXML(xml) === null) {
-                    Error(xml);
+                    errorMessage(xml);
                     return 0;
                 } else
                     xml = $.parseXML(xml);
@@ -241,7 +241,7 @@ var ClassPermissions = function ()
                 $(xml).find("Error").each(function ()
                 {
                     var mensaje = $(this).find("Mensaje").text();
-                    Error(mensaje);
+                    errorMessage(mensaje);
                     $('#UsersPlaceWaiting').remove();
                 });
 
@@ -250,7 +250,7 @@ var ClassPermissions = function ()
             },
             error: function (jqXHR, textStatus, errorThrown) {
                 $('#UsersPlaceWaiting').remove();
-                Error(textStatus + "<br>" + errorThrown);
+                errorMessage(textStatus + "<br>" + errorThrown);
             }
         });
     };
@@ -288,7 +288,7 @@ var ClassPermissions = function ()
             {
                 $('#UsersPlaceWaiting').remove();
                 if ($.parseXML(xml) === null) {
-                    Error(xml);
+                    errorMessage(xml);
                     return 0;
                 } else
                     xml = $.parseXML(xml);
@@ -307,7 +307,7 @@ var ClassPermissions = function ()
                 $(xml).find("Error").each(function ()
                 {
                     var mensaje = $(this).find("Mensaje").text();
-                    Error(mensaje);
+                    errorMessage(mensaje);
                     $('#UsersPlaceWaiting').remove();
                 });
 
@@ -316,7 +316,7 @@ var ClassPermissions = function ()
             },
             error: function (jqXHR, textStatus, errorThrown) {
                 $('#UsersPlaceWaiting').remove();
-                Error(textStatus + "<br>" + errorThrown);
+                errorMessage(textStatus + "<br>" + errorThrown);
             }
         });
     };
@@ -412,7 +412,7 @@ var ClassPermissions = function ()
             {
                 if ($.parseXML(xml) === null) {
                     $('#UsersPlaceWaiting').remove();
-                    Error(xml);
+                    errorMessage(xml);
                     return 0;
                 } else
                     xml = $.parseXML(xml);
@@ -433,7 +433,7 @@ var ClassPermissions = function ()
                 $(xml).find("Error").each(function ()
                 {
                     var mensaje = $(this).find("Mensaje").text();
-                    Error(mensaje);
+                    errorMessage(mensaje);
                     $('#UsersPlaceWaiting').remove();
                 });
             },
@@ -441,7 +441,7 @@ var ClassPermissions = function ()
             },
             error: function (jqXHR, textStatus, errorThrown) {
                 $('#UsersPlaceWaiting').remove();
-                Error(textStatus + "<br>" + errorThrown);
+                errorMessage(textStatus + "<br>" + errorThrown);
             }
         });
 
@@ -539,7 +539,7 @@ var ClassPermissions = function ()
                         var $Error = $(this);
                         var estado = $Error.find("Estado").text();
                         var mensaje = $Error.find("Mensaje").text();
-                        Error(mensaje);
+                        errorMessage(mensaje);
                     });
                 }
                 else
@@ -548,7 +548,7 @@ var ClassPermissions = function ()
             beforeSend: function () {
             },
             error: function (jqXHR, textStatus, errorThrown) {
-                Error(textStatus + "<br>" + errorThrown);
+                errorMessage(textStatus + "<br>" + errorThrown);
             }
         });
 

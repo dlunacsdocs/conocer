@@ -285,7 +285,7 @@ var ClassEnterprise = function ()
             success: function (xml)
             {
                 if ($.parseXML(xml) === null) {
-                    Error(xml);
+                    errorMessage(xml);
                     return 0;
                 } else
                     xml = $.parseXML(xml);
@@ -297,14 +297,14 @@ var ClassEnterprise = function ()
                     var $Error = $(this);
                     var estado = $Error.find("Estado").text();
                     var mensaje = $Error.find("Mensaje").text();
-                    Error(mensaje);
+                    errorMessage(mensaje);
                 });
 
             },
             beforeSend: function () {
             },
             error: function (jqXHR, textStatus, errorThrown) {
-                Error(textStatus + "<br>" + errorThrown);
+                errorMessage(textStatus + "<br>" + errorThrown);
             }
         });
 
@@ -344,7 +344,7 @@ var ClassEnterprise = function ()
             success: function (xml)
             {
                 if ($.parseXML(xml) === null) {
-                    Error(xml);
+                    errorMessage(xml);
                     return 0;
                 } else
                     xml = $.parseXML(xml);
@@ -367,14 +367,14 @@ var ClassEnterprise = function ()
                 {
                     var $Error = $(this);
                     var mensaje = $Error.find("Mensaje").text();
-                    Error(mensaje);
+                    errorMessage(mensaje);
                 });
 
             },
             beforeSend: function () {
             },
             error: function (jqXHR, textStatus, errorThrown) {
-                Error(textStatus + "<br>" + errorThrown);
+                errorMessage(textStatus + "<br>" + errorThrown);
             }
         });
 
@@ -771,7 +771,7 @@ var ClassEnterprise = function ()
                 $('#IconWaitingEnterprise').remove();
 
                 if ($.parseXML(xml) === null) {
-                    Error(xml);
+                    errorMessage(xml);
                     return 0;
                 } else
                     xml = $.parseXML(xml);
@@ -790,14 +790,14 @@ var ClassEnterprise = function ()
                 {
                     var $Error = $(this);
                     var mensaje = $Error.find("Mensaje").text();
-                    Error(mensaje);
+                    errorMessage(mensaje);
                 });
 
             },
             beforeSend: function () {
             },
             error: function (jqXHR, textStatus, errorThrown) {
-                Error(textStatus + "<br>" + errorThrown);
+                errorMessage(textStatus + "<br>" + errorThrown);
             }
         });
 
@@ -1040,7 +1040,7 @@ var ClassEnterprise = function ()
                 $(xml).find("Error").each(function () {
                     var $Error = $(this);
                     var mensaje = $Error.find("Mensaje").text();
-                    Error(mensaje);
+                    errorMessage(mensaje);
                 });
 
             },
