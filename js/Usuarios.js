@@ -1,5 +1,5 @@
 
-/* global Users, EnvironmentData, Struct, BotonesWindow, BootstrapDialog */
+/* global EnvironmentData, Struct, BotonesWindow, BootstrapDialog */
 
 var CAWindowUsers={minHeight:500,minWidth:800,width:800, height:500};
 var TableUsersdT = undefined;
@@ -44,18 +44,23 @@ $(document).ready(function(){
     });
     $("#accordion_users").accordion({ header: "h3", collapsible: true,heightStyle: "content" });
    $('#tr_NewUser').click(function()       
-   {             
-       Users.CM_AddUserForms();
+   {        
+       var users = new ClassUsers();
+       users.CM_AddUserForms();
    });
    
-   $('#tr_UsersList').click(function(){Users.CM_UsersList();});
+   $('#tr_UsersList').click(function(){
+       var users = new ClassUsers();
+       users.CM_UsersList();
+   });
    
    $('#tr_GroupsUsers').click(function(){
        var userGroupsClass = new ClassUsersGroups();
        userGroupsClass.ShowsGroupsUsers();});
    
    $('#LinkCloseSession').click(function(){
-       Users.closeUserSession();
+       var users = new ClassUsers();
+       users.closeUserSession();
    });
    
 });

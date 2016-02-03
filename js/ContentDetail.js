@@ -2,7 +2,7 @@
  * Operaciones sobre el repositorio de archivos (Borrado, Edición, etc)
  */
 
-/* global TableContentdT, EnvironmentData, TableEnginedT, Hdetalle, Wdetalle, GlobalDatePicker, CatalogContent, WindowConfirmacion */
+/* global TableContentdT, EnvironmentData, TableEnginedT, Hdetalle, Wdetalle, GlobalDatePicker, WindowConfirmacion */
 
 TableContentDT = '';
 TableContentdT = '';
@@ -165,7 +165,8 @@ function GetDetalle(Source, IdGlobal, IdFile)
     */
    function DetailSetValuesToList(repositoryName, xmlStruct,NombreCatalogo)
    {
-        var xml = CatalogContent.GetCatalogRecordsInXml(repositoryName, NombreCatalogo,'List');
+        var catalogManager = new ClassCatalogAdministrator();
+        var xml = catalogManager.GetCatalogRecordsInXml(repositoryName, NombreCatalogo,'List');
 //        alert("List"+xml);
         var ArrayStruct=new Array();var cont=0;
         $(xmlStruct).find("Campo").each(function()
@@ -213,8 +214,8 @@ function GetDetalle(Source, IdGlobal, IdFile)
         </div>');             
        
        /* Construcción de Tabla con registro de elementos del catálogo seleccionado (Al pulsar el botón con el nombre del catálogo en la vista con metadatos) */
-        
-        var xml = CatalogContent.GetCatalogRecordsInXml(repositoryName ,NombreCatalogo,'ListSearch');        
+        var catalogManager = new ClassCatalogAdministrator();
+        var xml = catalogManager.GetCatalogRecordsInXml(repositoryName ,NombreCatalogo,'ListSearch');        
         var ArrayStruct = new Array();var cont=0;
         var thead='<thead><tr>';
         $(xmlStruct).find("Campo").each(function()
@@ -670,7 +671,8 @@ function CM_CargarArchivo()
         var repositoryName = $('#CM_select_repositorios option:selected').html();
         $('#CM_Carga').append('<p>'+NombreCatalogo+'<select id="Catalogo_'+NombreCatalogo+'"></select></p>');              
 //       var xml=bringInformationCatalog(NombreCatalogo,'List'); 
-        var xml = CatalogContent.GetCatalogRecordsInXml(repositoryName ,NombreCatalogo,'List');
+        var catalogManager = new ClassCatalogAdministrator();
+        var xml = catalogManager.GetCatalogRecordsInXml(repositoryName ,NombreCatalogo,'List');
        var ArrayStruct=new Array();var cont=0;
        $(xmlStruct).find("Campo").each(function()
         {               
@@ -715,8 +717,8 @@ function CM_CargarArchivo()
        $('#button_'+NombreCatalogo).button();
        
   /* Construcción de Tabla con registro de elementos del catálogo seleccionado (Al pulsar el botón con el nombre del catálogo en la vista con metadatos) */
-        
-        var xml = CatalogContent.GetCatalogRecordsInXml(repositoryName ,NombreCatalogo,'ListSearch');        
+        var catalogManager = new ClassCatalogAdministrator();
+        var xml = catalogManager.GetCatalogRecordsInXml(repositoryName ,NombreCatalogo,'ListSearch');        
         var ArrayStruct = new Array();var cont=0;
         var thead='<thead><tr>';
         $(xmlStruct).find("Campo").each(function()

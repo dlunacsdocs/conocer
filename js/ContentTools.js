@@ -3,7 +3,7 @@
  * To change this template file, choose Tools | Templates
  * and open the template in the editor.
  */
-/* global TableContentDT, TableContentdT, EnvironmentData, EnvironmentData, Random, CatalogContent, DataTable */
+/* global TableContentDT, TableContentdT, EnvironmentData, EnvironmentData, Random, DataTable */
 
 var CM_Carga={width:300, height:500, minWidth:300, minHeight:300,modal:true, title:"Carga de Archivo",
     buttons: {Aceptar: function() {$( this ).dialog( "close" );$( this ).dialog( "destroy" );}}};

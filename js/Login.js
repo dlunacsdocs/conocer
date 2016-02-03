@@ -5,7 +5,7 @@
  */
 var UserData = undefined;
 
-/* global EnvironmentData, Users */
+/* global EnvironmentData */
 
 /*******************************************************************************
  * 
@@ -55,7 +55,8 @@ function login()
                     
                     UserData = {IDataBaseName: EnvironmentData.DataBaseName, dUser: EnvironmentData.IdUsuario, UserName: EnvironmentData.NombreUsuario, IdGroup: EnvironmentData.IdGrupo, GroupName: EnvironmentData.NombreGrupo};
 
-                    Users.addUserLoggedPopover();
+                    var users = new ClassUsers();
+                    users.addUserLoggedPopover();
                     
                     if (idInstance > 0)
                     {
@@ -125,7 +126,8 @@ function checkSessionExistance()
                     EnvironmentData.NombreGrupo = NombreGrupo;
                     EnvironmentData.IdGrupo = IdGrupo;
                     
-                    Users.addUserLoggedPopover();
+                    var users = new ClassUsers();
+                    users.addUserLoggedPopover();
 
 
                     UserData = {IDataBaseName: EnvironmentData.DataBaseName, dUser: EnvironmentData.IdUsuario, UserName: EnvironmentData.NombreUsuario, IdGroup: EnvironmentData.IdGrupo, GroupName: EnvironmentData.NombreGrupo};

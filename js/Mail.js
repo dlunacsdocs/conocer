@@ -17,7 +17,8 @@ $(document).ready(function()
  */
 function ShowMailAccounts()
 {
-    $('#div_mail').empty();
+    $('#div_mail').remove();
+    $('body').append('<div id = "div_mail"></div>');
     $('#div_mail').append('<div class="titulo_ventana">Correos Registrados</div>');
     $('#div_mail').append('<div id= "ListAccounts"></div>');
     $('#div_mail').append('<div class="loading"><img src="../img/loadinfologin.gif"></div>');

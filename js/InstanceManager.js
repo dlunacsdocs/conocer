@@ -4,11 +4,12 @@
  * and open the template in the editor.
  */
 
-/* global DimensionsDialogMetadatas, ConsoleSettings, EnvironmentData, InstanceManager, LanguajeDataTable, BootstrapDialog, BotonesWindow */
+/* global DimensionsDialogMetadatas, ConsoleSettings, EnvironmentData, LanguajeDataTable, BootstrapDialog, BotonesWindow */
 var instancesTableDetaildT, instancesTableDetailDT;
 $(document).ready(function () {
     $('.LinkInstancesManager').click(function () {
-        InstanceManager.buildManager();
+        var instanceManager = new ClassInstanceManager();
+        instanceManager.buildManager();
     });
 
 });
@@ -425,8 +426,8 @@ ClassInstanceManager.prototype.buildManager = function () {
     /* Generación del acordeón (Panel izquierdo de la consola) */
     $("#instanceAccordion").accordion({header: "h3", collapsible: true, heightStyle: "content"});
 
-
-    $('#linkInstanceManager').on("click", InstanceManager.instanceManagerInterface);
+    var instanceManager = new ClassInstanceManager();
+    $('#linkInstanceManager').on("click", instanceManager.instanceManagerInterface);
 
     /* Se abre la consola */
     $('#divInstanceManager').dialog(ConsoleSettings, {title: "Administración de instancias"}).dialogExtend(BotonesWindow);

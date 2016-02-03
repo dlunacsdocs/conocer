@@ -33,7 +33,7 @@ class Tree {
                 case 'InsertDir': $this->InsertDir($userData); break;      
                 case 'ModifyDir': $this->ModifyDir(); break;
                 case 'DeleteDir': $this->DeleteDir(); break; 
-                case 'GetListReposity': $this->GetListReposity(); break; 
+                case 'GetListReposity': $this->GetListReposity($userData); break; 
             }
         }
     }
@@ -42,34 +42,21 @@ class Tree {
      * En un array para ser mostrados como un arbol
      * GetListReposity() Y ReturnXmlEmpresasRepository() se relacionan
      */
-    function GetListReposity()
+    function GetListReposity($userData)
     {
-        $BD= new DataBase();
-        $XML=new XML();
-        $DataBaseName=filter_input(INPUT_POST, "DataBaseName");
-        $conexion=  $BD->Conexion();
-        $row=array();
-        if (!$conexion) {
-            echo('No pudo conectarse: ' . mysql_error());
-            return;
-        }        
+        $BD = new DataBase();
+        $DataBaseName = $userData['dataBaseName'];
+    
         $query = "SELECT re.IdRepositorio, re.NombreRepositorio, em.IdEmpresa, em.NombreEmpresa, em.ClaveEmpresa from CSDocs_Repositorios re INNER JOIN CSDocs_Empresas em ON em.ClaveEmpresa = re.ClaveEmpresa";
-        mysql_select_db($DataBaseName,$conexion);
-        $result = mysql_query($query);
-        if(!$result)
-        {
-            echo $estado= mysql_error();  
-            return $estado;
-        }
-        else
-        {
-
-            while(($row[] = mysql_fetch_assoc($result)) || array_pop($row));
-        }
+        $queryResult = $BD->ConsultaSelect($DataBaseName, $query);
         
-        (count($row)>0)?$this->ReturnXmlEmpresasRepository($row):$XML->ResponseXML("Error", 0, "No existen repositorios para mostrar");
+        if($queryResult['Estado'] != 1)
+            return XML::XMLReponse("Error", 0, "<p><b>Error</b> al obtener la estructura de empresas y repositorios</p> Detalles: <br> ".$queryResult['Estado']);
+        
+        $repositories = $queryResult['ArrayDatos'];
+        
+        (count($repositories)>0)?$this->ReturnXmlEmpresasRepository($repositories):XML::XMLReponse("Advertencia", 0, "No existen repositorios para mostrar");
             
-        mysql_close($conexion);
     }
     
     function ReturnXmlEmpresasRepository($Estructura)
