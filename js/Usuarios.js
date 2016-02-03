@@ -110,7 +110,7 @@ var ClassUsers = function ()
         var users = new ClassUsers();
 
         $('#tr_UsersList').click(function () {
-            users.CM_UsersList();
+            users.showUserList();
         });
 
         $('#tr_GroupsUsers').click(function () {
@@ -186,9 +186,8 @@ var ClassUsers = function ()
 
     };
 
-    this.CM_UsersList = function ()
+    this.showUserList = function ()
     {
-        var self = this;
         var Buttons = {};
         $('#div_consola_users').dialog('option', 'buttons', Buttons);
         $('#WS_Users').empty();
@@ -212,7 +211,7 @@ var ClassUsers = function ()
             cont++;
         });
 
-        thead = '<thead><tr>' + thead + '</tr></thead><tbody></tbody>';
+        thead = '<thead><tr>' + thead + '<th>Grupo</th></tr></thead><tbody></tbody>';
         $('#Table_UsersList').append(thead);
 
         TableUsersdT = $('#Table_UsersList').dataTable({
@@ -246,7 +245,7 @@ var ClassUsers = function ()
             dataType: "html",
             type: 'POST',
             url: "php/Usuarios.php",
-            data: "opcion=UsersList&DataBaseName=" + EnvironmentData.DataBaseName + '&IdUsuario=' + EnvironmentData.IdUsuario + '&NombreUsuario=' + EnvironmentData.NombreUsuario + '&IdGrupo=' + EnvironmentData.IdGrupo,
+            data: {opcion: "UsersList"},
             success: function (xml)
             {
                 if ($.parseXML(xml) === null) {
@@ -279,8 +278,12 @@ var ClassUsers = function ()
             }
         });
     };
-
-    _CM_AddXmlUser = function ()
+    
+    /**
+     * @description Envia un XML con los usuarios a registrar en el sistema.
+     * @returns {undefined}
+     */
+    var _CM_AddXmlUser = function ()
     {
         var self = this;
         Loading();
@@ -292,9 +295,6 @@ var ClassUsers = function ()
         {
             data.append('archivo', archivo[i]);
             data.append('opcion', 'AddXmlUser');
-            data.append('id_usuario', EnvironmentData.IdUsuario);
-            data.append('DataBaseName', EnvironmentData.DataBaseName);
-            data.append('nombre_usuario', EnvironmentData.NombreUsuario);
         }
         ajax = objetoAjax();
         ajax.open("POST", 'php/Usuarios.php', true);
@@ -314,12 +314,15 @@ var ClassUsers = function ()
     /* Tabla que muestra la informacion de los usuarios */
     _BuildtableUsers = function (StructuraUsuarios, XmlUsuarios)
     {
-        $(XmlUsuarios).find("Usuario").each(function ()
-        {
+        var userGroup = new ClassUsersGroups();
+        var userGroupList = userGroup.getUserGroups();
+
+        $(XmlUsuarios).find("Usuario").each(function () {
             var $Usuario = $(this);
             var Login = $Usuario.find("Login").text(); /* Campo por default */
             var IdUsuario = $Usuario.find("IdUsuario").text();
             var PassWord = $Usuario.find("Password").text();
+            var idGroup = $Usuario.find('IdGrupo').text();
             var Data = [];
 
             $(StructuraUsuarios).find("Campo").each(function ()
@@ -329,7 +332,12 @@ var ClassUsers = function ()
                 Data[Data.length] = valor;
             });
 
-//                Data[Data.length] = '<img src="img/user_edit.png" style="cursor:pointer" title="editar usuario" onclick="_GetInfoUser(\''+IdUsuario+'\')"><img src="img/user_remove.png" style="cursor:pointer" title="eliminar usuario" onclick="_CM_ConfirmRemoveUser()">';
+            $(userGroupList).find('Grupo').each(function (index) {
+                if ($(this).find('IdGrupo').text() === idGroup)
+                    return Data.push($(this).find('Nombre').text());
+                else if (index === $(this).length)
+                    Data.push('');
+            });
 
             var ai = TableUsersDT.row.add(Data).draw();
             var n = TableUsersdT.fnSettings().aoData[ ai[0] ].nTr;
@@ -337,9 +345,9 @@ var ClassUsers = function ()
         });
 
         $('#Table_UsersList tbody').on('click', 'tr', function () {
-            if ($(this).hasClass('selected')) {
+            if ($(this).hasClass('selected'))
                 $(this).removeClass('selected');
-            } else {
+            else {
                 TableUsersdT.$('tr.selected').removeClass('selected');
                 $(this).addClass('selected');
             }

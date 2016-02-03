@@ -537,15 +537,15 @@ var ClassUsersGroups = function ()
                     "bInfo": false, "autoWidth": false, "oLanguage": LanguajeDataTable,
                     "tableTools": {
                         "aButtons": [
-                            {"sExtends": "text", "sButtonText": "Agregar", "fnClick": function () {
+                            {"sExtends": "text", "sButtonText": '<i class="fa fa-user fa-lg"></i> Agregar', "fnClick": function () {
                                     _ShowUsersWithoutGroup();
                                 }},
-                            {"sExtends": "text", "sButtonText": "Quitar", "fnClick": function () {
+                            {"sExtends": "text", "sButtonText": '<i class="fa fa-trash-o fa-lg"></i> Quitar', "fnClick": function () {
                                     _ConfirmDeleteGroupMembers();
                                 }},
                             {
                                 "sExtends": "collection",
-                                "sButtonText": "Exportar...",
+                                "sButtonText": '<i class="fa fa-floppy-o fa-lg"></i>',
                                 "aButtons": ["csv", "xls", "pdf", "copy"]
                             }
                         ]
@@ -634,12 +634,7 @@ var ClassUsersGroups = function ()
             message: table,
             buttons: [
                 {
-                    label: 'Cerrar',
-                    action: function (dialogRef) {
-                        dialogRef.close();
-                    }
-                },
-                {
+                    icon: 'fa fa-plus-circle fa-lg',
                     label: 'Agregar',
                     cssClass: "btn-primary",
                     action: function (dialogRef) {
@@ -649,7 +644,13 @@ var ClassUsersGroups = function ()
                         _AddUsersToGroup();
                         dialogRef.close();
                     }
-                }
+                },
+                {
+                    label: 'Cerrar',
+                    action: function (dialogRef) {
+                        dialogRef.close();
+                    }
+                }               
             ],
             onshown: function (dialogRef) {
                 TableUsersWithoutGroupdT = $('#UsersWithoutGroup').dataTable({
@@ -659,7 +660,7 @@ var ClassUsersGroups = function ()
                         "aButtons": [
                             {
                                 "sExtends": "collection",
-                                "sButtonText": "Exportar...",
+                                "sButtonText": '<i class="fa fa-floppy-o fa-lg"></i>',
                                 "aButtons": ["csv", "xls", "pdf", "copy"]
                             }
                         ]

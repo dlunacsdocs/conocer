@@ -50,7 +50,7 @@ class Usuarios {
                     break;
                 case 'AddXmlUser': $this->AddXmlUser();
                     break;
-                case 'UsersList': $this->UsersList();
+                case 'UsersList': $this->UsersList($userData);
                     break;
                 case 'GetUsersDiffGroup': $this->GetUsersDiffGroup();
                     break;
@@ -407,18 +407,22 @@ class Usuarios {
      * Esta función regresa el listado de usuarios registrados en el sistema
      */
 
-    private function UsersList() {
-        $XML = new XML();
+    private function UsersList($userData) {
         $BD = new DataBase();
-        $DataBaseName = filter_input(INPUT_POST, "DataBaseName");
-        $Consulta = "SELECT *FROM CSDocs_Usuarios where estatus=1";
+        $DataBaseName = $userData['dataBaseName'];
+        
+        $Consulta = "
+                SELECT usu.*, gc.IdGrupo FROM CSDocs_Usuarios usu 
+                LEFT JOIN GruposControl gc ON usu.IdUsuario = gc.IdUsuario 
+                LEFT JOIN GruposUsuario gu ON gu.IdGrupo = gc.IdGrupo 
+                where usu.estatus=1";
+        
         $Usuarios = $BD->ConsultaSelect($DataBaseName, $Consulta);
 
-        if ($Usuarios['Estado'] != true) {
-            XML::XMLReponse("Error", 0, "<p>Ocurrió un error al consultar los usuarios " . $Consulta['Estado'] . "</p>");
-            return;
-        }
-        $XML->ResponseXmlFromArray("ListUsers", "Usuario", $Usuarios['ArrayDatos']);
+        if ($Usuarios['Estado'] != 1) 
+            return XML::XMLReponse("Error", 0, "<p>Ocurrió un error al consultar los usuarios " . $Usuarios['Estado'] . "</p>");
+        
+            XML::XmlArrayResponse("ListUsers", "Usuario", $Usuarios['ArrayDatos']);
     }
 
     /*     * **************************************************************************
