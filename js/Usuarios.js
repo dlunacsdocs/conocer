@@ -335,7 +335,7 @@ var ClassUsers = function ()
             $(userGroupList).find('Grupo').each(function (index) {
                 if ($(this).find('IdGrupo').text() === idGroup)
                     return Data.push($(this).find('Nombre').text());
-                else if (index === $(this).length)
+                else if (index+1 ===  $(this).length)
                     Data.push('');
             });
 
