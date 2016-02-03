@@ -3,7 +3,7 @@
  * To change this template file, choose Tools | Templates
  * and open the template in the editor.
  */
-/* global TableContentDT, TableContentdT, EnvironmentData, EnvironmentData, Random, DataTable */
+/* global TableContentDT, TableContentdT, EnvironmentData, EnvironmentData, Random, DataTable, userPermissions */
 
 var CM_Carga={width:300, height:500, minWidth:300, minHeight:300,modal:true, title:"Carga de Archivo",
     buttons: {Aceptar: function() {$( this ).dialog( "close" );$( this ).dialog( "destroy" );}}};
@@ -527,6 +527,9 @@ function PasteFile()
  */
 function ConfirmDelete()
 {
+    if(userPermissions['b6d767d2f8ed5d21a44b0e5886680cb9'] === undefined)
+        return Advertencia("No tiene permiso de realizar esta acción");
+    
     var IdFile=$('#table_DetailResult tr.selected').attr('id'); 
     if(!(IdFile>0)){Advertencia('Seleccione antes un archivo'); return;}
     $('#div_confirmDelete').remove();
@@ -549,6 +552,8 @@ function ConfirmDelete()
 
 function DeleteFile()
 {
+    if(userPermissions['b6d767d2f8ed5d21a44b0e5886680cb9'] === undefined)
+        return Advertencia("No tiene permiso de realizar esta acción");
     
     var IdFile=$('#table_DetailResult tr.selected').attr('id'); 
     if(!(IdFile>0)){Advertencia('Seleccione antes un archivo'); return;}

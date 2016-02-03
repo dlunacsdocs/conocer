@@ -2,7 +2,7 @@
  * Operaciones sobre el repositorio de archivos (Borrado, Edición, etc)
  */
 
-/* global TableContentdT, EnvironmentData, TableEnginedT, Hdetalle, Wdetalle, GlobalDatePicker, WindowConfirmacion */
+/* global TableContentdT, EnvironmentData, TableEnginedT, Hdetalle, Wdetalle, GlobalDatePicker, WindowConfirmacion, userPermissions, LanguajeDataTable */
 
 TableContentDT = '';
 TableContentdT = '';
@@ -121,7 +121,7 @@ function GetDetalle(Source, IdGlobal, IdFile)
                  * listado del mismo para hacer alguna modificación. */
                 
                 var EstructuraCatalogo = GeStructure(DocumentEnvironment.RepositoryName+"_"+NombreCatalogo); 
-                if(Tipo=='ListSearch')/* Se introduce un botón para elegir un nuevo elemento del catálogo */
+                if(String(Tipo) === 'ListSearch')/* Se introduce un botón para elegir un nuevo elemento del catálogo */
                 {
                     console.log("ListSearch::"+NombreCatalogo);
                     $('#tabla_DetalleArchivo tr:last').after('<tr><td><input type="button" value="Abrir '+NombreCatalogo+'" id="det_button_'+NombreCatalogo+'"></td><td><select id="det_select_'+NombreCatalogo+'" class="FormStandart"><option value="'+IdCatalogo+'">'+Cadena.slice(0,60)+'</select></td></tr>');                    
@@ -130,7 +130,7 @@ function GetDetalle(Source, IdGlobal, IdFile)
                 
                 $('#det_button_'+NombreCatalogo).button();
                 
-                if(Tipo=='List')
+                if(String(Tipo) === 'List')
                 {
                     $('#tabla_DetalleArchivo tr:last').after('<tr><td>'+NombreCatalogo+'</td><td><select class="FormStandart" id="det_select_'+NombreCatalogo+'"><option value="'+IdCatalogo+'">'+Cadena.slice(0,60)+'</select></td></tr>');                                       
                     DetailSetValuesToList(DocumentEnvironment.RepositoryName, EstructuraCatalogo,NombreCatalogo);
@@ -157,12 +157,13 @@ function GetDetalle(Source, IdGlobal, IdFile)
     return xml;
 }
 
-/****************************************************************************
-    * Llena un Select tipo List (Catálogo)    
-    * @param {type} xmlStruct
-    * @param {type} NombreCatalogo
-    * @returns {undefined}
-    */
+/**
+ * @description Llena un Select tipo List (Catálogo).
+ * @param {type} repositoryName
+ * @param {type} xmlStruct
+ * @param {type} NombreCatalogo
+ * @returns {undefined}
+ */
    function DetailSetValuesToList(repositoryName, xmlStruct,NombreCatalogo)
    {
         var catalogManager = new ClassCatalogAdministrator();
@@ -198,10 +199,11 @@ function GetDetalle(Source, IdGlobal, IdFile)
 /****************************************************************************
     * Llena un div y se le inserta una tabla con la información de un catálogo tipo ListSearch (Catálogo)
 
-    * @param {type} xmlStruct
-    * @param {type} NombreCatalogo
-    * @returns {undefined}
-    */
+    /**
+     * @param {type} repositoryName
+     * @param {type} xmlStruct
+     * @param {type} NombreCatalogo
+     * @returns {undefined}  */
    function DetailSetValuesToListSearch(repositoryName, xmlStruct,NombreCatalogo)
    {              
        var TableCatalogdT = undefined, TableCatalogDT = undefined;
@@ -296,6 +298,9 @@ function GetDetalle(Source, IdGlobal, IdFile)
    
    function ConfirmDetailModify(xml,DocumentEnvironment)
    {
+       if(userPermissions['3c59dc048e8850243be8079a5c74d079'] === undefined)
+           return Advertencia("No tiene permiso de realizar esta acción");
+           
         var Forms = $('#tabla_DetalleArchivo tr td input.FormStandart');
         var FieldsValidator = new ClassFieldsValidator();   
         var validation = FieldsValidator.ValidateFields(Forms);

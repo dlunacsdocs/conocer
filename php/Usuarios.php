@@ -26,11 +26,7 @@ class Usuarios {
 //    static $idGroup = 0;
 //    static $groupName = null;
 
-    public function __construct() {
-        $this->Ajax();
-    }
-
-    private function Ajax() {
+    public function Ajax() {
         if (filter_input(INPUT_POST, "opcion") != NULL and filter_input(INPUT_POST, "opcion") != FALSE) {
 
             if (strcasecmp(filter_input(INPUT_POST, "opcion"), "ExistRoot") == 0) {
@@ -41,7 +37,7 @@ class Usuarios {
             $idSession = Session::getIdSession();
 
             if ($idSession == null)
-                return XML::XMLReponse("Error", 0, "Tree:No existe una sesión activa, por favor vuelva a iniciar sesión");
+                return XML::XMLReponse("Error", 0, "Usuarios::No existe una sesión activa, por favor vuelva a iniciar sesión");
 
             $userData = Session::getSessionParameters();
 
@@ -495,3 +491,4 @@ class Usuarios {
 }
 
 $usuarios = new Usuarios();
+$usuarios->Ajax();

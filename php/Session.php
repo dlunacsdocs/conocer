@@ -23,8 +23,19 @@ class Session {
         $_SESSION['userName'] = $userName;
         $_SESSION['idGroup'] = $idGroup;
         $_SESSION['groupName'] = $groupName;
-
+                     
         return $sessionId;
+    }
+    
+    public static function setPermissions($permissionsArray){
+        if (!isset($_SESSION))
+            session_start();
+        if(is_array($permissionsArray)){
+            for ($cont = 0; $cont < count($permissionsArray); $cont++){
+                $idMenu = md5($permissionsArray[$cont]['IdMenu']);
+                $_SESSION['permissions'][$idMenu] = $permissionsArray[$cont]['Nombre'];
+            }
+        }
     }
 
     public static function getSessionParameters() {

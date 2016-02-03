@@ -2,10 +2,16 @@
 /* global EnvironmentData, Struct, BotonesWindow, BootstrapDialog, LanguajeDataTable */
 
 $(document).ready(function () {
+        var users = new ClassUsers();
+
     $('.LinkUsers').click(function () {
         var users = new ClassUsers();
         users.buildConsole();
         $('#tr_NewUser').click();
+    });
+    
+    $('#LinkCloseSession').click(function () {
+            users.closeUserSession();
     });
 });
 
@@ -118,10 +124,6 @@ var ClassUsers = function ()
             userGroupsClass.ShowsGroupsUsers();
         });
 
-        $('#LinkCloseSession').click(function () {
-            users.closeUserSession();
-        });
-
         $('#tr_UsersList').click();
     };
 
@@ -141,7 +143,7 @@ var ClassUsers = function ()
             closeByKeyboard: true,
             buttons: [
                 {
-                    icon: 'fa-plus-circle fa-lg',
+                    icon: 'fa fa-plus-circle fa-lg',
                     label: 'Agregar',
                     cssClass: "btn-primary",
                     action: function (dialogRef) {
@@ -317,6 +319,8 @@ var ClassUsers = function ()
         var userGroup = new ClassUsersGroups();
         var userGroupList = userGroup.getUserGroups();
 
+        var groupsSize = $(userGroupList).find('Grupo').length;
+
         $(XmlUsuarios).find("Usuario").each(function () {
             var $Usuario = $(this);
             var Login = $Usuario.find("Login").text(); /* Campo por default */
@@ -325,17 +329,16 @@ var ClassUsers = function ()
             var idGroup = $Usuario.find('IdGrupo').text();
             var Data = [];
 
-            $(StructuraUsuarios).find("Campo").each(function ()
-            {
+            $(StructuraUsuarios).find("Campo").each(function (){
                 var name = $(this).find("name").text();
                 var valor = $Usuario.find(name).text();
                 Data[Data.length] = valor;
             });
-
+                        
             $(userGroupList).find('Grupo').each(function (index) {
                 if ($(this).find('IdGrupo').text() === idGroup)
                     return Data.push($(this).find('Nombre').text());
-                else if (index+1 ===  $(this).length)
+                else if (index+1 ===  parseInt(groupsSize))
                     Data.push('');
             });
 
@@ -355,8 +358,7 @@ var ClassUsers = function ()
 
         $('#UsersPlaceWaiting').remove();
 
-        $('#Table_UsersList tbody').on('click', 'tr', function ()
-        {
+        $('#Table_UsersList tbody').on('click', 'tr', function (){
             TableUsersDT.$('tr.selected').removeClass('selected');
             $(this).addClass('selected');
             var IdRow = $('#Table_UsersList tr.selected').attr('id');

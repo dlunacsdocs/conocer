@@ -69,6 +69,9 @@ class ContentManagement {
      */
     private function DeleteFile($userData)
     {
+        if (!isset($_SESSION['permissions']['b6d767d2f8ed5d21a44b0e5886680cb9']))
+            return XML::XMLReponse ("Error", 0, 'No tiene permiso de realizar esta acción.');
+        
         $XML=new XML();
         $BD= new DataBase();
         $Log = new Log();        
@@ -816,6 +819,9 @@ class ContentManagement {
     
     private function DetailModify($userData)
     {                
+        if(!isset($_SESSION['permissions']['3c59dc048e8850243be8079a5c74d079']))
+            return XML::XMLReponse('Error', 0, 'Modificar Metadatos del Documento:: No tiene permiso de realizar esta acción');
+        
         $Notes = new Notes();
         
         $DataBaseName = $userData['dataBaseName'];

@@ -5,7 +5,7 @@
  */
 var UserData = undefined;
 
-/* global EnvironmentData */
+/* global EnvironmentData, userPermissions */
 
 /*******************************************************************************
  * 
@@ -26,7 +26,7 @@ function login()
         dataType: "html",
         type: 'POST',
         url: "php/Login.php",
-        data: "opcion=Login&UserName=" + User + "&Password=" + Password + "&IdDataBase=" + instancia + "&DataBaseName=" + database_name,
+        data: "opcion=Login&UserName=" + User + "&Password=" + Password + "&IdDataBase=" + instancia + "&instanceName=" + database_name,
         success: function (xml) {
             $('.loading').remove();
 
@@ -103,7 +103,10 @@ function checkSessionExistance()
         data: {opcion: "checkSessionExistance"},
         success: function (xml) {
 
-            ($.parseXML(xml) === null) ? errorMessage(xml) : xml = $.parseXML(xml);
+            if($.parseXML(xml) === null) 
+                return errorMessage(xml);
+            else
+                xml = $.parseXML(xml);
 
             $(xml).find("StartSession").each(function ()
             {
@@ -133,20 +136,27 @@ function checkSessionExistance()
                     UserData = {IDataBaseName: EnvironmentData.DataBaseName, dUser: EnvironmentData.IdUsuario, UserName: EnvironmentData.NombreUsuario, IdGroup: EnvironmentData.IdGrupo, GroupName: EnvironmentData.NombreGrupo};
 
                     var ApplyPermissions = Permissions.ApplyUserPermissions();
-
+                    
+                    $(xml).find('permission').each(function(){
+                        userPermissions[$(this).text()] = $(this).text();
+                    });
+                    
                     if(idInstance > 0){
                         if(ApplyPermissions)
                             removeLoginInterface();
                     }
                     else
                         StartSystem();
-//                        removeLoginInterface();
 
                 }
                 else
                     DeniedSystemStart();
 
             });
+            
+            
+            
+            
 
             $(xml).find("Error").each(function ()
             {

@@ -38,7 +38,8 @@ class Permissions {
                 case 'GetPermissionsMenuList': $this->GetPermissionsMenuList(); break;
                 case 'GetRepositoryAccessList':$this->GetRepositoryAccessList($userData); break;
                 case 'GetAccessPermissionsList':$this->GetAccessPermissionsList($userData); break;
-                case 'GetToolsOptions':$this->GetToolsOptions($userData); break;            
+                case 'GetToolsOptions':$this->GetToolsOptions($userData); break;      
+                case 'getAllUserPermissions': $this->getAllUserPermissions($userData); break;
             }
         }
     }
@@ -418,6 +419,39 @@ class Permissions {
         
         
         
+    }
+    
+    private function getAllUserPermissions($userData){
+        
+    }
+    
+    /**
+     * @description Devuelve el listado completo de permisos de un usuario.
+     * @param type $userData
+     */
+    public function getAllUserPermissionsArray($userData){
+        $instanceName = $userData['dataBaseName'];
+        $idUser = $userData['idUser'];
+        $idUserGroup = $userData['idGroup'];
+        
+        if(!(int) $idUser > 0)
+            return XML::XMLReponse ("Error", 0, "<p><b>Error</b> el usuario no tiene un identificador válido.</p>");
+        
+        if(!(int) $idUserGroup > 0)
+            return XML::XMLReponse ("Error", 0, "<p><b>Error</b> el usuario no pertence a ningún grupo</p>");
+        
+        $select = "
+            SELECT sm.*, smc.IdMenuControl FROM SystemMenu sm 
+            LEFT JOIN SystemMenuControl smc ON sm.IdMenu = smc.IdMenu 
+            WHERE smc.IdGrupo = $idUserGroup
+                ";
+        
+        $selectResult = $this->db->ConsultaSelect($instanceName, $select);
+        
+        if($selectResult['Estado'] != 1)
+            return XML::XMLReponse ("Error", 0, "<p></b>Error</b> al obtener los permisos del usuario</p> Detalles:<br>".$selectResult['Estado']);
+        
+        return $selectResult['ArrayDatos'];
     }
 }
 
