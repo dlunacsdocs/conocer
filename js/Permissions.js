@@ -1,4 +1,4 @@
-/* global BootstrapDialog, EnvironmentData, Tree */
+/* global BootstrapDialog, EnvironmentData, Tree, userPermissions */
 
 var ClassPermissions = function ()
 {
@@ -589,4 +589,19 @@ var ClassPermissions = function ()
         return permissions;
     };
 };
+
+function validateRepositoryPermission(repository, menu){
+    var status = 0;
+    repository = md5(repository);
+    $(userPermissions).find('permission').each(function(){
+        if($(this).find('repository').text() === repository){
+            if($(this).find('menu').text() === menu){
+                console.log($(this).find('menu').text()+" encontrado en repositorio "+repository);
+                return status = 1;
+            }
+        }
+    });
+    
+    return status;
+}
 

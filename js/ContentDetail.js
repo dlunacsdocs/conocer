@@ -2,7 +2,7 @@
  * Operaciones sobre el repositorio de archivos (Borrado, Edición, etc)
  */
 
-/* global TableContentdT, EnvironmentData, TableEnginedT, Hdetalle, Wdetalle, GlobalDatePicker, WindowConfirmacion, userPermissions, LanguajeDataTable */
+/* global TableContentdT, EnvironmentData, TableEnginedT, Hdetalle, Wdetalle, GlobalDatePicker, WindowConfirmacion, LanguajeDataTable */
 
 TableContentDT = '';
 TableContentdT = '';
@@ -98,10 +98,8 @@ function GetDetalle(Source, IdGlobal, IdFile)
                   "Cerrar":{click:function(){$(this).dialog('close');},text:'Cerrar'}
                 }});
             
-//                AdminClientPermissions(NombreRol);
             }                    
             
-            var cont=0;
             var Cadena='';  /* Cadena con los valores  */
             $(xml).find("Catalogo").each(function()
             {
@@ -298,7 +296,12 @@ function GetDetalle(Source, IdGlobal, IdFile)
    
    function ConfirmDetailModify(xml,DocumentEnvironment)
    {
-       if(userPermissions['3c59dc048e8850243be8079a5c74d079'] === undefined)
+       var idRepository = DocumentEnvironment.IdRepository;
+       
+       if(!parseInt(idRepository) > 0)
+           return Advertencia("No fue posible obtener el identificador del repositorio");
+       
+       if(!validateRepositoryPermission(idRepository, '3c59dc048e8850243be8079a5c74d079'))
            return Advertencia("No tiene permiso de realizar esta acción");
            
         var Forms = $('#tabla_DetalleArchivo tr td input.FormStandart');

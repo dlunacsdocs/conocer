@@ -68,10 +68,7 @@ class ContentManagement {
      * Los archivos eliminados de un repositorio se envian a la tabla temp_nombreRepositorio
      */
     private function DeleteFile($userData)
-    {
-        if (!isset($_SESSION['permissions']['b6d767d2f8ed5d21a44b0e5886680cb9']))
-            return XML::XMLReponse ("Error", 0, 'No tiene permiso de realizar esta acción.');
-        
+    {        
         $XML=new XML();
         $BD= new DataBase();
         $Log = new Log();        
@@ -89,6 +86,9 @@ class ContentManagement {
 //        $RutaArchivo=  filter_input(INPUT_POST, "RutaArchivo");   /* Archivo que será copiado */
         $IdDirectory=  filter_input(INPUT_POST, "IdDirectory");
         $IdEmpresa=  filter_input(INPUT_POST, "IdEmpresa");
+        
+        if (!isset($_SESSION['permissions'][md5($IdRepositorio)]['b6d767d2f8ed5d21a44b0e5886680cb9']))
+            return XML::XMLReponse ("Error", 0, 'No tiene permiso de realizar esta acción.');
         
         if(!file_exists("../Configuracion/$DataBaseName.ini"))
             return XML::XMLReponse("Error", 0,"<p>No existe el archivo de configuración estructural.</p>");
@@ -818,10 +818,7 @@ class ContentManagement {
     }
     
     private function DetailModify($userData)
-    {                
-        if(!isset($_SESSION['permissions']['3c59dc048e8850243be8079a5c74d079']))
-            return XML::XMLReponse('Error', 0, 'Modificar Metadatos del Documento:: No tiene permiso de realizar esta acción');
-        
+    {                       
         $Notes = new Notes();
         
         $DataBaseName = $userData['dataBaseName'];
@@ -833,6 +830,10 @@ class ContentManagement {
         $IdGlobal = filter_input(INPUT_POST, "IdGlobal");
         $XMLResponse = filter_input(INPUT_POST, "XMLResponse");   
         $NombreArchivo = filter_input(INPUT_POST,"NombreArchivo");
+        
+        if(!isset($_SESSION['permissions'][md5($IdRepositorio)]['3c59dc048e8850243be8079a5c74d079']))
+            return XML::XMLReponse('Error', 0, 'Modificar Metadatos del Documento:: No tiene permiso de realizar esta acción');
+        
         
         $xml =  simplexml_load_string($XMLResponse);  
         

@@ -137,10 +137,8 @@ function checkSessionExistance()
 
                     var ApplyPermissions = Permissions.ApplyUserPermissions();
                     
-                    $(xml).find('permission').each(function(){
-                        userPermissions[$(this).text()] = $(this).text();
-                    });
-                    
+                    userPermissions = $(xml).find('permissions');
+                                        
                     if(idInstance > 0){
                         if(ApplyPermissions)
                             removeLoginInterface();

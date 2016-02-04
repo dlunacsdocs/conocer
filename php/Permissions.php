@@ -441,9 +441,10 @@ class Permissions {
             return XML::XMLReponse ("Error", 0, "<p><b>Error</b> el usuario no pertence a ningún grupo</p>");
         
         $select = "
-            SELECT sm.*, smc.IdMenuControl FROM SystemMenu sm 
-            LEFT JOIN SystemMenuControl smc ON sm.IdMenu = smc.IdMenu 
-            WHERE smc.IdGrupo = $idUserGroup
+            SELECT sm.*, smc.IdMenuControl, rc.IdRepositorio, cr.NombreRepositorio 
+            FROM SystemMenu sm LEFT JOIN SystemMenuControl smc ON sm.IdMenu = smc.IdMenu 
+            LEFT JOIN RepositoryControl rc ON smc.IdGrupo = rc.IdGrupo 
+            LEFT JOIN CSDocs_Repositorios cr ON rc.IdRepositorio = cr.IdRepositorio WHERE smc.IdGrupo = $idUserGroup
                 ";
         
         $selectResult = $this->db->ConsultaSelect($instanceName, $select);
