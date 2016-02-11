@@ -169,9 +169,6 @@ var ClassRepository = function ()
                 $('#DivRepositoryDetail').remove();
 
                 if ($(Repositories).find('Repository').length === 0)
-                    $('#RMSelectRepositories').empty().append('<option value = "0">No existen repositorios...</option>');
-
-                if ($(Enterprises).find('Repository').length === 0)
                     repositorySelect.empty().append($('<option>', {value: 0, id: 0}).append('No existen Repositorios'));
                 else
                     repositorySelect.empty().append($('<option>', {value: 0, id: 0}).append('Seleccione un Repositorio'));

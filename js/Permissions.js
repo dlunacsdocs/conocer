@@ -1,4 +1,4 @@
-/* global BootstrapDialog, EnvironmentData, Tree */
+/* global BootstrapDialog, EnvironmentData, Tree, userPermissions */
 
 var ClassPermissions = function ()
 {
@@ -160,8 +160,8 @@ var ClassPermissions = function ()
             }
         });
     };
-    
-    
+
+
 
     var _BuildTreeOfToolsOptions = function (xml)
     {
@@ -273,8 +273,7 @@ var ClassPermissions = function ()
             {
                 root.toggleSelect();
                 root.toggleSelect();
-            }
-            else
+            } else
                 root.toggleSelect();
 
         $.ajax({
@@ -452,7 +451,7 @@ var ClassPermissions = function ()
         b = b.data.title.toLowerCase();
         return a > b ? 1 : a < b ? -1 : 0;
     };
-    
+
     this.ApplyUserPermissions = function (IdRepositorio)
     {
         var Permissions = _GetUserPermissions(IdRepositorio);
@@ -490,8 +489,7 @@ var ClassPermissions = function ()
                 var HtmlPermissionName = "." + HtmlNamePermission[NombreMenu];
                 $(HtmlPermissionName).hide();
 //                console.log(HtmlPermissionName+" Denegado...");
-            }
-            else
+            } else
                 console.log("No se encontró en el diccionario de menús a " + NombreMenu);
         }
 
@@ -504,15 +502,14 @@ var ClassPermissions = function ()
                 var HtmlPermissionName = "." + HtmlNamePermission[NombreMenu];
                 $(HtmlPermissionName).show();
 //                console.log(HtmlPermissionName+" Permitido...");
-            }
-            else
+            } else
                 console.log("No se encontró en el diccionario de menús a " + NombreMenu);
         }
 
 
         return 1;
     };
-    
+
     _GetUserPermissions = function (IdRepositorio)
     {
         var Permissions = new Array();
@@ -527,8 +524,7 @@ var ClassPermissions = function ()
             success: function (xml)
             {
                 if ($.parseXML(xml) === null) {
-//                    console.log(xml);
-                    return 0;
+                    return errorMessage(xml);
                 } else
                     xml = $.parseXML(xml);
 
@@ -541,8 +537,7 @@ var ClassPermissions = function ()
                         var mensaje = $Error.find("Mensaje").text();
                         errorMessage(mensaje);
                     });
-                }
-                else
+                } else
                     Permissions = xml;
             },
             beforeSend: function () {
@@ -554,13 +549,58 @@ var ClassPermissions = function ()
 
         return Permissions;
     };
-    
+
     /**
      * @description Devuelve el listado de permisos a los que tiene acceso el usuario.
      * @returns {undefined}
      */
-    this.getAllUserPermissions = function(){
+    this.getAllUserPermissions = function () {
+        var permissions;
+        $.ajax({
+            async: false,
+            cache: false,
+            dataType: "html",
+            type: 'POST',
+            url: "php/Permissions.php",
+            data: {opcion: 'getAllUserPermissions'},
+            success: function (xml){
+                if ($.parseXML(xml) === null) 
+                    return errorMessage(xml);
+                else
+                    xml = $.parseXML(xml);
+                
+                if ($(xml).find('permissions').length > 0)
+                    permissions = xml;
+                
+                $(xml).find("Error").each(function (){
+                    var $Error = $(this);
+                    var estado = $Error.find("Estado").text();
+                    var mensaje = $Error.find("Mensaje").text();
+                    errorMessage(mensaje);
+                });
+            },
+            beforeSend: function () {
+            },
+            error: function (jqXHR, textStatus, errorThrown) {
+                errorMessage(textStatus + "<br>" + errorThrown);
+            }
+        });
         
+        return permissions;
     };
 };
 
+function validateRepositoryPermission(repository, menu){
+    var status = 0;
+    repository = md5(repository);
+    $(userPermissions).find('permission').each(function(){
+        if($(this).find('repository').text() === repository){
+            if($(this).find('menu').text() === menu){
+                console.log($(this).find('menu').text()+" encontrado en repositorio "+repository);
+                return status = 1;
+            }
+        }
+    });
+    
+    return status;
+}
