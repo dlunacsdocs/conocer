@@ -118,11 +118,11 @@ var ClassNotes = function(viewerType,IdRepository,RepositoryName, IdFile, FileNa
            if($(xml).find("Notes").length > 0)
                return xml;
 
-           if($(xml).find("Error").length>0)
-           {
-               ErrorXml(xml);
+           $(xml).find("Error").each(function(){
+               var mensaje = $(this).find('Mensaje').text();
+               errorMessage(mensaje);
                return 0;
-           }
+           });
        },
        beforeSend:function(){          },
        error: function(jqXHR, textStatus, errorThrown){errorMessage(textStatus +"<br>"+ errorThrown);}
@@ -227,8 +227,10 @@ var ClassNotes = function(viewerType,IdRepository,RepositoryName, IdFile, FileNa
             if($(xml).find("Notes").length>0)      
                 _BuildNotesTable(xml);
  
-            if($(xml).find("Error").length>0)
-                ErrorXml(xml);
+            if($(xml).find("Error").each(function(){
+                var message = $(this).find('Mensaje').text();
+                errorMessage(message);
+            }));
         },
         error: function(jqXHR, textStatus, errorThrown){errorMessage(textStatus +"<br>"+ errorThrown);}
    });

@@ -89,10 +89,11 @@ function imageProcessingToConvert(functionToExecute, DocEnvironment){
                 viewerInfo.viewerType = $(xml).find('viewerType').text();
            }
 
-           if($(xml).find("Error").length>0){
-               ErrorXml(xml);
-               return 0;
-           }
+            $(xml).find("Error").each(function(){
+                var mensaje = $(this).find('Mensaje').text();
+                errorMessage(mensaje);
+                return 0;
+            });
        },
        beforeSend:function(){          },
        error: function(jqXHR, textStatus, errorThrown){errorMessage(textStatus +"<br>"+ errorThrown);}
