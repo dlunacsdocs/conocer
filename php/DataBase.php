@@ -265,7 +265,7 @@ class DataBase {
                 . ")DEFAULT CHARSET=utf8";
 
         if (($catalogos = $this->ConsultaQuery($DataBaseName, $TablaCatalogos)) != 1)
-            return "<p><b>Error</b> al crear <b>Catálogos</b></p> Detalles: <br> $TablaCatalogos";
+            return "<p><b>Error</b> al crear <b>Catálogos</b></p> Detalles: <br> $catalogos";
 
         $TablaGlobalRepositorios = "CREATE TABLE IF NOT EXISTS RepositorioGlobal ("
                 . "IdGlobal INT NOT NULL AUTO_INCREMENT,"
@@ -489,7 +489,7 @@ class DataBase {
             echo "<p><b>Error</b> al insertar registros en <b>Menú Visor</b>. $ResultInsertIntoViewert</p>";
             return 0;
         }
-
+        
 
         return 1;
     }
