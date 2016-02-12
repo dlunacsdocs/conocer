@@ -196,7 +196,6 @@ function GetDetalle(Source, IdGlobal, IdFile)
 /************************ Lenado de ListSearch************************* */
 /****************************************************************************
     * Llena un div y se le inserta una tabla con la información de un catálogo tipo ListSearch (Catálogo)
-
     /**
      * @param {type} repositoryName
      * @param {type} xmlStruct
@@ -1060,4 +1059,4 @@ function getCatalogOptions(IdRepositorio,SelectCatalogos)
       beforeSend:function(){},
       error:function(objXMLHttpRequest){errorMessage(objXMLHttpRequest);}
     });
-}                
+}    

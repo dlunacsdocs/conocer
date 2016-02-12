@@ -32,16 +32,14 @@ function login()
 
             ($.parseXML(xml) === null) ? errorMessage(xml) : xml = $.parseXML(xml);
 
-            $(xml).find("StartSession").each(function ()
-            {
+            $(xml).find("StartSession").each(function (){
                 var IdUsuario = $(this).find("IdUsuario").text();
                 var NombreUsuario = $(this).find("Login").text();
                 var NombreGrupo = $(this).find("NombreGrupo").text();
                 var IdGrupo = $(this).find("IdGrupo").text();
                 var idInstance = $(this).find('idInstance').text();
                 var NombreInstancia = $("#select_login_instancias option:selected").html();
-                if (IdUsuario > 0)
-                {
+                if (IdUsuario > 0){
                     
                     $('<li><a href="#" id = "mainMenuUserIcon">' + NombreUsuario + '</a></li>').insertAfter('#barra_sup_username');
                     $($('<li/>').html('<a href="#all" title = "Usted se encuentra en la instancia ' + NombreInstancia + '">' + NombreInstancia + '</a>')).insertAfter('#barra_sup_username');
@@ -58,8 +56,8 @@ function login()
                     var users = new ClassUsers();
                     users.addUserLoggedPopover();
                     
-                    if (idInstance > 0)
-                    {
+                    if (idInstance > 0){
+                        userPermissions = $(xml).find('permissions');
                         var ApplyPermissions = Permissions.ApplyUserPermissions();
                         if (ApplyPermissions)
                             StartSystem();
@@ -152,10 +150,6 @@ function checkSessionExistance()
 
             });
             
-            
-            
-            
-
             $(xml).find("Error").each(function ()
             {
                 var mensaje = $(this).find("Mensaje").text();
