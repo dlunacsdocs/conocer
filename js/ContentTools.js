@@ -527,6 +527,13 @@ function PasteFile()
  */
 function ConfirmDelete()
 {
+    var idRepository = $('#CM_select_repositorios').val();
+    if(!parseInt(idRepository) > 0)
+        return Advertencia("No fue posible obtener el identificador del repositorio seleccionado");
+    
+    if(!validateRepositoryPermission(idRepository, 'b6d767d2f8ed5d21a44b0e5886680cb9'))
+        return Advertencia("No tiene permiso de realizar esta acción");
+
     var IdFile=$('#table_DetailResult tr.selected').attr('id'); 
     if(!(IdFile>0)){Advertencia('Seleccione antes un archivo'); return;}
     $('#div_confirmDelete').remove();
@@ -548,8 +555,7 @@ function ConfirmDelete()
 }
 
 function DeleteFile()
-{
-    
+{   
     var IdFile=$('#table_DetailResult tr.selected').attr('id'); 
     if(!(IdFile>0)){Advertencia('Seleccione antes un archivo'); return;}
     Loading();

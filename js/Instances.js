@@ -4,7 +4,7 @@
  * and open the template in the editor.
  */
 
-var userPermissions = {};
+var userPermissions = [];
 var EnvironmentData = new ClassEnvironmentData();
 var Repository = new ClassRepository();
 var Enterprise = new ClassEnterprise();
