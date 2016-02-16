@@ -356,8 +356,7 @@ class Catalog {
 
         for ($cont = 0; $cont < count($RepositoryFields); $cont++)
         {
-            if(strcasecmp($RepositoryFields[$cont]['Field'], $NombreCatalogo)==0)
-            {
+            if(strcasecmp($RepositoryFields[$cont]['Field'], $NombreCatalogo)==0){
                 echo "<p>El nombre del catálogo que quiere ingresar a este repositorio ya <b>existe</b></p>";
                 return 0;
             }                

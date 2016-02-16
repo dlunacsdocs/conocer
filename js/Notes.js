@@ -113,19 +113,19 @@ var ClassNotes = function(viewerType,IdRepository,RepositoryName, IdFile, FileNa
        data: 'opcion=getPagesWithNote&IdRepositorio='+self.IdRepository+"&IdFile="+self.IdFile, 
        success:  function(response)
        {   
-           if($.parseXML( response )===null){ Error(response); return 0;}else xml=$.parseXML( response );
+           if($.parseXML( response )===null){ errorMessage(response); return 0;}else xml=$.parseXML( response );
 
            if($(xml).find("Notes").length > 0)
                return xml;
 
-           if($(xml).find("Error").length>0)
-           {
-               ErrorXml(xml);
+           $(xml).find("Error").each(function(){
+               var mensaje = $(this).find('Mensaje').text();
+               errorMessage(mensaje);
                return 0;
-           }
+           });
        },
        beforeSend:function(){          },
-       error: function(jqXHR, textStatus, errorThrown){Error(textStatus +"<br>"+ errorThrown);}
+       error: function(jqXHR, textStatus, errorThrown){errorMessage(textStatus +"<br>"+ errorThrown);}
        });
        return xml;
    };
@@ -227,10 +227,12 @@ var ClassNotes = function(viewerType,IdRepository,RepositoryName, IdFile, FileNa
             if($(xml).find("Notes").length>0)      
                 _BuildNotesTable(xml);
  
-            if($(xml).find("Error").length>0)
-                ErrorXml(xml);
+            if($(xml).find("Error").each(function(){
+                var message = $(this).find('Mensaje').text();
+                errorMessage(message);
+            }));
         },
-        error: function(jqXHR, textStatus, errorThrown){Error(textStatus +"<br>"+ errorThrown);}
+        error: function(jqXHR, textStatus, errorThrown){errorMessage(textStatus +"<br>"+ errorThrown);}
    });
 
        $('.loading').remove();
@@ -342,7 +344,7 @@ var ClassNotes = function(viewerType,IdRepository,RepositoryName, IdFile, FileNa
        success:  function(response)
        {            
            $('#NotesPlaceWaiting').remove();
-           if($.parseXML( response )===null){ Error(response); return 0;}else xml=$.parseXML( response );         
+           if($.parseXML( response )===null){ errorMessage(response); return 0;}else xml=$.parseXML( response );         
 
            if($(xml).find("Note").length>0)
                return xml;
@@ -351,13 +353,13 @@ var ClassNotes = function(viewerType,IdRepository,RepositoryName, IdFile, FileNa
            $(xml).find("Error").each(function()
            {
                var mensaje=$(this).find("Mensaje").text();
-               Error(mensaje);
+               errorMessage(mensaje);
                $('#NotesPlaceWaiting').remove();
            });                 
 
        },
        beforeSend:function(){},
-       error: function(jqXHR, textStatus, errorThrown){$('#NotesPlaceWaiting').remove(); Error(textStatus +"<br>"+ errorThrown);}
+       error: function(jqXHR, textStatus, errorThrown){$('#NotesPlaceWaiting').remove(); errorMessage(textStatus +"<br>"+ errorThrown);}
        });      
        
        return xml;
@@ -485,7 +487,7 @@ var ClassNotes = function(viewerType,IdRepository,RepositoryName, IdFile, FileNa
        success:  function(xml)
        {                    
           $('#NotesPlaceWaiting').remove();
-          if($.parseXML( xml )===null){Error(xml); return 0;}else xml=$.parseXML( xml );   
+          if($.parseXML( xml )===null){errorMessage(xml); return 0;}else xml=$.parseXML( xml );   
 
           $(xml).find("AddNote").each(function(){
                var Mensaje = $(this).find('Mensaje').text();
@@ -545,12 +547,12 @@ var ClassNotes = function(viewerType,IdRepository,RepositoryName, IdFile, FileNa
           $(xml).find("Error").each(function()
            {
                var mensaje=$(this).find("Mensaje").text();
-               Error(mensaje);
+               errorMessage(mensaje);
            });  
        },
        beforeSend:function(){          
        },
-       error: function(jqXHR, textStatus, errorThrown){$('#NotesPlaceWaiting').remove(); Error(textStatus +"<br>"+ errorThrown);}
+       error: function(jqXHR, textStatus, errorThrown){$('#NotesPlaceWaiting').remove(); errorMessage(textStatus +"<br>"+ errorThrown);}
        });                    
    };
    
@@ -570,7 +572,7 @@ var ClassNotes = function(viewerType,IdRepository,RepositoryName, IdFile, FileNa
         success:  function(xml)
         {            
             $('#NotesPlaceWaiting').remove();
-                if($.parseXML( xml )===null){ Error(xml); return 0;}else xml=$.parseXML( xml );         
+                if($.parseXML( xml )===null){ errorMessage(xml); return 0;}else xml=$.parseXML( xml );         
 
             $(xml).find('ModifyNote').each(function()
             {
@@ -587,13 +589,13 @@ var ClassNotes = function(viewerType,IdRepository,RepositoryName, IdFile, FileNa
             $(xml).find("Error").each(function()
             {
                 var mensaje=$(this).find("Mensaje").text();
-                Error(mensaje);
+                errorMessage(mensaje);
                 $('#NotesPlaceWaiting').remove();
             });                 
 
         },
         beforeSend:function(){},
-        error: function(jqXHR, textStatus, errorThrown){$('#NotesPlaceWaiting').remove(); Error(textStatus +"<br>"+ errorThrown);}
+        error: function(jqXHR, textStatus, errorThrown){$('#NotesPlaceWaiting').remove(); errorMessage(textStatus +"<br>"+ errorThrown);}
         });      
        
    };
@@ -642,7 +644,7 @@ var ClassNotes = function(viewerType,IdRepository,RepositoryName, IdFile, FileNa
         success:  function(xml)
         {            
             $('#NotesPlaceWaiting').remove();
-                if($.parseXML( xml )===null){ Error(xml); return 0;}else xml=$.parseXML( xml );         
+                if($.parseXML( xml )===null){ errorMessage(xml); return 0;}else xml=$.parseXML( xml );         
 
             $(xml).find('DeleteNote').each(function()
             {
@@ -667,13 +669,13 @@ var ClassNotes = function(viewerType,IdRepository,RepositoryName, IdFile, FileNa
             $(xml).find("Error").each(function()
             {
                 var mensaje=$(this).find("Mensaje").text();
-                Error(mensaje);
+                errorMessage(mensaje);
                 $('#NotesPlaceWaiting').remove();
             });                 
 
         },
         beforeSend:function(){},
-        error: function(jqXHR, textStatus, errorThrown){$('#NotesPlaceWaiting').remove(); Error(textStatus +"<br>"+ errorThrown);}
+        error: function(jqXHR, textStatus, errorThrown){$('#NotesPlaceWaiting').remove(); errorMessage(textStatus +"<br>"+ errorThrown);}
         });      
    };
    
@@ -705,7 +707,7 @@ ClassNotes.prototype.getNotesPerPage = function(pageNumber){
             $(xml).find("Error").each(function()
             {
                 var mensaje=$(this).find("Mensaje").text();
-                Error(mensaje);
+                errorMessage(mensaje);
             });                 
 
         },

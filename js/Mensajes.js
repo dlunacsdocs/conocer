@@ -43,10 +43,7 @@ function Salida(mensaje)
 }
 function Error(mensaje)
 {
-    var div = $('<div>').append('<center><img src="img/fallo.png"></center>');
-    div.append(mensaje);
-    
-    div.dialog(WindowError);
+    console.log(mensaje);
 }
 
 function errorMessage(mensaje)
@@ -115,39 +112,3 @@ function Loading()
     $('#Loading').dialog(WindowLoading);    
 //    ''
 }
-
-/*
- * Error cuando la respuesta viene en formato XML
- */
-function ErrorXml(xml)
-{
-    $('#MensajeErrorXml').dialog(WindowError);
-    $('#MensajeErrorXml').empty();
-    $('#MensajeErrorXml').append('<center><img src="img/fallo.png"></center>');
-       
-    $(xml).find("Error").each(function()
-    {
-        var $Error=$(this);
-        var estado=$Error.find("Estado").text();
-        var mensaje=$Error.find("Mensaje").text();
-        $('#MensajeErrorXml').append(mensaje);
-        return;
-    });   
-}
-
-function ExitoXml(xml)
-{
-    $('#MensajeExitoXml').dialog(WindowExito);
-    $('#MensajeExitoXml').empty();
-    $('#MensajeExitoXml').append('<center><img src="img/success.png" width="80px" heigth="80px"></center>');
-       
-    $(xml).find("Exito").each(function()
-    {
-        var $Instancias=$(this);
-        var estado=$Instancias.find("Estado").text();
-        var mensaje=$Instancias.find("Mensaje").text();
-        $('#MensajeExitoXml').append(mensaje);
-        return;
-    });   
-}
-

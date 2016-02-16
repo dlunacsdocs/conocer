@@ -33,12 +33,13 @@ class Permissions {
             switch (filter_input(INPUT_POST, "opcion"))
             {
 
-                case 'GetUserPermissions':$this->GetUserPermissions(); break;
+                case 'GetUserPermissions':$this->GetUserPermissions($userData); break;
                 case 'ApplyPermissionsSettingsOfGroup':$this->ApplyPermissionsSettingsOfGroup($userData); break;
                 case 'GetPermissionsMenuList': $this->GetPermissionsMenuList(); break;
                 case 'GetRepositoryAccessList':$this->GetRepositoryAccessList($userData); break;
                 case 'GetAccessPermissionsList':$this->GetAccessPermissionsList($userData); break;
-                case 'GetToolsOptions':$this->GetToolsOptions($userData); break;            
+                case 'GetToolsOptions':$this->GetToolsOptions($userData); break;      
+                case 'getAllUserPermissions': $this->getAllUserPermissions($userData); break;
             }
         }
     }
@@ -84,30 +85,33 @@ class Permissions {
         
     }    
     
-    private function GetUserPermissions()
-    {
-        $XML =new XML(); $BD = new DataBase(); 
-        
-        $DataBaseName = filter_input(INPUT_POST, "DataBaseName");
-        $IdUsuario = filter_input(INPUT_POST, "IdUsuario");
-        $NombreUsuario =  filter_input(INPUT_POST, "NombreUsuario");     
-        $IdGrupo = filter_input(INPUT_POST, "IdGrupo");
-        $NombreGrupo = filter_input(INPUT_POST, "nNombreGrupo");
+    private function GetUserPermissions($userData)
+    {        
+        $DataBaseName = $userData['dataBaseName'];
+        $IdUsuario = $userData['idUser'];
+        $NombreUsuario =  $userData['userName'];
+        $IdGrupo = $userData['idGroup'];
+        $NombreGrupo = $userData['groupName'];
         $IdRepositorio = filter_input(INPUT_POST, "IdRepositorio");
         $RoutFile = dirname(getcwd());        
 
-        $ArrayAccessPermissions = array(); $ArraySystemMenus = array(); 
+        $ArrayAccessPermissions = array(); 
+        $ArraySystemMenus = array(); 
         
         $IfComeplement_= '';
         
         if(!file_exists("$RoutFile/Estructuras/$DataBaseName"))
             return XML::XMLReponse ("limitedAccess", 1, "Acceso a Diseñador de Formas");
         
-        if($IdGrupo>0)
+        if((int)$IdGrupo>0)
             $IfComeplement_.=" smc.IdGrupo = $IdGrupo AND";
-        if($IdRepositorio > 0)
+        
+        if((int)$IdRepositorio > 0)
             $IfComeplement_.="  smc.IdRepositorio = $IdRepositorio AND";
-
+        
+        if(strlen($IfComeplement_) > 0)
+            $IfComeplement_ = " WHERE $IfComeplement_";
+        
         $IfComeplement = trim($IfComeplement_, "AND");        
         
         if(strcasecmp($IdUsuario, 1)==0 and strcasecmp($NombreUsuario, "root")==0)
@@ -117,40 +121,32 @@ class Permissions {
         else
             $QueryListPermissions = "SELECT smc.IdMenu, smc.IdGrupo, smc.IdUsuario, smc.IdRepositorio, sm.Nombre "
                                 . "FROM SystemMenuControl smc INNER JOIN SystemMenu sm ON smc.IdMenu = sm.IdMenu "
-                                . "WHERE $IfComeplement";        
+                                . " $IfComeplement";        
+
+        $ResultQueryListPermissions = $this->db->ConsultaSelect($DataBaseName, $QueryListPermissions);
         
-        $ResultQueryListPermissions = $BD->ConsultaSelect($DataBaseName, $QueryListPermissions);
         if($ResultQueryListPermissions['Estado']!=1)
-        {
-            $XML->ResponseXML("Error", 0, "<p><b>Error</b> al obtener los permisos del usuario</p><br><br>Detalles:<br><br>".$ResultQueryListPermissions['Estado']);
-            return 0;
-        }                
+            XML::XMLReponse("Error", 0, "<p><b>Error</b> al obtener los permisos del usuario</p><br><br>Detalles:<br><br>".$ResultQueryListPermissions['Estado']);
          
-        for($cont = 0; $cont < count($ResultQueryListPermissions['ArrayDatos']); $cont++)
-        {
+        for($cont = 0; $cont < count($ResultQueryListPermissions['ArrayDatos']); $cont++){
             $ArrayAccessPermissions[$ResultQueryListPermissions['ArrayDatos'][$cont]['IdMenu']] = array("IdMenu"=>$ResultQueryListPermissions['ArrayDatos'][$cont]['IdMenu'], "Nombre"=>$ResultQueryListPermissions['ArrayDatos'][$cont]['Nombre']);
         }
         
         $GetSystemMenu = "SELECT *FROM SystemMenu";
-        $ResultGetSystemMenu = $BD->ConsultaSelect($DataBaseName, $GetSystemMenu);
-        if($ResultGetSystemMenu['Estado']!=1)
-        {
-            $XML->ResponseXML("Error", 0, "<p><b>Error</b> al obtener los Menús del Sistema</p><br><br>Detalles:<br><br>".$ResultGetSystemMenu['Estado']);
-            return 0;
-        }        
+        $ResultGetSystemMenu = $this->db->ConsultaSelect($DataBaseName, $GetSystemMenu);
         
-        for($cont = 0; $cont < count($ResultGetSystemMenu['ArrayDatos']); $cont++)
-        {
+        if($ResultGetSystemMenu['Estado']!=1)
+            XML::XMLReponse("Error", 0, "<p><b>Error</b> al obtener los Menús del Sistema</p><br><br>Detalles:<br><br>".$ResultGetSystemMenu['Estado']);
+        
+        for($cont = 0; $cont < count($ResultGetSystemMenu['ArrayDatos']); $cont++){
             $ArraySystemMenus[$ResultGetSystemMenu['ArrayDatos'][$cont]['IdMenu']] = array("IdMenu"=>$ResultGetSystemMenu['ArrayDatos'][$cont]['IdMenu'], "Nombre"=>$ResultGetSystemMenu['ArrayDatos'][$cont]['Nombre']);
         }              
                 
         $ArrayDeniedPermissions = array_diff_key($ArraySystemMenus, $ArrayAccessPermissions);
         $ArrayPermissionsFile = $this->GetPermissionsFile();
+        
         if(!is_array($ArrayPermissionsFile))
-        {
-            $XML->ResponseXML("Error", 0, "<p><b>Error</b> al abrír el documento con la lista de menús del sistema");            
-            return 0;
-        }
+            XML::XMLReponse("Error", 0, "<p><b>Error</b> al abrír el documento con la lista de menús del sistema");            
         
         $doc  = new DOMDocument('1.0','utf-8');
         $doc->formatOutput = true;
@@ -158,8 +154,7 @@ class Permissions {
         $doc->appendChild($root); 
         
         if(count($ArrayDeniedPermissions)>0)
-            foreach ($ArrayDeniedPermissions as $value)
-            {
+            foreach ($ArrayDeniedPermissions as $value){
                 $DeniedPermissions = $doc->createElement("DeniedPermissions");
                 $Denied = $doc->createElement("IdMenu", $value['IdMenu']);
                 $DeniedPermissions ->appendChild($Denied);
@@ -169,8 +164,7 @@ class Permissions {
             }
         
         if(count($ArrayAccessPermissions)>0)
-            foreach ($ArrayAccessPermissions as $value)
-            {
+            foreach ($ArrayAccessPermissions as $value){
                 $AccesPermissions = $doc->createElement("AccessPermissions");
                 $Acces = $doc->createElement("IdMenu", $value['IdMenu']);
                 $AccesPermissions->appendChild($Acces);
@@ -178,9 +172,9 @@ class Permissions {
                 $AccesPermissions->appendChild($Name);
                 $root->appendChild($AccesPermissions);
             }
+            
         if(count($ArrayPermissionsFile)>0)
-            foreach ($ArrayPermissionsFile as $key =>$value)
-            {
+            foreach ($ArrayPermissionsFile as $key =>$value){
                 $HtmlPermissionName = $doc->createElement("HtmlPermissionsName");
                 $html = $doc->createElement("HtmlPermissionName", $value);
                 $HtmlPermissionName->appendChild($html);
@@ -425,6 +419,40 @@ class Permissions {
         
         
         
+    }
+    
+    private function getAllUserPermissions($userData){
+        
+    }
+    
+    /**
+     * @description Devuelve el listado completo de permisos de un usuario.
+     * @param type $userData
+     */
+    public function getAllUserPermissionsArray($userData){
+        $instanceName = $userData['dataBaseName'];
+        $idUser = $userData['idUser'];
+        $idUserGroup = $userData['idGroup'];
+        
+        if(!(int) $idUser > 0)
+            return XML::XMLReponse ("Error", 0, "<p><b>Error</b> el usuario no tiene un identificador válido.</p>");
+        
+        if(!(int) $idUserGroup > 0)
+            return XML::XMLReponse ("Error", 0, "<p><b>Error</b> el usuario no pertence a ningún grupo</p>");
+        
+        $select = "
+            SELECT sm.*, smc.IdMenuControl, rc.IdRepositorio, cr.NombreRepositorio 
+            FROM SystemMenu sm LEFT JOIN SystemMenuControl smc ON sm.IdMenu = smc.IdMenu 
+            LEFT JOIN RepositoryControl rc ON smc.IdGrupo = rc.IdGrupo 
+            LEFT JOIN CSDocs_Repositorios cr ON rc.IdRepositorio = cr.IdRepositorio WHERE smc.IdGrupo = $idUserGroup
+                ";
+        
+        $selectResult = $this->db->ConsultaSelect($instanceName, $select);
+        
+        if($selectResult['Estado'] != 1)
+            return XML::XMLReponse ("Error", 0, "<p></b>Error</b> al obtener los permisos del usuario</p> Detalles:<br>".$selectResult['Estado']);
+        
+        return $selectResult['ArrayDatos'];
     }
 }
 

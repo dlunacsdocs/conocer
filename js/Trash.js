@@ -180,11 +180,11 @@ function ListDeleted()
                 var $Error=$(this);
                 var estado=$Error.find("Estado").text();
                 var mensaje =$Error.find("Mensaje").text();
-                Error(mensaje);
+                errorMessage(mensaje);
             });                
       },
       beforeSend:function(){},
-      error:function(objXMLHttpRequest){Error(objXMLHttpRequest);}
+      error:function(objXMLHttpRequest){errorMessage(objXMLHttpRequest);}
     });
 }
 
@@ -418,11 +418,11 @@ function RestoreTrashed()
                 var $Error=$(this);
                 var estado=$Error.find("Estado").text();
                 var mensaje =$Error.find("Mensaje").text();
-                Error(mensaje);
+                errorMessage(mensaje);
             });                
       },
       beforeSend:function(){},
-      error:function(objXMLHttpRequest){Error(objXMLHttpRequest);}
+      error:function(objXMLHttpRequest){errorMessage(objXMLHttpRequest);}
     });
     
 }
@@ -482,12 +482,12 @@ function CancelRestoreDir(PathStatus,PathAdvancing,KeyProcess)
                 var $Error=$(this);
                 var estado=$Error.find("Estado").text();
                 var mensaje=$Error.find("Mensaje").text();
-                Error(mensaje);
+                errorMessage(mensaje);
             });     
             
       },
       beforeSend:function(){},
-      error:function(objXMLHttpRequest){Error(objXMLHttpRequest);$('#DeletePathAdvancing').dialog('close');}
+      error:function(objXMLHttpRequest){errorMessage(objXMLHttpRequest);$('#DeletePathAdvancing').dialog('close');}
     });
 }
 
@@ -536,7 +536,7 @@ function ProgressRestoreDir(PathAdvancing,KeyProcess)
                 var estado=$Error.find("Estado").text();
                 var mensaje =$Error.find("Mensaje").text();
                 $('#'+KeyProcess).dialog('close');
-                Error(mensaje);
+                errorMessage(mensaje);
                 clearInterval(Process[KeyProcess]);
                 ListDeleted();
             });       
@@ -556,7 +556,7 @@ function ProgressRestoreDir(PathAdvancing,KeyProcess)
             Notificacion("Restauración de directorio(s) finalizada.","Se restauraron los diguientes directorios:<br>"+Directories); 
       },
       beforeSend:function(){},
-      error:function(objXMLHttpRequest){Error(objXMLHttpRequest);$('#'+KeyProcess).dialog('close');clearInterval(Process[KeyProcess]);ListDeleted();}
+      error:function(objXMLHttpRequest){errorMessage(objXMLHttpRequest);$('#'+KeyProcess).dialog('close');clearInterval(Process[KeyProcess]);ListDeleted();}
     });
 }
 
@@ -587,12 +587,12 @@ function CancelRestoringOfFiles(PathStatus,PathAdvancing,KeyProcess)
                 var $Error=$(this);
                 var estado=$Error.find("Estado").text();
                 var mensaje=$Error.find("Mensaje").text();
-                Error(mensaje);
+                errorMessage(mensaje);
             });     
             
       },
       beforeSend:function(){},
-      error:function(objXMLHttpRequest){Error(objXMLHttpRequest);$('#DeletePathAdvancing').dialog('close');}
+      error:function(objXMLHttpRequest){errorMessage(objXMLHttpRequest);$('#DeletePathAdvancing').dialog('close');}
     });
 }
 
@@ -640,7 +640,7 @@ function ProgressRestoreFiles(PathAdvancing,KeyProcess)
                 var estado=$Error.find("Estado").text();
                 var mensaje =$Error.find("Mensaje").text();
                 $('#'+KeyProcess).dialog('close');
-                Error(mensaje);
+                errorMessage(mensaje);
                 clearInterval(Process[KeyProcess]);
                 ListDeleted();
             });       
@@ -660,7 +660,7 @@ function ProgressRestoreFiles(PathAdvancing,KeyProcess)
             Notificacion("Restauración de Documento(s) finalizada.","Se restauraron los diguientes documentos:<br>"+Directories); 
       },
       beforeSend:function(){},
-      error:function(objXMLHttpRequest){Error(objXMLHttpRequest);$('#'+KeyProcess).dialog('close');clearInterval(Process[KeyProcess]);ListDeleted();}
+      error:function(objXMLHttpRequest){errorMessage(objXMLHttpRequest);$('#'+KeyProcess).dialog('close');clearInterval(Process[KeyProcess]);ListDeleted();}
     });
 }
 
@@ -803,11 +803,11 @@ function EmptyTrash()
                 var $Error=$(this);
                 var estado=$Error.find("Estado").text();
                 var mensaje =$Error.find("Mensaje").text();
-                Error(mensaje);
+                errorMessage(mensaje);
             });                
       },
       beforeSend:function(){},
-      error:function(objXMLHttpRequest){Error(objXMLHttpRequest);}
+      error:function(objXMLHttpRequest){errorMessage(objXMLHttpRequest);}
     });
 }
 
@@ -831,12 +831,12 @@ function CancelService(PathStatus,PathAdvancing,KeyProcess)
                 var $Error=$(this);
                 var estado=$Error.find("Estado").text();
                 var mensaje=$Error.find("Mensaje").text();
-                Error(mensaje);
+                errorMessage(mensaje);
             });     
             
       },
       beforeSend:function(){},
-      error:function(objXMLHttpRequest){Error(objXMLHttpRequest);$('#DeletePathAdvancing').dialog('close');}
+      error:function(objXMLHttpRequest){errorMessage(objXMLHttpRequest);$('#DeletePathAdvancing').dialog('close');}
     });
 }
 
@@ -919,7 +919,7 @@ function CheckProgress(OperationName,PathAdvancing,KeyProcess)
                 var estado=$Error.find("Estado").text();
                 var mensaje =$Error.find("Mensaje").text();
                 $('#'+KeyProcess).dialog('close');
-                Error(mensaje);
+                errorMessage(mensaje);
                 clearInterval(Process[KeyProcess]);
                 ListDeleted();
             });       
@@ -940,6 +940,6 @@ function CheckProgress(OperationName,PathAdvancing,KeyProcess)
              
       },
       beforeSend:function(){},
-      error:function(objXMLHttpRequest){Error(objXMLHttpRequest);$('#'+KeyProcess).dialog('close');clearInterval(Process[KeyProcess]);ListDeleted();}
+      error:function(objXMLHttpRequest){errorMessage(objXMLHttpRequest);$('#'+KeyProcess).dialog('close');clearInterval(Process[KeyProcess]);ListDeleted();}
     });
 }

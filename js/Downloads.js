@@ -72,7 +72,7 @@ var Downloads = function()
             data: 'option=Download&XmlDownload='+Xml+'&DataBaseName='+EnvironmentData.DataBaseName+'&IdUser='+EnvironmentData.IdUsuario+'&UserName='+EnvironmentData.NombreUsuario, 
             success:  function(xml){
                 $('#LoadingIconDownload').remove();
-                if($.parseXML( xml )===null){Error(xml); return 0;}else xml=$.parseXML( xml );                
+                if($.parseXML( xml )===null){errorMessage(xml); return 0;}else xml=$.parseXML( xml );                
                $(xml).find("Download").each(function()
                 {          
                     var $Download=$(this);
@@ -84,12 +84,12 @@ var Downloads = function()
                 $(xml).find("Error").each(function()
                 {
                     var mensaje = $(this).find("Mensaje").text();
-                    Error(mensaje);
+                    errorMessage(mensaje);
                 });
 
             },
             beforeSend:function(){},
-            error: function(jqXHR, textStatus, errorThrown){Error(textStatus +"<br>"+ errorThrown);}
+            error: function(jqXHR, textStatus, errorThrown){errorMessage(textStatus +"<br>"+ errorThrown);}
         });        
     };
     

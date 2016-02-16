@@ -3,7 +3,7 @@
  * To change this template file, choose Tools | Templates
  * and open the template in the editor.
  */
-/* global TableContentDT, TableContentdT, EnvironmentData, EnvironmentData, Random, CatalogContent, DataTable */
+/* global TableContentDT, TableContentdT, EnvironmentData, EnvironmentData, Random, DataTable */
 
 var CM_Carga={width:300, height:500, minWidth:300, minHeight:300,modal:true, title:"Carga de Archivo",
     buttons: {Aceptar: function() {$( this ).dialog( "close" );$( this ).dialog( "destroy" );}}};
@@ -88,7 +88,7 @@ var ClassTools = function()
             Salida(xml);
         },
         beforeSend:function(){},
-        error: function(jqXHR, textStatus, errorThrown) {Error(textStatus +"<br>"+ errorThrown);}
+        error: function(jqXHR, textStatus, errorThrown) {errorMessage(textStatus +"<br>"+ errorThrown);}
         });
     };
     
@@ -105,7 +105,7 @@ var ClassTools = function()
         data: 'opcion=CheckMassiveUploadIncomplete&DataBaseName='+EnvironmentData.DataBaseName+'&IdUser='+EnvironmentData.IdUsuario+'&UserName='+EnvironmentData.NombreUsuario, 
         success:  function(response){
 
-            if($.parseXML( response )===null){ Error(response); return 0;}else xml=$.parseXML( response );
+            if($.parseXML( response )===null){ errorMessage(response); return 0;}else xml=$.parseXML( response );
 
             $(xml).find("Exist").each(function()/* Sí existen archivos pendientes */ 
             {                
@@ -123,12 +123,12 @@ var ClassTools = function()
                 var $Error=$(this);
                 var estado=$Error.find("Estado").text();
                 var mensaje=$Error.find("Mensaje").text();
-                Error(mensaje);
+                errorMessage(mensaje);
                 xml = 0;
             });       
         },
         beforeSend:function(){},
-        error: function(jqXHR, textStatus, errorThrown) {Error(textStatus +"<br>"+ errorThrown);}
+        error: function(jqXHR, textStatus, errorThrown) {errorMessage(textStatus +"<br>"+ errorThrown);}
         });
 
         return xml;
@@ -149,7 +149,7 @@ var ClassTools = function()
             Salida(xml);
         },
         beforeSend:function(){},
-        error: function(jqXHR, textStatus, errorThrown) {Error(textStatus +"<br>"+ errorThrown);}
+        error: function(jqXHR, textStatus, errorThrown) {errorMessage(textStatus +"<br>"+ errorThrown);}
         });
     };
 };
@@ -230,7 +230,7 @@ function CheckMassiveLoadPending()
     data: 'opcion=CheckMassiveLoadPending&IdRepositorio='+IdRepositorio+'&DataBaseName='+EnvironmentData.DataBaseName+'&id_usuario='+EnvironmentData.IdUsuario+'&nombre_usuario='+EnvironmentData.NombreUsuario+'&NombreRepositorio='+NombreRepositorio+'&Path='+Path+'&IdParent='+IdParent+'&IdDirectory='+IdDirectory+'&IdEmpresa='+IdEmpresa+"&Random="+Random+"&NombreEmpresa="+NombreEmpresa, 
     success:  function(xml){
         $('#Loading').dialog('close');
-        if($.parseXML( xml )===null){ Error(xml); return 0;}else xml=$.parseXML( xml );
+        if($.parseXML( xml )===null){ errorMessage(xml); return 0;}else xml=$.parseXML( xml );
         $(xml).find("MassiveLoad").each(function()
         {                                   
             var $Carga=$(this);
@@ -253,11 +253,11 @@ function CheckMassiveLoadPending()
             var $Error=$(this);
             var estado=$Error.find("Estado").text();
             var mensaje=$Error.find("Mensaje").text();
-            Error(mensaje);
+            errorMessage(mensaje);
         });       
     },
     beforeSend:function(){},
-    error: function(jqXHR, textStatus, errorThrown) {Error(textStatus +"<br>"+ errorThrown);}
+    error: function(jqXHR, textStatus, errorThrown) {errorMessage(textStatus +"<br>"+ errorThrown);}
     });
 }
 
@@ -310,7 +310,7 @@ function AnswerOfUserML(Answer)
                     var $Error=$(this);
                     var estado=$Error.find("Estado").text();
                     var mensaje=$Error.find("Mensaje").text();
-                    Error(mensaje);
+                    errorMessage(mensaje);
                 });       
             }
             else
@@ -447,7 +447,7 @@ function PasteFile()
     data: opcion+'&IdRepositorio='+IdRepositorio+'&NombreRepositorio='+NombreRepositorio+'&Path='+Path+'&IdParent='+IdParent+'&IdDirectory='+IdDirectory+'&IdEmpresa='+IdEmpresa+"&NombreDirectorio="+NombreDirectorio+'&NombreEmpresa='+NombreEmpresa, 
     success:  function(xml){   
       $('#Loading').dialog('close');
-      if($.parseXML( xml )===null){Error(xml);return 0;}else xml=$.parseXML( xml );
+      if($.parseXML( xml )===null){errorMessage(xml);return 0;}else xml=$.parseXML( xml );
 
          $(xml).find("Paste").each(function()
         {
@@ -511,11 +511,11 @@ function PasteFile()
             var $Error=$(this);
             var estado=$Error.find("Estado").text();
             var mensaje=$Error.find("Mensaje").text();
-            Error(mensaje);
+            errorMessage(mensaje);
         });   
     },
     beforeSend:function(){},
-    error:function(objXMLHttpRequest){Error(objXMLHttpRequest); $('#Loading').dialog('close');}
+    error:function(objXMLHttpRequest){errorMessage(objXMLHttpRequest); $('#Loading').dialog('close');}
     });
     
     
@@ -527,6 +527,13 @@ function PasteFile()
  */
 function ConfirmDelete()
 {
+    var idRepository = $('#CM_select_repositorios').val();
+    if(!parseInt(idRepository) > 0)
+        return Advertencia("No fue posible obtener el identificador del repositorio seleccionado");
+    
+    if(!validateRepositoryPermission(idRepository, 'b6d767d2f8ed5d21a44b0e5886680cb9'))
+        return Advertencia("No tiene permiso de realizar esta acción");
+
     var IdFile=$('#table_DetailResult tr.selected').attr('id'); 
     if(!(IdFile>0)){Advertencia('Seleccione antes un archivo'); return;}
     $('#div_confirmDelete').remove();
@@ -548,8 +555,7 @@ function ConfirmDelete()
 }
 
 function DeleteFile()
-{
-    
+{   
     var IdFile=$('#table_DetailResult tr.selected').attr('id'); 
     if(!(IdFile>0)){Advertencia('Seleccione antes un archivo'); return;}
     Loading();
@@ -573,7 +579,7 @@ function DeleteFile()
       data: "opcion=DeleteFile&IdRepositorio="+IdRepositorio+'&NombreRepositorio='+NombreRepositorio+'&Path='+Path+'&IdParent='+IdParent+'&IdDirectory='+IdDirectory+'&IdEmpresa='+IdEmpresa+'&IdFile='+IdFile, 
       success:  function(xml){   
           $('#Loading').dialog('close');
-          if($.parseXML( xml )===null){Error(xml);return 0;}else xml=$.parseXML( xml );
+          if($.parseXML( xml )===null){errorMessage(xml);return 0;}else xml=$.parseXML( xml );
           
              $(xml).find("DeleteFile").each(function()
             {
@@ -588,11 +594,11 @@ function DeleteFile()
                 var $Error=$(this);
                 var estado=$Error.find("Estado").text();
                 var mensaje=$Error.find("Mensaje").text();
-                Error(mensaje);
+                errorMessage(mensaje);
             });   
       },
       beforeSend:function(){},
-      error:function(objXMLHttpRequest){Error(objXMLHttpRequest); $('#Loading').dialog('close');}
+      error:function(objXMLHttpRequest){errorMessage(objXMLHttpRequest); $('#Loading').dialog('close');}
     });
 }
 
@@ -660,7 +666,7 @@ function FileEditPhp()
       data: 'opcion=FileEdit&IdRepositorio='+IdRepositorio+'&NombreRepositorio='+NombreRepositorio+"&Ruta="+Ruta+"&NombreArchivoNuevo="+NombreArchivoNuevo+"&IdFile="+IdFile+"&NombreArchivoActual="+NombreArchivoActual, 
       success:  function(xml){   
           $('#Loading').dialog('close');
-          if($.parseXML( xml )===null){Error(xml);return 0;}else xml=$.parseXML( xml );
+          if($.parseXML( xml )===null){errorMessage(xml);return 0;}else xml=$.parseXML( xml );
            
              $(xml).find("FileEdit").each(function()
             {
@@ -688,7 +694,7 @@ function FileEditPhp()
                 var $Instancias=$(this);
                 var estado=$Instancias.find("Estado").text();
                 var mensaje=$Instancias.find("Mensaje").text();
-                Error(mensaje);
+                errorMessage(mensaje);
             });     
             
             $(xml).find("Advertencia").each(function()
@@ -700,6 +706,6 @@ function FileEditPhp()
             }); 
       },
       beforeSend:function(){},
-      error:function(objXMLHttpRequest){Error(objXMLHttpRequest); $('#Loading').dialog('close');}
+      error:function(objXMLHttpRequest){errorMessage(objXMLHttpRequest); $('#Loading').dialog('close');}
     });        
 }

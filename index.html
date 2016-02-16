@@ -22,24 +22,19 @@ and open the template in the editor.
         <link rel="stylesheet" type="text/css" media="screen" href="apis/DataTables/media/css/jquery.dataTables.css"/> 
         <link rel="stylesheet" type="text/css" media="screen" href="apis/DataTables/extensions/TableTools/css/dataTables.tableTools.css"/>
         
+        <script type="text/javascript" src="apis/js/jquery-2.0.0.min.js"></script>    
         
-        
-        <script type="text/javascript" src="apis/js/jquery-2.0.0.min.js"></script>           
-        
-
-        
+        <script type="text/javascript" src="apis/hash/md5.js"></script>        
         <script src="apis/bootstrap-3.3.5/js/bootstrap.min.js"></script>
         <script src="apis/bootstrap-3.3.5/js/bootstrap-modal-popover.js"></script>
         <script src="apis/bootstrap-3.3.5/js/bootstrap-popover-x.min.js"></script>
         <script src="apis/bootstrap3-dialog/js/bootstrap-dialog.js"></script>
         
+        <link rel="stylesheet" href="apis/font-awesome-4.5.0/css/font-awesome.min.css">
         <link rel="stylesheet" href="apis/jquery-ui/jquery-ui.css" />
         <script src="apis/jquery-ui/jquery-ui.min.js"></script>
         <script type="text/javascript" src="apis/dialogExtend-2.0.4/jquery.dialogextend.min.js"></script>
-        
-        <!--<script src="apis/zohoviewer/jquery.zohoviewer.min.js" type="text/javascript"></script>-->
-        
-        <!--<script src="apis/arbol/jquery.cookie.js" type="text/javascript"></script>-->
+                
         <link href="apis/arbol/skin-vista/ui.dynatree.css" rel="stylesheet" type="text/css">
         <script src="apis/arbol/jquery.dynatree.min.js" type="text/javascript"></script>
 
@@ -48,7 +43,7 @@ and open the template in the editor.
         <script type="text/javascript" charset="utf-8" src="apis/DataTables/media/js/jquery.dataTables.min.js"></script>
         <script type="text/javascript" charset="utf-8" src="apis/DataTables/extensions/TableTools/js/dataTables.tableTools.min.js"></script>
         <script type="text/javascript" charset="utf-8" src="apis/DataTables-10.9/dataTables.bootstrap.js"></script>
-        <!--*****************imprimir **************-->
+   
         <script type="text/javascript" charset="utf-8" src="apis/js/jquery.PrintArea.js"></script>
 
         <!--*********************************Mail************************************** -->
@@ -225,42 +220,6 @@ and open the template in the editor.
             <div id="div_progress" style="display:none"><div id="ProgressBar"></div></div>
             <div id="PanelChat"></div>   
 
-            <!--*************************************************************************
-            *                           CONSOLA DE USUARIOS                             *
-            **************************************************************************-->
-            <div id="div_consola_users" style="display: none">
-                <div class="menu_lateral">            
-                    <div id="accordion_users">
-                        <div>  
-                            <h3><a href="#">Usuarios</a></h3> 
-                            <div>
-                                <table id = "UserManagementTable" class="TableInsideAccordion">
-                                    <thead>
-                                        <tr>
-                                            <th></th>
-                                            <th></th>
-                                        </tr>
-                                    </thead>
-                                    <tr id="tr_NewUser">
-                                        <td><img src="img/user_add.png"></td>
-                                        <td>Nuevo Usuario</td>
-                                    </tr>
-                                    <tr id="tr_UsersList">
-                                        <td><img src="img/users.png"></td>
-                                        <td>Usuarios</td>
-                                    </tr>
-                                    <tr id="tr_GroupsUsers">
-                                        <td><img src="img/users.png"></td>
-                                        <td>Grupos</td>
-                                    </tr>
-                                </table>
-                            </div>
-                        </div>     
-                    </div>
-                </div>
-                <div class="work_space" id="WS_Users"></div>
-            </div>
-
             <div class="dock" id="dock_">
                 <ul>
                     <li id="Help_info_help">
@@ -370,77 +329,6 @@ and open the template in the editor.
                     </ul>
                 </nav>
             </header>
-
-
-            <div id="div_mail"></div>    
-
-
-
-            <div id="div_UsersGroups" class="div_UsersFromGroups"></div>
-            <div id="div_GetUsersDiffGroup" class=""></div>
-
-            <!--*************************************************************************
-            *                           CONSOLA DE CATALOGOS                            *
-            **************************************************************************-->
-            <div id="div_consola_catalogos" style="display: none">
-                <div class="menu_lateral">            
-                    <div id="AccordionCatalogs">
-                        <div>  
-                            <h3><a href="#">Catálogos</a></h3> 
-                            <div>
-                                <table id ="TableAccordionCatalogs" class = "TableInsideAccordion">
-                                    <thead>
-                                        <tr>
-                                            <th></th>
-                                            <th></th>
-                                        </tr>
-                                    </thead>
-                                    <tr id="tr_NewCatalogo" title="Nuevo Catalogo">
-                                        <td><img src="img/CatalogoAgregar.png" ></td>
-                                        <td>Nuevo Catálogo</td>
-                                    </tr>
-                                    <tr id="tr_ViewCatalog" title="Vista de un Catálogo">
-                                        <td><img src="img/CatalogoAgregar.png"></td>
-                                        <td>Consultar</td>
-                                    </tr>
-                                    <tr id="tr_Catalogos" title="Catalogos">
-                                        <td><img src="img/Catalogo.png"></td>
-                                        <td>Catálogos</td>
-                                    </tr>    
-                                    <tr>
-                                        <td colspan="2"><div id="consola_catalogos_tree"></div></td>
-                                    </tr>
-                                </table>
-                            </div>
-                        </div>     
-                    </div>
-                </div>
-                <div class="work_space" id="WS_Catalogo"></div>
-            </div>
-
-            <!-- ***************************************************************************
-            *                       OPCION: CREAR NUEVA INSTANCIA BD                        *
-            ******************************************************************************-->
-
-            <div id="window_crear_instanciaBD" style="display: none">
-
-            </div>
-
-            <div id="vista_previa_xsd" style="display:none">
-                <embed src="Configuracion/pdf_xsd.pdf" class="visor">
-
-            </div>
-
-            <!--********************* CREACION DE EMPRESAS ***********************-->
-            <div id="window_carga_empresa" style="display: none">
-                <div class="titulo_ventana">Agregar Nueva Empresa</div>
-                <p>
-                    Nombre de Instancia BD: 
-                    <select id="select_lista_empresas_carga">
-                        <option>No existen registros de empresa</option>
-                    </select>
-                </p>
-            </div>
 
             <!--*************************** CONTENT MANAGEMENT ****************************-->
             <div id="div_download" style="display: none"><div class="titulo_ventana">Archivos Listos Para Descargar</div><table id="table_download" class="display hover"></table></div>

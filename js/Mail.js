@@ -17,7 +17,8 @@ $(document).ready(function()
  */
 function ShowMailAccounts()
 {
-    $('#div_mail').empty();
+    $('#div_mail').remove();
+    $('body').append('<div id = "div_mail"></div>');
     $('#div_mail').append('<div class="titulo_ventana">Correos Registrados</div>');
     $('#div_mail').append('<div id= "ListAccounts"></div>');
     $('#div_mail').append('<div class="loading"><img src="../img/loadinfologin.gif"></div>');
@@ -107,11 +108,11 @@ function ListAccounts()
                 var $Instancias=$(this);
                 var estado=$Instancias.find("Estado").text();
                 var mensaje=$Instancias.find("Mensaje").text();
-                Error(mensaje);
+                errorMessage(mensaje);
             });
       },
       beforeSend:function(){},
-      error:function(objXMLHttpRequest){Error(objXMLHttpRequest);}
+      error:function(objXMLHttpRequest){errorMessage(objXMLHttpRequest);}
     });        
     return ListAccounts;
 }
@@ -186,11 +187,11 @@ function AddNewAccount()
                 var $Instancias=$(this);
                 var estado=$Instancias.find("Estado").text();
                 var mensaje=$Instancias.find("Mensaje").text();
-                Error(mensaje);
+                errorMessage(mensaje);
             });
       },
       beforeSend:function(){},
-      error:function(objXMLHttpRequest){Error(objXMLHttpRequest);}
+      error:function(objXMLHttpRequest){errorMessage(objXMLHttpRequest);}
     });        
 }
 
@@ -223,11 +224,11 @@ function DownloadFromAccount()
                 var $Instancias=$(this);
                 var estado=$Instancias.find("Estado").text();
                 var mensaje=$Instancias.find("Mensaje").text();
-                Error(mensaje);
+                errorMessage(mensaje);
             });
       },
       beforeSend:function(){},
-      error:function(objXMLHttpRequest){Error(objXMLHttpRequest); $('.loading').remove();}
+      error:function(objXMLHttpRequest){errorMessage(objXMLHttpRequest); $('.loading').remove();}
     });        
 }
 /*

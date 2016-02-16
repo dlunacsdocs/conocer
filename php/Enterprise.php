@@ -42,27 +42,24 @@ class Enterprise {
                     break;
                 case 'NewField': $this->NewField();
                     break;
-                case 'DeleteField':$this->DeleteField();
+                case 'DeleteField':$this->DeleteField($userData);
                     break;
-                case 'AddNewRegister': $this->AddNewRegister();
+                case 'AddNewRegister': $this->AddNewRegister($userData);
                     break;
-                case 'DeleteEnterprise':$this->DeleteEnterprise();
+                case 'DeleteEnterprise':$this->DeleteEnterprise($userData);
                     break;
-                case 'ModifyEnterprise':$this->ModifyEnterprise();
+                case 'ModifyEnterprise':$this->ModifyEnterprise($userData);
                     break;
                 default : break;
             }
         }
     }
     
-    private function ModifyEnterprise()
+    private function ModifyEnterprise($userData)
     {
         $DB = new DataBase();
         
-        $DataBaseName = filter_input(INPUT_POST, "DataBaseName");
-        $IdGroup = filter_input(INPUT_POST, "IdGroup");
-        $IdUser = filter_input(INPUT_POST, "IdUser");
-        $UserName = filter_input(INPUT_POST, "UserName");
+        $DataBaseName = $userData['dataBaseName'];
         $IdEnterprise = filter_input(INPUT_POST, "IdEnterprise");
         $Xml = filter_input(INPUT_POST, "Xml");
         $ValuesChain = '';
@@ -127,14 +124,11 @@ class Enterprise {
         XML::XMLReponse("ModifiedEnterprise", 1, "Datos actualizados de la empresa ");
     }
     
-    private function AddNewRegister()
+    private function AddNewRegister($userData)
     {        
         $DB = new DataBase();
         
-        $DataBaseName = filter_input(INPUT_POST, "DataBaseName");
-        $IdGroup = filter_input(INPUT_POST, "IdGroup");
-        $IdUser = filter_input(INPUT_POST, "IdUser");
-        $UserName = filter_input(INPUT_POST, "UserName");
+        $DataBaseName = $userData['dataBaseName'];
         $EnterpriseKey = '';
         $ValuesChain = '';
         $FieldsChain = '';
@@ -210,14 +204,11 @@ class Enterprise {
         echo $doc->saveXML();           
     }
     
-    private function DeleteField()
+    private function DeleteField($userData)
     {
         $DB = new DataBase();
         
-        $DataBaseName = filter_input(INPUT_POST, "DataBaseName");
-        $IdGroup = filter_input(INPUT_POST, "IdFroup");
-        $IdUser = filter_input(INPUT_POST, "IdUser");
-        $UserName = filter_input(INPUT_POST, "UserName");
+        $DataBaseName = $userData['dataBaseName'];
         $FieldName = filter_input(INPUT_POST, "FieldName");
         
         $DeletedResult = DesignerForms::DeleteField($DataBaseName , "Empresa", $FieldName);
@@ -233,17 +224,12 @@ class Enterprise {
         
     }
     
-    private function DeleteEnterprise()
+    private function DeleteEnterprise($userData)
     {
         $DB = new DataBase();
         $Repository = new Repository();
         
-        $DataBaseName = filter_input(INPUT_POST, "DataBaseName");
-        $IdUser = filter_input(INPUT_POST, "IdUser");
-        $UserName = filter_input(INPUT_POST, "UserName");
-        $IdRepository = filter_input(INPUT_POST, "IdRepository");
-        $IdGroup = filter_input(INPUT_POST, "IdGroup");
-        $GroupName = filter_input(INPUT_POST, "GroupName");
+        $DataBaseName = $userData['dataBaseName'];
         $IdEnterprise = filter_input(INPUT_POST, "IdEnterprise");
         $EnterpriseKey = filter_input(INPUT_POST, "EnterpriseKey");
         

@@ -6,7 +6,9 @@ var FlagAceptarSolicitud = 0;
 
 $(document).ready(function()
 {            
-   $('.link_FollowUp').click(function(){FollowUp.ShowFollowUp();}) ;
+   $('.link_FollowUp').click(function(){
+       var followUp = new ClassFollowUp();
+       followUp.ShowFollowUp();}) ;
 });
 
 var ClassFollowUp = function()

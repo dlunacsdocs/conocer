@@ -1,6 +1,6 @@
 
 
-/* global EnvironmentData, Permissions, InstanceManager, modulesControl */
+/* global EnvironmentData */
 
 $(document).ready(function() {
     
@@ -79,7 +79,8 @@ function DeniedSystemStart()
 }
 
 function setInstancesToLogin(){
-    var instances = InstanceManager.getInstancesXml();
+    var instanceManager = new ClassInstanceManager();
+    var instances = instanceManager.getInstancesXml();
     
     $(instances).find("Instance").each(function(){
        var $Instancia=$(this);

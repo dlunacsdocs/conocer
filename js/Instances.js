@@ -4,15 +4,12 @@
  * and open the template in the editor.
  */
 
+var userPermissions = [];
 var modulesControl = new ModulesControlClass();
 var EnvironmentData = new ClassEnvironmentData();
 var Repository = new ClassRepository();
 var Enterprise = new ClassEnterprise();
 var Tree = new ClassTree();
-var UsersGroups = new ClassUsersGroups();
-var Users = new ClassUsers();
-var FollowUp = new ClassFollowUp();
-var Permissions = new ClassPermissions();
 var Notes;    
 var DocumentEnvironment;    /* Guarda el entorno donde fué consultado un documento p.e. IdRepository, RepositoryName, IdEnterprise, EnterpriseName */
 var CatalogAdmin = new ClassCatalogAdministrator();  /* Instancia utilizada para la administración de los catálogos (CatalogAdministrator.js) */

@@ -5,1086 +5,1077 @@
  */
 
 
-/* global EnvironmentData, BotonesWindow, LanguajeDataTable, ConsoleSettings */
-var FormsNewRepositorydT,FormsNewRepositoryDT, RepositoryDetaildT, RepositoryDetailDT;
-$(document).ready(function(){
-    $('.LinkRepositories').click(function()
+/* global EnvironmentData, BotonesWindow, LanguajeDataTable, ConsoleSettings, BootstrapDialog */
+var RepositoryDetaildT, RepositoryDetailDT;
+$(document).ready(function () {
+    $('.LinkRepositories').click(function ()
     {
         if ($('#DivRepositoriesManager').is(':visible'))
             return 0;
-        
+
         var classRepository = new ClassRepository();
         classRepository.BuildRepositoriesManager();
-                               
-    });   
-    
+
+    });
+
 });
 
-var ClassRepository = function()
+var ClassRepository = function ()
 {
     var self = this;
     self.IdRepositorio = undefined;
     self.NombreRepositorio = undefined;
     self.AutoincrementId = 0;
-    
-    _FormsNewField = function()
-    {        
-        $('#DivFormsNewField').remove();
-        $('body').append('<div id = "DivFormsNewField"></div>');
-        $('#DivFormsNewField').dialog({title:"Nuevo Campo", width:400, minWidth:200, Height:400, minHeight:200, modal:true, buttons:{
-                Agregar:{text:"Agregar", click:function(){_AddNewRepositoryField();}},
-                Cerrar:{text:"Cerrar", click:function(){$(this).remove();}}
-            }});
-        var FieldName = '<input type = "text" id = "FieldNameRM" class = "FormStandart required" FieldType = "varchar" FieldLength = "50">';
-        var FieldType = '<select id = "FieldTypeRM" class = "FormStandart" FieldType = "varchar" FieldLenght = "50">\n\
-                            <option value = "text">Texto</option>\n\
-                            <option value = "varchar">Texto limitado</option>\n\
-                            <option value = "int">Numérico</option>\n\
-                            <option value = "float">Entero con decimales</option>\n\\n\
-                            <option value = "date">Fecha</option>\n\
-                        </select>';
-        var RequiredCheck = '<input type = "checkbox" id = "CheckRequiredRM"></p>';
-        var FieldLength = '<p><input type = "text" id = "FieldLengthRM" class = "FormStandart" FieldType = "int" FieldLength = "" disabled></p>';
-        
-        $('#DivFormsNewField').append('<div id = "DivFormsNewRepository">\n\
-            <table>\n\
-                    <tr><td>Nombre del Campo: </td><td>'+FieldName+'</td></tr>\n\
-                    <tr><td>Tipo: </td><td>'+FieldType+'</td></tr>\n\
-                    <tr><td>Longitud:</td><td>'+FieldLength+'</td></tr>\n\
-                    <tr><td>Requerido: </td><td>'+RequiredCheck+'</td></tr>\n\
-            </table>\n\
-        </div>');
-        
-        $('#FieldNameRM').focus();
-        
-        var Forms = $('#DivFormsNewField .FormStandart');
+    var FormsNewRepositorydT;
+    var FormsNewRepositoryDT;
 
-        var FieldsValidator = new ClassFieldsValidator();   
-        FieldsValidator.InspectCharacters(Forms);
-    
-        $('#FieldTypeRM').change(function()
+    this.BuildRepositoriesManager = function ()
+    {
+        $('#DivRepositoriesManager').remove();
+        $('body').append('\n\
+            <div id="DivRepositoriesManager">\n\
+            <div class="menu_lateral">\n\
+                    <div id="accordion_repository">\n\
+                        <div>\n\
+                          <h3><a href="#">Repositorios</a></h3>\n\
+                          <div id="consola_repository_tree">\n\
+                              <table class="TableInsideAccordion">\n\
+                              <tr class = "tr_RepositoryAdmin" title="Administracion">\n\
+                                      <td><img src="img/RepositorioAgregar.png" ></td>\n\
+                                      <td>Administrar</td>\n\
+                                  </tr>\n\
+                                  <tr class = "tr_NewRepository" title="Nuevo Repositorio">\n\
+                                      <td><img src="img/RepositorioAgregar.png" ></td>\n\
+                                      <td>Nuevo</td>\n\
+                                  </tr>\n\
+                                  <tr class = "tr_RepositoryDetail" title="Nuevo Repositorio">\n\
+                                      <td><img src="img/RepositorioAgregar.png" ></td>\n\
+                                      <td>Detalle</td>\n\
+                                  </tr>\n\
+                              </table>\n\
+                          </div>\n\
+                        </div>\n\
+                    </div>\n\
+            </div>\n\
+            <div class="work_space" id="WS_Repository"></div>\n\
+        </div>');
+
+        $('.tr_NewRepository').on('click', self.NewRepository);
+
+        $('.tr_RepositoryAdmin').click(function () {
+            OptionAdministrator();
+        });
+
+        $('.tr_RepositoryDetail').on('click', CM_Repository);
+
+        $("#accordion_repository").accordion({header: "h3", collapsible: true, heightStyle: "content"});
+        $('#DivRepositoriesManager').dialog(ConsoleSettings, {title: "Consola de Repositorios", close: function () {
+                $(this).remove();
+            }}).dialogExtend(BotonesWindow);
+
+        /********* Efectos sobre tabla dentro de acordeÃ³n ***********/
+        $('#DivRepositoriesManager table').on('click', 'tr', function ()
         {
-            console.log('change select');
-            var FieldType = $(this).val();
-            $('#FieldLengthRM').val('');
-            if(FieldType==='varchar')
-            {
-                $('#FieldLengthRM').prop( "disabled", false );
-                if(!$('#FieldLengthRM').hasClass('required'))
-                    $('#FieldLengthRM').addClass('required');
-                
-                $('#FieldLengthRM').val('40');                
-            }
+            var active = $('#DivRepositoriesManager table tr.TableInsideAccordionFocus');
+            $('#DivRepositoriesManager table tr').removeClass('TableInsideAccordionFocus');
+            $('#DivRepositoriesManager table tr').removeClass('TableInsideAccordionActive');
+            $(active).addClass('TableInsideAccordionFocus');
+            $(this).removeClass('TableInsideAccordionHoverWithoutClass');
+            $(this).addClass('TableInsideAccordionActive');
+        });
+        $('#DivRepositoriesManager table tr').hover(function ()
+        {
+            if ($(this).hasClass('TableInsideAccordionActive') || $(this).hasClass('TableInsideAccordionFocus'))
+                $(this).addClass('TableInsideAccordionHoverWithClass');
             else
+                $(this).addClass('TableInsideAccordionHoverWithoutClass');
+        });
+        $('#DivRepositoriesManager table tr').mouseout(function ()
+        {
+            if ($(this).hasClass('TableInsideAccordionActive') || $(this).hasClass('TableInsideAccordionFocus'))
+                $(this).removeClass('TableInsideAccordionHoverWithClass');
+            else
+                $(this).removeClass('TableInsideAccordionHoverWithoutClass');
+        });
+
+        $('#tr_NewUser').addClass('TableInsideAccordionActive');
+        /* Fin de Efectos  */
+
+
+        CM_Repository();
+
+        $('.tr_RepositoryAdmin').click();
+
+    };
+
+    var OptionAdministrator = function ()
+    {
+        $('#WS_Repository').empty();
+
+        var content = $('<div>');
+        var formGroup = $('<div>', {class: "form-group"});
+        var enterpriseLabel = $('<label>').append('Empresa');
+        var enterpriseSelect = $('<select>', {class: "form-control required", id: "RMSelectEnterprises"});
+
+        formGroup.append(enterpriseLabel);
+        formGroup.append(enterpriseSelect);
+
+        content.append(formGroup);
+
+        var enterpriseOption = $('<option>', {value: "0"}).append("Seleccione una empresa");
+
+        enterpriseSelect.append(enterpriseOption);
+
+        formGroup = $('<div>', {class: "form-group"});
+        var repositoryLabel = $('<label>').append("Repositorio");
+        var repositorySelect = $('<select>', {class: "form-control required", id: "RMSelectRepositories"});
+
+        formGroup.append(repositoryLabel);
+        formGroup.append(repositorySelect);
+
+        content.append(formGroup);
+
+        var repositoryOption = $('<option>', {value: "0"}).append("Esperando Empresa");
+        repositorySelect.append(repositoryOption);
+
+        $('#WS_Repository').append(content);
+
+        var buttons = {};
+
+        $('#DivRepositoriesManager').dialog('option', 'buttons', buttons);
+
+        var Enterprise = new ClassEnterprise();
+        var Enterprises = Enterprise.GetEnterprises();
+
+        $(Enterprises).find('Enterprise').each(function () {
+            var $Empresa = $(this);
+            var id = $Empresa.find("IdEmpresa").text();
+            var nombre = $Empresa.find("NombreEmpresa").text();
+            var ClaveEmpresa = $Empresa.find('ClaveEmpresa').text();
+
+            var option = $('<option>', {value: ClaveEmpresa, id: id}).append(ClaveEmpresa + " (" + String(nombre).slice(0, 60) + " )");
+            enterpriseSelect.append(option);
+        });
+
+        enterpriseSelect.change(function () {
+            var idEnterpriseSelected = $(this).find('option:selected').attr('id');
+            var EnterpriseKey = $(this).val();
+
+            if (parseInt(idEnterpriseSelected) > 0) {
+                var Repositories = self.GetRepositories(EnterpriseKey);
+
+                /* Select con lista de repositorios de la empresa seleccionada */
+                $('#RMSelectRepositories').empty().append('<option value = "0">Seleccione un repositorio...</option>');
+                $('#DivRepositoryDetail').remove();
+
+                if ($(Repositories).find('Repository').length === 0)
+                    repositorySelect.empty().append($('<option>', {value: 0, id: 0}).append('No existen Repositorios'));
+                else
+                    repositorySelect.empty().append($('<option>', {value: 0, id: 0}).append('Seleccione un Repositorio'));
+
+                $(Repositories).find('Repository').each(function () {
+                    var idRepository = $(this).find('IdRepositorio').text();
+                    var RepositoryName = $(this).find('NombreRepositorio').text();
+                    var option = $('<option>', {value: idRepository, id: idRepository, name: RepositoryName}).append(RepositoryName);
+
+                    repositorySelect.append(option);
+                });
+
+                /* Cuando el usuario seleccione un repositorio, se muestra su detalle del mismo */
+                repositorySelect.change(function () {
+                    var idRepository = $(this).find('option:selected').attr('id');
+
+                    if (parseInt(idRepository) > 0) {
+                        var repositoryName = $(this).find('option:selected').attr('name');
+                        var repositoryStructure = GeStructure(repositoryName);
+
+                        _BuildTableRepositoryDetail(repositoryStructure);
+                    } else    /* Elimina la tabla con el detalle del repositorio previamente seleccionado */
+                        $('#DivRepositoryDetail').remove();
+
+                });
+            } else
             {
-                $('#FieldLengthRM').prop( "disabled", true );
-                $('#FieldLengthRM').removeClass('required');
+                repositorySelect.empty().append($('<option>', {value: 0, id: 0}).append('Seleccione una empresa'));
+                $('#DivRepositoryDetail').remove();
             }
         });
-        
-        $('#IconWaitingNewRepository').remove();
     };
-    
-    /* Agrega campos en forma de lista para luego ser insertados */
-    _AddNewRepositoryField = function()
-    {       
-        var RegularExpresion = /^([a-zA-Z0-9\_])+$/g;
-        var Forms = $('#DivFormsNewRepository input.FormStandart');
-        var FieldsValidator = new ClassFieldsValidator();   
-        var validation = FieldsValidator.ValidateFields(Forms);
-        
-        $('#FieldNameRM').tooltip();
-        
-        console.log("_AddNewRepositoryField::"+validation);
-        
-        if(validation===0)
-            return;             
-                        
-        
-        
-        var FieldName = $('#FieldNameRM').val();
-        var FieldLength = $('#FieldLengthRM').val();
-        var FieldType = $('#FieldTypeRM').val();  
-        var RequiredChecValue = $('#CheckRequiredRM').is(':checked');    
-        
-        if(!RegularExpresion.test(FieldName) && FieldName.length<=20)
-        {
-            FieldsValidator.AddClassRequiredActive($('#FieldNameRM'));
-            $('#FieldNameRM').attr('title','Nombre de campo inválido, debe ser una cadena alfanumérica (A-A, a-z, _, -) menor a 20 caracteres');
-            return 0;
-        }                          
-        
-        self.AutoincrementId++;
-        
-        /* Se comprueba si no se repitan los campos */
-        var RepeatedField = 0;
-        FormsNewRepositoryDT.column(0).data().each(function(value, index)
-        {
-            if(value===FieldName)
-                RepeatedField = 1;
-        });     
-        
-        if(RepeatedField)
-        {
-            FieldsValidator.AddClassRequiredActive($('#FieldNameRM'));
-            $('#FieldNameRM').attr('title','El nombre de este campo ya existe');            
-            return;
-        }
-        else
-            $('#FieldNameRM').attr('title','');
-        
-        /* Validaciones en el campo de longitud */
-        if(FieldType==='varchar')
-        {
-            FieldLength = parseInt(FieldLength);
 
-            if($.isNumeric(FieldLength))
+    this.GetRepositories = function (EnterpriseKey)
+    {
+        var RepositoriesXml = 0;
+        var data = {opcion: "GetListRepositories", EnterpriseKey: EnterpriseKey};
+        $.ajax({
+            async: false,
+            cache: false,
+            dataType: "html",
+            type: 'POST',
+            url: "php/Repository.php",
+            data: data,
+            success: function (xml)
             {
-                if(FieldLength>=256 || FieldLength<=0)
+                if ($.parseXML(xml) === null) {
+                    errorMessage(xml);
+                    return 0;
+                } else
+                    xml = $.parseXML(xml);
+
+                RepositoriesXml = xml;
+
+                $(xml).find("Error").each(function ()
                 {
-                    FieldsValidator.AddClassRequiredActive($('#FieldLengthRM'));
-                    return;
-                }            
+                    var $Error = $(this);
+                    var mensaje = $Error.find("Mensaje").text();
+                    errorMessage(mensaje);
+                });
+
+            },
+            beforeSend: function () {},
+            error: function (jqXHR, textStatus, errorThrown) {
+                errorMessage(textStatus + "<br>" + errorThrown);
             }
-            else
-            {
-                FieldsValidator.AddClassRequiredActive($('#FieldLengthRM'));
-                    return;
-            }
-        }
-                        
-        if(RequiredChecValue)
-            RequiredChecValue = 'Si';
+        });
+
+        return RepositoriesXml;
+    };
+
+    /* Interfaz dedicada a agregar un nuevo repositorio  
+     * RM = RepositoriesManager*/
+    this.NewRepository = function ()
+    {
+        var self = this;
+        self.AutoincrementId = 0;
+        var buttons = {"Generar Repositorio": {text: "Generar Repositorio", click: function () {
+                    _BuildNewRepository();
+                }}, "Limpiar": {text: "Limpiar", click: function () {
+                    self.NewRepository();
+                }}};
+        $('#DivRepositoriesManager').dialog("option", "buttons", buttons);
+
+        $('#WS_Repository').empty();
+
+        var Enterprise = new ClassEnterprise();
+        var enterprises = Enterprise.GetEnterprises();
+
+        var content = $('<div>');
+        content.append('<center><i class="fa fa-spinner fa-spin fa-lg"></i></center>');
+        $('#WS_Repository').append(content);
+
+        var formGroup = $('<div>', {class: "form-group"});
+        var enterpriseLabel = $('<label>').append("Empresa");
+        var enterpriseSelect = $('<select>', {class: "form-control required", id: "RMSelectEnterprises", FieldType: "varchar", FieldLength: "100"})
+                .append($('<option>', {value: 0}).append("Seleccione una empresa"));
+
+        formGroup.append(enterpriseLabel);
+        formGroup.append(enterpriseSelect);
+
+        content.append(formGroup);
+
+        formGroup = $('<div>', {class: "form-group"});
+        var repositoryLabel = $('<label>').append("Nombre del Repositorio");
+        var repositoryForm = $('<input>', {type: "text", id: "RepositoryNameRM", class: "form-control required", FieldType: "varchar", FieldLength: "50"});
+
+        formGroup.append(repositoryLabel);
+        formGroup.append(repositoryForm);
+
+        content.append(formGroup);
+
+        if (typeof enterprises !== 'object')
+            return Advertencia("No fue posible recuperar el listado de empresas");
+
+        if ($(enterprises).find('Enterprise').length === 0)
+            enterpriseSelect.empty().append($('<option>', {value: 0, id: 0}).append('No existen empresas'));
         else
-            RequiredChecValue = 'No';                
-                
-        var data = [FieldName, FieldType, FieldLength, RequiredChecValue];
+            enterpriseSelect.empty().append($('<option>', {value: 0, id: 0}).append('Seleccione una empresa'));
+
+        $(enterprises).find("Enterprise").each(function ()
+        {
+            var $Empresa = $(this);
+            var id = $Empresa.find("IdEmpresa").text();
+            var nombre = $Empresa.find("NombreEmpresa").text();
+            var ClaveEmpresa = $Empresa.find('ClaveEmpresa').text();
+            var option = $('<option>', {value: ClaveEmpresa, id: id}).append(ClaveEmpresa + " (" + String(nombre).slice(0, 60) + ")");
+            enterpriseSelect.append(option);
+        });
+
+        $('#WS_Repository').append('<table id = "TableFieldsNewRepository" class = "display hover"><thead><tr><th>Campo</th><th>Tipo</th><th>Longitud</th><th>Requerido</th></tr></thead></table>');
+
+        FormsNewRepositorydT = $('#TableFieldsNewRepository').dataTable(
+                {
+                    'bPaginate': false, 'bInfo': false, bFilter: false, "bSort": false,
+                    "dom": 'lfTrtip',
+                    "tableTools": {
+                        "aButtons": [
+                            {"sExtends": "text", "sButtonText": '<i class="fa fa-plus-circle fa-lg"></i> Agregar Campo', "fnClick": function () {
+                                    _displayWindowNewField();
+                                }},
+                            {"sExtends": "text", "sButtonText": '<i class="fa fa-pencil fa-lg"></i> Editar Campo', "fnClick": function () {
+                                    _EditNewRepositoryField();
+                                }},
+                            {"sExtends": "text", "sButtonText": '<i class="fa fa-trash fa-lg"></i> Eliminar', "fnClick": function () {
+                                    _ConfirmDeleteNewRepositoryField();
+                                }},
+                            //                {"sExtends":"text", "sButtonText": "Agregar desde XML", "fnClick" :function(){_FormAddNewRepositoryXml();}},
+                            {
+                                "sExtends": "collection",
+                                "sButtonText": '<i class="fa fa-floppy-o fa-lg"></i>',
+                                "aButtons": ["csv", "xls", "pdf", "copy"]
+                            }
+                        ]
+                    },
+                    "autoWidth": false,
+                    "oLanguage": LanguajeDataTable
+                });
+
+        $('div.DTTT_container').css({"margin-top": "1em"});
+        $('div.DTTT_container').css({"float": "left"});
+
+        FormsNewRepositoryDT = new $.fn.dataTable.Api('#TableFieldsNewRepository');
+        $('#TableFieldsNewRepository tbody').on('click', 'tr', function ()
+        {
+            FormsNewRepositoryDT.$('tr.selected').removeClass('selected');
+            $(this).addClass('selected');
+        });
+
+        $(content).find('.fa-spinner').remove();
+    };
+
+    var _displayWindowNewField = function ()
+    {
+        var fieldsManager = new FieldsManager();
+        var dialogRef = fieldsManager.windowNewField(_validateNewField);
+    };
+
+    var _validateNewField = function (dialogRef)
+    {
+        var fieldsManager = new FieldsManager();
+        var FieldsValues = fieldsManager.GetFieldsValues(FormsNewRepositorydT, FormsNewRepositoryDT);
+        if (!$.isPlainObject(FieldsValues))
+            return 0;
+
+        dialogRef.close();
+
+        self.AutoincrementId++;
+
+        if (FieldsValues.RequiredField)
+            FieldsValues.RequiredField = 'Si';
+        else
+            FieldsValues.RequiredField = 'No';
+
+        var data = [FieldsValues.FieldName, FieldsValues.FieldType, FieldsValues.FieldLength, FieldsValues.RequiredField];
 
         var ai = FormsNewRepositoryDT.row.add(data).draw();
         var n = FormsNewRepositorydT.fnSettings().aoData[ ai[0] ].nTr;
-        n.setAttribute('id',self.AutoincrementId);
+        n.setAttribute('id', self.AutoincrementId);
+
+        Notificacion('Campo ' + FieldsValues.FieldName + ' preparado');
         
-        Notificacion('Campo '+FieldName+' preparado');
-        
-        $('#FieldNameRM').val('');
-        $('#FieldNameRM').focus();
-        $('#FieldTypeRM option[value="text"]').attr("selected", "selected");
-        $('#CheckRequiredRM').prop('checked', false);
-        
-        FormsNewRepositorydT.find('tbody tr[id='+self.AutoincrementId+']:eq(0)').click();
+        FormsNewRepositorydT.$('tr[id = '+self.AutoincrementId+']').click();
+
     };
-    
+
     /* Genera el nuevo Repositorio (BotÃ³n 'Generar Repositorio' del dialog)*/
-    _BuildNewRepository = function()
-    {                
-        var FieldsValidator = new ClassFieldsValidator();   
+    var _BuildNewRepository = function ()
+    {
+        var FieldsValidator = new ClassFieldsValidator();
         var RegularExpression = /^([a-zA-Z0-9\_])+$/g;
         var EnterpriseKey = $('#RMSelectEnterprises').val();
-        var RepositoryName = $('#RepositoryNameRM').val();               
+        var RepositoryName = $('#RepositoryNameRM').val();
         var Forms = $('#WS_Repository input.FormStandart');
-        
+
         $('#RMSelectEnterprises').tooltip();
         $('#RepositoryNameRM').tooltip();
-        
-        if(EnterpriseKey ===0 || EnterpriseKey==='0')
+
+        if (EnterpriseKey === 0 || EnterpriseKey === '0')
         {
             FieldsValidator.AddClassRequiredActive($('#RMSelectEnterprises'));
             return 0;
-        }
-        else
+        } else
             FieldsValidator.RemoveClassRequiredActive($('#RMSelectEnterprises'));
-        
+
         var validation = FieldsValidator.ValidateFields(Forms);
-        if(validation===0)
+        if (validation === 0)
             return;
-        
-        if(!RegularExpression.test(RepositoryName))
-        {
+
+        if (!RegularExpression.test(RepositoryName)) {
             FieldsValidator.AddClassRequiredActive($('#RepositoryNameRM'));
-            $('#RepositoryNameRM').attr('title','Nombre invÃ¡lido');
+            $('#RepositoryNameRM').attr('title', 'Nombre inválido');
             return 0;
-        }
-        else
-            $('#RepositoryNameRM').attr('title','');
-        
+        } else
+            $('#RepositoryNameRM').attr('title', '');
+
         var ExistedRepository = 0;
         var Repositories = self.GetRepositories(EnterpriseKey);
-        console.log(Repositories);
-        $(Repositories).find('Repository').each(function()
+
+        $(Repositories).find('Repository').each(function ()
         {
-            if(RepositoryName===$(this).find('NombreRepositorio').text())
+            if (RepositoryName === $(this).find('NombreRepositorio').text())
                 ExistedRepository = 1;
         });
-        
-        if(ExistedRepository)
+
+        if (ExistedRepository)
         {
             FieldsValidator.AddClassRequiredActive($('#RepositoryNameRM'));
-            $('#RepositoryNameRM').attr('title','El repositorio ya existe');
+            $('#RepositoryNameRM').attr('title', 'El repositorio ya existe');
             return 0;
-        }
-        else
+        } else
         {
-            $('#RepositoryNameRM').attr('title','');
-            FieldsValidator.RemoveClassRequiredActive($('#RepositoryNameRM'));                
+            $('#RepositoryNameRM').attr('title', '');
+            FieldsValidator.RemoveClassRequiredActive($('#RepositoryNameRM'));
         }
-        
+
         /* Se genera la misma estructura de xml de carga de repositorio a travÃ©s del attachment 'Nueva Instancia' */
         var Xml = "<NewRepository version='1.0' encoding='UTF-8'>\n\
-                        <CrearEstructuraRepositorio DataBaseName = \""+EnvironmentData.DataBaseName+"\" ClaveEmpresa = \""+EnterpriseKey+"\">";
-                    Xml+="<NombreRepositorio>"+RepositoryName+"</NombreRepositorio>\n\
+                        <CrearEstructuraRepositorio DataBaseName = \"" + EnvironmentData.DataBaseName + "\" ClaveEmpresa = \"" + EnterpriseKey + "\">";
+        Xml += "<NombreRepositorio>" + RepositoryName + "</NombreRepositorio>\n\
                             <DefinitionUsersProperties>";
-        var Rows = FormsNewRepositoryDT.rows().data().each(function(value, index)
+        var Rows = FormsNewRepositoryDT.rows().data().each(function (value, index)
         {
             var FieldName = value[0];
             var FieldType = value[1];
             var FieldLength = value[2];
             var RequiredField = value[3];
-            
-            if(RequiredField==='Si')
+
+            if (RequiredField === 'Si')
                 RequiredField = true;
-            else if(RequiredField==='No')
+            else if (RequiredField === 'No')
                 RequiredField = false;
-            
-            Xml+=               '<Properties name = "'+FieldName+'" long = "'+FieldLength+'" type = "'+FieldType+'" required = "'+RequiredField+'" />';            
+
+            Xml += '<Properties name = "' + FieldName + '" long = "' + FieldLength + '" type = "' + FieldType + '" required = "' + RequiredField + '" />';
         });
-        
-        if(Rows.length===0)
+
+        if (Rows.length === 0)
         {
             Advertencia('Debe agregar por lo menos un campo en el nuevo repositorio');
             return;
         }
-                
-        Xml+=               '</DefinitionUsersProperties>\n\
+
+        Xml += '</DefinitionUsersProperties>\n\
                         </CrearEstructuraRepositorio>\n\
                     </NewRepository>';
-        
+
         $('#WS_Repository').append('<div class="Loading" id = "IconWaitingNewRepository"><img src="../img/loadinfologin.gif"></div>');
-        
-        var data = {opcion:'NewRepository', DataBaseName:EnvironmentData.DataBaseName, IdUser:EnvironmentData.IdUsuario, UserName:EnvironmentData.NombreUsuario, Xml:Xml};
-                
+
+        var data = {opcion: 'NewRepository', DataBaseName: EnvironmentData.DataBaseName, IdUser: EnvironmentData.IdUsuario, UserName: EnvironmentData.NombreUsuario, Xml: Xml};
+
         $.ajax({
-        async:false, 
-        cache:false,
-        dataType:"html", 
-        type: 'POST',   
-        url: "php/Repository.php",
-        data: data, 
-        success:  function(xml)
-        {           
-            Salida(xml);
-            
-        },
-        beforeSend:function(){},
-        error: function(jqXHR, textStatus, errorThrown) {Error(textStatus +"<br>"+ errorThrown);}
-        });             
-        
-        
+            async: false,
+            cache: false,
+            dataType: "html",
+            type: 'POST',
+            url: "php/Repository.php",
+            data: data,
+            success: function (xml)
+            {
+                Salida(xml);
+
+            },
+            beforeSend: function () {},
+            error: function (jqXHR, textStatus, errorThrown) {
+                errorMessage(textStatus + "<br>" + errorThrown);
+            }
+        });
+
+
         $('#IconWaitingNewRepository').remove();
-        
+
     };
-    
-    _ConfirmDeleteNewRepositoryField = function()
+
+    var _ConfirmDeleteNewRepositoryField = function ()
     {
         var IdField = $('#TableFieldsNewRepository tr.selected').attr('id');
         var FieldName = undefined;
-        if(!(IdField>0))
-        {
+
+        if (!(IdField > 0)) {
             Advertencia('Debe seleccionar al menos un campo');
             return 0;
         }
-        
-        $('#TableFieldsNewRepository tr.selected').each(function()
+
+        $('#TableFieldsNewRepository tr.selected').each(function ()
         {
             var position = FormsNewRepositorydT.fnGetPosition(this); // getting the clicked row position
             FieldName = FormsNewRepositorydT.fnGetData(position)[0];
         });
-        
-        $('#DivConfirmDeleteNewRepositoryField').remove();   
-        $('body').append('<div id = "DivConfirmDeleteNewRepositoryField"></div>');
-        $('#DivConfirmDeleteNewRepositoryField').append('<p>Sera removido el campo <b>'+FieldName+'</b>. <p>Â¿Desea continuar?</p>');
-        $('#DivConfirmDeleteNewRepositoryField').dialog({title:"Mensaje de confirmacion", width:250, minWidth:250, heigth:250, minHeigth:250, modal:true, buttons:{
-                "Aceptar":{text:"Aceptar", click:function(){$(this).remove(); _DeleteNewRepositoryField(IdField);}},
-                "Cancelar":function(){$(this).remove();}
-        }});
+
+        BootstrapDialog.show({
+            title: '<i class="fa fa-exclamation-triangle fa-lg"></i> Eliminar Campo',
+            type: BootstrapDialog.TYPE_DANGER,
+            size: BootstrapDialog.SIZE_SMALL,
+            message: '<p>El campo <b>' + FieldName + '</b> será removido del proceso de construcción del nuevo repositorio. ¿Desea Continuar?</p>',
+            closable: true,
+            closeByBackdrop: true,
+            closeByKeyboard: true,
+            buttons: [
+                {
+                    label: 'Eliminar',
+                    icon: 'fa fa-trash-o fa-lg',
+                    cssClass: "btn-danger",
+                    action: function (dialogRef) {
+                        var button = this;
+                        button.spin();
+                        dialogRef.enableButtons(false);
+                        dialogRef.setClosable(false);
+
+                        if (_DeleteNewRepositoryField(IdField))
+                            dialogRef.close();
+                        else {
+                            dialogRef.enableButtons(true);
+                            dialogRef.setClosable(true);
+                            button.stopSpin();
+                        }
+                    }
+                },
+                {
+                    label: "Cerrar",
+                    action: function (dialogRef) {
+                        dialogRef.close();
+                    }
+                }
+            ],
+            onshown: function (dialogRef) {
+
+            }
+        });
     };
-    
-    _DeleteNewRepositoryField = function(IdField)
+
+    var _DeleteNewRepositoryField = function (IdField)
     {
-        console.log("Elimando a "+IdField);
-        FormsNewRepositoryDT.row('tr[id='+IdField+']').remove().draw( false );                
-        
+        FormsNewRepositoryDT.row('tr[id=' + IdField + ']').remove().draw(false);
+
+        return 1;
     };
-    
-    _EditNewRepositoryField = function()
+
+    var _EditNewRepositoryField = function ()
     {
-        console.log('_EditNewRepositoryField');
-              
         var IdField = $('#TableFieldsNewRepository tr.selected').attr('id');
         var FieldName, FieldType, FieldLength, RequiredField;
-        if(!(IdField>0))
-        {
-            Advertencia('Debe seleccionar al menos un campo');
-            return 0;
-        }
-        
-        $('#TableFieldsNewRepository tr.selected').each(function()
-        {
+
+        if (!(parseInt(IdField) > 0))
+            return Advertencia('Debe seleccionar al menos un campo');
+
+        FormsNewRepositorydT.$('tr.selected').each(function () {
             var position = FormsNewRepositorydT.fnGetPosition(this); // getting the clicked row position
             FieldName = FormsNewRepositorydT.fnGetData(position)[0];
             FieldType = FormsNewRepositorydT.fnGetData(position)[1];
             FieldLength = FormsNewRepositorydT.fnGetData(position)[2];
             RequiredField = FormsNewRepositorydT.fnGetData(position)[3];
         });
-        
-        _FormsNewField();
-        
-        $('#FieldNameRM').val(FieldName);
-        $('#FieldTypeRM option[value='+FieldType+']').prop('selected',true);
-        if(FieldType==='varchar')
-            $('#FieldLengthRM').prop('disabled',false);
-        $('#FieldLengthRM').val(FieldLength);
-        if(RequiredField==='Si')
-            $('#CheckRequiredRM').prop('checked',true);
-        else if (RequiredField === 'No')
-            $('#CheckRequiredRM').prop('checked',false);
-           
-        
-        var buttons = {"Cancelar":{text:"Cancelar", click:function(){$(this).remove();}},
-        "Modificar":{text:"Modificar", click:function(){_ModifyNewRepositoryField(IdField, FieldName);}}};
-    
-        $('#DivFormsNewField').dialog('option','buttons', buttons);
-        
-        $('#DivFormsNewField').dialog('option','title','Modificar Campo');
-        
-    };
-    
-    _ModifyNewRepositoryField = function(IdField, OldFieldName)
-    {
-        console.log('_ModifyNewRepositoryField::'+IdField);
-        
-        var RegularExpresion = /^([a-zA-Z0-9\_])+$/g;
-        var Forms = $('#DivFormsNewRepository input.FormStandart');
-        var FieldsValidator = new ClassFieldsValidator();   
-        var validation = FieldsValidator.ValidateFields(Forms);
-        
-        $('#FieldNameRM').tooltip();
-        
-        console.log("_ModifyNewRepositoryField::"+validation);
-        
-        if(validation===0)
-            return;             
-                        
-        if(!RegularExpresion.test(FieldName))
-        {
-            FieldsValidator.AddClassRequiredActive($('#FieldNameRM'));
-            $('#FieldNameRM').attr('title','Nombre de campo invÃ¡lido');
-            return 0;
-        }                          
-               
-        var FieldName = $('#FieldNameRM').val();
-        var FieldLength = $('#FieldLengthRM').val();
-        var FieldType = $('#FieldTypeRM').val();  
-        var RequiredChecValue = $('#CheckRequiredRM').is(':checked');    
-        
-        /* Se comprueba si no se repitan los campos */
-        var RepeatedField = 0;
-        FormsNewRepositoryDT.column(0).data().each(function(value, index)
-        {
-            if(value===FieldName && OldFieldName!==FieldName)
-                RepeatedField = 1;
-        });     
-        
-        if(RepeatedField)
-        {
-            FieldsValidator.AddClassRequiredActive($('#FieldNameRM'));
-            $('#FieldNameRM').attr('title','El nombre de este campo ya existe');            
-            return;
-        }
-        else
-            $('#FieldNameRM').attr('title','');
-        
-        /* Validaciones en el campo de longitud */
-        if(FieldType==='varchar')
-        {
-            FieldLength = parseInt(FieldLength);
 
-            if($.isNumeric(FieldLength))
-            {
-                if(FieldLength>=256 || FieldLength<=0)
-                {
-                    FieldsValidator.AddClassRequiredActive($('#FieldLengthRM'));
-                    return;
-                }            
-            }
+        var fieldsManager = new FieldsManager();
+
+        fieldsManager.windowNewField(function (dialogRef) {
+            var FieldsValues = fieldsManager.GetFieldsValues(FormsNewRepositorydT, FormsNewRepositoryDT, 0);
+            if (!$.isPlainObject(FieldsValues))
+                return 0;
+
+            dialogRef.close();
+
+            if (FieldsValues.RequiredField)
+                FieldsValues.RequiredField = 'Si';
             else
+                FieldsValues.RequiredField = 'No';
+
+            FormsNewRepositorydT.$('tr.selected').each(function ()
             {
-                FieldsValidator.AddClassRequiredActive($('#FieldLengthRM'));
-                    return;
-            }
-        }
-                        
-        if(RequiredChecValue)
-            RequiredChecValue = 'Si';
-        else
-            RequiredChecValue = 'No';                
-                
-        
-        FormsNewRepositorydT.$('tr[id='+IdField+']').each(function()
-        {
-            var position = FormsNewRepositorydT.fnGetPosition(this); // getting the clicked row position
-            FormsNewRepositorydT.fnUpdate([FieldName],position,0,false);
-            FormsNewRepositorydT.fnUpdate([FieldType],position,1,false);
-            FormsNewRepositorydT.fnUpdate([FieldLength],position,2,false);
-            FormsNewRepositorydT.fnUpdate([RequiredChecValue],position,3,false);
+                var position = FormsNewRepositorydT.fnGetPosition(this); // getting the clicked row position
+                FormsNewRepositorydT.fnUpdate([FieldsValues.FieldName], position, 0, false);
+                FormsNewRepositorydT.fnUpdate([FieldsValues.FieldType], position, 1, false);
+                FormsNewRepositorydT.fnUpdate([FieldsValues.FieldLength], position, 2, false);
+                FormsNewRepositorydT.fnUpdate([FieldsValues.RequiredField], position, 3, false);
+            });
+
+        }, function(dialogRef){
+            var buttonEdit = dialogRef.getButton('accept');
+            $(buttonEdit).html('<i class="fa fa-pencil-square-o fa-lg"></i> Modificar');
+            $(buttonEdit).removeClass('btn-primary').addClass('btn-warning');
+            dialogRef.setType(BootstrapDialog.TYPE_WARNING);
+            dialogRef.setTitle('<i class="fa fa-pencil-square-o fa-lg"></i> Editar Campo');
+            
+        },
+        function (dialogRef) {
+            var fieldNameForm = dialogRef.getData('fieldName');
+            var fieldTypeForm = dialogRef.getData('fieldType');
+            var fieldLength = dialogRef.getData('fieldLength');
+            var fieldCheck = dialogRef.getData('requiredCheck');
+
+            $(fieldNameForm).val(FieldName);
+            $(fieldTypeForm).val(FieldType);
+            $(fieldLength).val(FieldLength);
+
+            if (String(RequiredField) === 'No')
+                $(fieldCheck).prop('checked', false);
+            else if (String(RequiredField) === 'Si')
+                $(fieldCheck).prop('checked', true);
         });
-        
-        $('#DivFormsNewField').remove();
-        Notificacion('Campo Modificado');
+
     };
-    
+
     /* Tabla que muestra los campos y su detalle de los mismos pertenecientes a un repositorio */
-    _BuildTableRepositoryDetail = function(RepositoryDetail)
+    var _BuildTableRepositoryDetail = function (RepositoryDetail)
     {
         self.AutoincrementId = 0;
         $('#DivRepositoryDetail').remove();
         $('#WS_Repository').append('<div id = "DivRepositoryDetail"><table id = "TableRepositoryDetail" class = "display hover"></table></div>');
         $('#DivRepositoryDetail').append('<div class="Loading" id = "IconWaitingNewRepository"><img src="../img/loadinfologin.gif"></div>');
         $('#TableRepositoryDetail').append('<thead><tr><th>Campo</th><th>Tipo</th><th>Longitud</th><th>Requerido</th></tr></thead>');
-        
-        RepositoryDetaildT = $('#TableRepositoryDetail').dataTable(
-        {
-           'bPaginate':false, 'bInfo':false, bFilter: false, "bSort": false, "autoWidth" : false, "oLanguage":LanguajeDataTable,"dom": 'lfTrtip',
-            "tableTools": {
-                "aButtons": [
-                    {"sExtends":"text", "sButtonText": "Agregar Campo", "fnClick" :function(){_FormsAddNewField();}},
-                    {"sExtends":"text", "sButtonText": "Eliminar Campo", "fnClick" :function(){_ConfirmDeleteRepositoryField();}},
-                    {"sExtends":"text", "sButtonText": "Eliminar Repositorio", "fnClick" :function(){_ConfirmDeleteRepository();}},
-                    {"sExtends": "copy","sButtonText": "Copiar Tabla"},
-                    {
-                        "sExtends":    "collection",
-                        "sButtonText": "Guardar como...",
-                        "aButtons":    [ "csv", "xls", "pdf" ]
-                    }                          
-                ]
-            }                              
-        });  
 
-        $('div.DTTT_container').css({"margin-top":"1em"});
-        $('div.DTTT_container').css({"float":"left"});
+        RepositoryDetaildT = $('#TableRepositoryDetail').dataTable(
+                {
+                    'bPaginate': false, 'bInfo': false, bFilter: false, "bSort": false, "autoWidth": false, "oLanguage": LanguajeDataTable, "dom": 'lfTrtip',
+                    "tableTools": {
+                        "aButtons": [
+                            {"sExtends": "text", "sButtonText": '<i class="fa fa-plus-circle fa-lg"></i> Agregar Campo', "fnClick": function () {
+                                    _FormsAddNewField();
+                                }},
+                            {"sExtends": "text", "sButtonText": '<i class="fa fa-trash fa-lg"></i> Campo', "fnClick": function () {
+                                    _ConfirmDeleteRepositoryField();
+                                }},
+                            {"sExtends": "text", "sButtonText": '<i class="fa fa-exclamation-triangle"></i> Eliminar Repositorio', "fnClick": function () {
+                                    _ConfirmDeleteRepository();
+                                }},
+                            {
+                                "sExtends": "collection",
+                                "sButtonText": '<i class="fa fa-floppy-o fa-lg"></i>',
+                                "aButtons": ["csv", "xls", "pdf", "copy"]
+                            }
+                        ]
+                    }
+                });
+
+        $('div.DTTT_container').css({"margin-top": "1em"});
+        $('div.DTTT_container').css({"float": "left"});
 
         RepositoryDetailDT = new $.fn.dataTable.Api('#TableRepositoryDetail');
-        
-        $('#TableRepositoryDetail tbody').on( 'click', 'tr', function ()
-            {
-                RepositoryDetailDT.$('tr.selected').removeClass('selected');
-                $(this).addClass('selected');
-            } );  
-        
+
+        $('#TableRepositoryDetail tbody').on('click', 'tr', function ()
+        {
+            RepositoryDetailDT.$('tr.selected').removeClass('selected');
+            $(this).addClass('selected');
+        });
+
         /* Llenado de la tabla con los campos del repositorio */
-        $(RepositoryDetail).find('Campo').each(function()
+        $(RepositoryDetail).find('Campo').each(function ()
         {
             var FieldName = $(this).find('name').text();
             var FieldType = $(this).find('type').text();
             var FieldLength = $(this).find('long').text();
             var RequiredField = $(this).find('required').text();
-            
-            if(RequiredField==='' || RequiredField==='false')
+
+            if (RequiredField === '' || RequiredField === 'false')
                 RequiredField = "No";
             else
-                if(RequiredField==='true')
-                    RequiredField = "Si";
-            
+            if (RequiredField === 'true')
+                RequiredField = "Si";
+
             var data = [FieldName, FieldType, FieldLength, RequiredField];
 
             var ai = RepositoryDetailDT.row.add(data).draw();
             var n = RepositoryDetaildT.fnSettings().aoData[ ai[0] ].nTr;
-            n.setAttribute('id',self.AutoincrementId);
-            
-        });
-        
-        
-        $('#IconWaitingNewRepository').remove();    
-    };
-    _ConfirmDeleteRepository = function()
-    {
-        var RepositoryName = $('#RMSelectRepositories option:selected').html();
-        
-        $('#DivConfirmDeleteRepository').remove();
-        $('body').append('<div id = "DivConfirmDeleteRepository"></div>');
-        $('#DivConfirmDeleteRepository').append('<p>Realmente desea eliminar el repositorio <b>'+RepositoryName+'</b></p>');
-        $('#DivConfirmDeleteRepository').dialog({title:"Mensaje de confirmación", width:250, minWidth:150, height:250, minHeight:150, modal:true, buttons:{
-                Cancelar:function(){$(this).remove();},
-                Continuar: function(){_DeleteRepository();}
-        }});
-    };
-    
-    _DeleteRepository = function()
-    {
-        $('#WS_Repository').append('<div class="Loading" id = "IconWaitingRepository"><img src="../img/loadinfologin.gif"></div>');
+            n.setAttribute('id', self.AutoincrementId);
 
+        });
+
+
+        $('#IconWaitingNewRepository').remove();
+    };
+
+    var _ConfirmDeleteRepository = function ()
+    {
+        var RepositoryName = $('#RMSelectRepositories option:selected').attr('name');
+
+        BootstrapDialog.show({
+            title: '<i class="fa fa-exclamation-triangle fa-lg"></i> Mensaje de Confirmación',
+            type: BootstrapDialog.TYPE_DANGER,
+            size: BootstrapDialog.SIZE_SMALL,
+            message: '<p>Realmente desea eliminar el repositorio <b>' + RepositoryName + '</b></p>',
+            closable: true,
+            closeByBackdrop: true,
+            closeByKeyboard: true,
+            buttons: [
+                {
+                    label: 'Eliminar',
+                    icon: 'fa fa-trash-o fa-lg',
+                    cssClass: "btn-danger",
+                    action: function (dialogRef) {
+                        var button = this;
+                        button.spin();
+                        dialogRef.enableButtons(false);
+                        dialogRef.setClosable(false);
+
+                        if (_DeleteRepository())
+                            dialogRef.close();
+                        else {
+                            dialogRef.enableButtons(true);
+                            dialogRef.setClosable(true);
+                            button.stopSpin();
+                        }
+                    }
+                },
+                {
+                    label: "Cerrar",
+                    action: function (dialogRef) {
+                        dialogRef.close();
+                    }
+                }
+            ],
+            onshown: function (dialogRef) {
+
+            }
+        });
+
+    };
+
+    var _DeleteRepository = function ()
+    {
+        var status = 0;
         var IdRepository = $('#RMSelectRepositories option:selected').val();
         var RepositoryName = $('#RMSelectRepositories option:selected').html();
         var IdEnterprise = $('#RMSelectEnterprises option:selected').attr('id');
-        
-        var data = {opcion:'DeleteRepository', DataBaseName:EnvironmentData.DataBaseName, IdUser:EnvironmentData.IdUsuario, UserName:EnvironmentData.NombreUsuario, IdRepository:IdRepository, RepositoryName:RepositoryName, IdEnterprise:IdEnterprise};
-        
+
+        var data = {opcion: 'DeleteRepository', DataBaseName: EnvironmentData.DataBaseName, IdUser: EnvironmentData.IdUsuario, UserName: EnvironmentData.NombreUsuario, IdRepository: IdRepository, RepositoryName: RepositoryName, IdEnterprise: IdEnterprise};
+
         $.ajax({
-        async:false, 
-        cache:false,
-        dataType:"html", 
-        type: 'POST',   
-        url: "php/Repository.php",
-        data: data, 
-        success:  function(xml)
-        {            
-            if($.parseXML( xml )===null){Error(xml); return 0;}else xml=$.parseXML( xml );
-
-            if($(xml).find('DeletedRepository').length>0)
+            async: false,
+            cache: false,
+            dataType: "html",
+            type: 'POST',
+            url: "php/Repository.php",
+            data: data,
+            success: function (xml)
             {
-                $('#DivConfirmDeleteRepository').remove();
-                var Mensaje = $(xml).find('Mensaje').text();
-                Notificacion(Mensaje);
-                
-                $("#RMSelectRepositories option:first").click();
-                $('#RMSelectRepositories option[value='+IdRepository+']').remove(); 
-                $('#DivRepositoryDetail').remove();
-                
+                if ($.parseXML(xml) === null) {
+                    errorMessage(xml);
+                    return 0;
+                } else
+                    xml = $.parseXML(xml);
+
+                if ($(xml).find('DeletedRepository').length > 0)
+                {
+                    var Mensaje = $(xml).find('Mensaje').text();
+                    Notificacion(Mensaje);
+
+                    $("#RMSelectRepositories option:first").click();
+                    $('#RMSelectRepositories option[value=' + IdRepository + ']').remove();
+                    $('#DivRepositoryDetail').remove();
+                    status = 1;
+                }
+
+                $(xml).find("Error").each(function ()
+                {
+                    var $Error = $(this);
+                    var mensaje = $Error.find("Mensaje").text();
+                    errorMessage(mensaje);
+                });
+
+            },
+            beforeSend: function () {},
+            error: function (jqXHR, textStatus, errorThrown) {
+                errorMessage(textStatus + "<br>" + errorThrown);
             }
-            
-            $(xml).find("Error").each(function()
-            {
-                var $Error=$(this);
-                var mensaje=$Error.find("Mensaje").text();
-                Error(mensaje);
-            });                 
+        });
 
-        },
-        beforeSend:function(){},
-        error: function(jqXHR, textStatus, errorThrown) {Error(textStatus +"<br>"+ errorThrown);}
-        });         
-        
-        $('#IconWaitingRepository').remove();
+        return status;
     };
-    
-    _ConfirmDeleteRepositoryField = function()
+
+    var _ConfirmDeleteRepositoryField = function ()
     {
         var IdField = $('#TableRepositoryDetail').find('tr.selected').length;
         var RepositoryName = $('#RMSelectRepositories option:selected').text();
         var FieldName = undefined;
-        if(!(IdField>0))
+        if (!(IdField > 0))
             return Advertencia('Debe seleccionar al menos un campo');
-        
-        $('#TableRepositoryDetail').find('tr.selected').each(function()
+
+        $('#TableRepositoryDetail').find('tr.selected').each(function ()
         {
             var position = RepositoryDetaildT.fnGetPosition(this); // getting the clicked row position
             FieldName = RepositoryDetaildT.fnGetData(position)[0];
         });
-        
+
         $('body').append('<div id = "DivConfirmDeleteRepositoryField"></div>');
-        $('#DivConfirmDeleteRepositoryField').append('<p>¿Realmente desea eliminar el campo <b>'+FieldName+'</b> del repositorio  <b>'+RepositoryName+'</b>?. Este proceso no puede revertirse.</p>');
-        $('#DivConfirmDeleteRepositoryField').dialog({title:"Mensaje de confirmación", width:250, minWidth:200, heigth:250, minHeigth:200, modal:true, buttons:{
-            "Cancelar":function(){$(this).remove();},
-            "Aceptar": function(){$(this).remove(); _DeleteRepositoryField();}
+        $('#DivConfirmDeleteRepositoryField').append('<p>¿Realmente desea eliminar el campo <b>' + FieldName + '</b> del repositorio  <b>' + RepositoryName + '</b>?. Este proceso no puede revertirse.</p>');
+        $('#DivConfirmDeleteRepositoryField').dialog({title: "Mensaje de confirmación", width: 250, minWidth: 200, heigth: 250, minHeigth: 200, modal: true, buttons: {
+                "Cancelar": function () {
+                    $(this).remove();
+                },
+                "Aceptar": function () {
+                    $(this).remove();
+                    _DeleteRepositoryField();
+                }
             }
         });
     };
-    
-    _DeleteRepositoryField = function()
+
+    var _DeleteRepositoryField = function ()
     {
         var IdField = $('#TableRepositoryDetail').find('tr.selected').length;
         var FieldName = undefined;
-        if(!(IdField>0))
+        if (!(IdField > 0))
             return Advertencia('Debe seleccionar al menos un campo');
-        
-        var IdRepository = $('#RMSelectRepositories').val();  
+
+        var IdRepository = $('#RMSelectRepositories').val();
         var RepositoryName = $('#RMSelectRepositories option:selected').text();
-        
-        $('#TableRepositoryDetail').find('tr.selected').each(function()
+
+        $('#TableRepositoryDetail').find('tr.selected').each(function ()
         {
             var position = RepositoryDetaildT.fnGetPosition(this); // getting the clicked row position
             FieldName = RepositoryDetaildT.fnGetData(position)[0];
         });
-        
-        var data = {opcion:"DeleteRepositoryField", DataBaseName: EnvironmentData.DataBaseName, IdRepository:IdRepository, RepositoryName:RepositoryName, IdUser:EnvironmentData.IdUsuario, UserName: EnvironmentData.NombreUsuario, FieldName:FieldName};
-        
+
+        var data = {opcion: "DeleteRepositoryField", DataBaseName: EnvironmentData.DataBaseName, IdRepository: IdRepository, RepositoryName: RepositoryName, IdUser: EnvironmentData.IdUsuario, UserName: EnvironmentData.NombreUsuario, FieldName: FieldName};
+
         $.ajax({
-        async:false, 
-        cache:false,
-        dataType:"html", 
-        type: 'POST',   
-        url: "php/Repository.php",
-        data: data, 
-        success:  function(xml)
-        {            
-            if($.parseXML( xml )===null){Error(xml); return 0;}else xml=$.parseXML( xml );
-
-            if($(xml).find('DeletedField').length>0)
+            async: false,
+            cache: false,
+            dataType: "html",
+            type: 'POST',
+            url: "php/Repository.php",
+            data: data,
+            success: function (xml)
             {
-                var Mensaje = $(xml).find('Mensaje').text();
-                Notificacion(Mensaje);
-                RepositoryDetailDT.row('tr.selected').remove().draw( false );
+                if ($.parseXML(xml) === null) {
+                    errorMessage(xml);
+                    return 0;
+                } else
+                    xml = $.parseXML(xml);
+
+                if ($(xml).find('DeletedField').length > 0)
+                {
+                    var Mensaje = $(xml).find('Mensaje').text();
+                    Notificacion(Mensaje);
+                    RepositoryDetailDT.row('tr.selected').remove().draw(false);
+                }
+
+                $(xml).find("Error").each(function ()
+                {
+                    var $Error = $(this);
+                    var mensaje = $Error.find("Mensaje").text();
+                    errorMessage(mensaje);
+                });
+
+            },
+            beforeSend: function () {},
+            error: function (jqXHR, textStatus, errorThrown) {
+                errorMessage(textStatus + "<br>" + errorThrown);
             }
-            
-            $(xml).find("Error").each(function()
-            {
-                var $Error=$(this);
-                var mensaje=$Error.find("Mensaje").text();
-                Error(mensaje);
-            });                 
+        });
 
-        },
-        beforeSend:function(){},
-        error: function(jqXHR, textStatus, errorThrown) {Error(textStatus +"<br>"+ errorThrown);}
-        }); 
-        
     };
-    
-    _FormsAddNewField = function()
+
+    var _FormsAddNewField = function ()
     {
-        
+
         var fieldsManager = new FieldsManager();
         fieldsManager.windowNewField(this._AddNewFieldToRepository);
-        
+
     };
-    
+
     /* Agrega un nuevo campo a un repositorio existente  */
-    _AddNewFieldToRepository = function()
+    var _AddNewFieldToRepository = function ()
     {
-        
+
         var fieldsManager = new FieldsManager();
         var FieldsValues = fieldsManager.GetFieldsValues(RepositoryDetaildT, RepositoryDetailDT);
         if (!$.isPlainObject(FieldsValues))
             return 0;
-                    
-        var RepositoryName = $('#RMSelectRepositories option:selected').text();  
-           
-        var data = {opcion:"AddNewFieldToRepository", RepositoryName:RepositoryName, FieldName: FieldsValues.FieldName, FieldType: FieldsValues.FieldType, FieldLength: FieldsValues.FieldLength, RequiredField: FieldsValues.RequiredField};
-        
+
+        var RepositoryName = $('#RMSelectRepositories option:selected').text();
+
+        var data = {opcion: "AddNewFieldToRepository", RepositoryName: RepositoryName, FieldName: FieldsValues.FieldName, FieldType: FieldsValues.FieldType, FieldLength: FieldsValues.FieldLength, RequiredField: FieldsValues.RequiredField};
+
         $.ajax({
-        async:false, 
-        cache:false,
-        dataType:"html", 
-        type: 'POST',   
-        url: "php/Repository.php",
-        data: data, 
-        success:  function(xml)
-        {            
-            if($.parseXML( xml )===null){Salida(xml); return 0;}else xml=$.parseXML( xml );
-
-            if($(xml).find('AddedField').length>0)
+            async: false,
+            cache: false,
+            dataType: "html",
+            type: 'POST',
+            url: "php/Repository.php",
+            data: data,
+            success: function (xml)
             {
-                var Mensaje = $(xml).find('Mensaje').text();
-                
-                Notificacion(Mensaje);
+                if ($.parseXML(xml) === null) {
+                    Salida(xml);
+                    return 0;
+                } else
+                    xml = $.parseXML(xml);
 
-                FieldsValues.RequiredField = FieldsValues.RequiredField.toString();
-                if(FieldsValues.RequiredField == "false") 
-                    FieldsValues.RequiredField = "No";
-                else
-                    FieldsValues.RequiredField = "Si";
-                
-                var data = [FieldsValues.FieldName, FieldsValues.FieldType, FieldsValues.FieldLength, FieldsValues.RequiredField];
+                if ($(xml).find('AddedField').length > 0)
+                {
+                    var Mensaje = $(xml).find('Mensaje').text();
 
-                var ai = RepositoryDetailDT.row.add(data).draw();
-                var n = RepositoryDetaildT.fnSettings().aoData[ ai[0] ].nTr;
+                    Notificacion(Mensaje);
 
+                    FieldsValues.RequiredField = FieldsValues.RequiredField.toString();
+                    if (FieldsValues.RequiredField == "false")
+                        FieldsValues.RequiredField = "No";
+                    else
+                        FieldsValues.RequiredField = "Si";
+
+                    var data = [FieldsValues.FieldName, FieldsValues.FieldType, FieldsValues.FieldLength, FieldsValues.RequiredField];
+
+                    var ai = RepositoryDetailDT.row.add(data).draw();
+                    var n = RepositoryDetaildT.fnSettings().aoData[ ai[0] ].nTr;
+
+                }
+
+                $(xml).find("Error").each(function ()
+                {
+                    var $Error = $(this);
+                    var mensaje = $Error.find("Mensaje").text();
+                    errorMessage(mensaje);
+                });
+
+            },
+            beforeSend: function () {},
+            error: function (jqXHR, textStatus, errorThrown) {
+                errorMessage(textStatus + "<br>" + errorThrown);
             }
-            
-            $(xml).find("Error").each(function()
-            {
-                var $Error=$(this);
-                var mensaje=$Error.find("Mensaje").text();
-                Error(mensaje);
-            });                 
+        });
 
-        },
-        beforeSend:function(){},
-        error: function(jqXHR, textStatus, errorThrown) {Error(textStatus +"<br>"+ errorThrown);}
-        });       
-        
     };
-    
+
     /* Dialog que pide el xml para insertar el nuevo repositorio */
-    _FormAddNewRepositoryXml = function()
+    var _FormAddNewRepositoryXml = function ()
     {
         $('#DivFormAddNewRepository').remove();
         $('body').append('<div id = "DivFormAddNewRepository"></div>');
         $('#DivFormAddNewRepository').append('<p>Seleccione el xml con la estructura del repositorio a insertar</p>');
         $('#DivFormAddNewRepository').append('<input type ="file" accept="text/xml" id="AddRepository_SelectFile">');
-        $('#DivFormAddNewRepository').dialog({title:"Agregar Nuevo Repositorio", width:350, minWidth:150, heigth:300, minHeigth:150, modal:true, buttons:{
-            "Cancelar":function(){},
-            "Construir":function(){_AddNewRepositoryXml();}}
+        $('#DivFormAddNewRepository').dialog({title: "Agregar Nuevo Repositorio", width: 350, minWidth: 150, heigth: 300, minHeigth: 150, modal: true, buttons: {
+                "Cancelar": function () {},
+                "Construir": function () {
+                    _AddNewRepositoryXml();
+                }}
         });
     };
-    
+
     /* Toma un xml a través de un XML */
-    _AddNewRepositoryXml = function()
+    var _AddNewRepositoryXml = function ()
     {
         var xml_usuario = document.getElementById("AddRepository_SelectFile");
-        var archivo = xml_usuario.files;     
+        var archivo = xml_usuario.files;
         var data = new FormData();
 
-        for(i=0; i<archivo.length; i++)
+        for (i = 0; i < archivo.length; i++)
         {
-            data.append('archivo',archivo[i]);
-            data.append('opcion','XMLInsertRepositorio');
-            data.append('IdUser',EnvironmentData.IdUsuario);
-            data.append('DataBaseName',EnvironmentData.DataBaseName);
-            data.append('UserName',EnvironmentData.NombreUsuario);
-        } 
-        
+            data.append('archivo', archivo[i]);
+            data.append('opcion', 'XMLInsertRepositorio');
+            data.append('IdUser', EnvironmentData.IdUsuario);
+            data.append('DataBaseName', EnvironmentData.DataBaseName);
+            data.append('UserName', EnvironmentData.NombreUsuario);
+        }
+
         $('#DivFormAddNewRepository').append('<div class="Loading" id = "IconWaitingNewRepository"><img src="../img/loadinfologin.gif"></div>');
-        
+
         $.ajax({
-        async:false, 
-        cache:false,
-        processData: false,
-        contentType: false,
-        dataType:"html", 
-        type: 'POST',   
-        url: "php/Repository.php",
-        data: data, 
-        success:  function(xml){
-            
-            $('#DivFormAddNewRepository').remove();
-            Salida(xml);
-        },
-        beforeSend:function(){},
-        error: function(jqXHR, textStatus, errorThrown){Error(textStatus +"<br>"+ errorThrown);}
-      });
-        
-    };    
-};
-/* Interfaz dedicada a agregar un nuevo repositorio  
- * RM = RepositoriesManager*/
-ClassRepository.prototype.NewRepository = function()
-{
-    var self = this;
-    self.AutoincrementId = 0;
-    var buttons = {"Generar Repositorio":{text:"Generar Repositorio", click:function(){_BuildNewRepository();}}, "Limpiar":{text:"Limpiar", click:function(){self.NewRepository();}}};
-    $('#DivRepositoriesManager').dialog("option","buttons",buttons);
-    
-    
-    $('#WS_Repository').empty();
-    $('#WS_Repository').append('<div class="titulo_ventana">Agregar un Nuevo Repositorio</div>');
-    $('#WS_Repository').append('<div class="Loading" id = "IconWaitingNewRepository"><img src="../img/loadinfologin.gif"></div>');
-    var Enterprise = new ClassEnterprise();
-    var Enterprises = Enterprise.GetEnterprises();
-    
-    /* Select Empresas */
-    $('#WS_Repository').append('<p>Empresa: <select id = "RMSelectEnterprises" class = "FormStandart required" FieldType = "varchar" FieldLength = "100"></select></p>');    
-    $("#WS_Repository").append('<p>Nombre del Repositorio: <input type = "text" id = "RepositoryNameRM" class = "FormStandart required" FieldType = "varchar" FieldLength = "50"></p>');
-    $("#RMSelectEnterprises").append("<option value='0'>Seleccione una Empresa</option>");    
-    $(Enterprises).find("Enterprise").each(function()
-    {
-       var $Empresa=$(this);
-       var id = $Empresa.find("IdEmpresa").text();
-       var nombre = $Empresa.find("NombreEmpresa").text();  
-       var ClaveEmpresa = $Empresa.find('ClaveEmpresa').text();
-       $("#RMSelectEnterprises").append("<option value=\""+ClaveEmpresa+"\">"+ClaveEmpresa+" ("+ nombre.slice(0,60) +")</option>");                                   
-    });        
-    /* Fin Select */
-            
-    $('#WS_Repository').append('<table id = "TableFieldsNewRepository" class = "display hover"><thead><tr><th>Campo</th><th>Tipo</th><th>Longitud</th><th>Requerido</th></tr></thead></table>');  
-    
-    FormsNewRepositorydT = $('#TableFieldsNewRepository').dataTable(
-    {
-       'bPaginate':false, 'bInfo':false, bFilter: false, "bSort": false,
-       "dom": 'lfTrtip',
-        "tableTools": {
-            "aButtons": [
-                {"sExtends":"text", "sButtonText": "Agregar Campo", "fnClick" :function(){_FormsNewField();}},
-                {"sExtends":"text", "sButtonText": "Editar Campo", "fnClick" :function(){_EditNewRepositoryField();}},
-                {"sExtends":"text", "sButtonText": "Eliminar Campo", "fnClick" :function(){_ConfirmDeleteNewRepositoryField();}},                    
-                {"sExtends":"text", "sButtonText": "Agregar desde XML", "fnClick" :function(){_FormAddNewRepositoryXml();}},
-                {"sExtends": "copy","sButtonText": "Copiar Tabla"}                  
-            ]
-        },
-        "autoWidth" : false,
-        "oLanguage":LanguajeDataTable                   
-    });  
-        
-    $('div.DTTT_container').css({"margin-top":"1em"});
-    $('div.DTTT_container').css({"float":"left"});
-            
-    FormsNewRepositoryDT = new $.fn.dataTable.Api('#TableFieldsNewRepository');
-    $('#TableFieldsNewRepository tbody').on( 'click', 'tr', function ()
-        {
-            FormsNewRepositoryDT.$('tr.selected').removeClass('selected');
-            $(this).addClass('selected');
-        } );  
-    $('#IconWaitingNewRepository').remove();    
-};
+            async: false,
+            cache: false,
+            processData: false,
+            contentType: false,
+            dataType: "html",
+            type: 'POST',
+            url: "php/Repository.php",
+            data: data,
+            success: function (xml) {
 
-/* Funcion invocada desde la opcion de Administrar (Consola de Repositorios) */
-ClassRepository.prototype.OptionAdministrator = function()
-{
-    var self = this;
-    
-    var buttons = {};
-    $('#DivRepositoriesManager').dialog('option', 'buttons', buttons);
-    
-    $('#WS_Repository').empty();
-    $('#WS_Repository').append('<div class="titulo_ventana">Administracion de Repositorios</div>');
-    $('#WS_Repository').append('<div class="Loading" id = "IconWaitingNewRepository"><img src="../img/loadinfologin.gif"></div>');
-    var Enterprise = new ClassEnterprise();
-    var Enterprises = Enterprise.GetEnterprises();
-    
-    /* Select Empresas */
-    $('#WS_Repository').append('<p>Empresa: <select id = "RMSelectEnterprises" class = "FormStandart required" FieldType = "varchar" FieldLength = "100"></select></p>');    
-    $("#RMSelectEnterprises").append("<option value='0'>Seleccione una Empresa</option>");  
-    $('#WS_Repository').append('<p>Repositorio: <select id = "RMSelectRepositories" class = "FormStandart required" FieldType = "varchar" FieldLength = "50"></select></p>');
-    $('#RMSelectRepositories').append('<option value = "0">Seleccione un repositorio</option>');
-    
-    $(Enterprises).find("Enterprise").each(function()
+                $('#DivFormAddNewRepository').remove();
+                Salida(xml);
+            },
+            beforeSend: function () {},
+            error: function (jqXHR, textStatus, errorThrown) {
+                errorMessage(textStatus + "<br>" + errorThrown);
+            }
+        });
+
+    };
+
+    /*******************************************************************************
+     * Muestra el Arbol de Empresas y Repositorios
+     * @returns {undefined}
+     */
+    var CM_Repository = function ()
     {
-       var $Empresa=$(this);
-       var id = $Empresa.find("IdEmpresa").text();
-       var nombre = $Empresa.find("NombreEmpresa").text();  
-       var ClaveEmpresa = $Empresa.find('ClaveEmpresa').text();
-       $("#RMSelectEnterprises").append("<option value=\""+ClaveEmpresa+"\" id = \""+id+"\">"+ClaveEmpresa+" ("+ nombre.slice(0,60) +")</option>");                                   
-    });        
-    /* Fin Select */
-    
-    $('#IconWaitingNewRepository').remove();
-        
-    $('#RMSelectEnterprises').change(function()
-    {
-        var EnterpriseKey = $(this).val();
-        if(EnterpriseKey!=='0')
-        {
-            Repositories = self.GetRepositories(EnterpriseKey);
- 
-            /* Select con lista de repositorios de la empresa seleccionada */
-            $('#RMSelectRepositories').empty().append('<option value = "0">Seleccione un repositorio...</option>');
-            $('#DivRepositoryDetail').remove();
-            
-            if($(Repositories).find('Repository').length===0)
-                $('#RMSelectRepositories').empty().append('<option value = "0">No existen repositorios...</option>');
-            
-            $(Repositories).find('Repository').each(function()
+        var buttons = {};
+        $('#DivRepositoriesManager').dialog("option", "buttons", buttons); /* Se eliminan los botones de la ventana de dialogo */
+
+        $('#WS_Repository').empty();
+        $('#WS_Repository').append('<div class="titulo_ventana">Estructura de Repositorio</div>');
+        $('#tree_repository').remove();
+        $('#consola_repository_tree').append('<div id="tree_repository"></div>');
+        $('#tree_repository').append('<ul><li id="Tree_Repository" class="folder expanded " data="icon: \'database.png\'">' + EnvironmentData.DataBaseName + '<ul id="Tree_Repository_"></ul></ul>');
+
+        $.ajax({
+            async: false,
+            cache: false,
+            dataType: "html",
+            type: 'POST',
+            url: 'php/Tree.php',
+            data: 'opcion=GetListReposity',
+            success: function (xml)
             {
-                var IdRepository = $(this).find('IdRepositorio').text();
-                var RepositoryName = $(this).find('NombreRepositorio').text();
-                $('#RMSelectRepositories').append('<option value = "'+IdRepository+'">'+RepositoryName+'</option>');
-            });
-            
-            /* Cuando el usuario seleccione un repositorio, se muestra su detalle del mismo */
-            $('#RMSelectRepositories').change(function()
-            {
-                var IdRepository = $(this).val();
-                if(IdRepository>0)
+                if ($.parseXML(xml) === null)
+                    return errorMessage(xml);
+                else
+                    xml = $.parseXML(xml);
+
+                var ArrayDirectories = new Array();
+                var cont = 0;
+                $(xml).find("Empresas").each(function ()
                 {
-                    var RepositoryName = $('#RMSelectRepositories option:selected').text();
-                    var RepositoryStructure = GeStructure(RepositoryName);
-                    _BuildTableRepositoryDetail(RepositoryStructure);
-                }
-                else    /* Elimina la tabla con el detalle del repositorio previamente seleccionado */
-                    $('#DivRepositoryDetail').remove(); 
-                    
-            }); 
-        }
-        else
-        {
-            $('#RMSelectRepositories').empty().append('<option value = "0">Seleccione una empresa</option>');
-            $('#DivRepositoryDetail').remove();
-        }
-    });
-};
+                    var $Empresas = $(this);
+                    var ClaveEmpresa = $Empresas.find("ClaveEmpresa").text();
+                    var NombreEmpresa = $Empresas.find("NombreEmpresa").text();
+                    var IdEmpresa = $Empresas.find("IdEmpresa").text();
+                    var Index = ArrayDirectories.indexOf(IdEmpresa);
+                    /* Comprobaciónn para no repetir empresas */
+                    if (Index == (-1))
+                    {
+                        ArrayDirectories[IdEmpresa] = IdEmpresa;
+                        $('#Tree_Repository_').append('<li id="' + ClaveEmpresa + '" class="unselectable expanded folder" data="icon: \'enterprise.png\'">' + NombreEmpresa + '<ul id="' + ClaveEmpresa + '_"></ul>');
+                    }
+                });
 
-ClassRepository.prototype.BuildRepositoriesManager = function()
-{
-    $('#DivRepositoriesManager').remove();
-    $('body').append('\n\
-        <div id="DivRepositoriesManager">\n\
-        <div class="menu_lateral">\n\
-                <div id="accordion_repository">\n\
-                    <div>\n\
-                      <h3><a href="#">Repositorios</a></h3>\n\
-                      <div id="consola_repository_tree">\n\
-                          <table class="TableInsideAccordion">\n\
-                          <tr class = "tr_RepositoryAdmin" title="Administracion">\n\
-                                  <td><img src="img/RepositorioAgregar.png" ></td>\n\
-                                  <td>Administrar</td>\n\
-                              </tr>\n\
-                              <tr class = "tr_NewRepository" title="Nuevo Repositorio">\n\
-                                  <td><img src="img/RepositorioAgregar.png" ></td>\n\
-                                  <td>Nuevo</td>\n\
-                              </tr>\n\
-                              <tr class = "tr_RepositoryDetail" title="Nuevo Repositorio">\n\
-                                  <td><img src="img/RepositorioAgregar.png" ></td>\n\
-                                  <td>Detalle</td>\n\
-                              </tr>\n\
-                          </table>\n\
-                      </div>\n\
-                    </div>\n\
-                </div>\n\
-        </div>\n\
-        <div class="work_space" id="WS_Repository"></div>\n\
-    </div>');
-    
-    $('.tr_NewRepository').click(function()
-    {
-        var Repositories = new ClassRepository();
-        Repositories.NewRepository();
-    });   
-    
-    $('.tr_RepositoryAdmin').click(function()
-    {
-        var classRepository = new ClassRepository();
-        classRepository.OptionAdministrator();
-    });
-    
-    $('.tr_RepositoryDetail').click(function()
-    {
-        CM_Repository();
-    });
-    
-     $("#accordion_repository").accordion({ header: "h3", collapsible: true,heightStyle: "content" });
-     $('#DivRepositoriesManager').dialog(ConsoleSettings,{ title:"Consola de Repositorios",close:function(){$(this).remove();}}).dialogExtend(BotonesWindow);
-    
-       /********* Efectos sobre tabla dentro de acordeÃ³n ***********/
-    $('#DivRepositoriesManager table').on( 'click', 'tr', function ()
-    {
-        var active = $('#DivRepositoriesManager table tr.TableInsideAccordionFocus');                
-        $('#DivRepositoriesManager table tr').removeClass('TableInsideAccordionFocus');
-        $('#DivRepositoriesManager table tr').removeClass('TableInsideAccordionActive');
-        $(active).addClass('TableInsideAccordionFocus');
-        $(this).removeClass('TableInsideAccordionHoverWithoutClass');
-        $(this).addClass('TableInsideAccordionActive');     
-    });
-    $('#DivRepositoriesManager table tr').hover(function()
-    {
-        if($(this).hasClass('TableInsideAccordionActive') || $(this).hasClass('TableInsideAccordionFocus'))
-            $(this).addClass('TableInsideAccordionHoverWithClass');
-        else
-            $(this).addClass('TableInsideAccordionHoverWithoutClass');
-    });
-    $('#DivRepositoriesManager table tr').mouseout(function()
-    {
-        if($(this).hasClass('TableInsideAccordionActive') || $(this).hasClass('TableInsideAccordionFocus'))
-            $(this).removeClass('TableInsideAccordionHoverWithClass');
-        else
-            $(this).removeClass('TableInsideAccordionHoverWithoutClass');
-    });
-    
-    $('#tr_NewUser').addClass('TableInsideAccordionActive');
-    /* Fin de Efectos  */
-    
-    
-    CM_Repository();
-    
-    $('.tr_RepositoryAdmin').click();
-    
-};
-
-ClassRepository.prototype.GetRepositories = function(EnterpriseKey)
-{
-    var RepositoriesXml = 0;
-    var data = {opcion:"GetListRepositories", EnterpriseKey:EnterpriseKey};
-    $.ajax({
-    async:false, 
-    cache:false,
-    dataType:"html", 
-    type: 'POST',   
-    url: "php/Repository.php",
-    data: data, 
-    success:  function(xml)
-    {            
-        if($.parseXML( xml )===null){Error(xml); return 0;}else xml=$.parseXML( xml );
-
-        RepositoriesXml = xml;
-
-        $(xml).find("Error").each(function()
-        {
-            var $Error=$(this);
-            var mensaje=$Error.find("Mensaje").text();
-            Error(mensaje);
-        });                 
-
-    },
-    beforeSend:function(){},
-    error: function(jqXHR, textStatus, errorThrown) {Error(textStatus +"<br>"+ errorThrown);}
-    });             
-
-    return RepositoriesXml;
-};        
-
-/*******************************************************************************
- * Muestra el Arbol de Empresas y Repositorios
- * @returns {undefined}
- */
-function CM_Repository()
-{
-    var buttons = {};
-    $('#DivRepositoriesManager').dialog("option","buttons",buttons); /* Se eliminan los botones de la ventana de dialogo */
-    
-    $('#WS_Repository').empty();
-    $('#WS_Repository').append('<div class="titulo_ventana">Estructura de Repositorio</div>');    
-    $('#tree_repository').remove();
-    $('#consola_repository_tree').append('<div id="tree_repository"></div>');
-    $('#tree_repository').append('<ul><li id="Tree_Repository" class="folder expanded " data="icon: \'database.png\'">'+EnvironmentData.DataBaseName+'<ul id="Tree_Repository_"></ul></ul>');
-    
-    ajax=objetoAjax();
-    ajax.open("POST", 'php/Tree.php',true);
-    ajax.setRequestHeader("Content-Type", "application/x-www-form-urlencoded;charset=utf-8;");
-    ajax.send("opcion=GetListReposity&DataBaseName="+EnvironmentData.DataBaseName);    
-    ajax.onreadystatechange=function() 
-    {
-        if (ajax.readyState===4 && ajax.status===200) 
-       { 
-           if(ajax.responseXML===null){errorMessage(ajax.responseText);return;}                  
-            var xml=ajax.responseXML;           
-            /* Div que contiene el ÃƒÂ¡rbol de repositorios */
-            
-            var ArrayDirectories=new Array();
-             var cont=0;
-           $(xml).find("Empresas").each(function()
-            {                
-               var $Empresas=$(this);
-                var ClaveEmpresa=$Empresas.find("ClaveEmpresa").text();
-                var NombreEmpresa = $Empresas.find("NombreEmpresa").text();
-                var IdEmpresa = $Empresas.find("IdEmpresa").text();
-                var Index=ArrayDirectories.indexOf(IdEmpresa);
-                /* Comprobaciónn para no repetir empresas */
-               if(Index == (-1)) 
-               {
-                   ArrayDirectories[IdEmpresa]=IdEmpresa;
-                   $('#Tree_Repository_').append('<li id="'+ClaveEmpresa+'" class="unselectable expanded folder" data="icon: \'enterprise.png\'">'+NombreEmpresa+'<ul id="'+ClaveEmpresa+'_"></ul>');
-               }               
-            });            
-                                    
-            $(xml).find("Repositorios").each(function()
-            {                           
-               var $Repositorios=$(this);
-                var ClaveEmpresa=$Repositorios.find("EmpresaClaveEmpresa").text();
-                var NombreRepositorio = $Repositorios.find("NombreRepositorio").text();
-                var IdRepositorio = $Repositorios.find("IdRepositorio").text();
-//                $('#'+ClaveEmpresa+'_').append('<li id="'+IdRepositorio+'" class="folder">'+NombreRepositorio+'<ul id="'+IdRepositorio+'_"></ul>');
-                $('#'+ClaveEmpresa+'_').append('<li id="'+IdRepositorio+'" data="icon: \'Repositorio.png\'">'+NombreRepositorio+'<ul id="'+IdRepositorio+'_"></ul>');
-            });
-            /*************** Al Activar un Nodo del Arbol ************
-             * ****** Se muestra la tabla con los campos de la estructura******/
-            
-            $("#tree_repository").dynatree({onActivate: function(node) {                    
-                if(node.data.key>0) /* CondiciÃƒÂ³n que solo cumplen los repositorios en este ÃƒÂ¡rbol */
+                $(xml).find("Repositorios").each(function ()
                 {
-                    var buttons = {};
-                    $('#DivRepositoriesManager').dialog("option","buttons",buttons); /* Se eliminan los botones de la ventana de dialogo */
-                    $('#TableStructureRepositorios').remove();
-                    $('#WS_Repository').empty();
-                    $('#WS_Repository').append('<div class="titulo_ventana">Estructura de Repositorio</div>'); 
-                    $('#WS_Repository').append('<table id="TableStructureRepositorios" class="TablaPresentacion"><thead><tr><th>Nonbre del Campo</th><th>Tipo de Campo</th><th>Longitud</th><th>Requerido</th></tr></thead></table>');
-                    /* SetTableStructura es una funciÃƒÂ³n localizada en Designer.js */
-                    SetTableStructura(node.data.title,'TableStructureRepositorios',1);
-                }
-                    
-            }});
-                                    
-            $(xml).find("Error").each(function()
-            {
-                return 0;
-            });
-        }
-    };        
-}
+                    var $Repositorios = $(this);
+                    var ClaveEmpresa = $Repositorios.find("EmpresaClaveEmpresa").text();
+                    var NombreRepositorio = $Repositorios.find("NombreRepositorio").text();
+                    var IdRepositorio = $Repositorios.find("IdRepositorio").text();
+                    //                  $('#'+ClaveEmpresa+'_').append('<li id="'+IdRepositorio+'" class="folder">'+NombreRepositorio+'<ul id="'+IdRepositorio+'_"></ul>');
+                    $('#' + ClaveEmpresa + '_').append('<li id="' + IdRepositorio + '" data="icon: \'Repositorio.png\'">' + NombreRepositorio + '<ul id="' + IdRepositorio + '_"></ul>');
+                });
+
+                /*************** Al Activar un Nodo del Arbol ************
+                 * ****** Se muestra la tabla con los campos de la estructura******/
+
+                $("#tree_repository").dynatree({onActivate: function (node) {
+                        if (node.data.key > 0) {    /* CondiciÃƒÂ³n que solo cumplen los repositorios en este ÃƒÂ¡rbol */
+                            var buttons = {};
+                            $('#DivRepositoriesManager').dialog("option", "buttons", buttons); /* Se eliminan los botones de la ventana de dialogo */
+                            $('#TableStructureRepositorios').remove();
+                            $('#WS_Repository').empty();
+                            $('#WS_Repository').append('<div class="titulo_ventana">Estructura de Repositorio</div>');
+                            $('#WS_Repository').append('<table id="TableStructureRepositorios" class="TablaPresentacion"><thead><tr><th>Nonbre del Campo</th><th>Tipo de Campo</th><th>Longitud</th><th>Requerido</th></tr></thead></table>');
+                            /* SetTableStructura es una funciÃƒÂ³n localizada en Designer.js */
+                            SetTableStructura(node.data.title, 'TableStructureRepositorios', 1);
+                        }
+
+                    }});
+
+                $(xml).find("Error").each(function () {
+                    var $Error = $(this);
+                    var mensaje = $Error.find("Mensaje").text();
+                    errorMessage(mensaje);
+                });
+
+            },
+            beforeSend: function () {},
+            error: function (jqXHR, textStatus, errorThrown) {
+                errorMessage(textStatus + "<br>" + errorThrown);
+            }
+        });
+
+    };
+
+};
+
+

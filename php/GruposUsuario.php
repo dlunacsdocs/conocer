@@ -92,32 +92,31 @@ class Grupos {
         
     }
     
-    private function DeleteGroup()
+    private function DeleteGroup($userData)
     {
-        $XML =new XML();
-        $BD = new DataBase();
-        $Log = new Log();
-        $DataBaseName = filter_input(INPUT_POST, "DataBaseName");
-        $IdUser = filter_input(INPUT_POST, "IdUsuario");
-        $NombreUsuario =  filter_input(INPUT_POST, "NombreUsuario");
-        $IdGroup = filter_input(INPUT_POST, "IdGroup");
-        $NombreGrupo = filter_input(INPUT_POST, "NombreGrupo");
+        $db = new DataBase();
+        $DataBaseName = $userData['dataBaseName'];
+        $IdUser = $userData['idUser'];
+        $NombreUsuario = $userData['userName'];
+        $IdGroup = filter_input(INPUT_POST, "idGroup");
+        $NombreGrupo = filter_input(INPUT_POST, "groupName");
                 
-        if(strcasecmp($NombreGrupo, "Administradores")==0)
-        {
-            $XML->ResponseXML("Error", 0, "<p>El grupo administradores no puede eliminarse del sistema</p>");
-            return 0;
-        }
+        if(strcasecmp($NombreGrupo, "Administradores")==0 or (int)$IdGroup == 1)
+            XML::XMLReponse("Error", 0, "<p>El grupo administradores no puede eliminarse del sistema</p>");
         
-        $DeleteGroup = "DELETE FROM GruposUsuario WHERE IdGrupo = $IdGroup";
-        if(($ResultDeleteGroup = $BD->ConsultaQuery($DataBaseName, $DeleteGroup))!=1)
-        {
-            $XML->ResponseXML("Error", 0, "<p><b>Error</b> al eliminar el grupo <b>$NombreGrupo</b>. $ResultDeleteGroup</p>");
-        }
+        $DeleteGroup = "
+                DELETE ug.*, gc.*, rc.*, smc.* FROM GruposUsuario ug
+                LEFT JOIN GruposControl gc ON ug.IdGrupo = gc.IdGrupo 
+                LEFT JOIN RepositoryControl rc ON rc.IdGrupo = gc.IdGrupo
+                LEFT JOIN SystemMenuControl smc ON smc.IdGrupo = gc.IdGrupo
+                WHERE ug.IdGrupo = $IdGroup";
         
-        $XML->ResponseXML("Deleted", 1, "<p>Se eliminó del sistema el Grupo '$NombreGrupo'</p>");
+        if(($ResultDeleteGroup = $db->ConsultaQuery($DataBaseName, $DeleteGroup))!=1)
+            return XML::XMLReponse("Error", 0, "<p><b>Error</b> al eliminar el grupo <b>$NombreGrupo</b>. $ResultDeleteGroup</p>");
         
-        $Log->Write("44", $IdUser, $NombreUsuario, " '$NombreGrupo'", $DataBaseName);
+        XML::XMLReponse("Deleted", 1, "<p>Se eliminó del sistema el Grupo '$NombreGrupo'</p>");
+        
+        Log::WriteEvent("44", $IdUser, $NombreUsuario, " '$NombreGrupo'", $DataBaseName);
     }
     
     private function ModifyGroup($userData)

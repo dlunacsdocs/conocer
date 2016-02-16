@@ -2,7 +2,7 @@
  * Operaciones sobre el repositorio de archivos (Borrado, Edición, etc)
  */
 
-/* global TableContentdT, EnvironmentData, TableEnginedT, Hdetalle, Wdetalle, GlobalDatePicker, CatalogContent, WindowConfirmacion */
+/* global TableContentdT, EnvironmentData, TableEnginedT, Hdetalle, Wdetalle, GlobalDatePicker, WindowConfirmacion, LanguajeDataTable */
 
 TableContentDT = '';
 TableContentdT = '';
@@ -45,7 +45,7 @@ function GetDetalle(Source, IdGlobal, IdFile)
       success:  function(xml)
       {                
           $('#Loading').dialog('close');       
-           if($.parseXML( xml )===null){Error(xml);return 0;}else xml=$.parseXML( xml );
+           if($.parseXML( xml )===null){errorMessage(xml);return 0;}else xml=$.parseXML( xml );
                                       
             $(xml).find("CampoRepositorio").each(function()
             {
@@ -98,10 +98,8 @@ function GetDetalle(Source, IdGlobal, IdFile)
                   "Cerrar":{click:function(){$(this).dialog('close');},text:'Cerrar'}
                 }});
             
-//                AdminClientPermissions(NombreRol);
             }                    
             
-            var cont=0;
             var Cadena='';  /* Cadena con los valores  */
             $(xml).find("Catalogo").each(function()
             {
@@ -121,7 +119,7 @@ function GetDetalle(Source, IdGlobal, IdFile)
                  * listado del mismo para hacer alguna modificación. */
                 
                 var EstructuraCatalogo = GeStructure(DocumentEnvironment.RepositoryName+"_"+NombreCatalogo); 
-                if(Tipo=='ListSearch')/* Se introduce un botón para elegir un nuevo elemento del catálogo */
+                if(String(Tipo) === 'ListSearch')/* Se introduce un botón para elegir un nuevo elemento del catálogo */
                 {
                     console.log("ListSearch::"+NombreCatalogo);
                     $('#tabla_DetalleArchivo tr:last').after('<tr><td><input type="button" value="Abrir '+NombreCatalogo+'" id="det_button_'+NombreCatalogo+'"></td><td><select id="det_select_'+NombreCatalogo+'" class="FormStandart"><option value="'+IdCatalogo+'">'+Cadena.slice(0,60)+'</select></td></tr>');                    
@@ -130,7 +128,7 @@ function GetDetalle(Source, IdGlobal, IdFile)
                 
                 $('#det_button_'+NombreCatalogo).button();
                 
-                if(Tipo=='List')
+                if(String(Tipo) === 'List')
                 {
                     $('#tabla_DetalleArchivo tr:last').after('<tr><td>'+NombreCatalogo+'</td><td><select class="FormStandart" id="det_select_'+NombreCatalogo+'"><option value="'+IdCatalogo+'">'+Cadena.slice(0,60)+'</select></td></tr>');                                       
                     DetailSetValuesToList(DocumentEnvironment.RepositoryName, EstructuraCatalogo,NombreCatalogo);
@@ -147,25 +145,27 @@ function GetDetalle(Source, IdGlobal, IdFile)
                 var $Instancias=$(this);
                 var estado=$Instancias.find("Estado").text();
                 var mensaje=$Instancias.find("Mensaje").text();
-                Error(mensaje);
+                errorMessage(mensaje);
             });                      
       },
       beforeSend:function(){},
-      error:function(objXMLHttpRequest){$('#Loading').dialog('close'); Error(objXMLHttpRequest);}
+      error:function(objXMLHttpRequest){$('#Loading').dialog('close'); errorMessage(objXMLHttpRequest);}
     });
     
     return xml;
 }
 
-/****************************************************************************
-    * Llena un Select tipo List (Catálogo)    
-    * @param {type} xmlStruct
-    * @param {type} NombreCatalogo
-    * @returns {undefined}
-    */
+/**
+ * @description Llena un Select tipo List (Catálogo).
+ * @param {type} repositoryName
+ * @param {type} xmlStruct
+ * @param {type} NombreCatalogo
+ * @returns {undefined}
+ */
    function DetailSetValuesToList(repositoryName, xmlStruct,NombreCatalogo)
    {
-        var xml = CatalogContent.GetCatalogRecordsInXml(repositoryName, NombreCatalogo,'List');
+        var catalogManager = new ClassCatalogAdministrator();
+        var xml = catalogManager.GetCatalogRecordsInXml(repositoryName, NombreCatalogo,'List');
 //        alert("List"+xml);
         var ArrayStruct=new Array();var cont=0;
         $(xmlStruct).find("Campo").each(function()
@@ -196,11 +196,11 @@ function GetDetalle(Source, IdGlobal, IdFile)
 /************************ Lenado de ListSearch************************* */
 /****************************************************************************
     * Llena un div y se le inserta una tabla con la información de un catálogo tipo ListSearch (Catálogo)
-
-    * @param {type} xmlStruct
-    * @param {type} NombreCatalogo
-    * @returns {undefined}
-    */
+    /**
+     * @param {type} repositoryName
+     * @param {type} xmlStruct
+     * @param {type} NombreCatalogo
+     * @returns {undefined}  */
    function DetailSetValuesToListSearch(repositoryName, xmlStruct,NombreCatalogo)
    {              
        var TableCatalogdT = undefined, TableCatalogDT = undefined;
@@ -213,8 +213,8 @@ function GetDetalle(Source, IdGlobal, IdFile)
         </div>');             
        
        /* Construcción de Tabla con registro de elementos del catálogo seleccionado (Al pulsar el botón con el nombre del catálogo en la vista con metadatos) */
-        
-        var xml = CatalogContent.GetCatalogRecordsInXml(repositoryName ,NombreCatalogo,'ListSearch');        
+        var catalogManager = new ClassCatalogAdministrator();
+        var xml = catalogManager.GetCatalogRecordsInXml(repositoryName ,NombreCatalogo,'ListSearch');        
         var ArrayStruct = new Array();var cont=0;
         var thead='<thead><tr>';
         $(xmlStruct).find("Campo").each(function()
@@ -295,6 +295,14 @@ function GetDetalle(Source, IdGlobal, IdFile)
    
    function ConfirmDetailModify(xml,DocumentEnvironment)
    {
+       var idRepository = DocumentEnvironment.IdRepository;
+       
+       if(!parseInt(idRepository) > 0)
+           return Advertencia("No fue posible obtener el identificador del repositorio");
+       
+       if(!validateRepositoryPermission(idRepository, '3c59dc048e8850243be8079a5c74d079'))
+           return Advertencia("No tiene permiso de realizar esta acción");
+           
         var Forms = $('#tabla_DetalleArchivo tr td input.FormStandart');
         var FieldsValidator = new ClassFieldsValidator();   
         var validation = FieldsValidator.ValidateFields(Forms);
@@ -374,7 +382,7 @@ function DetailModify(XmlDetalle,DocumentEnvironment)
         
         $('#CMModifyDetail').remove();
         
-        if($.parseXML( xml )===null){Error(xml); return 0;}else xml=$.parseXML( xml );
+        if($.parseXML( xml )===null){errorMessage(xml); return 0;}else xml=$.parseXML( xml );
 
         $(xml).find("DetailModify").each(function()
         {
@@ -411,13 +419,13 @@ function DetailModify(XmlDetalle,DocumentEnvironment)
             var $Instancias=$(this);
             var estado=$Instancias.find("Estado").text();
             var mensaje=$Instancias.find("Mensaje").text();
-            Error(mensaje);
+            errorMessage(mensaje);
             return;
         });
 
     },
     beforeSend:function(){},
-    error: function(jqXHR, textStatus, errorThrown){$('#CMModifyDetail').remove();Error(textStatus +"<br>"+ errorThrown);}
+    error: function(jqXHR, textStatus, errorThrown){$('#CMModifyDetail').remove();errorMessage(textStatus +"<br>"+ errorThrown);}
   });
       
       $('#Loading').dialog('close');
@@ -451,7 +459,7 @@ function GetFiles(IdDirectory)
         url: "php/ContentManagement.php",
         data: 'opcion=GetFiles&DataBaseName='+EnvironmentData.DataBaseName+'&IdUser='+EnvironmentData.IdUsuario+'&UserName='+EnvironmentData.NombreUsuario+'&IdGroup='+EnvironmentData.IdGrupo+'&IdRepository='+IdRepositorio+'&RepositoryName='+NombreRepositorio+'&Search='+Search+"&IdDirectory="+IdDirectory, 
         success:  function(xml){
-            if($.parseXML( xml )===null){Error(xml); return 0;}else xml=$.parseXML( xml );
+            if($.parseXML( xml )===null){errorMessage(xml); return 0;}else xml=$.parseXML( xml );
             var emptyTest = $('#contentTree').is(':empty');
             if(!emptyTest)
             $("#contentTree").dynatree("enable");
@@ -460,14 +468,14 @@ function GetFiles(IdDirectory)
                 var $Instancias=$(this);
                 var estado=$Instancias.find("Estado").text();
                 var mensaje=$Instancias.find("Mensaje").text();
-                Error(mensaje);
+                errorMessage(mensaje);
                 return;
             });
 
             SetSearchResult(IdRepositorio,xml);                        
         },
         beforeSend:function(){},
-    error: function(jqXHR, textStatus, errorThrown){Error(textStatus +"<br>"+ errorThrown);}
+    error: function(jqXHR, textStatus, errorThrown){errorMessage(textStatus +"<br>"+ errorThrown);}
     });
 }
 
@@ -620,11 +628,11 @@ function CM_CargarArchivo()
                 var $Instancias=$(this);
                 var estado=$Instancias.find("Estado").text();
                 var mensaje=$Instancias.find("Mensaje").text();
-                Error(mensaje);
+                errorMessage(mensaje);
             });
       },
       beforeSend:function(){},
-      error:function(objXMLHttpRequest){Error(objXMLHttpRequest);}
+      error:function(objXMLHttpRequest){errorMessage(objXMLHttpRequest);}
     });
     return ArrayCatalogos;
   }
@@ -670,7 +678,8 @@ function CM_CargarArchivo()
         var repositoryName = $('#CM_select_repositorios option:selected').html();
         $('#CM_Carga').append('<p>'+NombreCatalogo+'<select id="Catalogo_'+NombreCatalogo+'"></select></p>');              
 //       var xml=bringInformationCatalog(NombreCatalogo,'List'); 
-        var xml = CatalogContent.GetCatalogRecordsInXml(repositoryName ,NombreCatalogo,'List');
+        var catalogManager = new ClassCatalogAdministrator();
+        var xml = catalogManager.GetCatalogRecordsInXml(repositoryName ,NombreCatalogo,'List');
        var ArrayStruct=new Array();var cont=0;
        $(xmlStruct).find("Campo").each(function()
         {               
@@ -715,8 +724,8 @@ function CM_CargarArchivo()
        $('#button_'+NombreCatalogo).button();
        
   /* Construcción de Tabla con registro de elementos del catálogo seleccionado (Al pulsar el botón con el nombre del catálogo en la vista con metadatos) */
-        
-        var xml = CatalogContent.GetCatalogRecordsInXml(repositoryName ,NombreCatalogo,'ListSearch');        
+        var catalogManager = new ClassCatalogAdministrator();
+        var xml = catalogManager.GetCatalogRecordsInXml(repositoryName ,NombreCatalogo,'ListSearch');        
         var ArrayStruct = new Array();var cont=0;
         var thead='<thead><tr>';
         $(xmlStruct).find("Campo").each(function()
@@ -939,7 +948,7 @@ function CM_CargarArchivo()
       success:  function(xml)
       {
         $('#CMUpload').remove();
-        if($.parseXML( xml )===null){Error(xml);return 0;}else{ xml=$.parseXML( xml );}
+        if($.parseXML( xml )===null){errorMessage(xml);return 0;}else{ xml=$.parseXML( xml );}
         
         if($(xml).find("SetMetadatas").length>0)
             AddNewRow(IdRepositorio, xml);
@@ -948,12 +957,12 @@ function CM_CargarArchivo()
         $(xml).find("Error").each(function()
         {
             var mensaje = $(this).find("Mensaje").text();
-            Error(mensaje);
+            errorMessage(mensaje);
         });       
         
       },
       beforeSend:function(){},
-      error: function(jqXHR, textStatus, errorThrown){$('#CMUpload').remove();Error(textStatus +"<br>"+ errorThrown);}
+      error: function(jqXHR, textStatus, errorThrown){$('#CMUpload').remove();errorMessage(textStatus +"<br>"+ errorThrown);}
     });
    }
 
@@ -1044,10 +1053,10 @@ function getCatalogOptions(IdRepositorio,SelectCatalogos)
                 var $Instancias=$(this);
                 var estado=$Instancias.find("Estado").text();
                 var mensaje=$Instancias.find("Mensaje").text();
-                Error(mensaje);
+                errorMessage(mensaje);
             });
       },
       beforeSend:function(){},
-      error:function(objXMLHttpRequest){Error(objXMLHttpRequest);}
+      error:function(objXMLHttpRequest){errorMessage(objXMLHttpRequest);}
     });
-}                
+}    

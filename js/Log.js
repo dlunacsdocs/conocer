@@ -136,19 +136,19 @@ Log.prototype.QueryLog = function()
           xml = response;              
 
           if($.parseXML( xml )!==null){ xml=$.parseXML( xml );    }
-          else {Error(xml); return 0;}
+          else {errorMessage(xml); return 0;}
 
           $(xml).find("Error").each(function()
           {
             var $Error=$(this);
             var estado=$Error.find("Estado").text();
             var mensaje =$Error.find("Mensaje").text();
-            Error(mensaje);
+            errorMessage(mensaje);
             return 0;
           });                
       },
       beforeSend:function(){},
-      error:function(objXMLHttpRequest){Error(objXMLHttpRequest);$('#LoadingQueryRegisters').remove();}
+      error:function(objXMLHttpRequest){errorMessage(objXMLHttpRequest);$('#LoadingQueryRegisters').remove();}
     });    
 
     return xml;

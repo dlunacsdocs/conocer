@@ -49,7 +49,7 @@ class Instance {
         
         /* Archivo que almacena la configuración de la estrucutra de usuarios, empresas, repositorios, etc */
         touch("$RoutFile/Configuracion/$instanceName.ini");
-        
+                
         if(($result = $DB->ConsultaQuery("", $createSchema))!=1)
                 return XML::XMLReponse ("Error", 0, "<b>Error</b> al intentar crear la instancia $instanceName.<br>Detalles:<br>$result" );
         
@@ -61,25 +61,25 @@ class Instance {
         }
         
         if(($enterpriseStructure = $DB->createEnterpriseDefaultConfiguration($instanceName))!=1){
-            $this->removeInstanceFromCSDocs($idInstance, $instanceName, 0, $userName);
+            $this->removeInstanceFromCSDocs($idInstance, $instanceName, 0, $userName, 1);
             return XML::XMLReponse("Error", 0, $enterpriseStructure);
         }
         
         if(($userStructure = $DB->createUsersDefaultConfiguration($instanceName))!=1){
-            $this->removeInstanceFromCSDocs($idInstance, $instanceName, 0, $userName);
+            $this->removeInstanceFromCSDocs($idInstance, $instanceName, 0, $userName, 1);
             return XML::XMLReponse("Error", 0, $userStructure);
         }
            
         if(($result = $DB->createUsersControl($instanceName))!=1){
-            $this->removeInstanceFromCSDocs($idInstance, $instanceName, 0, $userName);
+            $this->removeInstanceFromCSDocs($idInstance, $instanceName, 0, $userName, 1);
             return "Error al intentar crear el control de <b>Usuarios</b> en la instancia <b>$instanceName</b><br><br>".$result;
         }
         if(($resultBuildInstanceControl = $DB->CreateCSDocsControl($instanceName))!=1){
-                $this->removeInstanceFromCSDocs($idInstance, $instanceName, 0, $userName);
+                $this->removeInstanceFromCSDocs($idInstance, $instanceName, 0, $userName, 1);
                 return XML::XMLReponse ("Error", 0, "<b>Error</b> al crear la estructura de control de la instancia <b>$instanceName</b>. $resultBuildInstanceControl");
         }
         if($resultBuildInstanceControl == 0){
-            $this->removeInstanceFromCSDocs($idInstance, $instanceName, 0, $userName);
+            $this->removeInstanceFromCSDocs($idInstance, $instanceName, 0, $userName, 1);
         }
         
         mkdir("$RoutFile/Estructuras/$instanceName", 0777);
@@ -156,16 +156,20 @@ class Instance {
         $this->removeInstanceFromCSDocs($IdInstance, $InstanceName, $IdUser, $UserName);
     }
     
-    private function removeInstanceFromCSDocs($IdInstance, $InstanceName, $idUser, $userName){
+    private function removeInstanceFromCSDocs($IdInstance, $InstanceName, $idUser, $userName, $duringExecution = 0){
         $DB = new DataBase();
-
-        $idSession = Session::getIdSession();
-
-        if($idSession == null)
-                return XML::XMLReponse ("Error", 0, "Tree:No existe una sesión activa, por favor vuelva a iniciar sesión");
-            
-        $userData = Session::getSessionParameters();
         
+        $userData = null;
+        if(!$duringExecution){
+            $idSession = Session::getIdSession();
+
+            if($idSession == null)
+                return XML::XMLReponse ("Error", 0, "removeInstanceFromCSDocs:No existe una sesión activa, por favor vuelva a iniciar sesión");
+            
+            $userData = Session::getSessionParameters();
+
+        }
+                
         /* Sí el usuario inicio sesión en la misma instancia que va a eliminar, se destruye la sesión */
         if(is_array($userData)){
             if(isset($userData['dataBaseName']))

@@ -40,20 +40,20 @@ function EngineSearch()
       data: {opcion: "EngineSearch",Search: Search},
       success:  function(xml){
           $('#Loading').dialog('close');
-             if($.parseXML( xml )===null){Error(xml);return 0;}else xml=$.parseXML( xml );
+             if($.parseXML( xml )===null){errorMessage(xml);return 0;}else xml=$.parseXML( xml );
             $(xml).find("Error").each(function()
             {
                 var $Instancias=$(this);
                 var estado=$Instancias.find("Estado").text();
                 var mensaje=$Instancias.find("Mensaje").text();
-                Error(mensaje);
+                errorMessage(mensaje);
                 return;
             });
             SetSearchEngineResult(xml);  /* Se envian los dato para mostrarse en la Tabla de resultados */
             
       },
       beforeSend:function(){},
-      error:function(objXMLHttpRequest){Error(objXMLHttpRequest);}
+      error:function(objXMLHttpRequest){errorMessage(objXMLHttpRequest);}
     });
 }
 
