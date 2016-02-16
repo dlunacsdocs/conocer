@@ -129,7 +129,9 @@ class Permissions {
             XML::XMLReponse("Error", 0, "<p><b>Error</b> al obtener los permisos del usuario</p><br><br>Detalles:<br><br>".$ResultQueryListPermissions['Estado']);
          
         for($cont = 0; $cont < count($ResultQueryListPermissions['ArrayDatos']); $cont++){
-            $ArrayAccessPermissions[$ResultQueryListPermissions['ArrayDatos'][$cont]['IdMenu']] = array("IdMenu"=>$ResultQueryListPermissions['ArrayDatos'][$cont]['IdMenu'], "Nombre"=>$ResultQueryListPermissions['ArrayDatos'][$cont]['Nombre']);
+            $ArrayAccessPermissions[$ResultQueryListPermissions['ArrayDatos'][$cont]['IdMenu']] = 
+                    array("IdMenu"=>$ResultQueryListPermissions['ArrayDatos'][$cont]['IdMenu'], 
+                        "Nombre"=>$ResultQueryListPermissions['ArrayDatos'][$cont]['Nombre']);
         }
         
         $GetSystemMenu = "SELECT *FROM SystemMenu";

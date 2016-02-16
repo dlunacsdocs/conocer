@@ -1,3 +1,0 @@
-PHP Warning:  PHP Startup: Unable to load dynamic library '/usr/lib/php/modules/php_imagick.dll' - /usr/lib/php/modules/php_imagick.dll: invalid ELF header in Unknown on line 0
-Resultado de mover el directorio 2015 a la papelera: 1
-Se eliminó el proceso root1218052822

@@ -132,8 +132,13 @@ var ClassPermissions = function ()
                 
                 if(rootNode !== null){
                     var RepositoryChildren = rootNode.getChildren();
-                    if (typeof RepositoryChildren === 'object')
+                    if ($.isArray(RepositoryChildren) && RepositoryChildren.length > 0)
                         RepositoryChildren[0].activate();               /* Se activa el primer repositorio */
+                    else{
+                        Advertencia("Debe agregar por lo menos un repositorio para realizar asignación de permisos.");
+                        dialogRef.close();
+                    }
+                        
                 }
                 
                 content.find('.fa-spinner').remove();
@@ -234,8 +239,10 @@ var ClassPermissions = function ()
                 isFolder: true,
                 idPermission: IdMenu,
                 key: 'SM_'+IdMenu,
-                icon: 'cogwheel.png'
+                icon: 'cogwheel.png',
+                idParent: IdParent
             };
+            
             var parent = $('#permissionsTree').dynatree('getTree').getNodeByKey('SM_'+IdParent);
             
             if(parent !== null)
@@ -324,7 +331,7 @@ var ClassPermissions = function ()
                 root.toggleSelect();
 
         $.ajax({
-            async: true,
+            async: false,
             cache: false,
             dataType: "html",
             type: 'POST',
@@ -332,25 +339,23 @@ var ClassPermissions = function ()
             data: 'opcion=GetAccessPermissionsList&IdRepositorio=' + IdRepositorio + '&NombreRepositorio=' + node.data.title + '&IdGrupo=' + idUserGroup + '&NombreGrupo=' + userGroupName,
             success: function (xml)
             {
-                $('#UsersPlaceWaiting').remove();
-                if ($.parseXML(xml) === null) {
-                    errorMessage(xml);
-                    return 0;
-                } else
+                if ($.parseXML(xml) === null) 
+                    return errorMessage(xml);
+                else
                     xml = $.parseXML(xml);
 
-                $(xml).find("Menu").each(function ()
-                {
+                $(xml).find("Menu").each(function (){
                     var IdMenu = $(this).find('IdMenu').text();
                     var node = PermissionsTree.getNodeByKey("SM_" + IdMenu);
                     
-                    if ($.type(node) === 'object')
-                        if (!node.bSelected)
+                    if(node !== null){
+                        var idParent = node.data.idParent;
+                        if (!node.bSelected && parseInt(idParent) > 0)
                             node.toggleSelect();
+                    }
                 });
 
-                $(xml).find("Error").each(function ()
-                {
+                $(xml).find("Error").each(function (){
                     var mensaje = $(this).find("Mensaje").text();
                     errorMessage(mensaje);
                     $('#UsersPlaceWaiting').remove();
@@ -360,7 +365,6 @@ var ClassPermissions = function ()
             beforeSend: function () {
             },
             error: function (jqXHR, textStatus, errorThrown) {
-                $('#UsersPlaceWaiting').remove();
                 errorMessage(textStatus + "<br>" + errorThrown);
             }
         });
@@ -382,25 +386,34 @@ var ClassPermissions = function ()
 
         if (!parseInt(idGroup) > 0)
             return Advertencia("No fue posible obtener el identificador del grupo seleccionado para aplicar los permisos");
-
+        
+        var permissionsTree = $('#permissionsTree').dynatree('getTree');
+        
+        var permissionsTreeSelectedNodes = [];
         var SelectedRepositoriesTree = Tree.GetSelectedNodes('#repositoriesTree');
         var UnselectedRepositories = Tree.GetUncheckNodes('#repositoriesTree');
-        var SelectedMenus = Tree.GetSelectedNodes('#permissionsTree');
-        var UnselectedMenus = Tree.GetUncheckNodes('#permissionsTree');
+        var UnselectedMenus = [];
         var SettingsXml = undefined;
-
-        if (SelectedMenus === 0 || SelectedRepositoriesTree === 0)
-            return 0;
-
+         
+        permissionsTree.visit(function(node){
+            
+            if(node.hasSubSel && !node.bSelected){
+                if(parseInt(node.data.idPermission) > 0){
+                    permissionsTreeSelectedNodes.push(node);
+                }
+            }
+            else if(node.bSelected)
+                permissionsTreeSelectedNodes.push(node);
+            else if( !node.bSelected) {
+                UnselectedMenus.push(node);
+            }
+        });
+        
         SettingsXml = "<Settings version='1.0' encoding='UTF-8'>";
 
-        $.each(SelectedRepositoriesTree, function ()
-        {
-            var SplitId = this.data.key;
-            SplitId = String(SplitId.split("MSR_"));
-            var Id = SplitId.replace(",", "");
-            if (!(Id > 0))
-                return;
+        $.each(SelectedRepositoriesTree, function (){
+            var Id = this.data.idRepository;
+
             SettingsXml += "<AccessToTheRepository>";
             SettingsXml += "<IdRepository>" + Id + '</IdRepository>';
             SettingsXml += "<RepositoryTitle>" + this.data.title + '</RepositoryTitle>';
@@ -409,24 +422,18 @@ var ClassPermissions = function ()
 
         $.each(UnselectedRepositories, function ()
         {
-            var SplitId = this.data.key;
-            SplitId = String(SplitId.split("MSR_"));
-            var Id = SplitId.replace(",", "");
-            if (!(Id > 0))
-                return;
+            var Id = this.data.idRepository;
+
             SettingsXml += "<WithoutAccessToTheRepository>";
             SettingsXml += "<IdRepository>" + Id + '</IdRepository>';
             SettingsXml += "<RepositoryTitle>" + this.data.title + '</RepositoryTitle>';
             SettingsXml += "</WithoutAccessToTheRepository>";
         });
-
-        $.each(SelectedMenus, function ()
+        
+        $.each(permissionsTreeSelectedNodes, function ()
         {
-            var SplitId = this.data.key;
-            SplitId = String(SplitId.split("SM_"));
-            var Id = SplitId.replace(",", "");
-            if (!(Id > 0))
-                return;
+            var Id = this.data.idPermission;
+
             SettingsXml += "<AccessMenu>";
             SettingsXml += "<IdMenu>" + Id + '</IdMenu>';
             SettingsXml += "<MenuTitle>" + this.data.title + '</MenuTitle>';
@@ -435,11 +442,8 @@ var ClassPermissions = function ()
 
         $.each(UnselectedMenus, function ()
         {
-            var SplitId = this.data.key;
-            SplitId = String(SplitId.split("SM_"));
-            var Id = SplitId.replace(",", "");
-            if (!(Id > 0))
-                return;
+            var Id = this.data.idPermission;
+            
             SettingsXml += "<WithoutAccessMenu>";
             SettingsXml += "<IdMenu>" + Id + '</IdMenu>';
             SettingsXml += "<MenuTitle>" + this.data.title + '</MenuTitle>';

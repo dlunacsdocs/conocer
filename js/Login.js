@@ -21,7 +21,7 @@ function login()
     var database_name = $("#select_login_instancias option:selected").html();
 
     $.ajax({
-        async: true,
+        async: false,
         cache: false,
         dataType: "html",
         type: 'POST',
@@ -57,10 +57,15 @@ function login()
                     users.addUserLoggedPopover();
                     
                     if (idInstance > 0){
-                        userPermissions = $(xml).find('permissions');
-                        var ApplyPermissions = Permissions.ApplyUserPermissions();
-                        if (ApplyPermissions)
-                            StartSystem();
+                        
+                        modulesControl.start(function(){
+                            userPermissions = $(xml).find('permissions');
+                            var ApplyPermissions = Permissions.ApplyUserPermissions();
+                            if (ApplyPermissions)
+                                StartSystem();
+                        });
+
+                        
                     }
                     else
                         StartSystem();
@@ -129,21 +134,21 @@ function checkSessionExistance()
                     
                     var users = new ClassUsers();
                     users.addUserLoggedPopover();
-
-
-                    UserData = {IDataBaseName: EnvironmentData.DataBaseName, dUser: EnvironmentData.IdUsuario, UserName: EnvironmentData.NombreUsuario, IdGroup: EnvironmentData.IdGrupo, GroupName: EnvironmentData.NombreGrupo};
-
-                    var ApplyPermissions = Permissions.ApplyUserPermissions();
                     
-                    userPermissions = $(xml).find('permissions');
-                                        
-                    if(idInstance > 0){
-                        if(ApplyPermissions)
-                            removeLoginInterface();
-                    }
-                    else
-                        StartSystem();
+                    modulesControl.start(function(){
+                        UserData = {IDataBaseName: EnvironmentData.DataBaseName, dUser: EnvironmentData.IdUsuario, UserName: EnvironmentData.NombreUsuario, IdGroup: EnvironmentData.IdGrupo, GroupName: EnvironmentData.NombreGrupo};
 
+                        var ApplyPermissions = Permissions.ApplyUserPermissions();
+
+                        userPermissions = $(xml).find('permissions');
+
+                        if(idInstance > 0){
+                            if(ApplyPermissions)
+                                removeLoginInterface();
+                        }
+                        else
+                            StartSystem();
+                    });
                 }
                 else
                     DeniedSystemStart();

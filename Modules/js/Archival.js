@@ -20,22 +20,24 @@ var ArchivalClass = function(){
      * @returns {Boolean}
      */
     _getDocumentaryDisposition = function(){
-        
         var status = false;
+        $.ajaxSetup({async: false});
         $.getScript( "Modules/js/DocumentaryDisposition.js" )
             .done(function( script, textStatus ) {
               status = true;
-              documentaryDisposition = new DocumentaryDispositionClass();
-              documentaryDisposition.setActionToLinkDocumentaryDispositionMenu();
+            documentaryDisposition = new DocumentaryDispositionClass();
+            documentaryDisposition.setActionToLinkDocumentaryDispositionMenu();
             })
             .fail(function( jqxhr, settings, exception ) {
-            });
+        });
+        $.ajaxSetup({async: true});
         
         return status;
     };
     
     _getDocumentaryValidity = function(){
         var status = false;
+        $.ajaxSetup({async: false});
         $.getScript( "Modules/js/DocumentaryValidity.js" )
             .done(function( script, textStatus ) {
               status = true;
@@ -44,6 +46,8 @@ var ArchivalClass = function(){
             })
             .fail(function( jqxhr, settings, exception ) {
             });
+    
+        $.ajaxSetup({async: true});
         
         return status;
     };
@@ -54,6 +58,7 @@ var ArchivalClass = function(){
      */
     var _getLegalFoundation = function(){
         var status = false;
+        $.ajaxSetup({async: false});
         $.getScript( "Modules/js/LegalFoundation.js" )
             .done(function( script, textStatus ) {
               status = true;
@@ -62,12 +67,15 @@ var ArchivalClass = function(){
             })
             .fail(function( jqxhr, settings, exception ) {
             });
+    
+        $.ajaxSetup({async: true});
         
         return status;
     };
     
     var _getAdministrativeUnit = function(){
         var status = false;
+        $.ajaxSetup({async: false});
         $.getScript( "Modules/js/AdministrativeUnit.js" )
             .done(function( script, textStatus ) {
               status = true;
@@ -76,6 +84,8 @@ var ArchivalClass = function(){
             })
             .fail(function( jqxhr, settings, exception ) {
             });
+        
+        $.ajaxSetup({async: true});
         
         return status;
     };

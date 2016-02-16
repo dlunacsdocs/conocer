@@ -1,6 +1,0 @@
-PHP Warning:  PHP Startup: Unable to load dynamic library '/usr/lib/php/modules/php_imagick.dll' - /usr/lib/php/modules/php_imagick.dll: invalid ELF header in Unknown on line 0
-PHP Notice:  Undefined index: ArrayDatos in /volume1/web/php/ServiceDeleteDirectory.php on line 257
-
-Notice: Undefined index: ArrayDatos in /volume1/web/php/ServiceDeleteDirectory.php on line 257
-Resultado de mover el directorio 2016 a la papelera: 1
-Se eliminó el proceso root1218051028
