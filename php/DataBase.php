@@ -185,13 +185,12 @@ class DataBase {
         if (($ResultInsertIntoGruposControl = $this->ConsultaQuery($DataBaseName, $InsertIntoGruposControl)) != 1)
             return "<p><b>Error</b> al insert el usuario <b>root</b> al <b>Control de Grupos</b></p>";
 
-        $CreateMenu = "CREATE TABLE IF NOT EXISTS SystemMenu ("
-                . "IdMenu INT NOT NULL AUTO_INCREMENT,"
-                . "IdParent INT NOT NULL DEFAULT '0',"
-                . "Nombre VARCHAR(50) NOT NULL,"
-                . "PRIMARY KEY(IdMenu),"
-                . "UNIQUE KEY (Nombre)"
-                . ")ENGINE=InnoDB AUTO_INCREMENT=0 DEFAULT CHARSET=utf8";
+        $CreateMenu = "CREATE TABLE IF NOT EXISTS SystemMenu (
+                IdMenu INT NOT NULL AUTO_INCREMENT,
+                IdParent INT NOT NULL DEFAULT '0',
+                Nombre VARCHAR(50) NOT NULL,
+                PRIMARY KEY(IdMenu)
+                )ENGINE=InnoDB AUTO_INCREMENT=0 DEFAULT CHARSET=utf8";
 
         if (($ResultCreateMenu = $this->ConsultaQuery($DataBaseName, $CreateMenu)) != 1)
             return "<p><b>Error</b> al crear <b>Menú</b> en $DataBaseName. $ResultCreateMenu</p>";
@@ -560,8 +559,56 @@ class DataBase {
             echo "<p><b>Error</b> al insertar registros en <b>Menú Visor</b>. $ResultInsertIntoViewert</p>";
             return 0;
         }
+        
+        $insertArchival = "
+            INSERT INTO SystemMenu (IdMenu, IdParent, Nombre) VALUES 
+            (2000, 0, 'Archivística'), 
+                (2100, 2000, 'C. Disposición Documental'),
+                    (2200, 2100, 'Fondo'), 
+                        (2201, 2200, 'Agregar Fondo'), 
+                        (2202, 2200, 'Modificar Fondo'), 
+                        (2203, 2200, 'Eliminar Fondo'),
+                    (2300, 2100, 'Sección'),
+                        (2301, 2300, 'Agregar Sección'), 
+                        (2302, 2300, 'Modificar Sección'), 
+                        (2303, 2300, 'Eliminar Sección'),
+                    (2400, 2100, 'Serie'),
+                        (2401, 2400, 'Agregar Serie'),
+                        (2402, 2400, 'Modificar Serie'), 
+                        (2403, 2400, 'Eliminar Serie'),
+                (2500, 2000, 'Vigencia Documental'),
+                    (2600, 2500, 'Administrar Fondo'), 
+                        (2601, 2600, 'Agregar Fondo'), 
+                        (2602, 2600, 'Modificar Fondo'), 
+                        (2603, 2600, 'Eliminar Fondo'),
+                    (2700, 2500, 'Administrar Sección'),
+                        (2701, 2700, 'Agregar Sección'), 
+                        (2702, 2700, 'Modificar Sección'), 
+                        (2703, 2700, 'Eliminar Sección'),
+                    (2800, 2500, 'Administrar Serie'),
+                        (2801, 2800, 'Agregar Serie'),
+                        (2802, 2800, 'Modificar Serie'), 
+                        (2803, 2800, 'Eliminar Serie'),
+                (2900, 2000, 'C. Fundamento Legal'),
+                        (3001, 2900, 'Agregar'),
+                        (3002, 2900, 'Modificar'), 
+                        (3003, 2900, 'Eliminar'),
+                (3100, 2000, 'Unidad Administrativa'),
+                    (3101, 3100, 'Agregar'),
+                    (3102, 3100, 'Editar'),
+                    (3103, 3100, 'Eliminar'),
+                (3200, 2000, 'Serie - Unidad Administrativa'),
+                    (3201, 3200, 'Unificar Serie y U. A.'),
+                    (3202, 3200, 'Desenlazar Serie y U. A.'),
+                    (3203, 3200, 'Unificar U. A. y Grupo de Usuario'),
+                    (3204, 3200, 'Desenlazar U.A. y Grupo de Usuario')
+        ";
 
-
+        if(($resultArchival = $this->ConsultaQuery($DataBaseName, "$insertArchival")) != 1){
+                echo "<p><b>Error</b> al insertar registros del Menú <b>Arhivística</b></p> $resultArchival";
+                return 0;
+        }
+        
         return 1;
     }
 
