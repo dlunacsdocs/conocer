@@ -189,6 +189,7 @@ class DataBase {
                 IdMenu INT NOT NULL AUTO_INCREMENT,
                 IdParent INT NOT NULL DEFAULT '0',
                 Nombre VARCHAR(50) NOT NULL,
+                Type INT NOT NULL DEFAULT 1
                 PRIMARY KEY(IdMenu)
                 )ENGINE=InnoDB AUTO_INCREMENT=0 DEFAULT CHARSET=utf8";
 
@@ -432,177 +433,76 @@ class DataBase {
     }
 
     private function InsertMenuRecords($DataBaseName) {
-        $InsertAdministracionIntoMenu = "INSERT INTO SystemMenu (Nombre) VALUES ('Administración')";
 
-        if (!($IdMenuAdministracion = $this->ConsultaInsertReturnId($DataBaseName, $InsertAdministracionIntoMenu)) > 0) {
-            echo "<p><b>Error</b> al insertar el menú <b>Administración</b> $IdMenuAdministracion</p>";
-            return 0;
-        }
-
-        $InsertSistema = "INSERT INTO SystemMenu (Nombre, IdParent) VALUES ('Sistema',$IdMenuAdministracion)";
-
-        if (!($IdMenuSistema = $this->ConsultaInsertReturnId($DataBaseName, $InsertSistema)) > 0) {
-            echo "<p><b>Error</b> al insertar registros del <b>Menú Sistema</b>. $IdMenuSistema</p>";
-            return 0;
-        }
-
-        $InsertIntoSistema = "INSERT INTO SystemMenu (Nombre, IdParent) VALUES "
-                . "('NuevaInstancia', $IdMenuSistema),"
-                . "('Registros',$IdMenuSistema)";
-
-        if (($ResultInsertIntoSistema = $this->ConsultaQuery($DataBaseName, $InsertIntoSistema)) != 1) {
-            echo "<p><b>Error</b> al insertar registros del <b>Menú Sistema</b>. $ResultInsertIntoSistema</p>";
-            return 0;
-        }
-
-        $insertInstances = "INSERT INTO SystemMenu (Nombre, IdParent) VALUES ('Instancias', $IdMenuAdministracion)";
-        if (!($idInstances = $this->ConsultaInsertReturnId($DataBaseName, $insertInstances)) > 0) {
-            echo "<p><b>Error/<b> al crear el <b>Menú Instancias</b> $idInstances</p>";
-            return 0;
-        }
-
-        $insertIntoInstances = "INSERT INTO SystemMenu (Nombre, IdParent) VALUES ('Administración', $idInstances)";
-        if (!($resultInsertIntoInstances = $this->ConsultaInsert($DataBaseName, $insertIntoInstances)) > 0) {
-            echo "<p>Error</p> al insertar el menú Administración dentro de <b>Instancias</b>. $resultInsertIntoInstances";
-            return 0;
-        }
-
-
-        $InsertEmpresa = "INSERT INTO SystemMenu (Nombre, IdParent) VALUES ('Empresas', $IdMenuAdministracion)";
-        if (!(($IdEmpresa = $this->ConsultaInsertReturnId($DataBaseName, $InsertEmpresa)) > 0)) {
-            echo "<p><b>Error</b> al crear el <b>Menú Empresas. </b>$IdEmpresa</p>";
-            return 0;
-        }
-
-        $InsertIntoEmpresas = "INSERT INTO SystemMenu (Nombre, IdParent) VALUES ('Admin. Empresas', $IdEmpresa)";
-        if (($ResultInsertIntoEmpresas = $this->ConsultaQuery($DataBaseName, $InsertIntoEmpresas)) != 1) {
-            echo "<p><b>Error</b> al insertar registros del <b>Menú Empresas</b> $ResultInsertIntoEmpresas. $InsertIntoEmpresas</p>";
-            return 0;
-        }
-
-        $InsertRepositorios = "INSERT INTO SystemMenu (Nombre, IdParent) VALUES ('Repositorios', $IdMenuAdministracion)";
-        if (!(($IdRepositorios = $this->ConsultaInsertReturnId($DataBaseName, $InsertRepositorios)) > 0)) {
-            echo "<p><b>Error</b> al crear el <b>Menú Repositorios</b>. $IdRepositorios</p>";
-            return 0;
-        }
-
-        $InsertIntoRepositorios = "INSERT INTO SystemMenu (Nombre, IdParent) VALUES ('Admin. Repositorios', $IdRepositorios)";
-        if (($ResultInsertIntoRepositorios = $this->ConsultaQuery($DataBaseName, $InsertIntoRepositorios)) != 1) {
-            echo "<p><b>Error al insertar registros en <b>Menú Repositorios</b>. $ResultInsertIntoRepositorios</p>";
-            return 0;
-        }
-
-        $InsertCatalogos = "INSERT INTO SystemMenu (Nombre, IdParent) VALUES ('Catálogos', $IdMenuAdministracion)";
-        if (!($ResultInsertCatalogos = $this->ConsultaInsertReturnId($DataBaseName, $InsertCatalogos)) > 0) {
-            echo "<p><b>Error</b> al crear el <b>Menú Catálogos</b>. $ResultInsertCatalogos</p>";
-            return 0;
-        }
-
-        $InsertIntoCatalogos = "INSERT INTO SystemMenu (Nombre, IdParent) VALUES ('Admin. Catálogos', $ResultInsertCatalogos)";
-        if (($ResultInsertIntoCatalogos = $this->ConsultaQuery($DataBaseName, $InsertIntoCatalogos)) != 1) {
-            echo "<p><b>Error</b> al insertar registros en <b>Menú Catálogos</b></p>";
-            return 0;
-        }
-
-        $InsertUsuarios = "INSERT INTO SystemMenu (Nombre, IdParent) VALUE ('Usuarios', $IdMenuAdministracion)";
-        if (!(($IdUsuarios = $this->ConsultaInsertReturnId($DataBaseName, $InsertUsuarios)) > 0)) {
-            echo "<p><b>Error</b> al crear el <b>Menú Usuarios</b>. $IdUsuarios</p>";
-            return 0;
-        }
-
-        $InsertIntoUsuarios = "INSERT INTO SystemMenu (Nombre, IdParent) VALUES ('Admin. Usuarios', $IdUsuarios)";
-        if (($ResultInsertUsuarios = $this->ConsultaQuery($DataBaseName, $InsertIntoUsuarios)) != 1) {
-            echo "<p><b>Error</b> al insertar registros en <b>Menú Usuarios</b>. $ResultInsertUsuarios</p>";
-            return 0;
-        }
-
-
-        $InsertMenuHerramientas = "INSERT INTO SystemMenu (Nombre) VALUES ('Herramientas')";
-        if (!(($IdHerramientas = $this->ConsultaInsertReturnId($DataBaseName, $InsertMenuHerramientas)) > 0)) {
-            echo "<p><b>Error</b> al crear el <b>Menú Herramientas</b>. $IdHerramientas</p>";
-            return 0;
-        }
-
-        $InsertIntoHerramientas = "INSERT INTO SystemMenu (Nombre, IdParent) VALUES "
-                . "('Nuevo Directorio', $IdHerramientas),"
-                . "('Modificar Directorio', $IdHerramientas),"
-                . "('Eliminar Directorio', $IdHerramientas),"
-                . "('Carga Masiva',$IdHerramientas),"
-                . "('Carga Manual', $IdHerramientas),"
-                . "('Modificar Documento', $IdHerramientas),"
-                . "('Eliminar Documento', $IdHerramientas),"
-                . "('Copiar Documento', $IdHerramientas),"
-                . "('Cortar Documento', $IdHerramientas),"
-                . "('Pegar Documento', $IdHerramientas),"
-                . "('Correo', $IdHerramientas),"
-                . "('Papelera', $IdHerramientas)";
+        $InsertIntoHerramientas = "INSERT INTO SystemMenu (IdMenu, IdParent, Nombre, Type) VALUES 
+            (15, 0, 'Herramientas', 1 ),    
+                (16, 15, 'Nuevo Directorio', 1),
+                (17, 15, 'Modificar Directorio', 1),
+                (18, 15, 'Eliminar Directorio', 1),
+                (19, 15, 'Carga Masiva', 1),
+                (20, 15, 'Carga Manual', 1),
+                (21, 15, 'Modificar Documento', 1),
+                (22, 15, 'Eliminar Documento', 1),
+                (23, 15, 'Copiar Documento', 1),
+                (24, 15, 'Cortar Documento', 1),
+                (25, 15, 'Pegar Documento', 1),
+                (26, 15, 'Correo', 1),
+                (27, 15, 'Papelera', 1),
+                (100, 0, 'Visor', 1),
+                    (28, 100, 'Acceso a Visor', 1),
+                        (30, 101, 'Notas', 1),
+                        (31, 101, 'Imprimir', 1),
+                        (32, 101, 'Bloquear Página', 1),
+                        (33, 101, 'Marcas de Agua', 1)";
 
         if (($ResultInsertIntoHerramientas = $this->ConsultaQuery($DataBaseName, $InsertIntoHerramientas)) != 1) {
             echo "<p><b>Error</b> al insertar registros en <b>Menú Herramientas</b></p>";
             return 0;
         }
-
-        $InsertMenuViewer = "INSERT INTO SystemMenu (Nombre) VALUES ('Visor PDF')";
-        if (!($IdViewer = $this->ConsultaInsertReturnId($DataBaseName, $InsertMenuViewer)) > 0) {
-            echo "<p><b>Error<b/b> al crear el Menú de <b>Visor</b>. $IdViewer</p>";
-            return 0;
-        }
-
-        $InsertIntoViewer = "INSERT INTO SystemMenu (Nombre, IdParent) VALUES "
-                . "('Acceso a Visor', $IdViewer),"
-                . "('Notas', $IdViewer),"
-                . "('Imprimir PDF', $IdViewer),"
-                . "('Bloquear Página', $IdViewer),"
-                . "('Marcas de Agua', $IdViewer)";
-
-        if (($ResultInsertIntoViewert = $this->ConsultaQuery($DataBaseName, $InsertIntoViewer)) != 1) {
-            echo "<p><b>Error</b> al insertar registros en <b>Menú Visor</b>. $ResultInsertIntoViewert</p>";
-            return 0;
-        }
         
         $insertArchival = "
-            INSERT INTO SystemMenu (IdMenu, IdParent, Nombre) VALUES 
-            (2000, 0, 'Archivística'), 
-                (2100, 2000, 'C. Disposición Documental'),
-                    (2101, 2100, 'Consulta'),
-                    (2200, 2100, 'Fondo'), 
-                        (2201, 2200, 'Agregar Fondo'), 
-                        (2202, 2200, 'Modificar Fondo'), 
-                        (2203, 2200, 'Eliminar Fondo'),
-                    (2300, 2100, 'Sección'),
-                        (2301, 2300, 'Agregar Sección'), 
-                        (2302, 2300, 'Modificar Sección'), 
-                        (2303, 2300, 'Eliminar Sección'),
-                    (2400, 2100, 'Serie'),
-                        (2401, 2400, 'Agregar Serie'),
-                        (2402, 2400, 'Modificar Serie'), 
-                        (2403, 2400, 'Eliminar Serie'),
-                (2500, 2000, 'Vigencia Documental'),
-                    (2600, 2500, 'Administrar Fondo'), 
-                        (2601, 2600, 'Agregar Fondo'), 
-                        (2602, 2600, 'Modificar Fondo'), 
-                        (2603, 2600, 'Eliminar Fondo'),
-                    (2700, 2500, 'Administrar Sección'),
-                        (2701, 2700, 'Agregar Sección'), 
-                        (2702, 2700, 'Modificar Sección'), 
-                        (2703, 2700, 'Eliminar Sección'),
-                    (2800, 2500, 'Administrar Serie'),
-                        (2801, 2800, 'Agregar Serie'),
-                        (2802, 2800, 'Modificar Serie'), 
-                        (2803, 2800, 'Eliminar Serie'),
-                (2900, 2000, 'C. Fundamento Legal'),
-                        (3001, 2900, 'Agregar'),
-                        (3002, 2900, 'Modificar'), 
-                        (3003, 2900, 'Eliminar'),
-                (3100, 2000, 'Unidad Administrativa'),
-                    (3101, 3100, 'Agregar'),
-                    (3102, 3100, 'Editar'),
-                    (3103, 3100, 'Eliminar'),
-                (3200, 2000, 'Serie - Unidad Administrativa'),
-                    (3201, 3200, 'Unificar Serie y U. A.'),
-                    (3202, 3200, 'Desenlazar Serie y U. A.'),
-                    (3203, 3200, 'Unificar U. A. y Grupo de Usuario'),
-                    (3204, 3200, 'Desenlazar U.A. y Grupo de Usuario')
+            INSERT INTO SystemMenu (IdMenu, IdParent, Nombre, Type) VALUES 
+            (2000, 0, 'Archivística', 0), 
+                (2100, 2000, 'C. Disposición Documental', 0),
+                    (2101, 2100, 'Consulta', 0),
+                    (2200, 2100, 'Fondo', 0), 
+                        (2201, 2200, 'Agregar Fondo', 0), 
+                        (2202, 2200, 'Modificar Fondo', 0), 
+                        (2203, 2200, 'Eliminar Fondo', 0),
+                    (2300, 2100, 'Sección', 0),
+                        (2301, 2300, 'Agregar Sección', 0), 
+                        (2302, 2300, 'Modificar Sección', 0), 
+                        (2303, 2300, 'Eliminar Sección', 0),
+                    (2400, 2100, 'Serie', 0),
+                        (2401, 2400, 'Agregar Serie', 0),
+                        (2402, 2400, 'Modificar Serie', 0), 
+                        (2403, 2400, 'Eliminar Serie', 0),
+                (2500, 2000, 'Vigencia Documental', 0),
+                    (2600, 2500, 'Administrar Fondo', 0), 
+                        (2601, 2600, 'Agregar Fondo', 0), 
+                        (2602, 2600, 'Modificar Fondo', 0), 
+                        (2603, 2600, 'Eliminar Fondo', 0),
+                    (2700, 2500, 'Administrar Sección', 0),
+                        (2701, 2700, 'Agregar Sección', 0), 
+                        (2702, 2700, 'Modificar Sección', 0), 
+                        (2703, 2700, 'Eliminar Sección', 0),
+                    (2800, 2500, 'Administrar Serie', 0),
+                        (2801, 2800, 'Agregar Serie', 0),
+                        (2802, 2800, 'Modificar Serie', 0), 
+                        (2803, 2800, 'Eliminar Serie', 0),
+                (2900, 2000, 'C. Fundamento Legal', 0),
+                        (3001, 2900, 'Agregar', 0),
+                        (3002, 2900, 'Modificar', 0), 
+                        (3003, 2900, 'Eliminar', 0),
+                (3100, 2000, 'Unidad Administrativa', 0),
+                    (3101, 3100, 'Agregar', 0),
+                    (3102, 3100, 'Editar', 0),
+                    (3103, 3100, 'Eliminar', 0),
+                (3200, 2000, 'Serie - Unidad Administrativa', 0),
+                    (3201, 3200, 'Unificar Serie y U. A.', 0),
+                    (3202, 3200, 'Desenlazar Serie y U. A.', 0),
+                    (3203, 3200, 'Unificar U. A. y Grupo de Usuario', 0),
+                    (3204, 3200, 'Desenlazar U.A. y Grupo de Usuario', 0)
         ";
 
         if(($resultArchival = $this->ConsultaQuery($DataBaseName, "$insertArchival")) != 1){

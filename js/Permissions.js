@@ -1,7 +1,12 @@
 /* global BootstrapDialog, EnvironmentData, Tree, userPermissions */
 
+/**
+ * @description Clase dedicada a la administración de permisos de grupo.
+ * @returns {ClassPermissions}
+ */
 var ClassPermissions = function ()
 {
+    var self = this;
     /**
      * @description Muestra el panel de permisos del grupo seleccionado.
      * @param {type} idGroup
@@ -10,8 +15,6 @@ var ClassPermissions = function ()
      */
     this.showPermissionsPanel = function (idGroup, userGroupName)
     {
-        var self = this;
-
         var tabbable = $('<div>');
 
         var navTab = $('<ul>', {class: "nav nav-tabs"});
