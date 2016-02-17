@@ -39,7 +39,7 @@ var ClassPermissions = function ()
         tabbable.append(navTab);
         tabbable.append(tabContent);
 
-        var dialog = BootstrapDialog.show({
+        BootstrapDialog.show({
             title: 'Control de Permisos para el grupo <b>' + userGroupName + '</b>',
             size: BootstrapDialog.SIZE_NORMAL,
             type: BootstrapDialog.TYPE_PRIMARY,
