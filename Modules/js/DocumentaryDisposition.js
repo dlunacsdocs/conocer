@@ -1,9 +1,21 @@
-/* global BootstrapDialog, BotonesWindow 
+/* global BootstrapDialog, BotonesWindow, userPermissions 
  * 
  * @description Catálogo de disposición documental. Menú Archivística
  * */
 var DocumentaryDispositionClass = function(){
+    var self = this;
     var docDispoCatalogDialog = undefined;
+    
+    this.setActionToLinkDocumentaryDispositionMenu = function(){
+    
+        $('.LinkDocumentaryDisposition').click(function(){
+            if(userPermissions['c5866e93cab1776890fe343c9e7063fb'] !== undefined)
+                _buildDocumentaryDispositionConsole();
+            else
+                Advertencia("No dispone de permisos para abrir la interfaz del Catálogo de Disposición Documental ");
+        });    
+    };
+    
     /*
      * @description Devuelve el panel para agregar un elemento al 
      *              Catálogo de Disposición Documental 
@@ -404,7 +416,6 @@ var DocumentaryDispositionClass = function(){
     };
     
     _deleteDocDispoCatalogNodeConfirmMessage = function(optionName, node){
-        var self = this;
         BootstrapDialog.show({
             title: 'Mensaje de Confirmación',
             size: BootstrapDialog.SIZE_SMALL,
@@ -659,7 +670,6 @@ var DocumentaryDispositionClass = function(){
      * @returns {undefined}
      */
     _showDocDispositionCatalogData = function(node){
-        var self = this;
         var node = null;
         var optionName = $('#documentaryDispositionNavTab .nav-tabs li.active a').attr('optionName');
                
@@ -1238,7 +1248,6 @@ var DocumentaryDispositionClass = function(){
     };     
      
     _buildNewArchivalDispositionCatalog = function(catalogXmlStructure, dialogRef){
-        var self = this;
         
         $.ajax({
         async:false, 
@@ -1313,7 +1322,6 @@ var DocumentaryDispositionClass = function(){
      * @returns {undefined}
      */
     _buildDocDispositionCatalog = function(xmlStructure){
-        var self = this;
         var fondoNodesArray = new Array;
         var sectionNodesArray = new Array;
         var serieNodesArray = new Array();
@@ -1493,10 +1501,3 @@ var DocumentaryDispositionClass = function(){
      
 };  /* Fin Clase */
 
-DocumentaryDispositionClass.prototype.setActionToLinkDocumentaryDispositionMenu = function(){
-    var self = this;
-    
-    $('.LinkDocumentaryDisposition').click(function(){
-       _buildDocumentaryDispositionConsole(); 
-    });    
-};

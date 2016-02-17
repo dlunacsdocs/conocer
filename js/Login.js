@@ -5,7 +5,7 @@
  */
 var UserData = undefined;
 
-/* global EnvironmentData, userPermissions */
+/* global EnvironmentData, userPermissions, modulesControl */
 
 /*******************************************************************************
  * 

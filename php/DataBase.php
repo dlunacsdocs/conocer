@@ -564,6 +564,7 @@ class DataBase {
             INSERT INTO SystemMenu (IdMenu, IdParent, Nombre) VALUES 
             (2000, 0, 'Archivística'), 
                 (2100, 2000, 'C. Disposición Documental'),
+                    (2101, 2100, 'Consulta'),
                     (2200, 2100, 'Fondo'), 
                         (2201, 2200, 'Agregar Fondo'), 
                         (2202, 2200, 'Modificar Fondo'), 
