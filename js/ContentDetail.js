@@ -2,7 +2,7 @@
  * Operaciones sobre el repositorio de archivos (Borrado, Edición, etc)
  */
 
-/* global TableContentdT, EnvironmentData, TableEnginedT, Hdetalle, Wdetalle, GlobalDatePicker, WindowConfirmacion, LanguajeDataTable */
+/* global TableContentdT, EnvironmentData, TableEnginedT, Hdetalle, Wdetalle, GlobalDatePicker, WindowConfirmacion, LanguajeDataTable, DownloadTabledT */
 
 TableContentDT = '';
 TableContentdT = '';
@@ -514,41 +514,39 @@ function SetSearchResult(IdRepository,xml)
         var n = TableContentdT.fnSettings().aoData[ ai[0] ].nTr;
         n.setAttribute('id',IdRepositorio);
 
-        if(cont===60)
-        {
+        if(cont===60){
             TableContentDT.draw();
             cont=0;
         }
         cont++;         
         
         /* Sí se encuentra el archivo en la lista de descarga se selecciona el Checkbox  */
-        if($('#table_download tbody tr[id='+IdRepositorio+']').length>0)
-        {
-            $('#table_DetailResult tbody tr[id='+IdRepositorio+'] input').prop("checked", "checked");
-        }        
+        if(DownloadTabledT.$('tr[id='+IdRepository+IdRepositorio+']').length > 0)
+            TableContentdT.$('tr[id='+IdRepositorio+']').find('.checkbox_detail').each(function(){
+                $(this).prop("checked", "checked");
+            });
+        
     });
     
     TableContentDT.draw();          
-    TableContentdT.fnSetColumnVis(6,false);    
+    TableContentdT.fnSetColumnVis(6,false);   
     
     var downloads = new Downloads();
     
     /* Se recoge el estado del CheckBox para agregarlo a la lista de descarga */
-    $('#table_DetailResult tbody tr input').click(function()
-    {
-        var check= $(this).is(':checked');
+    TableContentdT.$('.checkbox_detail').click(function(){
+        var check = $(this).is(':checked');
         var IdCheck = $(this).attr('id');
+        
         if(check)
             downloads.AddRow('Content',0,IdCheck);
         else
             downloads.RemoveRow(IdRepository, IdCheck);
     });        
                         
-    $('#table_DetailResult tbody').on( 'click', 'tr', function ()
-    {
+    $('#table_DetailResult tbody').on( 'click', 'tr', function (){
         TableContentDT.$('tr.selected').removeClass('selected');
         $(this).addClass('selected');
-        var IdUser=$('#table_DetailResult tr.selected').attr('id');  
 
     } );
 }
