@@ -140,10 +140,13 @@ class Login {
         $permissions = $doc->createElement("permissions");
         for ($cont = 0; $cont < count($permissionsArray); $cont++){
             $idMenu = md5($permissionsArray[$cont]['IdMenu']);
+            $type = md5($permissionsArray[$cont]['Type']);
             $idRepository =  md5($permissionsArray[$cont]['IdRepositorio']);
             $permission = $doc->createElement("permission");
             $permissionKey = $doc->createElement("menu", $idMenu);
             $permission->appendChild($permissionKey);
+            $permissionType = $doc->createElement("type", $type);
+            $permission->appendChild($permissionType);
             $repository = $doc->createElement("repository", $idRepository);
             $permission->appendChild($repository);
             $permissions->appendChild($permission);          

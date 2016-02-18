@@ -35,24 +35,21 @@ class Permissions {
 
                 case 'GetUserPermissions':$this->GetUserPermissions($userData); break;
                 case 'ApplyPermissionsSettingsOfGroup':$this->ApplyPermissionsSettingsOfGroup($userData); break;
-                case 'GetPermissionsMenuList': $this->GetPermissionsMenuList(); break;
                 case 'GetRepositoryAccessList':$this->GetRepositoryAccessList($userData); break;
                 case 'GetAccessPermissionsList':$this->GetAccessPermissionsList($userData); break;
-                case 'GetToolsOptions':$this->GetToolsOptions($userData); break;      
+                case 'getSystemPermissions':$this->getSystemPermissions($userData); break;      
                 case 'getAllUserPermissions': $this->getAllUserPermissions($userData); break;
             }
         }
     }
     
-    function GetToolsOptions($userData)
+    function getSystemPermissions($userData)
     {        
         $instanceName = $userData['dataBaseName'];
         
         /* La subconsulta selecciona al nodo herramientas como punto de partida para construir el árbol (Herramientas)    */
 
-        $SelelectMenus = "SELECT c1.IdMenu, c1.Nombre, c1.IdParent FROM SystemMenu c1 "
-                . "WHERE c1.IdMenu>((SELECT c2.IdMenu FROM SystemMenu c2 WHERE c2.Nombre = 'Herramientas') -1 ) "   
-                . "ORDER BY c1.IdParent";   
+        $SelelectMenus = "SELECT *FROM SystemMenu ORDER BY IdParent";   
         
         $ResultSelect = $this->db->ConsultaSelect($instanceName, $SelelectMenus);
         
@@ -312,14 +309,14 @@ class Permissions {
         {
             $WithoutAccessRepository_.= " IdRepositorio = $value->IdRepository OR";
             $DeleteAccessToMenus_.= " IdRepositorio = $value->IdRepository OR";
-        }                
+        }
                
         $WithoutAccessRepository = trim($WithoutAccessRepository_, "OR");        
         $WithoutAccessRepository.=") AND IdGrupo = $IdGroup";
         
         $DeleteAccessToMenus = trim($DeleteAccessToMenus_, "OR");
         $DeleteAccessToMenus.=") AND IdGrupo = $IdGroup";
-                       
+        
         if(count($xml->WithoutAccessToTheRepository)>0)
         {
             if(($ResultWithoutAccessRepository = $this->db->ConsultaQuery($DataBaseName, $WithoutAccessRepository))!=1)
@@ -373,51 +370,26 @@ class Permissions {
         $GetRepositoryPermissions='';
         
         if($IdGrupo==1){
-            $GetRepositoryPermissions = "SELECT sm.IdMenu, sm.IdGrupo FROM SystemMenuControl sm "
-                . "INNER JOIN RepositoryControl rc ON sm.IdGrupo = rc.IdGrupo "
-                . "WHERE sm.IdGrupo = $IdGrupo AND rc.IdRepositorio = $IdRepositorio";
+            $GetRepositoryPermissions = "SELECT sm.IdMenu, m.Type FROM SystemMenuControl sm 
+                INNER JOIN RepositoryControl rc ON sm.IdGrupo = rc.IdGrupo 
+                LEFT JOIN SystemMenu m ON sm.IdMenu = m.IdMenu 
+                WHERE sm.IdGrupo = $IdGrupo AND rc.IdRepositorio = $IdRepositorio";
         }
         else{
-            $GetRepositoryPermissions = "SELECT sm.IdMenu, sm.IdGrupo FROM SystemMenuControl sm "
-                . "INNER JOIN RepositoryControl rc ON sm.IdGrupo = rc.IdGrupo "
-                . "WHERE sm.IdGrupo = $IdGrupo AND rc.IdRepositorio = $IdRepositorio AND sm.IdRepositorio = $IdRepositorio";
+            $GetRepositoryPermissions = "SELECT sm.IdMenu, m.Type FROM SystemMenuControl sm 
+                INNER JOIN RepositoryControl rc ON sm.IdGrupo = rc.IdGrupo 
+                LEFT JOIN SystemMenu m ON sm.IdMenu = m.IdMenu 
+                WHERE sm.IdGrupo = $IdGrupo AND rc.IdRepositorio = $IdRepositorio AND sm.IdRepositorio = $IdRepositorio";
         }                             
         
         $ResultGetPermissions = $this->db->ConsultaSelect($DataBaseName, $GetRepositoryPermissions);
 
         if($ResultGetPermissions['Estado']!=1)
-            XML::XMLReponse("Error", 0, "<p><b>Error</b> al obtener la configuración de permisos sobre el grupo <b>$NombreGrupo</b>.</p><br>Detalles:<br><br>".$ResultGetPermissions['Estado']);
+            return XML::XMLReponse("Error", 0, "<p><b>Error</b> al obtener la configuración de permisos sobre el grupo <b>$NombreGrupo</b>.</p><br>Detalles:<br><br>".$ResultGetPermissions['Estado']);
         
         $Permissions = $ResultGetPermissions['ArrayDatos'];
         
-        $doc  = new DOMDocument('1.0','utf-8');
-        $doc->formatOutput = true;
-        $root = $doc->createElement('PermissionsMenu');
-        $doc->appendChild($root); 
-        for($cont = 0; $cont < count($Permissions); $cont++)
-        {
-            $MenuXml = $doc->createElement("Menu");
-            $IdMenuXml = $doc->createElement("IdMenu", $Permissions[$cont]['IdMenu']);
-            $MenuXml->appendChild($IdMenuXml);
-            $root->appendChild($MenuXml);
-        }
-        header ("Content-Type:text/xml");
-        echo $doc->saveXML();
-    }
-    
-    private function GetPermissionsMenuList()
-    {
-        $XML=new XML();
-        $BD= new DataBase();
-        $DataBaseName=  filter_input(INPUT_POST, "DataBaseName");
-        $IdUsuario = filter_input(INPUT_POST, "IdUsuario");
-        $NombreUsuario = filter_input(INPUT_POST, "NombreUsuario");
-        $EnvironIdGrupo = filter_input(INPUT_POST, "EnvironIdGrupo");
-        $EnvironNombreGrupo = filter_input(INPUT_POST,"EnvironNombreGrupo");
-        $IdGrupo= filter_input(INPUT_POST, "IdGrupo");
-        $NombreGrupo = filter_input(INPUT_POST, "NombreGrupo");
-        
-        
+        XML::XmlArrayResponse("permissionsMenu", "Menu", $Permissions);
         
     }
     
@@ -444,7 +416,8 @@ class Permissions {
             SELECT sm.*, smc.IdMenuControl, rc.IdRepositorio, cr.NombreRepositorio 
             FROM SystemMenu sm LEFT JOIN SystemMenuControl smc ON sm.IdMenu = smc.IdMenu 
             LEFT JOIN RepositoryControl rc ON smc.IdGrupo = rc.IdGrupo 
-            LEFT JOIN CSDocs_Repositorios cr ON rc.IdRepositorio = cr.IdRepositorio WHERE smc.IdGrupo = $idUserGroup
+            LEFT JOIN CSDocs_Repositorios cr ON rc.IdRepositorio = cr.IdRepositorio 
+            WHERE smc.IdGrupo = $idUserGroup
                 ";
         
         $selectResult = $this->db->ConsultaSelect($instanceName, $select);
