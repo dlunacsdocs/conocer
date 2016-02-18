@@ -185,13 +185,14 @@ class DataBase {
         if (($ResultInsertIntoGruposControl = $this->ConsultaQuery($DataBaseName, $InsertIntoGruposControl)) != 1)
             return "<p><b>Error</b> al insert el usuario <b>root</b> al <b>Control de Grupos</b></p>";
 
-        $CreateMenu = "CREATE TABLE IF NOT EXISTS SystemMenu (
-                IdMenu INT NOT NULL AUTO_INCREMENT,
-                IdParent INT NOT NULL DEFAULT '0',
-                Nombre VARCHAR(50) NOT NULL,
-                Type INT NOT NULL DEFAULT 1
-                PRIMARY KEY(IdMenu)
-                )ENGINE=InnoDB AUTO_INCREMENT=0 DEFAULT CHARSET=utf8";
+        $CreateMenu = "CREATE TABLE IF NOT EXISTS SystemMenu ("
+                . "IdMenu INT NOT NULL AUTO_INCREMENT,"
+                . "IdParent INT NOT NULL DEFAULT '0',"
+                . "Nombre VARCHAR(50) NOT NULL,"
+                . "Type INT DEFAULT 1,"
+                . "Icon VARCHAR(40) DEFAULT NULL,"
+                . "PRIMARY KEY(IdMenu),"
+                . ")ENGINE=InnoDB AUTO_INCREMENT=0 DEFAULT CHARSET=utf8";
 
         if (($ResultCreateMenu = $this->ConsultaQuery($DataBaseName, $CreateMenu)) != 1)
             return "<p><b>Error</b> al crear <b>Menú</b> en $DataBaseName. $ResultCreateMenu</p>";
@@ -261,8 +262,8 @@ class DataBase {
                 . "PRIMARY KEY(IdCatalogo)"
                 . ")DEFAULT CHARSET=utf8";
 
-        if(($catalogos=$this->ConsultaQuery($DataBaseName, $TablaCatalogos))!=1)
-            return "<p><b>Error</b> al crear <b>Catálogos</b></p>";
+        if (($catalogos = $this->ConsultaQuery($DataBaseName, $TablaCatalogos)) != 1)
+            return "<p><b>Error</b> al crear <b>Catálogos</b></p> Detalles: <br> $catalogos";
 
         $TablaGlobalRepositorios="CREATE TABLE IF NOT EXISTS RepositorioGlobal ("
                 . "IdGlobal INT NOT NULL AUTO_INCREMENT,"
@@ -433,8 +434,14 @@ class DataBase {
     }
 
     private function InsertMenuRecords($DataBaseName) {
-
-        $InsertIntoHerramientas = "INSERT INTO SystemMenu (IdMenu, IdParent, Nombre, Type) VALUES 
+                $InsertIntoHerramientas = "INSERT INTO SystemMenu (IdMenu, IdParent, Nombre, Type) VALUES 
+            (1, 0, 'Administración', 0),
+                (100, 1, 'Sistema', 0),
+                (200, 1, 'Instancias', 0),
+                (300, 1, 'Empresas', 0),
+                (400, 1, 'Repositorios', 0),
+                (500, 1, 'Catálogos', 0),
+                (600, 1, 'Usuarios', 0),
             (15, 0, 'Herramientas', 1 ),    
                 (16, 15, 'Nuevo Directorio', 1),
                 (17, 15, 'Modificar Directorio', 1),
@@ -448,12 +455,12 @@ class DataBase {
                 (25, 15, 'Pegar Documento', 1),
                 (26, 15, 'Correo', 1),
                 (27, 15, 'Papelera', 1),
-                (100, 0, 'Visor', 1),
-                    (28, 100, 'Acceso a Visor', 1),
-                        (30, 101, 'Notas', 1),
-                        (31, 101, 'Imprimir', 1),
-                        (32, 101, 'Bloquear Página', 1),
-                        (33, 101, 'Marcas de Agua', 1)";
+                (2, 0, 'Visor', 1),
+                    (28, 2, 'Acceso a Visor', 1),
+                        (30, 28, 'Notas', 1),
+                        (31, 28, 'Imprimir', 1),
+                        (32, 28, 'Bloquear Página', 1),
+                        (33, 28, 'Marcas de Agua', 1)";
 
         if (($ResultInsertIntoHerramientas = $this->ConsultaQuery($DataBaseName, $InsertIntoHerramientas)) != 1) {
             echo "<p><b>Error</b> al insertar registros en <b>Menú Herramientas</b></p>";

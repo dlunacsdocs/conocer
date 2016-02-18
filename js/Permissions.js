@@ -30,10 +30,15 @@ var ClassPermissions = function ()
         
         var repositoryTree = $('<div>', {id: "repositoriesTree"});
         
+        content.append(repositoryTree);
+        
         var permissionsTreeRepositories = $('<div>', {id: "permissionsTree"});
 
-        content.append(repositoryTree);
         content.append(permissionsTreeRepositories);
+        
+        var systemPermissionsTree = $('<div>', {id: 'systemPermissionsTree'});
+        
+        content.append(systemPermissionsTree);
 
         userGroupsPermissions.append(content);
 
@@ -68,70 +73,21 @@ var ClassPermissions = function ()
                 }
             ],
             onshown: function (dialogRef) {              
-                $('#repositoriesTree').dynatree({
-                    generateIds: false, 
-                    expand: true, 
-                    selectMode: 3, 
-                    checkbox: true, 
-                    children: [{
-                            key: 'MSR_0',
-                            icon: 'Catalogo.png',
-                            isFolder: true,
-                            title: 'Repositorios',
-                            idRepository: 0
-                    }],
-                    onClick: function (node, event) {
-                        if (node.getEventTargetType(event) === "checkbox")
-                            node.activate();
-                        if (node.getEventTargetType(event) === "title")
-                            if (!node.bSelected)
-                                node.toggleSelect();
-                        node.sortChildren(cmp, false);
-                    },
-                    onActivate: function (node, event)
-                    {
-                        node.sortChildren(cmp, false);
-                        _GetAccessPermissionsListOfRepository(node, idGroup, userGroupName);   /* Obtiene los permisos sobre el repositorio */
-                    },
-                    onCreate: function (node, event)
-                    {
-                        node.sortChildren(cmp, false);
-                    }
-                });
-                
-                
+            
                 var reporisoty = new ClassRepository();
-                var XmlRepositories = reporisoty.GetRepositories(0);
-
-                $(XmlRepositories).find("Repository").each(function () {
-                    var IdRepositorio = $(this).find('IdRepositorio').text();
-                    var Nombre = $(this).find('NombreRepositorio').text();
-                    var ClaveEmpresa = $(this).find('ClaveEmpresa').text();
-                    var child = {
-                        key: 'MSR_' + IdRepositorio,
-                        isFolder: true,
-                        icon: 'Repositorio.png',
-                        title: Nombre,
-                        enterpriseKey: ClaveEmpresa,
-                        idRepository: IdRepositorio,
-                        expand: true
-                    };
-                    
-                    $('#repositoriesTree').dynatree("getTree").getNodeByKey('MSR_0').addChild(child);
-                });
+                var xmlRepositories = reporisoty.GetRepositories(0);
                 
-                var RepositoriesTree = $('#repositoriesTree').dynatree("getTree");  /* crea el árbol izquierdo (repositorios)*/
+                var permissions = _getSystemPermissions();
                 
-                if(!typeof RepositoriesTree === 'object'){
-                    return Advertencia("No fue posible obtener la estructura de repositorios.");
-                    content.find('.fa-spinner').remove();
-                }
+                if(!$.isXMLDoc(permissions))
+                    return Advertencia("No fue posible obtener los permisos del sistema");
                 
-                var ShowToolsOptions = _ShowToolsOptions();   /* Muestra la lista de menús del sistema */
+                _buildRepositoryPermissionsTree();
+                _buildRepositoriesTree(idGroup, userGroupName, xmlRepositories, dialogRef);
+                _buildSystemPermissionsTree();  
+                _setSystemPermissions(permissions);
                 
-                _GetRepositoryAccessList(RepositoriesTree, idGroup, userGroupName);    /* Permisos de acceso (check) árbol izquierdo (repositorios)*/
-                     
-                var rootNode = RepositoriesTree.getNodeByKey("MSR_0");
+                var rootNode = $('#repositoriesTree').dynatree("getTree").getNodeByKey('MSR_0');
                 
                 if(rootNode !== null){
                     var RepositoryChildren = rootNode.getChildren();
@@ -139,11 +95,10 @@ var ClassPermissions = function ()
                         RepositoryChildren[0].activate();               /* Se activa el primer repositorio */
                     else{
                         Advertencia("Debe agregar por lo menos un repositorio para realizar asignación de permisos.");
-                        dialogRef.close();
+                        dialogRef.close();    
                     }
-                        
                 }
-                
+                                     
                 content.find('.fa-spinner').remove();
                 
             },
@@ -153,59 +108,130 @@ var ClassPermissions = function ()
         });
 
     };
-
-    /**
-     * @description Opciones de menú del sistema.
-     * @returns {undefined}
-     */
-    var _ShowToolsOptions = function ()
+    
+/**
+ * @description Obtiene el listado de permisos disponibles en el sistema
+ * @returns {xml Xml con el listado de permisos.}
+ */
+    var _getSystemPermissions = function ()
     {
-
+        var permissions = null;
         $.ajax({
             async: false,
             cache: false,
             dataType: "html",
             type: 'POST',
             url: "php/Permissions.php",
-            data: 'opcion=GetToolsOptions',
+            data: 'opcion=getSystemPermissions',
             success: function (xml)
             {
-                if ($.parseXML(xml) === null) {
-                    $('#UsersPlaceWaiting').remove();
-                    errorMessage(xml);
-                    return 0;
-                } else
+                if ($.parseXML(xml) === null) 
+                    return errorMessage(xml);
+                else
                     xml = $.parseXML(xml);
 
-                if ($(xml).find("Menu").length > 0)
-                {
-                    _BuildTreeOfToolsOptions(xml);
-                    return 1;
-                }
+                if ($(xml).find("Menu").length > 0) 
+                    permissions = xml;
 
-                $(xml).find("Error").each(function ()
-                {
+                $(xml).find("Error").each(function (){
                     var $Error = $(this);
-                    var estado = $Error.find("Estado").text();
                     var mensaje = $Error.find("Mensaje").text();
                     errorMessage(mensaje);
-                    $('#UsersPlaceWaiting').remove();
                 });
 
             },
             beforeSend: function () {
             },
             error: function (jqXHR, textStatus, errorThrown) {
-                $('#UsersPlaceWaiting').remove();
                 errorMessage(textStatus + "<br>" + errorThrown);
             }
         });
+        
+        return permissions;
     };
+    
+    /**
+     * @description Construye el árbol de Repositorios.
+     * @returns {undefined}
+     */
+    var _buildRepositoriesTree = function(idGroup, userGroupName, xmlRepositories, dialogRef){
+        $('#repositoriesTree').dynatree({
+            generateIds: false, 
+            expand: true, 
+            selectMode: 3, 
+            checkbox: true, 
+            children: [{
+                    key: 'MSR_0',
+                    icon: 'Catalogo.png',
+                    isFolder: true,
+                    title: 'Repositorios',
+                    idRepository: 0
+            }],
+            onClick: function (node, event) {
+                if (node.getEventTargetType(event) === "checkbox")
+                    node.activate();
+                
+                if (node.getEventTargetType(event) === "title")
+                    if (!node.bSelected)
+                        node.toggleSelect();
+                
+                node.sortChildren(cmp, false);
+                
+                
+            },
+            onActivate: function (node, event){
+                node.sortChildren(cmp, false);
+                
+                var repositoryPermissionsRoot = $('#permissionsTree').dynatree('getTree').getNodeByKey("0");
+                if(repositoryPermissionsRoot !== null){
+                    if(parseInt(node.data.idRepository) > 0){
+                        repositoryPermissionsRoot.data.title = "Permisos de "+node.data.title;
+                        repositoryPermissionsRoot.render();
+                    }
+                    else{
+                        repositoryPermissionsRoot.data.title = "Elija Repositorio";
+                        repositoryPermissionsRoot.render();
+                    }
+                }
+                
+                _GetAccessPermissionsListOfRepository(node, idGroup, userGroupName);   /* Obtiene los permisos sobre el repositorio */     
+                
+            },
+            onCreate: function (node, event)
+            {
+                node.sortChildren(cmp, false);
+            }
+        });
+        
+        $(xmlRepositories).find("Repository").each(function () {
+            var IdRepositorio = $(this).find('IdRepositorio').text();
+            var Nombre = $(this).find('NombreRepositorio').text();
+            var ClaveEmpresa = $(this).find('ClaveEmpresa').text();
+            var child = {
+                key: 'MSR_' + IdRepositorio,
+                isFolder: true,
+                icon: 'Repositorio.png',
+                title: Nombre,
+                enterpriseKey: ClaveEmpresa,
+                idRepository: IdRepositorio,
+                expand: true
+            };
 
+            $('#repositoriesTree').dynatree("getTree").getNodeByKey('MSR_0').addChild(child);
+        });
+        
+        var RepositoriesTree = $('#repositoriesTree').dynatree("getTree");  /* crea el árbol izquierdo (repositorios)*/
+                
+        if(!typeof RepositoriesTree === 'object'){
+            return Advertencia("No fue posible obtener la estructura de repositorios.");
+        }
 
-
-    var _BuildTreeOfToolsOptions = function (xml)
-    {
+        _GetRepositoryAccessList(RepositoriesTree, idGroup, userGroupName);    /* Permisos de acceso (check) árbol izquierdo (repositorios)*/
+        
+        return 1;
+    };
+    
+    var _buildRepositoryPermissionsTree = function(){
         $('#permissionsTree').dynatree({
             generateIds: false, 
             selectMode: 3, 
@@ -213,17 +239,18 @@ var ClassPermissions = function ()
             expand: true, 
             minExpandLevel: 3,
             children: [{
-                    title: 'Permisos',
+                    title: 'Permisos de Repositorio',
                     idPermission: 0,
                     isFolder: true,
                     idParent: 0,
-                    key: 'SM_0',
-                    icon: 'cogwheel.png'
+                    key: 0,
+                    icon: 'cogwheel.png',
+                    type: 1
             }],
             onClick: function (node, event) {
                 node.sortChildren(cmp, false);
-                if (node.getEventTargetType(event) === "title")
-                    node.toggleSelect();
+//                if (node.getEventTargetType(event) !== "title")
+//                    node.toggleSelect();
             },
             onKeydown: function (node, event) {
                 if (event.which === 32) {
@@ -260,6 +287,39 @@ var ClassPermissions = function ()
 
         return 1;
     };
+    
+    var _buildSystemPermissionsTree = function ()
+    {
+        $('#systemPermissionsTree').dynatree({
+            generateIds: false, 
+            selectMode: 3, 
+            checkbox: true, 
+            expand: true, 
+            minExpandLevel: 3,
+            children: [{
+                    title: 'Permisos del Sistema',
+                    idPermission: 0,
+                    isFolder: true,
+                    idParent: 0,
+                    key: 0,
+                    icon: 'cogwheel.png',
+                    type: 0
+            }],
+            onClick: function (node, event) {
+                node.sortChildren(cmp, false);
+//                if (node.getEventTargetType(event) !== "title")
+//                    node.toggleSelect();
+            },
+            onKeydown: function (node, event) {
+                if (event.which === 32) {
+                    node.toggleSelect();
+                    return false;
+                }
+            }
+        });
+        
+    };
+
 
     /*---------------------------------------------------------------------------
      * @description Regresa los accesos a los repositorios a los cuales el grupo seleccionado
@@ -310,6 +370,35 @@ var ClassPermissions = function ()
             }
         });
     };
+    
+    var _setSystemPermissions = function(xml){
+        $(xml).find("Menu").each(function (){
+            var IdMenu = $(this).find("IdMenu").text();
+            var IdParent = $(this).find("IdParent").text();
+            var Nombre = $(this).find("Nombre").text();
+            var type = $(this).find('Type').text();
+            
+            var child = {
+                title: Nombre,
+                isFolder: true,
+                idPermission: IdMenu,
+                key: IdMenu,
+                icon: 'cogwheel.png',
+                idParent: IdParent
+            };
+            
+             var parent = null;
+            if(parseInt(type) === 1)
+                parent = $('#permissionsTree').dynatree('getTree').getNodeByKey(IdParent);
+            else if(parseInt(type) === 0)
+                parent = $('#systemPermissionsTree').dynatree('getTree').getNodeByKey(IdParent);
+                
+                if(parent !== null)
+                    parent.addChild(child);
+            
+            
+        });
+    };
 
     var _GetAccessPermissionsListOfRepository = function (node, idUserGroup, userGroupName)
     {
@@ -319,15 +408,18 @@ var ClassPermissions = function ()
             return 0;
         
         var PermissionsTree = $("#permissionsTree").dynatree("getTree");
+        var systemPermissionsTree = $('#systemPermissionsTree').dynatree('getTree');
+        
+        if(systemPermissionsTree === null)
+            return Advertencia("No fue posible obtener la estructura de permisos del sistema");
         
         if(PermissionsTree === null)
-            return Advertencia("No se pudo obtener la estructura de permisos.");
+            return Advertencia("No se pudo obtener la estructura de permisos por repositorio.");
         
-        var root = PermissionsTree.getNodeByKey('SM_0');
+        var root = PermissionsTree.getNodeByKey("0");
 
         if ($.type(root) === 'object')
-            if (!root.bSelected)
-            {
+            if (!root.bSelected){
                 root.toggleSelect();
                 root.toggleSelect();
             } else
@@ -349,8 +441,14 @@ var ClassPermissions = function ()
 
                 $(xml).find("Menu").each(function (){
                     var IdMenu = $(this).find('IdMenu').text();
-                    var node = PermissionsTree.getNodeByKey("SM_" + IdMenu);
-                    
+                    var type = $(this).find('Type').text();
+                    var node = null;
+               
+                    if(parseInt(type) === 0)
+                        node = systemPermissionsTree.getNodeByKey(IdMenu);
+                    else if (parseInt(type) === 1)
+                        node = PermissionsTree.getNodeByKey(IdMenu);
+            
                     if(node !== null){
                         var idParent = node.data.idParent;
                         if (!node.bSelected && parseInt(idParent) > 0)
@@ -391,25 +489,35 @@ var ClassPermissions = function ()
             return Advertencia("No fue posible obtener el identificador del grupo seleccionado para aplicar los permisos");
         
         var permissionsTree = $('#permissionsTree').dynatree('getTree');
-        
+        var systemPermissionsTree = $('#systemPermissionsTree').dynatree('getTree');
+  
         var permissionsTreeSelectedNodes = [];
         var SelectedRepositoriesTree = Tree.GetSelectedNodes('#repositoriesTree');
         var UnselectedRepositories = Tree.GetUncheckNodes('#repositoriesTree');
         var UnselectedMenus = [];
         var SettingsXml = undefined;
          
-        permissionsTree.visit(function(node){
-            
+        permissionsTree.visit(function(node){          
             if(node.hasSubSel && !node.bSelected){
-                if(parseInt(node.data.idPermission) > 0){
+                if(parseInt(node.data.idPermission) > 0)
                     permissionsTreeSelectedNodes.push(node);
-                }
             }
             else if(node.bSelected)
                 permissionsTreeSelectedNodes.push(node);
             else if( !node.bSelected) {
                 UnselectedMenus.push(node);
             }
+        });
+        
+        systemPermissionsTree.visit(function(node){          
+            if(node.hasSubSel && !node.bSelected){
+                if(parseInt(node.data.idPermission) > 0)
+                    permissionsTreeSelectedNodes.push(node);
+            }
+            else if(node.bSelected)
+                permissionsTreeSelectedNodes.push(node);
+            else if( !node.bSelected) 
+                UnselectedMenus.push(node);
         });
         
         SettingsXml = "<Settings version='1.0' encoding='UTF-8'>";
@@ -645,16 +753,27 @@ var ClassPermissions = function ()
     };
 };
 
-function validateRepositoryPermission(repository, menu){
+function validateSystemPermission(repository, menu, type){
     var status = 0;
     repository = md5(repository);
+    type = md5(type);
+    
     $(userPermissions).find('permission').each(function(){
-        if($(this).find('repository').text() === repository){
-            if($(this).find('menu').text() === menu){
-                console.log($(this).find('menu').text()+" encontrado en repositorio "+repository);
-                return status = 1;
+        if (type === 'cfcd208495d565ef66e7dff9f98764da'){
+            if($(this).find('type').text() === type){
+                if($(this).find('menu').text() === menu){
+                    console.log($(this).find('menu').text()+" encontrado en repositorio "+repository);
+                    return status = 1;
+                }
             }
         }
+        else if (type === 'c4ca4238a0b923820dcc509a6f75849b')
+            if($(this).find('repository').text() === repository){
+                if($(this).find('menu').text() === menu){
+                    console.log($(this).find('menu').text()+" encontrado en repositorio "+repository);
+                    return status = 1;
+                }
+            }
     });
     
     return status;
