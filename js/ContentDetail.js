@@ -300,7 +300,7 @@ function GetDetalle(Source, IdGlobal, IdFile)
        if(!parseInt(idRepository) > 0)
            return Advertencia("No fue posible obtener el identificador del repositorio");
        
-       if(!validateRepositoryPermission(idRepository, '3c59dc048e8850243be8079a5c74d079'))
+       if(!validateSystemPermission(idRepository, '3c59dc048e8850243be8079a5c74d079', 1))
            return Advertencia("No tiene permiso de realizar esta acción");
            
         var Forms = $('#tabla_DetalleArchivo tr td input.FormStandart');

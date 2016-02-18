@@ -33,7 +33,13 @@ class Session {
         if(is_array($permissionsArray)){
             for ($cont = 0; $cont < count($permissionsArray); $cont++){
                 $idMenu = md5($permissionsArray[$cont]['IdMenu']);
-                $idRepository = md5($permissionsArray[$cont]['IdRepositorio']);               
+                $type = $permissionsArray[$cont]['Type'];
+                
+                if((int) $type > 0)
+                    $idRepository = md5($permissionsArray[$cont]['IdRepositorio']);     
+                else
+                    $idRepository = md5 (0);
+                
                 $_SESSION['permissions'][$idRepository][$idMenu] = true;
             }
         }

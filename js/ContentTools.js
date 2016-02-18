@@ -531,7 +531,7 @@ function ConfirmDelete()
     if(!parseInt(idRepository) > 0)
         return Advertencia("No fue posible obtener el identificador del repositorio seleccionado");
     
-    if(!validateRepositoryPermission(idRepository, 'b6d767d2f8ed5d21a44b0e5886680cb9'))
+    if(!validateSystemPermission(idRepository, 'b6d767d2f8ed5d21a44b0e5886680cb9', 1))
         return Advertencia("No tiene permiso de realizar esta acción");
 
     var IdFile=$('#table_DetailResult tr.selected').attr('id'); 
