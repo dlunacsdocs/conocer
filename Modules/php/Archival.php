@@ -74,9 +74,12 @@ class Archival {
         $db = new DataBase();
         
         $dataBaseName = $userData['dataBaseName'];
+        $action = filter_input(INPUT_POST, "action");
         $xmlString = filter_input(INPUT_POST, "xml");
         $delete = "DELETE FROM CSDocs_DocumentaryDisposition WHERE ";
         
+        if(!Permissions::checkPermission(0, $action))
+            return XML::XMLReponse ("Error", 0, "<p>No tiene permisos para realizar esta acción.</p>");
         
         if(!($xml = simplexml_load_string($xmlString))){
             $errorOutput = "";
@@ -154,6 +157,7 @@ class Archival {
     private function modifyDocDispCatalogNode($userData){
         $DB = new DataBase();
         
+        $action = filter_input(INPUT_POST, "action");    
         $dataBaseName = $userData['dataBaseName'];
         $idDocDisposition = filter_input(INPUT_POST, "idDocDisposition");
         $catalogName = filter_input(INPUT_POST, "catalogName");
@@ -161,14 +165,27 @@ class Archival {
         $nodeType = filter_input(INPUT_POST, "nodeType");
         $description = filter_input(INPUT_POST, "description");
         $parentKey = filter_input(INPUT_POST, "parentKey");
+        $oldNameKey = filter_input(INPUT_POST, "oldNameKey");
+                
+        if(!Permissions::checkPermission(0, $action))
+            return XML::XMLReponse ("Error", 0, "<p>No tiene permisos para realizar esta acción.</p>");
+                
+        $update = "UPDATE CSDocs_DocumentaryDisposition SET 
+                Name = '$catalogName', NameKey = '$nameKey', Description = '$description',
+                NodeType = '$nodeType'
+                WHERE idDocumentaryDisposition = $idDocDisposition ";
         
-        $update = "UPDATE CSDocs_DocumentaryDisposition SET "
-                . "Name = '$catalogName', NameKey = '$nameKey', Description = '$description',"
-                . " NodeType = '$nodeType', ParentKey = '$parentKey' WHERE idDocumentaryDisposition = $idDocDisposition";
+        $updateChilds = "UPDATE CSDocs_DocumentaryDisposition SET ParentKey = '$nameKey' 
+                WHERE ParentKey = '$oldNameKey' AND idDocumentaryDisposition != $idDocDisposition";
+        
+        if(strcasecmp($oldNameKey, $nameKey) != 0){
+            if(!($updateChildsResult = $DB->ConsultaQuery($dataBaseName, $updateChilds)))
+                return XML::XMLReponse ("Error", 0, "<p><b>Error</b> al intentar actualizar los subitems</p> Detalles:<br>$updateChildsResult");
+        }
         
         if(!($updateResult = $DB->ConsultaQuery($dataBaseName, $update)))
-                return XML::XMLReponse ("Error", 0, "<p><b>Error</b> al intentar actualizar la información.</p><br>Detalles:<br>$updateResult");
-
+            return XML::XMLReponse ("Error", 0, "<p><b>Error</b> al intentar actualizar la información.</p><br>Detalles:<br>$updateResult");
+               
         XML::XMLReponse("updateCompleted", 1, "<p>Datos actualizados</p>");
     }
     

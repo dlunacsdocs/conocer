@@ -429,6 +429,15 @@ class Permissions {
         
         return $selectResult['ArrayDatos'];
     }
+    
+    public static function checkPermission($repository, $action){
+        $status = 0;
+        
+        $repositoryEncripted = md5($repository);
+        
+        if(isset($_SESSION['permissions'][$repositoryEncripted][$action]))
+           $status = 1; 
+    }
 }
 
 $Permissions = new Permissions();

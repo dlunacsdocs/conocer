@@ -9,7 +9,7 @@ var DocumentaryDispositionClass = function(){
     this.setActionToLinkDocumentaryDispositionMenu = function(){
     
         $('.LinkDocumentaryDisposition').click(function(){
-            if(userPermissions['c5866e93cab1776890fe343c9e7063fb'] !== undefined)
+            if(validateSystemPermission(0, 'c5866e93cab1776890fe343c9e7063fb', 0))
                 _buildDocumentaryDispositionConsole();
             else
                 Advertencia("No dispone de permisos para abrir la interfaz del Catálogo de Disposición Documental ");
@@ -61,27 +61,33 @@ var DocumentaryDispositionClass = function(){
     _showCatalogOption = function(){
         var optionName = $('#documentaryDispositionButton').attr('optionName');
         
+        if(String(optionName).toLowerCase() === 'fondo')
+            if(!validateSystemPermission(0, 'e45823afe1e5120cec11fc4c379a0c67', 0))
+                return Advertencia("No tiene permisos para esta acción");
+        
+        
         if(_validateActiveTree(optionName) === false)
             return 0;
         
         var panelContent = _getArchivalDispositionFormsPanel();
         
         BootstrapDialog.show({
-            title: 'Agregando '+optionName,
+            title: '<i class = "fa fa-plus-circle fa-lg"></i> Agregando '+optionName,
             size: BootstrapDialog.SIZE_SMALL,
             message: panelContent,
-            buttons: [
+            buttons: [            
                 {
-                    label: 'Cerrar',
-                    action: function(dialogRef){
-                        dialogRef.close();
-                    }
-                },
-                {
+                    icon: 'fa fa-plus-circle fa-lg',
                     label: 'Agregar',
                     cssClass:"btn-primary",
                     action: function(dialogRef){                    
                         window["_add"+optionName](dialogRef);    /* Agregando elemento al Catálogo */
+                    }
+                },
+                {
+                    label: 'Cerrar',
+                    action: function(dialogRef){
+                        dialogRef.close();
                     }
                 }
             ],
@@ -251,7 +257,7 @@ var DocumentaryDispositionClass = function(){
                     id: 'docDispCloseButton',
                     action: function(dialogRef){
                         BootstrapDialog.show({
-                            title: 'Mensaje de Confirmación',
+                            title: '<i class="fa fa-exclamation-triangle fa-lg"></i> Mensaje de Confirmación',
                             size: BootstrapDialog.SIZE_SMALL,
                             type: BootstrapDialog.TYPE_WARNING,
                             closable: true,
@@ -387,13 +393,17 @@ var DocumentaryDispositionClass = function(){
     _deleteDocDispositionCatalogNode = function(){
         var node = null;
         var optionName = $('#documentaryDispositionNavTab .nav-tabs li.active a').attr('optionName');
-        console.log("deleteDocDispositionCatalogNode: "+optionName);
+        var action;
         if(String(optionName).toLowerCase() === 'fondo'){
+            action = '2d969e2cee8cfa07ce7ca0bb13c7a36d';
             node = $('#fondoTree').dynatree('getActiveNode');
             if(node === null)
                 return Advertencia("Debe seleccionar un elemento para poder eliminarlo.");
             
-            _deleteDocDispoCatalogNodeConfirmMessage(optionName, node);
+            if(!validateSystemPermission(0, action, 0))
+                 return Advertencia("No tiene permisos para esta acción");
+             
+            _deleteDocDispoCatalogNodeConfirmMessage(optionName, node, action);
 
         }
         if(String(optionName).toLowerCase() === 'seccion'){
@@ -415,22 +425,29 @@ var DocumentaryDispositionClass = function(){
                
     };
     
-    _deleteDocDispoCatalogNodeConfirmMessage = function(optionName, node){
+    _deleteDocDispoCatalogNodeConfirmMessage = function(optionName, node, action){
         BootstrapDialog.show({
-            title: 'Mensaje de Confirmación',
+            title: '<i class="fa fa-exclamation-triangle fa-lg"></i> Mensaje de Confirmación',
             size: BootstrapDialog.SIZE_SMALL,
             type: BootstrapDialog.TYPE_DANGER,
             closable: true,
             message: "¿Desea continuar eliminando el elemento <b>"+node.data.title+"</b>?",
             draggable: false,
-            buttons: [
+            buttons: [              
                 {
+                    label:"Cancelar",
+                    action: function(dialogRef){
+                        dialogRef.close();
+                    }
+                },
+                {
+                    icon: 'fa fa-trash-o fa-lg',
                     label: "Eliminar",
                     cssClass:"btn-danger",
                     action:function(dialogRef){
                   
                         if(String(optionName).toLowerCase() === 'fondo'){
-                            _deleteFondo(optionName, node);
+                            _deleteFondo(optionName, node, action);
                         }
                         
                         if(String(optionName).toLowerCase() === 'seccion'){
@@ -441,12 +458,6 @@ var DocumentaryDispositionClass = function(){
                             _deleteSerie(node);
                         }
                         
-                        dialogRef.close();
-                    }
-                },
-                {
-                    label:"Cancelar",
-                    action: function(dialogRef){
                         dialogRef.close();
                     }
                 }
@@ -462,7 +473,7 @@ var DocumentaryDispositionClass = function(){
      * @param {type} node Nodo activo que se eliminará.
      * @returns {undefined}
      */
-    _deleteFondo = function(optionName, node){        
+    _deleteFondo = function(optionName, node, action){        
         var sectionLimitOfDelete = [];
         var fondoToDelete = [];
         var sectionNode = $('#sectionTree').dynatree('getTree').getNodeByKey(node.data.key);
@@ -687,17 +698,28 @@ var DocumentaryDispositionClass = function(){
         
         var panelForms = _getArchivalDispositionFormsPanel();
         
+        var action;
+        
         var dialog = BootstrapDialog.show({
-            title: 'Editando Datos',
+            title: '<i class = "fa fa-pencil-square-o fa-lg"></i> Editando Datos',
             size: BootstrapDialog.SIZE_SMALL,
             closable: true,
             message: panelForms,
             draggable: false,
             buttons: [
                 {
+                    icon: 'fa fa-pencil fa-lg',
                     label: "Modificar",
                     cssClass:"btn-warning",
                     action: function(dialogRef){
+                        if(String(optionName).toLowerCase() === 'fondo'){
+                                action = 'dd28e50635038e9cf3a648c2dd17ad0a';
+                         }
+                     
+                        if(!validateSystemPermission(0, action, 0))
+                             return Advertencia("No tiene permisos para esta acción");
+                        
+                        
                         var button = this;
                         button.spin();
                         
@@ -718,14 +740,28 @@ var DocumentaryDispositionClass = function(){
                             }
                         }
                         
+                        var dataToUpdate = {
+                            idDocDisposition:node.data.idDocDisposition, 
+                            catalogName: title, 
+                            nameKey: key, 
+                            structureType: node.data.structureType, 
+                            description: description, 
+                            parentKey: node.getParent().data.key,
+                            oldNameKey: oldKey,
+                            action: action
+                        };
+                        
+                        if(parseInt(node.data.idDocDisposition) > 0)    /* Se realiza la modificación */
+                            if(!_modifyDocDispoCatalogNode(dataToUpdate))
+                                return errorMessage('No se completo la actualización');
+                        
                         node.data.title = title;
                         node.data.key = key;
                         node.data.description = description;
                         
-                        if(parseInt(node.data.idDocDisposition) > 0)
-                            _modifyDocDispoCatalogNode({idDocDisposition:node.data.idDocDisposition, catalogName: title, nameKey: key, structureType: node.data.structureType, description: description, parentKey: node.getParent().data.key});
-                        
                         node.render();
+                        
+                        /* Se actualizan los que se encuentran en diferentes tabs  */
                         
                         if(String(optionName).toLowerCase() === 'fondo'){
                             var sectionNode = $('#sectionTree').dynatree('getTree').getNodeByKey(oldKey);
@@ -736,7 +772,6 @@ var DocumentaryDispositionClass = function(){
                                 sectionNode.render();
                             }
                         }
-                                
 
                         if(String(optionName).toLowerCase() === 'serie'){
                             var serieNode = $('#serieTree').dynatree('getTree').getNodeByKey(oldKey);
@@ -772,18 +807,25 @@ var DocumentaryDispositionClass = function(){
      * @returns {undefined}
      */
     _modifyDocDispoCatalogNode = function(data){
+        var status = 0;
+        
         $.ajax({
         async: false, 
         cache: false,
         dataType: "html", 
         type: 'POST',   
         url: "Modules/php/Archival.php",
-        data: {option: "modifyDocDispCatalogNode", idDocDisposition:data.idDocDisposition, catalogName: data.catalogName, nameKey: data.nameKey, 
-            nodeType: data.structureType, description: data.description, parentKey: data.parentKey}, 
+        data: {option: "modifyDocDispCatalogNode", idDocDisposition:data.idDocDisposition, 
+            catalogName: data.catalogName, nameKey: data.nameKey, 
+            nodeType: data.structureType, description: data.description, 
+            parentKey: data.parentKey, oldNameKey: data.oldNameKey, action: data.action}, 
         success:  function(xml)
         {           
             if($.parseXML( xml )===null){errorMessage(xml); return 0;}else xml=$.parseXML( xml );
-     
+            
+            if($(xml).find('updateCompleted').length > 0)
+                status = 1;
+            
             $(xml).find("Error").each(function()
             {
                 var mensaje=$(this).find("Mensaje").text();
@@ -793,10 +835,12 @@ var DocumentaryDispositionClass = function(){
         },
         beforeSend:function(){},
         error: function(jqXHR, textStatus, errorThrown){errorMessage(textStatus +"<br>"+ errorThrown);}
-        });       
+        });     
+        
+        return status;
     };
     
-    _deleteDocDispoCatalogNode = function(xml){
+    _deleteDocDispoCatalogNode = function(xml, action){
         
         $.ajax({
         async: false, 
@@ -804,7 +848,7 @@ var DocumentaryDispositionClass = function(){
         dataType: "html", 
         type: 'POST',   
         url: "Modules/php/Archival.php",
-        data: {option: "deleteDocDispoCatalogNode", xml: xml},
+        data: {option: "deleteDocDispoCatalogNode", xml: xml, action: action},
         success:  function(xml)
         {           
             if($.parseXML( xml )===null){errorMessage(xml); return 0;}else xml=$.parseXML( xml );

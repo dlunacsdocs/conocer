@@ -40,7 +40,7 @@ class Session {
                 else
                     $idRepository = md5 (0);
                 
-                $_SESSION['permissions'][$idRepository][$idMenu] = true;
+                $_SESSION['permissions'][$idRepository][$idMenu] = $permissionsArray[$cont]['IdMenu'];
             }
         }
     }

@@ -90,7 +90,7 @@ var DocumentaryValidity = function(){
         serieDiv.append("<br>").append(serieTable);
         
         var dialog = BootstrapDialog.show({
-            title: 'Validez Documental',
+            title: 'Vigencia Documental',
             size: BootstrapDialog.SIZE_WIDE,
             type:BootstrapDialog.TYPE_PRIMARY,
             message: tabbable,

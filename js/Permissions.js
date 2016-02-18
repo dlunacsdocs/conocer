@@ -1,12 +1,7 @@
 /* global BootstrapDialog, EnvironmentData, Tree, userPermissions */
 
-/**
- * @description Clase dedicada a la administración de permisos de grupo.
- * @returns {ClassPermissions}
- */
 var ClassPermissions = function ()
 {
-    var self = this;
     /**
      * @description Muestra el panel de permisos del grupo seleccionado.
      * @param {type} idGroup
@@ -15,6 +10,8 @@ var ClassPermissions = function ()
      */
     this.showPermissionsPanel = function (idGroup, userGroupName)
     {
+        var self = this;
+
         var tabbable = $('<div>');
 
         var navTab = $('<ul>', {class: "nav nav-tabs"});
@@ -258,26 +255,6 @@ var ClassPermissions = function ()
                     return false;
                 }
             }
-        });
-        
-        $(xml).find("Menu").each(function (){
-            var IdMenu = $(this).find("IdMenu").text();
-            var IdParent = $(this).find("IdParent").text();
-            var Nombre = $(this).find("Nombre").text();
-            var child = {
-                title: Nombre,
-                isFolder: true,
-                idPermission: IdMenu,
-                key: 'SM_'+IdMenu,
-                icon: 'cogwheel.png',
-                idParent: IdParent
-            };
-            
-            var parent = $('#permissionsTree').dynatree('getTree').getNodeByKey('SM_'+IdParent);
-            
-            if(parent !== null)
-                parent.addChild(child);
-            
         });
 
         var node = $("#permissionsTree").dynatree("getActiveNode");
