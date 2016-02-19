@@ -437,6 +437,8 @@ class Permissions {
         
         if(isset($_SESSION['permissions'][$repositoryEncripted][$action]))
            $status = 1; 
+        
+        return $status;
     }
 }
 

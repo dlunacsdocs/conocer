@@ -60,11 +60,22 @@ var DocumentaryDispositionClass = function(){
      */
     _showCatalogOption = function(){
         var optionName = $('#documentaryDispositionButton').attr('optionName');
+        var action = null;
         
         if(String(optionName).toLowerCase() === 'fondo')
-            if(!validateSystemPermission(0, 'e45823afe1e5120cec11fc4c379a0c67', 0))
-                return Advertencia("No tiene permisos para esta acción");
+            action = 'e45823afe1e5120cec11fc4c379a0c67';
         
+        if(String(optionName).toLowerCase() === 'section')
+            action = '2b45c629e577731c4df84fc34f936a89';
+        
+        if(String(optionName).toLowerCase() === 'serie')
+            action = '959ef477884b6ac2241b19ee4fb776ae';
+        
+        if(action === null)
+            return Advertencia('No se ha localizado un permiso para realizar esta acción.');
+        
+        if(!validateSystemPermission(0, action, 0))
+                return Advertencia("No tiene permisos para esta acción");
         
         if(_validateActiveTree(optionName) === false)
             return 0;
@@ -74,14 +85,24 @@ var DocumentaryDispositionClass = function(){
         BootstrapDialog.show({
             title: '<i class = "fa fa-plus-circle fa-lg"></i> Agregando '+optionName,
             size: BootstrapDialog.SIZE_SMALL,
+            closeByBackdrop: true,
+            closeByKeyboard: true,
             message: panelContent,
             buttons: [            
                 {
                     icon: 'fa fa-plus-circle fa-lg',
                     label: 'Agregar',
                     cssClass:"btn-primary",
-                    action: function(dialogRef){                    
-                        window["_add"+optionName](dialogRef);    /* Agregando elemento al Catálogo */
+                    action: function(dialogRef){    
+                        var button = this;
+                        button.spin();
+                        dialogRef.enableButtons(false);
+                        if(window["_add"+optionName](action))    /* Agregando elemento al Catálogo */
+                            dialogRef.close();
+                        else{
+                            button.stopSpin();
+                            dialogRef.enableButtons(true);
+                        }
                     }
                 },
                 {
@@ -232,9 +253,11 @@ var DocumentaryDispositionClass = function(){
         var dialog = BootstrapDialog.show({
             title: 'Catálogo de Disposición Documental',
             size: BootstrapDialog.SIZE_NORMAL,
-            closable: false,
+            closable: true,
             message: tabbable,
-            draggable: true,
+            draggable: false,
+            closeByBackdrop: false,
+            closeByKeyboard: true,
             buttons: [
                 {
                     icon: 'glyphicon glyphicon-plus',
@@ -256,33 +279,7 @@ var DocumentaryDispositionClass = function(){
                     label: "Cerrar",
                     id: 'docDispCloseButton',
                     action: function(dialogRef){
-                        BootstrapDialog.show({
-                            title: '<i class="fa fa-exclamation-triangle fa-lg"></i> Mensaje de Confirmación',
-                            size: BootstrapDialog.SIZE_SMALL,
-                            type: BootstrapDialog.TYPE_WARNING,
-                            closable: true,
-                            message: "¿Desea continuar cerrando esta ventana?",
-                            draggable: false,
-                            buttons: [             
-                                {
-                                    label:"Cancelar",
-                                    action: function(dialogConfirm){
-                                        dialogConfirm.close();
-                                    }
-                                },
-                                {
-                                    label: "Cerrar",
-                                    action: function(dialogConfirm){
-                                        dialogConfirm.close();
-                                        dialogRef.close();
-                                    }
-                                }
-                            ],
-                            onshown: function(dialogConfirm){
-
-                            }
-                        });
-                        
+                        dialogRef.close();                        
                     }
                 }
             ],
@@ -393,36 +390,36 @@ var DocumentaryDispositionClass = function(){
     _deleteDocDispositionCatalogNode = function(){
         var node = null;
         var optionName = $('#documentaryDispositionNavTab .nav-tabs li.active a').attr('optionName');
-        var action;
+        var action = null;
         if(String(optionName).toLowerCase() === 'fondo'){
             action = '2d969e2cee8cfa07ce7ca0bb13c7a36d';
             node = $('#fondoTree').dynatree('getActiveNode');
             if(node === null)
                 return Advertencia("Debe seleccionar un elemento para poder eliminarlo.");
-            
-            if(!validateSystemPermission(0, action, 0))
-                 return Advertencia("No tiene permisos para esta acción");
-             
-            _deleteDocDispoCatalogNodeConfirmMessage(optionName, node, action);
-
+           
         }
         if(String(optionName).toLowerCase() === 'seccion'){
+            action = 'd827f12e35eae370ba9c65b7f6026695';
             node = $('#sectionTree').dynatree('getActiveNode');
             
             if(node === null)
                 return Advertencia("Debe seleccionar un elemento para poder eliminarlo.");
-        
-            _deleteDocDispoCatalogNodeConfirmMessage(optionName, node);
         }
+        
         if(String(optionName).toLowerCase() === 'serie'){
+            action = 'bd7db7397f7d83052f829816ecc7f004';
             node = $('#serieTree').dynatree('getActiveNode');
             
             if(node === null)
                 return Advertencia("Debe seleccionar un elemento para poder eliminarlo.");
         
-            _deleteDocDispoCatalogNodeConfirmMessage(optionName, node);
         }
-               
+        
+        if(!validateSystemPermission(0, action, 0))
+                 return Advertencia("No tiene permisos para esta acción");
+        
+        _deleteDocDispoCatalogNodeConfirmMessage(optionName, node, action);
+           
     };
     
     _deleteDocDispoCatalogNodeConfirmMessage = function(optionName, node, action){
@@ -451,11 +448,11 @@ var DocumentaryDispositionClass = function(){
                         }
                         
                         if(String(optionName).toLowerCase() === 'seccion'){
-                            _deleteFondo(optionName, node);
+                            _deleteFondo(optionName, node, action);
                         }
                         
                         if(String(optionName).toLowerCase() === 'serie'){
-                            _deleteSerie(node);
+                            _deleteSerie(node, action);
                         }
                         
                         dialogRef.close();
@@ -632,10 +629,10 @@ var DocumentaryDispositionClass = function(){
         console.log(xml);       
 
         if(parseInt(node.data.idDocDisposition) > 0)
-            _deleteDocDispoCatalogNode(xml);
+            _deleteDocDispoCatalogNode(xml, action);
     };
     
-    _deleteSerie = function(node){
+    _deleteSerie = function(node, action){
         console.log("deleteSerie");
         var xml = "<delete version='1.0' encoding='UTF-8'>";        
         
@@ -671,7 +668,7 @@ var DocumentaryDispositionClass = function(){
         console.log(xml);
         
         if(parseInt(node.data.idDocDisposition) > 0)
-            _deleteDocDispoCatalogNode(xml);
+            _deleteDocDispoCatalogNode(xml, action);
         
     };
     
@@ -698,7 +695,7 @@ var DocumentaryDispositionClass = function(){
         
         var panelForms = _getArchivalDispositionFormsPanel();
         
-        var action;
+        var _action;
         
         var dialog = BootstrapDialog.show({
             title: '<i class = "fa fa-pencil-square-o fa-lg"></i> Editando Datos',
@@ -713,10 +710,17 @@ var DocumentaryDispositionClass = function(){
                     cssClass:"btn-warning",
                     action: function(dialogRef){
                         if(String(optionName).toLowerCase() === 'fondo'){
-                                action = 'dd28e50635038e9cf3a648c2dd17ad0a';
+                                _action = 'dd28e50635038e9cf3a648c2dd17ad0a';
                          }
+                         else if (String(optionName).toLowerCase() === 'section')
+                             _action = 'ffedf5be3a86e2ee281d54cdc97bc1cf';
+                         else if (String(optionName).toLowerCase() === 'serie')
+                             _action = '4dd9cec1c21bc54eecb53786a2c5fa09';
+                         else
+                             return Advertencia('No se encontró un permiso para realizar la acción de modificación.');
+                        
                      
-                        if(!validateSystemPermission(0, action, 0))
+                        if(!validateSystemPermission(0, _action, 0))
                              return Advertencia("No tiene permisos para esta acción");
                         
                         
@@ -748,7 +752,7 @@ var DocumentaryDispositionClass = function(){
                             description: description, 
                             parentKey: node.getParent().data.key,
                             oldNameKey: oldKey,
-                            action: action
+                            action: _action
                         };
                         
                         if(parseInt(node.data.idDocDisposition) > 0)    /* Se realiza la modificación */
@@ -879,7 +883,7 @@ var DocumentaryDispositionClass = function(){
         type: 'POST',   
         url: "Modules/php/Archival.php",
         data: {option: "storeNewNodeIntoDataBase", catalogName: data.catalogName, nameKey: data.nameKey, 
-            nodeType: data.structureType, description: data.description, parentKey: data.parentKey},
+            nodeType: data.structureType, description: data.description, parentKey: data.parentKey, action: data.action},
         success:  function(xml)
         {           
             if($.parseXML( xml )===null){errorMessage(xml); return 0;}else xml=$.parseXML( xml );
@@ -909,10 +913,10 @@ var DocumentaryDispositionClass = function(){
      *                                  al catálogo de disposición documental.
      * @returns {Number}
      */
-    _addFondo = function(dialogRef){
+    _addFondo = function(action){
         var docDispositionData = _getDocumentaryDispositionData();
         var activeKeyParent;
-        
+                
         if(_checkIfExistsKey(docDispositionData.catalogKey) === 1)
             return Advertencia("La clave <b>"+docDispositionData.catalogKey+"</b> que intenta ingresar ya existe");
                 
@@ -946,25 +950,24 @@ var DocumentaryDispositionClass = function(){
         
         if(parseInt(activeNode.data.idDocDisposition) > 0){
             console.log('Agregando Fondo');
-            var docDispCloseButton = docDispoCatalogDialog.getButton('docDispCloseButton');
-            docDispCloseButton.disable();
             
-            var documentaryDispositionAddNodeButton = docDispoCatalogDialog.getButton('documentaryDispositionButton');
-            documentaryDispositionAddNodeButton.spin();
-            documentaryDispositionAddNodeButton.disable();
-            
-            idDocDisposition = _storeNewNodeIntoDataBase({parentKey: activeNode.data.key, catalogName: newNode.title, nameKey: newNode.key, structureType: newNode.structureType, description: newNode.description});
-            
-            documentaryDispositionAddNodeButton.enable();
-            documentaryDispositionAddNodeButton.stopSpin();
-            
-            docDispCloseButton.enable();
+            idDocDisposition = _storeNewNodeIntoDataBase(
+                    {
+                        parentKey: activeNode.data.key, 
+                        catalogName: newNode.title, 
+                        nameKey: newNode.key, 
+                        structureType: newNode.structureType, 
+                        description: newNode.description,
+                        action: action
+                    });
             
             if(parseInt(idDocDisposition) > 0)
                 newNode.idDocDisposition = idDocDisposition;
             else
                 return 0;
         }
+        else 
+            return 0;
         
         var childNode = activeNode.addChild(newNode);
         
@@ -983,7 +986,7 @@ var DocumentaryDispositionClass = function(){
        
        childNodeSection.activate(true);
        
-       dialogRef.close();
+       return 1;
     };
     
     /*
@@ -993,7 +996,7 @@ var DocumentaryDispositionClass = function(){
      *                                  al catálogo de disposición documental.
      * @returns {Number}
      */
-    _addSeccion = function(dialogRef){
+    _addSeccion = function(action){
         var docDispositionData = _getDocumentaryDispositionData();  
         var activeNodeFondo = $('#fondoTree').dynatree("getActiveNode");
         var sectionTree = $('#sectionTree').dynatree("getActiveNode");
@@ -1037,25 +1040,24 @@ var DocumentaryDispositionClass = function(){
         
         if(parseInt(activeNodeSection.data.idDocDisposition) > 0){
             console.log('Agregando Sección');
-            var docDispCloseButton = docDispoCatalogDialog.getButton('docDispCloseButton');
-            docDispCloseButton.disable();
-            
-            var documentaryDispositionAddNodeButton = docDispoCatalogDialog.getButton('documentaryDispositionButton');
-            documentaryDispositionAddNodeButton.spin();
-            documentaryDispositionAddNodeButton.disable();
-            
-            idDocDisposition = _storeNewNodeIntoDataBase({parentKey: activeNodeSection.data.key, catalogName: newNode.title, nameKey: newNode.key, structureType: newNode.structureType, description: newNode.description});
-            
-            documentaryDispositionAddNodeButton.enable();
-            documentaryDispositionAddNodeButton.stopSpin();
-            
-            docDispCloseButton.enable();
+                       
+            idDocDisposition = _storeNewNodeIntoDataBase(
+                    {
+                        parentKey: activeNodeSection.data.key, 
+                        catalogName: newNode.title, 
+                        nameKey: newNode.key, 
+                        structureType: newNode.structureType, 
+                        description: newNode.description,
+                        action: action
+                    });
             
             if(parseInt(idDocDisposition) > 0)
                 newNode.idDocDisposition = idDocDisposition;
             else
                 return 0;
         }
+        else 
+            return 0;
         
         var childNode = activeNodeSection.addChild(newNode);
           
@@ -1078,7 +1080,7 @@ var DocumentaryDispositionClass = function(){
         
         childNodeSerie.activate(true);
         
-        dialogRef.close();
+        return 1;
     };
     
     /*
@@ -1088,7 +1090,7 @@ var DocumentaryDispositionClass = function(){
      *                                  al catálogo de disposición documental.
      * @returns {Number}
      */
-    _addSerie = function(dialogRef){
+    _addSerie = function(action){
         var docDispositionData = _getDocumentaryDispositionData();
         
         if(_checkIfExistsKey(docDispositionData.catalogKey) === 1)
@@ -1124,31 +1126,29 @@ var DocumentaryDispositionClass = function(){
     
         if(parseInt(activeNodeSerie.data.idDocDisposition) > 0){
             console.log('Agregando Serie');
-            var docDispCloseButton = docDispoCatalogDialog.getButton('docDispCloseButton');
-            docDispCloseButton.disable();
             
-            var documentaryDispositionAddNodeButton = docDispoCatalogDialog.getButton('documentaryDispositionButton');
-            documentaryDispositionAddNodeButton.spin();
-            documentaryDispositionAddNodeButton.disable();
-            
-            idDocDisposition = _storeNewNodeIntoDataBase({parentKey: activeNodeSerie.data.key, catalogName: newNode.title, nameKey: newNode.key, structureType: newNode.structureType, description: newNode.description});
-            
-            documentaryDispositionAddNodeButton.enable();
-            documentaryDispositionAddNodeButton.stopSpin();
-            
-            docDispCloseButton.enable();
-            
+            idDocDisposition = _storeNewNodeIntoDataBase({
+                parentKey: activeNodeSerie.data.key, 
+                catalogName: newNode.title, 
+                nameKey: newNode.key, 
+                structureType: newNode.structureType, 
+                description: newNode.description,
+                action: action
+            });
+                        
             if(parseInt(idDocDisposition) > 0)
                 newNode.idDocDisposition = idDocDisposition;
             else
                 return 0;
         }  
+        else
+            return 0;
         
         var childNode = activeNodeSerie.addChild(newNode);
             
         childNode.activate(true);
-        
-        dialogRef.close();
+                
+        return 1;
     };
     
     /*

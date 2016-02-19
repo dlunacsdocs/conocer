@@ -63,7 +63,7 @@ var LegalFoundation = function(){
     };
     
     var _setDataIntoTable = function(){
-        var legalFoundationData = _getLegalFoundationData();
+        var legalFoundationData = getLegalFoundationData();
         
         $(legalFoundationData).find('register').each(function(){
             var idLegalFoundation = $(this).find('idLegalFoundation').text();
@@ -76,7 +76,7 @@ var LegalFoundation = function(){
         
     };
     
-    var _getLegalFoundationData = function(){
+    this.getLegalFoundationData = function(){
         
         var legalFoundationData = null;
         

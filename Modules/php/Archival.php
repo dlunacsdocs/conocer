@@ -10,6 +10,7 @@ require_once dirname($RoutFile).'/php/DataBase.php';
 require_once dirname($RoutFile).'/php/XML.php';
 require_once dirname($RoutFile).'/php/Log.php';
 require_once dirname($RoutFile).'/php/Session.php';
+require_once dirname($RoutFile).'/php/Permissions.php';
 
 
 class Archival {
@@ -48,6 +49,10 @@ class Archival {
         $nodeType = filter_input(INPUT_POST, "nodeType");
         $description = filter_input(INPUT_POST, "description");
         $parentKey = filter_input(INPUT_POST, "parentKey");
+        $action = filter_input(INPUT_POST, "action");
+                
+        if(!Permissions::checkPermission(0, $action))
+            return XML::XMLReponse ("Error", 0, "<p>No tiene permisos para realizar esta acción.</p>");
         
         $insert = "INSERT INTO CSDocs_DocumentaryDisposition (Name, NameKey, "
                 . "Description, NodeType, ParentKey) VALUES ('$catalogName', '$nameKey', '$description', '$nodeType', '$parentKey')";
@@ -77,7 +82,7 @@ class Archival {
         $action = filter_input(INPUT_POST, "action");
         $xmlString = filter_input(INPUT_POST, "xml");
         $delete = "DELETE FROM CSDocs_DocumentaryDisposition WHERE ";
-        
+              
         if(!Permissions::checkPermission(0, $action))
             return XML::XMLReponse ("Error", 0, "<p>No tiene permisos para realizar esta acción.</p>");
         

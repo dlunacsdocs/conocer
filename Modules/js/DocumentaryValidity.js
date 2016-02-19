@@ -22,6 +22,7 @@ var DocumentaryValidity = function(){
     var sectionTableDT;
     var serieTabledT;
     var serieTableDT;
+    var legalFoundationOptions = null;
    
    /**
     * @description Activa la acción de abrir la interfaz de Vigencia Documental Sobre el menú de Vigencia Documental.
@@ -106,6 +107,12 @@ var DocumentaryValidity = function(){
                     _setDataIntoTables(schema);
                     _setTotal();
                 }
+                
+                var legalFoundation = new LegalFoundation();
+                legalFoundationOptions = legalFoundation.getLegalFoundationData();
+                
+                if(legalFoundationOptions === null)
+                    Advertencia("El catálogo de Disposición Documental se encuentra vacío.");
             },
             onclose: function(dialogRef){
                 freeVariables();
@@ -133,14 +140,14 @@ var DocumentaryValidity = function(){
         
         fondoTabledT = $('#fondoTable').dataTable(
         {
-            "sDom": 'lfTrtip',
+            "sDom": 'Tfrtlip',
             "bInfo":false, "autoWidth" : false, "oLanguage":LanguajeDataTable,
             "tableTools": {
                 "aButtons": [
 //                    {"sExtends":"text", "sButtonText": "Boton", "fnClick" :function(){}},
                     {
                         "sExtends":    "collection",
-                        "sButtonText": "Más...",
+                        "sButtonText": '<i class="fa fa-floppy-o fa-lg"></i>',
                         "aButtons":    [ "csv", "xls", "pdf", "copy" ]
                     }                          
                 ]
@@ -151,14 +158,14 @@ var DocumentaryValidity = function(){
         
         sectionTabledT = $('#sectionTable').dataTable(
         {
-            "sDom": 'lfTrtip',
+            "sDom": 'Tfrtlip',
             "bInfo":false, "autoWidth" : false, "oLanguage":LanguajeDataTable,
             "tableTools": {
                 "aButtons": [
 //                    {"sExtends":"text", "sButtonText": "Boton", "fnClick" :function(){}},
                     {
                         "sExtends":    "collection",
-                        "sButtonText": "Más...",
+                        "sButtonText": '<i class="fa fa-floppy-o fa-lg"></i>',
                         "aButtons":    [ "csv", "xls", "pdf", "copy" ]
                     }                          
                 ]
@@ -169,14 +176,14 @@ var DocumentaryValidity = function(){
     
         serieTabledT = $('#serieTable').dataTable(
         {
-            "sDom": 'lfTrtip',
+            "sDom": 'Tfrtlip',
             "bInfo":false, "autoWidth" : false, "oLanguage":LanguajeDataTable,
             "tableTools": {
                 "aButtons": [
 //                    {"sExtends":"text", "sButtonText": "Boton", "fnClick" :function(){}},
                     {
                         "sExtends":    "collection",
-                        "sButtonText": "Más...",
+                        "sButtonText": '<i class="fa fa-floppy-o fa-lg"></i>',
                         "aButtons":    [ "csv", "xls", "pdf", "copy", "print" ]
                     }                          
                 ]
@@ -195,12 +202,13 @@ var DocumentaryValidity = function(){
             var type = "text";
             var data = "";
             var onblur = "submit";
-//            if(index >=5 && index <= 8){
-//                
-//                type = "select";
-//                data = {11:11,10:10,9:9, 8:8, 7:7, 6:6, 5:5, 4:4, 3:3, 2:2, 1:1, "":""};
-//                onblur = "submit";
-//            }
+            
+            if(index === 9){
+                
+                type = "select";
+                data = {11:11,10:10,9:9, 8:8, 7:7, 6:6, 5:5, 4:4, 3:3, 2:2, 1:1, "":""};
+                onblur = "submit";
+            }
             
             /* No puede cambiarse la clave de la serie 
              * No puede editarse el total de expedientes*/
@@ -226,10 +234,14 @@ var DocumentaryValidity = function(){
                     },
                     onsubmit: function(settings, original){
                         var newVal;
+                        
                         if(type === 'text')
                             newVal = $('input',this).val();
+                        
                         if(type === 'select')
                             newVal = $('select',this).val();
+                        console.log(newVal);
+                        console.log(original.revert);
                         if(newVal === undefined){
                             Advertencia("No fué posible obtener el nuevo valor");
                             return false;
@@ -257,12 +269,19 @@ var DocumentaryValidity = function(){
                             original.reset();
                             return false;
                         }
+                        
+                        if (original.revert === $('select',this).val()) {
+                            original.reset();
+                            console.log("No ha cambiado el valor");
+                            return false;
+                        }
                     },
                     placeholder: "",
                     "height": "25px",
                     "width": "100%",
-                    "callback": function( sValue, y ) {       
-                        serieTabledT.fnDraw();
+                    "callback": function( sValue, y ) {   
+                        var position = serieTabledT.fnGetPosition($(tr)[0]);
+                        serieTabledT.fnUpdate([sValue], position, index, false);
                         _setTotal();
                     }
                 } );
@@ -396,7 +415,6 @@ var DocumentaryValidity = function(){
     };
          
     var _setTotal = function(){
-        console.log("setTotal");
         var atColumn = serieTableDT.column(5).data();
         var acColumn = serieTableDT.column(6).data();
         var adColumn = serieTableDT.column(7).data();
@@ -406,17 +424,18 @@ var DocumentaryValidity = function(){
             var atValue = atColumn[cont];
             var acValue = acColumn[cont];
             var adValue = adColumn[cont];
-            var rowTotal = 0;
-            
+            var rowTotal = 0;           
             var tr = serieTabledT.find('tr')[cont+1];
-            console.log(tr);
+ 
             if(!isNaN(atValue) && !isNaN(acValue) && !isNaN(adValue)){
                 rowTotal = parseInt(atValue) + parseInt(acValue) + parseInt(adValue);
 
                 serieTabledT.fnUpdate([rowTotal],tr,8,true);   
             }
-                
-            
+
+                         
         }
     };  
+    
+    
 };
