@@ -12,6 +12,7 @@ require_once dirname($RoutFile).'/php/DataBase.php';
 require_once dirname($RoutFile).'/php/XML.php';
 require_once dirname($RoutFile).'/php/Log.php';
 require_once dirname($RoutFile).'/php/Session.php';
+require_once dirname($RoutFile).'/php/Permissions.php';
 
 class LegalFoundation {
     private $db;
@@ -72,8 +73,12 @@ class LegalFoundation {
     private function addNewRegister($userData){
         $instanceName = $userData['dataBaseName'];
         
+        $action = filter_input(INPUT_POST, "action");
         $key = filter_input(INPUT_POST, "key");
         $description = filter_input(INPUT_POST, "description");
+        
+        if(!Permissions::checkPermission(0, $action))
+                return XML::XMLReponse ("Error", 0, "No tiene permisos para realizar esta acción");
         
         $insert = "INSERT INTO CSDocs_LegalFoundation (FoundationKey, Description) VALUES ('$key', '$description')";
         $idRegister = $this->db->ConsultaInsertReturnId($instanceName, $insert);

@@ -34,6 +34,7 @@ class DocumentaryValidity {
             switch (filter_input(INPUT_POST, "option")){
                 case 'getStructureSchema': $this->getStructureSchema($userData); break;
                 case 'modifyColumnOfDocValidity': $this->modifyColumnOfDocValidity($userData); break;
+                case 'setLegalFoundation': $this->setLegalFoundation($userData); break;
             }
         }
     }
@@ -73,6 +74,21 @@ class DocumentaryValidity {
                 return XML::XMLReponse ("Error", 0, "<b>Error</b> al intentar ingresar el dato. Detalles: $updateResult");
         
         echo $value;
+    }
+    
+    private function setLegalFoundation($userData){
+        $instanceName = $userData['dataBaseName'];
+        
+        $idLegalFoundation = filter_input(INPUT_POST, "idLegalFoundation");
+        $idDocumentValidity = filter_input(INPUT_POST, "idDocumentValidity");
+
+        $update = "UPDATE CSDocs_DocumentValidity SET idLegalFoundation = $idLegalFoundation WHERE idDocValidity = $idDocumentValidity";
+        
+        if (($updateResult = $this->db->ConsultaQuery($instanceName, $update)) != 1)
+                return XML::XMLReponse ("Error", 0, "<p><b>Error</b></p> $updateResult");
+        
+        XML::XMLReponse("settledLegalFoundation", 1, "Se agrego correctamente el Fundamento Legal.");
+        
     }
     
 }

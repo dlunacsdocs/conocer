@@ -22,7 +22,9 @@ var DocumentaryValidity = function(){
     var sectionTableDT;
     var serieTabledT;
     var serieTableDT;
-    var legalFoundationOptions = null;
+    var legalFoundationDT;
+    var legalFoundationdT;
+    var legalFoundationData = null;
    
    /**
     * @description Activa la acción de abrir la interfaz de Vigencia Documental Sobre el menú de Vigencia Documental.
@@ -107,12 +109,18 @@ var DocumentaryValidity = function(){
                     _setDataIntoTables(schema);
                     _setTotal();
                 }
+                                
+                serieTableDT.$('.legalFoundationBtn').click(function(){
+                    _openLegalFoundationInterface($(serieTableDT.$('.legalFoundationBtn')).index($(this)));
+                });
                 
-                var legalFoundation = new LegalFoundation();
-                legalFoundationOptions = legalFoundation.getLegalFoundationData();
+                serieTableDT.$('td.legalFoundationTr').mouseover(function(){
+                    $(this).find('.btn').css({"display": ""});
+                });
                 
-                if(legalFoundationOptions === null)
-                    Advertencia("El catálogo de Disposición Documental se encuentra vacío.");
+                serieTableDT.$('td.legalFoundationTr').mouseout(function(){
+                    $(this).find('.btn').css({"display": "none"});
+                });
             },
             onclose: function(dialogRef){
                 freeVariables();
@@ -204,15 +212,16 @@ var DocumentaryValidity = function(){
             var onblur = "submit";
             
             if(index === 9){
-                
-                type = "select";
-                data = {11:11,10:10,9:9, 8:8, 7:7, 6:6, 5:5, 4:4, 3:3, 2:2, 1:1, "":""};
-                onblur = "submit";
+                $(tr).addClass('legalFoundationTr');
+//                
+//                type = "select";
+//                data = {11:11,10:10,9:9, 8:8, 7:7, 6:6, 5:5, 4:4, 3:3, 2:2, 1:1, "":""};
+//                onblur = "submit";
             }
             
             /* No puede cambiarse la clave de la serie 
              * No puede editarse el total de expedientes*/
-            if(index > 1 && index !== 17 && index !== 8)   
+            if(index > 1 && index !== 17 && index !== 8 && index !== 9)   
                 $(this).editable( '../Modules/php/DocumentaryValidity.php', {                  
                     tooltip   : 'Click para editar...',
                     name:"value",
@@ -228,7 +237,7 @@ var DocumentaryValidity = function(){
                         },
                         columName: function(){
                             var header = serieTableDT.column( index ).header();
-                            console.log(header);
+//                            console.log(header);
                             return $(header).attr('columnName');
                         }
                     },
@@ -240,8 +249,8 @@ var DocumentaryValidity = function(){
                         
                         if(type === 'select')
                             newVal = $('select',this).val();
-                        console.log(newVal);
-                        console.log(original.revert);
+//                        console.log(newVal);
+//                        console.log(original.revert);
                         if(newVal === undefined){
                             Advertencia("No fué posible obtener el nuevo valor");
                             return false;
@@ -272,7 +281,6 @@ var DocumentaryValidity = function(){
                         
                         if (original.revert === $('select',this).val()) {
                             original.reset();
-                            console.log("No ha cambiado el valor");
                             return false;
                         }
                     },
@@ -402,6 +410,12 @@ var DocumentaryValidity = function(){
         var parcialmenteReservada = $(serie).find('ParcialmenteReservada').text();
         var totalExpedientes = $(serie).find('TotalExpedientes').text();
         
+        if(String(foundationKey).length === 0)
+            foundationKey = '<a class = "btn btn-default legalFoundationBtn" style = "display:none"><li class = "fa fa-eye fa-lg"></li></a>';
+        else
+            foundationKey = foundationKey +' <a class = "btn btn-default legalFoundationBtn" style = "display:none"><li class = "fa fa-eye fa-lg"></li></a>';
+
+                
         data = [nameKey, description, administrativo, legal, fiscal, archivoTramite,
         archivoConcentracion, archivoDesconcentracion, total, foundationKey, eliminacion,
         concentracion, muestreo, publica, reservada, confidencial, parcialmenteReservada,
@@ -432,10 +446,172 @@ var DocumentaryValidity = function(){
 
                 serieTabledT.fnUpdate([rowTotal],tr,8,true);   
             }
-
-                         
+                       
         }
     };  
     
+    var _openLegalFoundationInterface = function(indexRow){
+        var legalFoundation = new LegalFoundation();
+        legalFoundationData = legalFoundation.getLegalFoundationData();
+                
+        var content = $('<div>');
+        var table = $('<table>', {class:"table table-striped table-bordered table-hover table-condensed display hover", id:"legalFoundationTable"});
+        var thead = $('<thead>').append('<tr><th columnName = "FoundationKey">Clave</th><th columnName = "Description">Descripción</th></tr>');
+        table.append(thead);
+        
+        content.append(table);
+        
+        BootstrapDialog.show({
+            title: 'Fundamento Legal',
+            size: BootstrapDialog.SIZE_NORMAL,
+            type:BootstrapDialog.TYPE_PRIMARY,
+            message: content,
+            closable: true,
+            buttons: [
+                {
+                    label: 'Agregar',
+                    icon: 'fa fa-plus-circle fa-lg',
+                    cssClass: 'btn btn-primary',
+                    action: function(dialogRef){       
+                        var button = this;
+                        button.spin();
+                        dialogRef.setClosable(false);
+                        dialogRef.enableButtons(false);
+                        var seriePosition = serieTableDT.$('tr').get(indexRow);
+                        var idDocValidity = $(seriePosition).attr('iddocvalidity');
+
+                        $('#legalFoundationTable tr.selected').each(function () {                         
+                            var position = legalFoundationdT.fnGetPosition($(this)[0]);
+                            var foundationKey = legalFoundationdT.fnGetData(position)[0] + 
+                                    ' <a class = "btn btn-default legalFoundationBtn" style = "display:none">\n\
+                                        <li class = "fa fa-eye fa-lg"></li>\n\
+                                    </a>';
+                            var idLegalFoundation = $(this).attr('id');
+
+                            if (!parseInt(idLegalFoundation) > 0)
+                                return 0;
+                            
+                            serieTabledT.fnUpdate([foundationKey], seriePosition, 9, true);
+                
+                            if(setLegalFoundation(idLegalFoundation, idDocValidity)){        
+                                dialogRef.close();
+                            }
+                            else{
+                                button.stopSpin();
+                                dialogRef.enableButtons(true);
+                                dialogRef.setClosable(true);
+                            }
+                                            
+                        });
+                        
+                    }
+                },
+                {
+                    label: 'Cerrar',
+                    action: function(dialogRef){
+                        dialogRef.close();
+                    }
+                }
+            ],
+            onshown: function(dialogRef){
+                legalFoundationdT = $('#legalFoundationTable').dataTable(
+                {
+                    "sDom": 'Tfrtlip',
+                    "bInfo":false, "autoWidth" : false, "oLanguage":LanguajeDataTable,
+                    "tableTools": {
+                        "aButtons": [
+                            {"sExtends":"text", "sButtonText": '<li class = "fa fa-plus-circle" fa-lg></li> Fundamento Legal', 
+                                "fnClick" :function(){
+                                    legalFoundation.newRegisterInterface(legalFoundationdT, legalFoundationDT);
+                                }
+                            },
+                            {
+                                "sExtends":    "collection",
+                                "sButtonText": '<i class="fa fa-floppy-o fa-lg"></i>',
+                                "aButtons":    [ "csv", "xls", "pdf", "copy" ]
+                            }                          
+                        ]
+                    }
+                });  
+
+                legalFoundationDT = new $.fn.dataTable.Api('#legalFoundationTable');
+                
+                $('#legalFoundationTable tbody').on('click', 'tr', function () {
+                    if ($(this).hasClass('selected'))
+                        $(this).removeClass('selected');
+                    else {
+                        legalFoundationdT.$('tr.selected').removeClass('selected');
+                        $(this).addClass('selected');
+                    }
+                });
+                
+                $(legalFoundationData).find('register').each(function(){
+                    var idLegalFoundation = $(this).find('idLegalFoundation').text();
+                    var key = $(this).find('FoundationKey').text();
+                    var description = $(this).find('Description').text();
+                    var ai = legalFoundationDT.row.add([key, description]).draw();
+                    var n = legalFoundationdT.fnSettings().aoData[ ai[0] ].nTr;
+
+                    n.setAttribute('id',idLegalFoundation);
+                });
+                
+            },
+            onhidden: function(dialogRef){
+                legalFoundationDT = null;
+                legalFoundationdT = null;
+      
+            }
+        });
+        
+    };
+    
+    /**
+     * @description Asocia un fundamento legal seleccionado a la validez documental.
+     * @param {type} idLegalFoundation
+     * @param {type} idDocumentValidity
+     * @returns {Number}
+     */
+    var setLegalFoundation = function(idLegalFoundation, idDocumentValidity){
+        var status = 0;
+        
+        $.ajax({
+        async: false, 
+        cache: false,
+        dataType: "html", 
+        type: 'POST',   
+        url: "Modules/php/DocumentaryValidity.php",
+        data: {option: "setLegalFoundation", idLegalFoundation:idLegalFoundation, idDocumentValidity:idDocumentValidity}, 
+        success:  function(xml)
+        {           
+            if($.parseXML( xml )===null)
+                return errorMessage(xml); 
+            else 
+                xml = $.parseXML( xml );
+            
+            $(xml).find('settledLegalFoundation').each(function(){
+                status = 1;
+                var message = $(this).find('Mensaje').text();
+                Notificacion(message);
+                
+                serieTableDT.$('.legalFoundationBtn').unbind('click').click(function(){
+                    var click = $(this);
+                    var index = $(serieTableDT.$('.legalFoundationBtn')).index(click);
+                    _openLegalFoundationInterface(index);
+                });
+            });
+            
+            $(xml).find("Error").each(function()
+            {
+                var mensaje=$(this).find("Mensaje").text();
+                errorMessage(mensaje);
+            });                 
+
+        },
+        beforeSend:function(){},
+        error: function(jqXHR, textStatus, errorThrown){errorMessage(textStatus +"<br>"+ errorThrown);}
+        });     
+        
+        return status;
+    };
     
 };

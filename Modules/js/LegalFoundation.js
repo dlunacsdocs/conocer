@@ -13,6 +13,9 @@ var LegalFoundation = function(){
     
     var _buildConsole = function(){
         
+        if(!validateSystemPermission(0, 'f9fd2624beefbc7808e4e405d73f57ab', 0))
+            return Advertencia("No tiene permisos para realizar esta acción");
+        
         var table = $('<table>', {class:"table table-striped table-bordered table-hover table-condensed display hover", id:"legalFoundationTable"});
         var thead = $('<thead>').append('<tr><th columnName = "FoundationKey">Clave</th><th columnName = "Description">Descripción</th></tr>');
         table.append(thead);
@@ -40,14 +43,18 @@ var LegalFoundation = function(){
         
         legalFoundationdT = $('#legalFoundationTable').dataTable(
         {
-            "sDom": 'lfTrtip',
+            "sDom": 'Tfrtlip',
             "bInfo":false, "autoWidth" : false, "oLanguage":LanguajeDataTable,
             "tableTools": {
                 "aButtons": [
-                    {"sExtends":"text", "sButtonText": "Agregar", "fnClick" :function(){_newRegisterInterface();}},
+                    {"sExtends":"text", "sButtonText": "Agregar", 
+                        "fnClick" :function(){
+                            newRegisterInterface(legalFoundationdT, legalFoundationDT);
+                        }
+                    },
                     {
                         "sExtends":    "collection",
-                        "sButtonText": "Más...",
+                        "sButtonText": '<i class="fa fa-floppy-o fa-lg"></i>',
                         "aButtons":    [ "csv", "xls", "pdf", "copy" ]
                     }                          
                 ]
@@ -158,7 +165,11 @@ var LegalFoundation = function(){
         }); 
     };
     
-    var _newRegisterInterface = function(){
+    this.newRegisterInterface = function(legalFoundationdT, legalFoundationDT){
+        
+        if(!validateSystemPermission(0, '908c9a564a86426585b29f5335b619bc', 0))
+            return Advertencia("No tiene permisos para realizar esta acción");
+        
         var content = $('<div>');
         var formGroup = $('<div>',{class:"form-group"});
         var keyArial = $('<label>').append("Clave");
@@ -177,7 +188,7 @@ var LegalFoundation = function(){
         
         
         var dialog = BootstrapDialog.show({
-            title: 'Nuevo',
+            title: 'Nuevo Fundamento Legal',
             size: BootstrapDialog.SIZE_SMALL,
             type:BootstrapDialog.TYPE_INFO,
             message: content,
@@ -191,11 +202,13 @@ var LegalFoundation = function(){
                 },
                 {
                     label: "Agregar",
+                    icon: 'fa fa-plus-circle fa-lg',
+                    cssClass: 'btn btn-primary',
                     action:function(dialogRef){
                         var button = this;
                         button.spin();
                         
-                        if(_addNewRegister() === 1)
+                        if(_addNewRegister(legalFoundationdT, legalFoundationDT) === 1)
                             dialogRef.close();
                         
                         button.stopSpin();
@@ -212,7 +225,7 @@ var LegalFoundation = function(){
         });
     };
     
-    var _addNewRegister = function(){
+    var _addNewRegister = function(legalFoundationdT, legalFoundationDT){
         var status = 0;
         var key = $('#foundationKeyForm').val();
         var description = $('#descriptionForm').val();
@@ -231,7 +244,7 @@ var LegalFoundation = function(){
         dataType: "html", 
         type: 'POST',   
         url: "Modules/php/LegalFoundation.php",
-        data: {option: "addNewRegister", key:key, description:description}, 
+        data: {option: "addNewRegister", key:key, description:description, action: '908c9a564a86426585b29f5335b619bc'}, 
         success:  function(xml)
         {           
             if($.parseXML( xml )===null){errorMessage(xml); return 0;}else xml=$.parseXML( xml );

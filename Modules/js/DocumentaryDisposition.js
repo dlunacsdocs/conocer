@@ -65,7 +65,7 @@ var DocumentaryDispositionClass = function(){
         if(String(optionName).toLowerCase() === 'fondo')
             action = 'e45823afe1e5120cec11fc4c379a0c67';
         
-        if(String(optionName).toLowerCase() === 'section')
+        if(String(optionName).toLowerCase() === 'seccion')
             action = '2b45c629e577731c4df84fc34f936a89';
         
         if(String(optionName).toLowerCase() === 'serie')
@@ -712,7 +712,7 @@ var DocumentaryDispositionClass = function(){
                         if(String(optionName).toLowerCase() === 'fondo'){
                                 _action = 'dd28e50635038e9cf3a648c2dd17ad0a';
                          }
-                         else if (String(optionName).toLowerCase() === 'section')
+                         else if (String(optionName).toLowerCase() === 'seccion')
                              _action = 'ffedf5be3a86e2ee281d54cdc97bc1cf';
                          else if (String(optionName).toLowerCase() === 'serie')
                              _action = '4dd9cec1c21bc54eecb53786a2c5fa09';
