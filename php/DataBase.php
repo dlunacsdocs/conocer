@@ -192,7 +192,7 @@ class DataBase {
                 . "Nombre VARCHAR(50) NOT NULL,"
                 . "Type INT DEFAULT 1,"
                 . "Icon VARCHAR(40) DEFAULT NULL,"
-                . "PRIMARY KEY(IdMenu),"
+                . "PRIMARY KEY(IdMenu)"
                 . ")ENGINE=InnoDB AUTO_INCREMENT=0 DEFAULT CHARSET=utf8";
 
         if (($ResultCreateMenu = $this->ConsultaQuery($DataBaseName, $CreateMenu)) != 1)
