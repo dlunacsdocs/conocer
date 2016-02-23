@@ -56,9 +56,13 @@ class LegalFoundation {
     
     private function modifyRegister($userData){
         $instanceName = $userData['dataBaseName'];
+        $action = filter_input(INPUT_POST, "action");
         $value = filter_input(INPUT_POST, "value");
         $columnName = filter_input(INPUT_POST, "columName");
         $idLegalFoundation = filter_input(INPUT_POST, "idLegalFoundation");
+        
+        if(!Permissions::checkPermission(0, $action))
+                return XML::XMLReponse ("Error", 0, "No tiene permisos para realizar esta acción");
         
         $update = "UPDATE CSDocs_LegalFoundation SET $columnName = '$value' WHERE idLegalFoundation = $idLegalFoundation";
                 

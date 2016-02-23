@@ -1,7 +1,7 @@
 /* global LanguajeDataTable, BootstrapDialog */
 
 var LegalFoundation = function(){
-    
+    var self = this;
     var legalFoundationdT;
     var legalFoundationDT;
     
@@ -47,9 +47,9 @@ var LegalFoundation = function(){
             "bInfo":false, "autoWidth" : false, "oLanguage":LanguajeDataTable,
             "tableTools": {
                 "aButtons": [
-                    {"sExtends":"text", "sButtonText": "Agregar", 
+                    {"sExtends":"text", "sButtonText": '<li class = "fa fa-plus-circle fa-lg"></li> Nuevo', 
                         "fnClick" :function(){
-                            newRegisterInterface(legalFoundationdT, legalFoundationDT);
+                            self.newRegisterInterface(legalFoundationdT, legalFoundationDT);
                         }
                     },
                     {
@@ -70,7 +70,7 @@ var LegalFoundation = function(){
     };
     
     var _setDataIntoTable = function(){
-        var legalFoundationData = getLegalFoundationData();
+        var legalFoundationData = self.getLegalFoundationData();
         
         $(legalFoundationData).find('register').each(function(){
             var idLegalFoundation = $(this).find('idLegalFoundation').text();
@@ -139,9 +139,14 @@ var LegalFoundation = function(){
                             var header = legalFoundationDT.column( index ).header();
                             console.log(header);
                             return $(header).attr('columnName');
-                        }
+                        },
+                        action: 'd806ca13ca3449af72a1ea5aedbed26a'
                     },
                     onsubmit: function(settings, original){
+                        if(!validateSystemPermission(0, 'd806ca13ca3449af72a1ea5aedbed26a', 0))
+                            return Advertencia("No tiene permisos para realizar esta acción");
+                        
+                        
                         var newVal = $('input',this).val();
 
                         if(newVal === undefined){
@@ -195,13 +200,8 @@ var LegalFoundation = function(){
             closable: true,
             buttons: [
                 {
-                    label: "Cancelar",
-                    action:function(dialogRef){
-                        dialogRef.close();
-                    }
-                },
-                {
                     label: "Agregar",
+                    hotkey: 13,
                     icon: 'fa fa-plus-circle fa-lg',
                     cssClass: 'btn btn-primary',
                     action:function(dialogRef){
@@ -214,10 +214,16 @@ var LegalFoundation = function(){
                         button.stopSpin();
                         
                     }
+                },
+                {
+                    label: "Cancelar",
+                    action:function(dialogRef){
+                        dialogRef.close();
+                    }
                 }
             ],
             onshown: function(dialogRef){
-                
+                keyForm.focus();
             },
             onclose: function(dialogRef){
                
