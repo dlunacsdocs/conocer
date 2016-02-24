@@ -172,7 +172,7 @@ var ContentMnagement = function () {
         
         
         var engineTab = $('<div>', {id: "tabs-2", class: "tab-pane"}).append(nav);
-        engineTab.append('<div class="contentDetailEngine col-xs-12 col-sm-12"></div>');
+        engineTab.append('<div class="contentDetailEngine col-xs-12 col-sm-12 col-md-12 col-lg-12"></div>');
 
         contentTabDiv.append(engineTab);
 
