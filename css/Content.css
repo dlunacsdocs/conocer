@@ -125,13 +125,13 @@ div.SelectTools
 
 .contentDetailEngine
 {
-    position: absolute;
+/*    position: absolute;
     display: block;
     top: 90px;
     width: 98%;
-    bottom: 10px;
+    bottom: 10px;*/
     overflow: auto;   
-    padding-right: 15px;
+    /*padding-right: 15px;*/
     
 }
 .contentDetailTools select
@@ -174,14 +174,7 @@ div.SelectTools
 
 .contentDetail
 {
-    position: absolute;
-    top: 90px;
-    left: 300px;
-    right: 0px;
-    bottom: 10px;
-    overflow: auto;
-    padding-left: 20px;
-    padding-right: 20px;       
+    overflow: auto; 
 }
 
 .DetailTrashDir
