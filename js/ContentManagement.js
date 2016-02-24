@@ -50,8 +50,8 @@ var ContentMnagement = function () {
         var contentTab = $('<div>', {id: "tabs-1"});
         contentTab.append('');
 
-        var nav = $('<nav>', {class: "navbar navbar-default", role: "navigation"});
-        var divCollapsed = $('<div>', {class: "collapse navbar-collapse", id: "bs-example-navbar-collapse-1"});
+        var nav = $('<nav>', {class: "navbar navbar-custom", role: "navigation"});
+        var divCollapsed = $('<div>', {class: "collapse navbar-collapse", id: "navbarContent"});
         var containerFuild = $('<div>', {class: "container-fluid"});
         var navbarHeader = $('<div>', {class: "navbar-header"});
 
@@ -59,7 +59,7 @@ var ContentMnagement = function () {
             type: "button", 
             class: "navbar-toggle collapsed",
             "data-toggle": "collapse", 
-            "data-target": "#bs-example-navbar-collapse-1",
+            "data-target": "#navbarContent",
             "aria-expanded": "false"
         }).append('\n\
                 <span class="sr-only">Toggle navigation</span>\n\
@@ -69,7 +69,7 @@ var ContentMnagement = function () {
         
         divCollapsed.append('<form class = "navbar-form navbar-left" role = "search">\n\
                                 <div class = "form-group">\n\
-                                    <i class="fa fa-building fa-lg"></i>\n\
+                                    <i class="fa fa-building fa-lg" style = "color:#1b437d"></i>\n\
                                     <select id="CM_select_empresas" class="form-control">\n\
                                         <option>Cargando Empresas...</option>\n\
                                     </select>\n\
@@ -77,7 +77,7 @@ var ContentMnagement = function () {
                             </form>');
 
         divCollapsed.append('<form class = "navbar-form navbar-left" role = "search">\n\
-                                <i class="fa fa-database fa-lg"></i>\n\
+                                <i class="fa fa-database fa-lg" style = "color:#1b437d"></i>\n\
                                 <div class = "form-group">\n\
                                     <select id="CM_select_repositorios" class="form-control">\n\
                                         <option>Esperando Empresa...</option>\n\
@@ -140,13 +140,13 @@ var ContentMnagement = function () {
         
         /*------------------------ Tab Búsqueda --------------------------- */
         
-        nav = $('<nav>', {class: "navbar navbar-default", role: "navigation"});
-        divCollapsed = $('<div>', {class: "collapse navbar-collapse", id: "bs-example-navbar-collapse-1"});
+        nav = $('<nav>', {class: "navbar navbar-custom", role: "navigation"});
+        divCollapsed = $('<div>', {class: "collapse navbar-collapse", id: "navbarSearcher"});
         containerFuild = $('<div>', {class: "container-fluid"});
         navbarHeader = $('<div>', {class: "navbar-header"});
         
         buttonCollapsed = $('<button>', {type: "button", class: "navbar-toggle collapsed",
-            "data-toggle": "collapse", "data-target": "#bs-example-navbar-collapse-1",
+            "data-toggle": "collapse", "data-target": "#navbarSearcher",
             "aria-expanded": "false"}).append('\
                 <span class="sr-only">Toggle navigation</span>\n\
                 <span class="icon-bar"></span>\n\
@@ -154,17 +154,22 @@ var ContentMnagement = function () {
                 <span class="icon-bar"></span>');
         
         navbarHeader.append(buttonCollapsed);
-        navbarHeader.append('<a class="navbar-brand" href="#"><i class="fa fa-archive fa-lg"></i></a>');
+        navbarHeader.append('<a class="navbar-brand" href="#"><i class="fa fa-search fa-lg"></i></a>');
         containerFuild.append(navbarHeader);
-
-        divCollapsed
-                .append('\n\
-                    <form class = "navbar-form navbar-left" role = "search">\n\
-                        <div class = "form-group">\n\
-                            <input type = "text" class = "form-control" id = "form_engine" placeholder = "Buscar....">\n\
-                        </div>\n\
-                        <i class="fa fa-search fa-lg"></i>\n\
-                    </form>');
+        
+        divCollapsed.append('<ul class="nav navbar-nav navbar-right">\n\
+                                        <li id="userPage">\n\
+                                            <a href="#@userpage"><i class="icon-user"></i> <input type = "checkbox"> Expediente</a>\n\
+                                        </li>\n\
+                                    </ul>\n\
+                                    <form class="navbar-form">\n\
+                                        <div class="form-group" style="display:inline;">\n\
+                                            <div class="input-group" style="display:table;">\n\
+                                                <span class="input-group-addon" style="width:1%;"><span class="glyphicon glyphicon-search"></span></span>\n\
+                                                <input class="form-control" id = "form_engine" placeholder="Realizar búsqueda" autocomplete="off" autofocus="autofocus" type="text">\n\
+                                            </div>\n\
+                                        </div>\n\
+                                    </form>');       
 
         containerFuild.append(divCollapsed);
 
