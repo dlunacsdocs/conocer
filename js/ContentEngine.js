@@ -10,12 +10,7 @@ TableEnginedT = '';
 
 $(document).ready(function()
 {        
-    $('#form_engine').keydown(function( event )
-    {
-      if ( event.which === 13 ) {
-         EngineSearch();
-      }
-    });   
+
 });
 
 /********************************************************************************

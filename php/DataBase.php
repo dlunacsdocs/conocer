@@ -764,6 +764,7 @@ class DataBase {
                     . "`alias` varchar(255) NOT NULL DEFAULT '',"
                     . " `access` tinyint(3) UNSIGNED NOT NULL DEFAULT '0',"
                     . "`path` varchar(255) NOT NULL DEFAULT '',"
+                    . "isExpedient INT DEFAUL 0,"
                     . "PRIMARY KEY (`IdDirectory`)"
                     . ") ENGINE=InnoDB AUTO_INCREMENT=1 DEFAULT CHARSET=utf8";
 
@@ -776,6 +777,7 @@ class DataBase {
                     . "`path` varchar(255) NOT NULL DEFAULT '',"
                     . "`IdUsuario` INT NOT NULL,"
                     . "NombreUsuario VARCHAR(50) NOT NULL,"
+                    . "isExpedient INT DEFAUL 0,"
                     . "PRIMARY KEY (`IdDirectory`)"
                     . ") ENGINE=InnoDB AUTO_INCREMENT=1 DEFAULT CHARSET=utf8";
 

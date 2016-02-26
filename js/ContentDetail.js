@@ -8,7 +8,7 @@ TableContentDT = '';
 TableContentdT = '';
 $(document).ready(function()
 {
-    $('.CMUploadFile').click(function(){CM_CargarArchivo();});/* ContentManagemenet.js */
+    
 });
 
 /********************************************************************************
@@ -25,9 +25,8 @@ function GetDetalle(Source, IdGlobal, IdFile)
 
     var DocumentEnvironment = new ClassDocumentEnvironment(Source, IdGlobal, IdFile);
     DocumentEnvironment.GetProperties();
-
+    console.log(DocumentEnvironment);
     if(!DocumentEnvironment.IdFile>0){Advertencia("No selecciono un documento."); return 0;}
-//    console.log(DocumentEnvironment);
         
     Loading();
     
@@ -306,11 +305,13 @@ function GetDetalle(Source, IdGlobal, IdFile)
         var Forms = $('#tabla_DetalleArchivo tr td input.FormStandart');
         var FieldsValidator = new ClassFieldsValidator();   
         var validation = FieldsValidator.ValidateFields(Forms);
-        console.log("Validación campos ModifyMetadatas "+validation);
+
         if(validation===0)
             return 0;
         
-        $('#ConfirmDetailModify').empty();
+        $('#ConfirmDetailModify').remove();
+        var content = $('<div>', {id: "ConfirmDetailModify"});
+        $('body').append(content);
         $('#ConfirmDetailModify').append('Está a punto de modificar los metadatos del documento. ¿Desea continuar?');
         $('#ConfirmDetailModify').dialog(WindowConfirmacion,{buttons: {"Aceptar": function() { $(this).dialog('close'); DetailModify(xml,DocumentEnvironment);},Cancelar: function() {$( this ).dialog( "close" );}}});
    }
@@ -484,10 +485,16 @@ function SetSearchResult(IdRepository,xml)
 {
     $('.contentDetail').empty();
     $('.contentDetail').append('<table id="table_DetailResult" class="display hover"></table>');
-    $('#table_DetailResult').append('<thead><tr><th>Nombre</th><th>Fecha de Ingreso</th><th>Tipo</th><th>Resumen</th><th>Vista Previa</th><th>Detalle</th><th>Ruta</th><th></th></tr></thead><tbody></tbody>');
-     TableContentdT = $('#table_DetailResult').dataTable({oLanguage:LanguajeDataTable, "columns": [null,null,null,null,{ "width": "7%" },{ "width": "16%" },null,null]});    
-     TableContentDT = new $.fn.dataTable.Api( '#table_DetailResult' );
+    $('#table_DetailResult').append('<thead><tr><th>Nombre</th><th>Fecha</th><th>Tipo</th><th>Resumen</th><th>Ver</th><th>Metadatos</th><th>Ruta</th><th></th></tr></thead><tbody></tbody>');
+     TableContentdT = $('#table_DetailResult').dataTable({
+         oLanguage:LanguajeDataTable, 
+         "columns": [null,null,null,null,{ "width": "7%" },{ "width": "16%" },null,null]
+     });
+     
+    TableContentDT = new $.fn.dataTable.Api( '#table_DetailResult' );
+    
     var cont = 0;
+    
      $(xml).find("Resultado").each(function()
     {               
         var $Resultado=$(this);
@@ -574,7 +581,9 @@ function CM_CargarArchivo()
     var repositoryName=$('#CM_select_repositorios option:selected').html();
     var IdRepositorio=$('#CM_select_repositorios').val();
     
-    $('#CM_Carga').empty();
+    $('#CM_Carga').remove();
+    var content = $('<div>', {id: 'CM_Carga', class: "detalle_archivo"});
+    $('body').append(content);
     $('#CM_Carga').append('<center><img src="img/Archivos_converted.png" title="Caerga de Archivo"></center>');
     $('#CM_Carga').append('<table id="CM_TableMetadatasCarga"><thead><tr><th>Nombre del Campo</th><th>Valor</th></tr></thead></table>');
     $('#CM_TableMetadatasCarga').append('<tr><td><input type="file" id="CM_InputFileCarga" enctype="multipart/form-data"></td><td></td></tr>');

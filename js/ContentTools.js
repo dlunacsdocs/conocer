@@ -12,36 +12,7 @@ var DirectorioOrigen = '', DirectorioDestino = '', IdDirectorioOrigen = 0, IdDir
 var Catalogs = new ClassCatalogAdministrator();
 $(document).ready(function()
 {        
-   
-   $('.CMModifyDirectory').click(function()
-   {
-       var node = $("#contentTree").dynatree("getActiveNode");
-        if( node ){
-            editNode(node);
-        }else{
-            Advertencia("Seleccione un directorio");
-        }
-   });
-   
-   $('.CMDeleteDirectory').click(function()
-   {
-       var node = $("#contentTree").dynatree("getActiveNode");
-        if( node ){
-            ConfirmDeleteDir();
-        }else{
-            Advertencia("Seleccione un directorio");
-        }
-   });
-      
-   $('.CMCopyFile').click(function(){CopyFile();});
-   $('.CMPasteFile').click(function(){PasteFile();});
-   $('.CMCutFile').click(function(){CutFile();});
-   $('.CMDeleteFile').click(function(){ConfirmDelete();});
-   $('.CMMassiveUpload').click(function(){
-       var tools = new ClassTools();
-       tools.DisplayMassiveUploadDialog();
-   });
-   $('.CMEditFile').click(function(){FileDedit();});
+
 });
 
 var ClassTools = function()
