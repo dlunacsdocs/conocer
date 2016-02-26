@@ -33,38 +33,32 @@ var ClassDocumentEnvironment = function(Source, IdGlobal, IdFile)
     
     this.GetProperties = function()
     {
-        switch (this.Source)
+        switch (self.Source)
         {
             case 'Content':
                 self.GetPropertiesFromContent();                   
-            break;
-            
-            case 'Download':
-                self.GetPropertiesFromDownload();                   
             break;
         }
     };
     
     this.GetPropertiesFromContent = function()
-    {
-        console.log('Get properties from content');
-        var self = this;
-        
-//        console.dialog('GetPropertiesFromContent');
-       var active = $("#tabs").tabs( "option", "active" );  
-       var _FileName='', _IdFile=0, _IdRepository=0, _FileRoute, IdGlobal,_RepositoryName;
+    {        
+        console.log('GetPropertiesFromContent');
+       var active = $("#tabsContent li").index($("#tabsContent li.active"));
+
        switch(active)
        {
             case 0:
                $('#table_DetailResult tr[id='+ IdFile +']').each(function()
                {                
                    var position = TableContentdT.fnGetPosition(this); // getting the clicked row position  
-                   _IdFile = $('#table_DetailResult tr.selected').attr('id');
-                   _FileName = TableContentdT.fnGetData(position)[0];        
+                   var _IdFile = $('#table_DetailResult tr.selected').attr('id');
+                   self.FileName = TableContentdT.fnGetData(position)[0];        
                    self.FileType = TableContentdT.fnGetData(position)[2];
-                   _FileRoute = TableContentdT.fnGetData(position)[6];
-                   _IdRepository = $('#CM_select_repositorios').val();
-                   _RepositoryName = $('#CM_select_repositorios option:selected').html();                   
+                   self.FileRoute = TableContentdT.fnGetData(position)[6];
+                   self.IdRepository = $('#CM_select_repositorios option:selected').attr('idrepository');
+                   self.RepositoryName = $('#CM_select_repositorios option:selected').attr('repositoryname');  
+//                   console.log(self.FileRoute+" "+self.FileName+" "+self.RepositoryName+' '+self.IdRepository);
                }); 
                 break;
 
@@ -72,40 +66,18 @@ var ClassDocumentEnvironment = function(Source, IdGlobal, IdFile)
                $('#table_EngineResult tr[id='+ this.IdGlobal +']').each(function()
                {
                     var position = TableEnginedT.fnGetPosition(this); // getting the clicked row position  
-                   _IdFile = TableEnginedT.fnGetData(position)[9];
-                   _FileName = TableEnginedT.fnGetData(position)[2];
-                   _RepositoryName = TableEnginedT.fnGetData(position)[1];
-                   _IdRepository = TableEnginedT.fnGetData(position)[11];
-                   _FileRoute = TableEnginedT.fnGetData(position)[8];
+                   var _IdFile = TableEnginedT.fnGetData(position)[9];
+                   self.FileName = TableEnginedT.fnGetData(position)[2];
+                   self.RepositoryName = TableEnginedT.fnGetData(position)[1];
+                   self.IdRepository = TableEnginedT.fnGetData(position)[11];
+                   self.FileRoute = TableEnginedT.fnGetData(position)[8];
                }); 
                 break;
                 
             default: return 0;
        }
-//       console.dialog(this.FileRoute+" "+this.FileName+" "+this.RepositoryName+' '+this.IdRepository);
-       this.FileRoute = _FileRoute;
-       this.FileName = _FileName;
-       this.RepositoryName = _RepositoryName;
-       this.IdRepository = _IdRepository;       
+//       console.dialog(self.FileRoute+" "+self.FileName+" "+self.RepositoryName+' '+self.IdRepository);
+    
     };        
 };
-/*------------------------------------------------------------------------------
- *      Desde la tabla de descargas el IdGlobal = IdRepository
- *      Ya que esa tabla cuenta con:
- *              Row id = IdFile
- *              IdGlobal = IdRepository
- *      Con estos parámetros se tinstingue entre documentos de cada repositorio
- */
-ClassDocumentEnvironment.prototype.GetPropertiesFromDownload = function()
-{
-    console.log('Get properties from Download');
-    var self = this;    
-    $('#table_download tr[id='+self.IdGlobal+']').each(function()
-    {
-        var position = DownloadTabledT.fnGetPosition(this); // getting the clicked row position  
-        self.IdRepository = DownloadTabledT.fnGetData(position)[0];
-        self.RepositoryName = DownloadTabledT.fnGetData(position)[1];
-        self.FileName = DownloadTabledT.fnGetData(position)[2];
-        self.FileRoute = DownloadTabledT.fnGetData(position)[5];
-    });
-};
+

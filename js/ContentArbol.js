@@ -7,27 +7,8 @@
 /* Refresh del árbol */
 /* global EnvironmentData, BootstrapDialog */
 
-$(document).ready(function(){
-    $('.CMNewDirectory').click(function()
-    {
-        if($('#contentTree').is(":empty"))
-            return Advertencia("Debe consultar un repositorio y seleccionar un directorio para agregar uno nuevo.");
-        
-       var node = $("#contentTree").dynatree("getActiveNode");
-        if( typeof node  === 'object'){
-            var contentArbol = new ContentArbol();
-            contentArbol.addNewDirectoryPanel();
-            
-        }else
-            Advertencia("Seleccione un directorio");
-    });
-    
-    $('#TreeRefresh').click(function()
-    {
-        $(this).hide();
-        CM_getTree();
-        $(this).show();
-    });   
+$(document).ready(function(){ 
+  
 });
 
 var ContentArbol = function(){
@@ -40,7 +21,7 @@ var ContentArbol = function(){
 
     this.addNewDirectoryPanel = function(){
         var dialog = BootstrapDialog.show({
-            title: 'Nuevo directorio',
+            title: '<i class="fa fa-folder-open fa-lg"></i> Nuevo',
             message: div,
             closable: true,
             closeByBackdrop: true,
@@ -52,24 +33,33 @@ var ContentArbol = function(){
                     dialogRef.close();
                 }
             }, {
+                hotkey: 13,
+                icon: "fa fa-plus-circle fa-lg",
                 label: 'Agregar',
                 cssClass: "btn-primary",
                 action: function(dialogRef){      
                     
                     var button = this;
                     var title = form.val();
+                    dialogRef.setClosable(false);
+                    dialogRef.enableButtons(false);
                     
                     if(String(title).trim().length === 0)
                         return Advertencia("El nombre no puede quedar vacio");
                     
                     button.spin();
+                    
                     var activeNode = $('#contentTree').dynatree('getActiveNode');
                     var node = activeNode.addChild({isFolder: true, title: title});
                     
-                    addNewDirectory(node);
-                    
-                    button.stopSpin();
-                    dialogRef.close();
+                    if(addNewDirectory(node))
+                        dialogRef.close();
+                    else{
+                        button.stopSpin();
+                        dialogRef.setClosable(true);
+                        dialogRef.enableButtons(true);
+                    }
+                                       
                 }
             }],
             onshown: function(dialogRef){
@@ -79,6 +69,7 @@ var ContentArbol = function(){
     };
     
     var addNewDirectory = function(node){
+        var status = 0;
         var pathNode = node.getKeyPath();
         var NameDirectory = node.data.title;
         node.data.unselectable = true; 
@@ -106,8 +97,8 @@ var ContentArbol = function(){
                     var id = $NewDirectory.find("IdNewDir").text();                               
 
                     node.data.key = id;
-
-                    console.log("Nuevo id en directorio "+node.data.key);       
+                    
+                    status = 1;
                 });
 
                 $(xml).find("Error").each(function()
@@ -120,6 +111,8 @@ var ContentArbol = function(){
           },
           error:function(objXMLHttpRequest){node.remove(); errorMessage(objXMLHttpRequest);}
         });
+        
+        return status;
     };
 };
 
@@ -131,15 +124,13 @@ var ContentArbol = function(){
  */
 function CM_getTree()
 {
-    
-    var IdRepositorio = $('#CM_select_repositorios').val();
-    var NombreRepositorio = $('#CM_select_repositorios option:selected').html();
+    var status = 1;
+    var IdRepositorio = $('#CM_select_repositorios option:selected').attr('idRepository');
+    var NombreRepositorio = $('#CM_select_repositorios option:selected').attr('repositoryName');
         
     if(!(parseInt(IdRepositorio) > 0))
         return Advertencia("El id del repositorio no es válido");;
-    
-    $('.TreeRefresh').append('<div class="loading TreLoading"><img src="../img/loadinfologin.gif"></div>');
-    
+        
     $.ajax({
         async:false, 
         cache:false,
@@ -149,39 +140,14 @@ function CM_getTree()
         data: "opcion=getTree"+'&NombreRepositorio='+NombreRepositorio,
         success:  function(xml)
         {     
-            $('.TreLoading').remove();
-            if($.parseXML( xml )===null){Salida(xml); return 0;}else xml=$.parseXML( xml );         
-
-           var emptyTest = $('#contentTree').is(':empty');
-           
-           if(!emptyTest){
-               $('#contentTree').dynatree("destroy");
-               $('#contentTree').empty();
-           }
-           
-           var cont=0;
-           
-           if($(xml).find("Tree").length>0){
-               $(xml).find("Directory").each(function()
-                {
-                   var $Directory = $(this);
-                   var id = $Directory.find("IdDirectory").text();
-                   var title = $Directory.find("Title").text();
-                   var IdParent2 = $Directory.find("IdParent").text();
-
-                   /*   Se dibujael arbol en el CM (Content Management) */
-                   if(cont===0)
-                       $('#contentTree').append('<ul><li id="'+id+'" class="folder">'+title+'<ul id="'+id+'_"></ul></ul>');
-                   else      
-                        if($('#'+IdParent2+'_').length>0)
-                           $('#'+IdParent2+'_').append('<li id="'+id+'" class="folder">'+title+'<ul id="'+id+'_"></ul>');                  
-                   
-                   cont++;                              
-                });    
-
-              var arbol=  InitDynatree(); 
-           }           
-            
+            if($.parseXML( xml )===null)
+                return Salida(xml);
+            else 
+                xml = $.parseXML( xml );         
+                
+           if($(xml).find("Tree").length > 0)
+               _buildTree(xml);
+                           
             $(xml).find("Error").each(function()
             {
                 var mensaje = $(this).find("Mensaje").text();
@@ -191,14 +157,64 @@ function CM_getTree()
         },
         beforeSend:function(){},
         error: function(jqXHR, textStatus, errorThrown){
-            $('.TreLoading').remove();
             errorMessage(textStatus +"<br>"+ errorThrown);
         }
     });    
+    
+    return status;
 }
 
-function InitDynatree()
+    var _buildTree = function(tree){        
+        if($('#TreeRefresh').length === 0)
+            $('<li id = "TreeRefresh" class = "fa fa-refresh fa-lg"></li>')
+                .css({"cursor": "pointer"})
+                .insertBefore('#contentTree');
+
+        var cont = 0;
+        
+        var emptyTest = $('#contentTree').is(':empty');
+           
+        if(!emptyTest) {
+            $('#contentTree').dynatree("destroy");
+            $('#contentTree').empty();
+        }
+        
+        $(tree).find("Directory").each(function(){
+           var $Directory = $(this);
+           var id = $Directory.find("IdDirectory").text();
+           var title = $Directory.find("Title").text();
+           var idParent = $Directory.find("IdParent").text();
+           
+           var child = {
+               title: title,
+               idParent: idParent,
+               key: id,
+               isFolder: true
+           };
+           
+           if(cont===0)
+               InitDynatree(child);
+           else{ 
+                var parent = $("#contentTree").dynatree('getTree').getNodeByKey(idParent);
+                if(typeof parent === 'object')
+                    parent.addChild(child);
+           }
+
+           cont++;                              
+        });    
+      
+        $('#TreeRefresh').click(function () {
+            if (!$(this).hasClass('fa-pulse')) {
+                $(this).addClass('fa-pulse');
+                CM_getTree();
+                $(this).removeClass('fa-pulse');
+            }
+        });
+    };
+
+function InitDynatree(child)
 {
+           
     var isMac = /Mac/.test(navigator.platform);
     var arbol= $("#contentTree").dynatree(
         {
@@ -206,13 +222,17 @@ function InitDynatree()
             keyboard: true,
             expand: true, 
             minExpandLevel: 2,
-            onClick: function(node, event) {
+            children: [child],
+            onActivate: function(node) {
                 node.sortChildren(cmp, false);
                 GetFiles(node.data.key);                    
-                if( event.shiftKey ){                   
-                  editNode(node);                    
-                  return false;
-                }
+//                if( event.shiftKey ){                   
+//                  editNode(node);                    
+//                  return false;
+//                }
+            },
+            onClick: function(node, event){
+                console.log(node.data.idParent);
             },
             onDblClick: function(node, event) {
               editNode(node);
