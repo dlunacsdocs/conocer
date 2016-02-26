@@ -12,6 +12,13 @@ $(document).ready(function(){
 });
 
 var ContentArbol = function(){
+    var activeNode = $('#contentTree').dynatree('getActiveNode');
+    
+    if(activeNode === null)
+        return Advertencia("No fue posible obtener el nodo activo");
+    
+    if(String(activeNode) !== 'serie')
+        return Advertencia("Solo puede agregar un legajo sobre una serie");
     
     var form = $('<input>',{type: "text", class: "form-control"});
    
@@ -48,8 +55,7 @@ var ContentArbol = function(){
                         return Advertencia("El nombre no puede quedar vacio");
                     
                     button.spin();
-                    
-                    var activeNode = $('#contentTree').dynatree('getActiveNode');
+                                                        
                     var node = activeNode.addChild({isFolder: true, title: title});
                     
                     if(addNewDirectory(node))
@@ -184,12 +190,18 @@ function CM_getTree()
            var id = $Directory.find("IdDirectory").text();
            var title = $Directory.find("Title").text();
            var idParent = $Directory.find("IdParent").text();
+           var catalogkey = $Directory.find("catalogKey").text();
+           var parentCatalogKey = $Directory.find("parentCatalogKey").text();
+           var type = $Directory.find("catalogType").text();
            
            var child = {
                title: title,
                idParent: idParent,
                key: id,
-               isFolder: true
+               isFolder: true,
+               catalogkey: catalogkey,
+               parentCatalogKey: parentCatalogKey,
+               type: type
            };
            
            if(cont===0)

@@ -93,7 +93,7 @@ var ContentMnagement = function () {
         <ul id = "navbarContent" class="nav navbar-nav">\n\
             <li class="dropdown">\n\
                 <a href="#" class="dropdown-toggle" data-toggle="dropdown" role="button" aria-haspopup="true" aria-expanded="false">\n\
-                    <i class="fa fa-folder fa-lg"></i> Directorios<span class="caret"></span>\n\
+                    <i class="fa fa-folder fa-lg"></i> Legajo<span class="caret"></span>\n\
                 </a>\n\
                 <ul class="dropdown-menu">\n\
                     <li class = "CMNewDirectory"><a href="#"><i class="fa fa-plus-circle fa-lg"></i> Nuevo</span> </a></li>\n\
