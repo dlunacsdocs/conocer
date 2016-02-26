@@ -13,6 +13,7 @@ var ArchivalClass = function(){
         _getDocumentaryValidity();
         _getLegalFoundation();
         _getAdministrativeUnit();
+        _getExpedient();
     };
     
     /*
@@ -81,6 +82,23 @@ var ArchivalClass = function(){
               status = true;
               administrativeUnit = new AdministrativeUnit();
               administrativeUnit.setActionToLink();
+            })
+            .fail(function( jqxhr, settings, exception ) {
+            });
+        
+        $.ajaxSetup({async: true});
+        
+        return status;
+    };
+    
+    var _getExpedient = function(){
+        console.log("contruyendo menú expediente.");
+        var status = false;
+        $.ajaxSetup({async: false});
+        $.getScript( "Modules/js/Expedient.js" )
+            .done(function( script, textStatus ) {
+              status = true;
+              Expedient = new ExpedientClass();
             })
             .fail(function( jqxhr, settings, exception ) {
             });

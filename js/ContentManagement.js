@@ -90,7 +90,7 @@ var ContentMnagement = function () {
         containerFuild.append(navbarHeader);
 
         divCollapsed.append('\n\
-        <ul class="nav navbar-nav">\n\
+        <ul id = "navbarContent" class="nav navbar-nav">\n\
             <li class="dropdown">\n\
                 <a href="#" class="dropdown-toggle" data-toggle="dropdown" role="button" aria-haspopup="true" aria-expanded="false">\n\
                     <i class="fa fa-folder-open fa-lg"></i> Directorios<span class="caret"></span>\n\
@@ -115,6 +115,11 @@ var ContentMnagement = function () {
                     <li class = "CMMassiveUpload"><a href="#"><i class="fa fa-globe fa-lg"></i> Carga Masiva</span> </a></li>\n\
                     <li class = "CMUploadFile"><a href="#"><i class="fa fa-upload fa-lg"></i> Cargar Documento</span> </a></li>\n\
                 </ul>\n\
+            </li>\n\
+            <li class="dropdown expedientModuleLink">\n\
+                <a href="#" class="dropdown-toggle" data-toggle="dropdown" role="button" aria-haspopup="true" aria-expanded="false">\n\
+                    <i class="fa fa-book fa-lg"></i> Expediente <span class="caret"></span>\n\
+                </a>\n\
             </li>\n\
         </ul>');
 
@@ -187,6 +192,11 @@ var ContentMnagement = function () {
         $('body').append(content);
 
         _initContentInterface();
+                
+        if(typeof Expedient === 'object')
+            Expedient.buildLink();
+        else
+            $('.expedientModuleLink').remove();
 
     };
 

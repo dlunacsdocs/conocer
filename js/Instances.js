@@ -19,3 +19,4 @@ var documentaryDisposition;
 var documentaryValidity;
 var legalFoundation;
 var administrativeUnit;
+var Expedient;
