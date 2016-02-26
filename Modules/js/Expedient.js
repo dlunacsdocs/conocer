@@ -14,6 +14,8 @@
  * limitations under the License.
  */
 
+/* global BootstrapDialog */
+
 var ExpedientClass = function(){
     var self = this;
     
@@ -32,6 +34,128 @@ var ExpedientClass = function(){
     };
     
     this.newExpedient = function(){
+        if($('#contentTree').is(':empty'))
+            return Advertencia("Debe seleccionar un directorio");
         
+        var activeNode = $('#contentTree').dynatree('getTree').getActiveNode();
+        
+        if(typeof activeNode !== 'object')
+            return Advertencia("Debe seleccionar un directorio");
+        
+        if(parseInt(activeNode.data.isExpedient) === 1)
+            return Advertencia("Ya existe un expediente.");
+        
+        var content = $('<div>');
+        
+        var catalogDispTree = $('<div>', {id: "catalogDispTree"});
+        
+        content.append(catalogDispTree);
+        
+        BootstrapDialog.show({
+            title: '<i class="fa fa-folder-open fa-lg"></i> Nuevo Expediente',
+            size: BootstrapDialog.SIZE_SMALL,
+            type: BootstrapDialog.TYPE_PRIMARY,
+            message: content,
+            closable: true,
+            closeByBackdrop: true,
+            closeByKeyboard: true,
+            buttons: [
+                {
+                    icon: 'fa fa-plus-circle fa-lg',
+                    label: 'Agregar',
+                    cssClass: "btn-primary",
+                    action: function (dialogRef) {
+                        var button = this;
+                        button.spin();
+                        dialogRef.enableButtons(false);
+                        dialogRef.setClosable(false);
+
+                        if (addNewExpedient)
+                            dialogRef.close();
+                        else {
+                            button.stopSpin();
+                            dialogRef.enableButtons(true);
+                            dialogRef.setClosable(true);
+                        }
+
+                    }
+                },
+                {
+                    label: 'Cerrar',
+                    action: function (dialogRef) {
+                        dialogRef.close();
+                    }
+                }
+            ],
+            onshow: function () {
+            },
+            onshown: function (dialogRef) {
+                $('#catalogDispTree').dynatree({
+                    children: [{
+                            title: "Catálogo de Disposición Documental",
+                            id: 0,
+                            idParent: 0,
+                            isFolder: true,
+                            idCatalog: 0,
+                            activate: true,
+                            nameKey: 0,
+                            key: 0
+                    }],
+                    onKeydown: null
+                });
+                
+                var catalogDisposition = new DocumentaryDispositionClass();
+                var catalogDisposition = catalogDisposition.getDocDispositionCatalogStructure();
+                
+//                console.log(catalogDisposition);
+                
+                $(catalogDisposition).find('node').each(function(){
+                    var idDocDisp = $(this).find('idDocumentaryDisposition').text();
+                    var name = $(this).find('Name').text();
+                    var nameKey = $(this).find('NameKey').text();
+                    var description = $(this).find('Description').text();
+                    var parentKey = $(this).find('ParentKey').text();
+                    var type = $(this).find('NodeType').text();
+                    var icon;
+                    
+                    if(type === 'fondo')
+                        icon = "/img/archival/fondo.png";
+                    
+                    if(type === 'section')
+                        icon = "/img/archival/seccion.png";
+                    
+                    if(type === 'serie')
+                        icon = "/img/archival/serie.png";
+                    
+                    var child = {
+                        idDocDisposition: idDocDisp,
+                        title: name,
+                        key: nameKey,
+                        nameKey: nameKey,
+                        tooltip: name,
+                        description: description,
+                        structureType: type,
+                        isFolder: true,
+                        expand: true,
+                        parentKey: parentKey,
+                        icon: icon
+                    };
+                    
+                    var parent = $('#catalogDispTree').dynatree('getTree').getNodeByKey(parentKey);
+
+                    if(parent !== null){
+                        var newChild = parent.addChild(child);
+                        newChild.activate(true);
+                    }
+                });
+            }
+        });
+            
+    };
+    
+    var addNewExpedient = function(){
+        var status = 0;
+        
+        return status;
     };
 };

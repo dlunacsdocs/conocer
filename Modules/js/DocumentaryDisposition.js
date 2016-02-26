@@ -21,7 +21,7 @@ var DocumentaryDispositionClass = function(){
      *              Catálogo de Disposición Documental 
      * @returns {DocumentaryDispositionClass._getArchivalDispositionFormsPanel.div|jQuery@pro;jQuery|jQuery|$|_$|window.OpenLayers.Util.getElement|OpenLayers.Util.getElement|String}
      */
-    _getArchivalDispositionFormsPanel = function(){
+    var _getArchivalDispositionFormsPanel = function(){
         var div = $('<div>');
         
         var formGroupName = $('<div>',{class:"form-group"});  
@@ -58,7 +58,7 @@ var DocumentaryDispositionClass = function(){
      * @description Muestra un panel con los formularios necesarios para agregar un nuevo elemento a la estructura seleccionada.
      * @returns {Number}
      */
-    _showCatalogOption = function(){
+    var _showCatalogOption = function(){
         var optionName = $('#documentaryDispositionButton').attr('optionName');
         var action = null;
         
@@ -123,7 +123,7 @@ var DocumentaryDispositionClass = function(){
      *              se tengan activos los nodos correctos.
      * @returns {undefined}
      */
-    _validateActiveTree = function(optionName){
+    var _validateActiveTree = function(optionName){
         var status = true;
         
         switch(optionName){
@@ -175,7 +175,7 @@ var DocumentaryDispositionClass = function(){
      * @description Retorna un objeto con los datos ingresados para agregar un nuevo elemento de Fondo, Sección o Serie.
      * @returns {DocumentaryDispositionClass._getDocumentaryDispositionData.data}
      */
-    _getDocumentaryDispositionData = function(){
+    var _getDocumentaryDispositionData = function(){
         var data = {};
         
         var catalogName = $('#catalogNameDocDispo').val();
@@ -193,7 +193,7 @@ var DocumentaryDispositionClass = function(){
      * @description Construye la interfaz que muestra el Catálogo de Disposición Documental.
      * @returns {undefined}
      */
-    _buildDocumentaryDispositionConsole = function(){
+    var _buildDocumentaryDispositionConsole = function(){
         
         var tabbable = $('<div>',{id:"documentaryDispositionNavTab"});
         
@@ -347,7 +347,7 @@ var DocumentaryDispositionClass = function(){
                });
                            
                /* Construcción del Catálogo de disposición documental */
-               var xmlStructure = _getDocDispositionCatalogStructure();
+               var xmlStructure = self.getDocDispositionCatalogStructure();
                
                if(typeof (xmlStructure) === 'object')
                    _buildDocDispositionCatalog(xmlStructure);
@@ -371,7 +371,7 @@ var DocumentaryDispositionClass = function(){
      * @param {type} keyNode
      * @returns {Number}
      */
-    _checkIfExistsKey = function(keyNode){
+    var _checkIfExistsKey = function(keyNode){
         var fondoNode = $('#fondoTree').dynatree("getTree").getNodeByKey(keyNode);
         var sectionNode = $('#sectionTree').dynatree("getTree").getNodeByKey(keyNode);
         var serieNode = $('#serieTree').dynatree("getTree").getNodeByKey(keyNode);
@@ -387,7 +387,7 @@ var DocumentaryDispositionClass = function(){
      * @description Elimina un nodo de la estructura de Catálogo de disposición documental
      * @returns {unresolved}
      */
-    _deleteDocDispositionCatalogNode = function(){
+    var _deleteDocDispositionCatalogNode = function(){
         var node = null;
         var optionName = $('#documentaryDispositionNavTab .nav-tabs li.active a').attr('optionName');
         var action = null;
@@ -422,7 +422,7 @@ var DocumentaryDispositionClass = function(){
            
     };
     
-    _deleteDocDispoCatalogNodeConfirmMessage = function(optionName, node, action){
+    var _deleteDocDispoCatalogNodeConfirmMessage = function(optionName, node, action){
         BootstrapDialog.show({
             title: '<i class="fa fa-exclamation-triangle fa-lg"></i> Mensaje de Confirmación',
             size: BootstrapDialog.SIZE_SMALL,
@@ -470,7 +470,7 @@ var DocumentaryDispositionClass = function(){
      * @param {type} node Nodo activo que se eliminará.
      * @returns {undefined}
      */
-    _deleteFondo = function(optionName, node, action){        
+    var _deleteFondo = function(optionName, node, action){        
         var sectionLimitOfDelete = [];
         var fondoToDelete = [];
         var sectionNode = $('#sectionTree').dynatree('getTree').getNodeByKey(node.data.key);
@@ -632,7 +632,7 @@ var DocumentaryDispositionClass = function(){
             _deleteDocDispoCatalogNode(xml, action);
     };
     
-    _deleteSerie = function(node, action){
+    var _deleteSerie = function(node, action){
         console.log("deleteSerie");
         var xml = "<delete version='1.0' encoding='UTF-8'>";        
         
@@ -677,7 +677,7 @@ var DocumentaryDispositionClass = function(){
      * @param {type} node
      * @returns {undefined}
      */
-    _showDocDispositionCatalogData = function(node){
+    var _showDocDispositionCatalogData = function(node){
         var node = null;
         var optionName = $('#documentaryDispositionNavTab .nav-tabs li.active a').attr('optionName');
                
@@ -810,7 +810,7 @@ var DocumentaryDispositionClass = function(){
      * @param {type} node
      * @returns {undefined}
      */
-    _modifyDocDispoCatalogNode = function(data){
+    var _modifyDocDispoCatalogNode = function(data){
         var status = 0;
         
         $.ajax({
@@ -844,7 +844,7 @@ var DocumentaryDispositionClass = function(){
         return status;
     };
     
-    _deleteDocDispoCatalogNode = function(xml, action){
+    var _deleteDocDispoCatalogNode = function(xml, action){
         
         $.ajax({
         async: false, 
@@ -873,7 +873,7 @@ var DocumentaryDispositionClass = function(){
      * @description Almacena en la BD un nuevo nodo.
      * @returns {undefined}
      */
-    _storeNewNodeIntoDataBase = function(data){
+    var _storeNewNodeIntoDataBase = function(data){
         var idDocDisposition = 0;
         
         $.ajax({
@@ -913,7 +913,7 @@ var DocumentaryDispositionClass = function(){
      *                                  al catálogo de disposición documental.
      * @returns {Number}
      */
-    _addFondo = function(action){
+    var _addFondo = function(action){
         var docDispositionData = _getDocumentaryDispositionData();
         var activeKeyParent;
                 
@@ -996,7 +996,7 @@ var DocumentaryDispositionClass = function(){
      *                                  al catálogo de disposición documental.
      * @returns {Number}
      */
-    _addSeccion = function(action){
+    var _addSeccion = function(action){
         var docDispositionData = _getDocumentaryDispositionData();  
         var activeNodeFondo = $('#fondoTree').dynatree("getActiveNode");
         var sectionTree = $('#sectionTree').dynatree("getActiveNode");
@@ -1090,7 +1090,7 @@ var DocumentaryDispositionClass = function(){
      *                                  al catálogo de disposición documental.
      * @returns {Number}
      */
-    _addSerie = function(action){
+    var _addSerie = function(action){
         var docDispositionData = _getDocumentaryDispositionData();
         
         if(_checkIfExistsKey(docDispositionData.catalogKey) === 1)
@@ -1155,7 +1155,7 @@ var DocumentaryDispositionClass = function(){
      * @describe(Construye el catálogo de disposición documental definido por 
      * el usuario.)
      */
-    _buildDocumentaryDispositionCatalog = function(dialogRef){
+    var _buildDocumentaryDispositionCatalog = function(dialogRef){
         console.log("Construyendo catálogo de disposición documental");
         
         var fondoTree = $('#fondoTree').dynatree("getRoot");
@@ -1190,7 +1190,7 @@ var DocumentaryDispositionClass = function(){
      * @param {type} serieTree      Estructura de árbol para Serie
      * @returns {String}            Xml generado.
      */
-    _getCatalogXmlStructure = function(fondoTree, sectionTree, serieTree){
+    var _getCatalogXmlStructure = function(fondoTree, sectionTree, serieTree){
         var xmlStructure = "<docDispositionCatalog version='1.0' encoding='UTF-8'>";
         
         var sectionDirectories = sectionTree.getChildren();
@@ -1291,7 +1291,7 @@ var DocumentaryDispositionClass = function(){
         return xmlStructure;
     };     
      
-    _buildNewArchivalDispositionCatalog = function(catalogXmlStructure, dialogRef){
+    var _buildNewArchivalDispositionCatalog = function(catalogXmlStructure, dialogRef){
         
         $.ajax({
         async:false, 
@@ -1328,7 +1328,7 @@ var DocumentaryDispositionClass = function(){
      * @description Obtiene la estructura del Catálogo de Disposición Documental.
      * @return {XML} Xml con la estructura del Catálogo de Disposición Documental.
      */
-    _getDocDispositionCatalogStructure = function(){
+    this.getDocDispositionCatalogStructure = function(){
         var xmlStructure = null;
         
         $.ajax({
@@ -1365,7 +1365,7 @@ var DocumentaryDispositionClass = function(){
      * @param {Xml} xmlStructure
      * @returns {undefined}
      */
-    _buildDocDispositionCatalog = function(xmlStructure){
+    var _buildDocDispositionCatalog = function(xmlStructure){
         var fondoNodesArray = new Array;
         var sectionNodesArray = new Array;
         var serieNodesArray = new Array();
@@ -1388,7 +1388,7 @@ var DocumentaryDispositionClass = function(){
         
     };
     
-    _buildFondoAndSectionTree = function(nodesArray){
+    var _buildFondoAndSectionTree = function(nodesArray){
         var fondoTree;
         var rootStatus = false;
         var newDirectory;
@@ -1459,7 +1459,7 @@ var DocumentaryDispositionClass = function(){
         return 1;
     };
     
-    _buildSectionTree = function(nodesArray){
+    var _buildSectionTree = function(nodesArray){
         var sectionTree;
         var parentSectionTree;
         var serieTree;
@@ -1510,7 +1510,7 @@ var DocumentaryDispositionClass = function(){
         return 1;
     };
     
-    _buildSerieTree = function(nodesArray){
+    var _buildSerieTree = function(nodesArray){
         console.log("Construyendo estructura de Serie");
         
         var serieNode;
