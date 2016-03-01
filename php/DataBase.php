@@ -772,11 +772,9 @@ class DataBase {
                     . "`parent_id` int(10) UNSIGNED NOT NULL,"
                     . "`FlagFather` int(10) UNSIGNED NOT NULL," /* Es el directorio padre de todos los subdirectorios que se eliminaron */
                     . "`title` varchar(255) NOT NULL,"
-                    . " `access` tinyint(3) UNSIGNED NOT NULL DEFAULT '0',"
                     . "`path` varchar(255) NOT NULL DEFAULT '',"
                     . "`IdUsuario` INT NOT NULL,"
                     . "NombreUsuario VARCHAR(50) NOT NULL,"
-                    . "isExpedient INT DEFAUL 0,"
                     . "PRIMARY KEY (`IdDirectory`)"
                     . ") ENGINE=InnoDB AUTO_INCREMENT=1 DEFAULT CHARSET=utf8";
 
@@ -872,7 +870,7 @@ class DataBase {
                     $this->SalidaLog("Error al crear Temporal Repositorio $nombre_tabla", $ResultTablaTempRep, "Temporal Repositorio $nombre_tabla creada con éxito");
                 }
                 else {
-                    echo "<p>Error al Crear el Repositorio $ResultTempDir";
+                    echo "<p>Error al Crear el Repositorio temporal $ResultTempDir";
                     continue;
                 }
 

@@ -336,24 +336,21 @@ class Tree {
     function ModifyDir($userData)
     {
         $db = new DataBase();
-        $XML =new XML();
-        $Log = new Log();
         
-//        $IdRepositorio=filter_input(INPUT_POST, "IdRepositorio");
         $DataBaseName = $userData['dataBaseName'];
-        $NombreRepositorio = filter_input(INPUT_POST, "NombreRepositorio");    
-        $NameDirectory = filter_input(INPUT_POST, "NameDirectory");    
-        $IdDirectory = filter_input(INPUT_POST, "IdDirectory");  
+        $NombreRepositorio=  filter_input(INPUT_POST, "NombreRepositorio");    
+        $NameDirectory=filter_input(INPUT_POST, "NameDirectory");    
+        $IdDirectory=filter_input(INPUT_POST, "IdDirectory");  
         $NombreUsuario = $userData['userName'];
         $IdUsuario = $userData['idUser'];
-      
+   
         $update = "UPDATE dir_$NombreRepositorio SET title='$NameDirectory' WHERE IdDirectory = $IdDirectory";
         
         if(($resultUpdate = $db->ConsultaQuery($DataBaseName, $update)) != 1)
-                return XML::XMLReponse ("Error", 0, $update);
+            return XML::XMLReponse ("Error", 0, "$resultUpdate");
         
-        $Log ->Write("19", $IdUsuario, $NombreUsuario, $NameDirectory);
-        $XML->ResponseXML("ModifyDir", 1, "Modificado con éxito");
+        XML::XMLReponse("ModifyDir", 1, "Modificado con éxito");
+        Log::WriteEvent("19", $IdUsuario, $NombreUsuario, $NameDirectory);
     }
 
 }

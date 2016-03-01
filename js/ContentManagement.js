@@ -98,7 +98,7 @@ var ContentMnagement = function () {
                 <ul class="dropdown-menu">\n\
                     <li class = "CMNewDirectory"><a href="#"><i class="fa fa-plus-circle fa-lg"></i> Nuevo</span> </a></li>\n\
                     <li class = "CMModifyDirectory"><a href="#"><i class="fa fa-pencil-square fa-lg"></i> Editar</span> </a></li>\n\
-                    <li class = "CMDeleteDirectory"><a href="#"><i class="fa fa-trash-o fa-lg"></i> Eliminar</span> </a></li>\n\
+                    <li class = "CMDeleteDirectory"><a href="#"><i class="fa fa-trash fa-lg"></i> Eliminar</span> </a></li>\n\
                 </ul>\n\
             </li>\n\
             <li class="dropdown">\n\
@@ -201,6 +201,8 @@ var ContentMnagement = function () {
     };
 
     var _initContentInterface = function () {
+        var contentArbol = new ContentArbol();
+        
         $('#content_management').dialog(WindowContentManagement, {close: function () {
                 $(this).remove();
             }, resize: function (event, ui) {
@@ -257,11 +259,10 @@ var ContentMnagement = function () {
                 Advertencia("Seleccione un directorio");
         });
 
-        $('.CMDeleteDirectory').click(function ()
-        {
+        $('.CMDeleteDirectory').click(function (){
             var node = $("#contentTree").dynatree("getActiveNode");
-            if (node)
-                ConfirmDeleteDir();
+            if (node !== null)
+                contentArbol.ConfirmDeleteDir(node);
             else
                 Advertencia("Seleccione un directorio");
         });
@@ -296,7 +297,6 @@ var ContentMnagement = function () {
             var node = $("#contentTree").dynatree("getActiveNode");
 
             if (typeof node === 'object') {
-                var contentArbol = new ContentArbol();
                 contentArbol.addNewDirectoryPanel();
             } else
                 Advertencia("Seleccione un directorio");
