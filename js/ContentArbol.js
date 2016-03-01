@@ -5,63 +5,65 @@
  */
 
 /* Refresh del árbol */
-/* global EnvironmentData, BootstrapDialog */
+/* global EnvironmentData, BootstrapDialog, Process, WindowConfirmacion */
 
 $(document).ready(function(){ 
   
 });
 
 var ContentArbol = function(){
-    
-    var form = $('<input>',{type: "text", class: "form-control"});
-   
-    var div = $('<div>', {class: "form-group"});
-    div.append("Nombre: ");
-    div.append(form);
-
     this.addNewDirectoryPanel = function(){
-        var dialog = BootstrapDialog.show({
+        var form = $('<input>',{type: "text", class: "form-control"});
+   
+        var div = $('<div>', {class: "form-group"});
+        div.append("Nombre: ");
+        div.append(form);
+    
+        BootstrapDialog.show({
             title: '<i class="fa fa-folder-open fa-lg"></i> Nuevo',
             message: div,
             closable: true,
             closeByBackdrop: true,
             closeByKeyboard: true,
             size: BootstrapDialog.SIZE_SMALL,
-            buttons: [{
-                label: 'Cancelar',
-                action: function(dialogRef){
-                    dialogRef.close();
-                }
-            }, {
-                hotkey: 13,
-                icon: "fa fa-plus-circle fa-lg",
-                label: 'Agregar',
-                cssClass: "btn-primary",
-                action: function(dialogRef){      
-                    
-                    var button = this;
-                    var title = form.val();
-                    dialogRef.setClosable(false);
-                    dialogRef.enableButtons(false);
-                    
-                    if(String(title).trim().length === 0)
-                        return Advertencia("El nombre no puede quedar vacio");
-                    
-                    button.spin();
-                    
-                    var activeNode = $('#contentTree').dynatree('getActiveNode');
-                    var node = activeNode.addChild({isFolder: true, title: title});
-                    
-                    if(addNewDirectory(node))
-                        dialogRef.close();
-                    else{
-                        button.stopSpin();
-                        dialogRef.setClosable(true);
-                        dialogRef.enableButtons(true);
+            buttons: [
+                {
+                    hotkey: 13,
+                    icon: "fa fa-plus-circle fa-lg",
+                    label: 'Agregar',
+                    cssClass: "btn-primary",
+                    action: function(dialogRef){      
+
+                        var button = this;
+                        var title = form.val();
+                        dialogRef.setClosable(false);
+                        dialogRef.enableButtons(false);
+
+                        if(String(title).trim().length === 0)
+                            return Advertencia("El nombre no puede quedar vacio");
+
+                        button.spin();
+
+                        var activeNode = $('#contentTree').dynatree('getActiveNode');
+                        var node = activeNode.addChild({isFolder: true, title: title});
+
+                        if(addNewDirectory(node))
+                            dialogRef.close();
+                        else{
+                            button.stopSpin();
+                            dialogRef.setClosable(true);
+                            dialogRef.enableButtons(true);
+                        }
+
                     }
-                                       
+                },
+                {
+                    label: 'Cancelar',
+                    action: function(dialogRef){
+                        dialogRef.close();
+                    }
                 }
-            }],
+            ],
             onshown: function(dialogRef){
                 form.focus();
             }
@@ -113,6 +115,164 @@ var ContentArbol = function(){
         });
         
         return status;
+    };
+    
+    this.ConfirmDeleteDir = function(node){
+        var content = $('<div>');
+
+        content.append('<p>¿Realmente desea eliminar el directorio <b>'+node.data.title+'</b>?</p>');
+
+        BootstrapDialog.show({
+            title: '<i class="fa fa-trash-o fa-lg"></i> Eliminar Directorio',
+            message: content,
+            closable: true,
+            closeByBackdrop: true,
+            closeByKeyboard: true,
+            size: BootstrapDialog.SIZE_SMALL,
+            type: BootstrapDialog.TYPE_DANGER,
+            buttons: [
+                {
+                    hotkey: 13,
+                    icon: "fa fa-trash fa-lg",
+                    label: 'Eliminar',
+                    cssClass: "btn-danger",
+                    action: function(dialogRef){      
+                        var button = this;
+                        dialogRef.setClosable(false);
+                        dialogRef.enableButtons(false);
+                        button.spin();
+
+                        if(CM_DeleteDir(node))
+                            dialogRef.close();
+                        else{
+                            button.stopSpin();
+                            dialogRef.setClosable(true);
+                            dialogRef.enableButtons(true);
+                        }
+
+                    }
+                },
+                {
+                    label: 'Cancelar',
+                    action: function(dialogRef){
+                        dialogRef.close();
+                    }
+                }
+            ],
+            onshown: function(dialogRef){
+
+            }
+        });
+    };
+    
+    var CM_DeleteDir = function(node)
+    {
+        var status = 1;
+
+        var NameDirectory = node.data.title;
+        var Path = node.getKeyPath();
+        var IdDirectory = node.data.key;
+        var IdParent_ = node.getParent().data.key;
+
+        if(!(parseInt(IdParent_) > 0))
+            return errorMessage("No se puede realizar esta acción sobre este elemento.");
+
+        var IdRepositorio = $('#CM_select_repositorios option:selected').attr('idrepository');
+        var NombreRepositorio = $('#CM_select_repositorios option:selected').attr('repositoryname');
+        var IdEmpresa = $('#CM_select_empresas option:selected').attr('id');
+        var title = node.data.title;
+
+        if(!parseInt(IdRepositorio) > 0)
+            return Advertencia("No fue posible obtener el identificador del repositorio");
+
+        if(!parseInt(IdEmpresa) > 0)
+            return Advertencia("No fue posible obtener el identificador de la empresa");
+
+        /* Se envia el listado de XML con cada uno de los Ids que seran eliminados (directorios) */
+        var XMLResponse="<Delete version='1.0' encoding='UTF-8'>";
+
+        var Bodyxml='';
+        var Children = node.getChildren();
+        var SubChildren = 0;
+
+
+        if(Children!==null)
+        {
+            for(var cont=0; cont<Children.length; cont++)
+            {
+                SubChildren=Children[cont].getChildren();
+                if(SubChildren!==null)
+                {
+                    for(var aux=0; aux<SubChildren.length; aux++)
+                    {
+                        Children[Children.length]=SubChildren[aux];
+                    }
+                }
+
+                var IdParent=Children[cont].getParent().data.key;
+                if(!(IdParent)>0){IdParent=0;}
+
+                Bodyxml+='<Directory>\n\
+                                <IdDirectory>'+Children[cont].data.key+'</IdDirectory>\n\
+                                <IdParent>'+IdParent+'</IdParent>\n\
+                                <title>'+Children[cont].data.title+'</title>\n\\n\
+                                <Path>'+Children[cont].getKeyPath()+'</Path>\n\
+                          </Directory>';              
+    //            Cadena+="<p>Nombre=" + Children[cont].data.title + " Id="+Children[cont].data.key+"</p>";            
+                SubChildren=null;
+            }
+
+        }
+
+        XMLResponse+=Bodyxml+'</Delete>';
+
+        ajax=objetoAjax();
+        ajax.open("POST", 'php/Tree.php',true);
+        ajax.setRequestHeader("Content-Type", "application/x-www-form-urlencoded;charset=utf-8;");
+        ajax.send("opcion=DeleteDir&IdRepositorio="+IdRepositorio+"&DataBaseName="+EnvironmentData.DataBaseName+'&NombreRepositorio='+NombreRepositorio+"&IdDirectory="+IdDirectory+'&XMLResponse='+XMLResponse+'&IdEmpresa='+IdEmpresa+'&nombre_usuario='+EnvironmentData.NombreUsuario+'&NameDirectory='+NameDirectory+'&Path='+Path+'&title='+title+'&IdParent='+IdParent_+'&IdUsuario='+EnvironmentData.IdUsuario);
+        ajax.onreadystatechange=function() 
+        {
+           if (ajax.readyState===4 && ajax.status===200) 
+           {           
+              if(ajax.responseXML===null){Salida(ajax.responseText);return;}              
+               var xml = ajax.responseXML;
+               $(xml).find("DeleteDir").each(function()
+                {
+                    var $DeleteDir=$(this);
+                    var estado=$DeleteDir.find("Estado").text();
+                    var mensaje=$DeleteDir.find("Mensaje").text();
+                    var PathAdvancing=$DeleteDir.find("PathAdvancing").text();
+                    var PathStatus=$DeleteDir.find("PathStatus").text();
+                    var KeyProcess = $DeleteDir.find("KeyProcess").text();
+                    if(estado==="1")
+                    {
+                        /* Se quita el directorio y se abre la barra de progreso */
+                        $('.contentDetail').empty();
+                        node.remove();                    
+                        $('body').append('<div id ="'+KeyProcess+'"> <div id = "progress_'+KeyProcess+'"></div> <div id ="detail_'+KeyProcess+'"></div> </div>');
+                        $('#detail_'+KeyProcess).append('<div class="loading"><img src="../img/loadinfologin.gif"></div>');
+                        $('#'+KeyProcess).dialog({title:"Eliminando "+title, width:350, height:200, minWidth:350, minHeight:200,
+                        buttons:{"Cancelar":{click:function(){CancelDeleteDir(PathStatus,PathAdvancing);},text:"Cancelar"}},
+                        });
+                        $('#'+KeyProcess).dialog({ dialogClass: 'no-close' });
+                        $('#progress_'+KeyProcess).progressbar({ value: 0 });
+                        $('#detail_'+KeyProcess).append('<p>Obteniendo detalles de progreso</p>');   
+
+                        Process[KeyProcess]=setInterval("ProgressOfDeleting('"+PathAdvancing+"', '"+KeyProcess+"','"+title+"')", 2000);
+                    }                
+                });
+
+                $(xml).find("Error").each(function()
+                {
+                    var $Error=$(this);
+                    var estado=$Error.find("Estado").text();
+                    var mensaje=$Error.find("Mensaje").text();
+                    errorMessage(mensaje);
+                });            
+           }        
+       };
+
+       return status;
     };
 };
 
@@ -221,7 +381,7 @@ function InitDynatree(child)
             generateIds: false,
             keyboard: true,
             expand: true, 
-            minExpandLevel: 2,
+            minExpandLevel: 3,
             children: [child],
             onActivate: function(node) {
                 node.sortChildren(cmp, false);
@@ -232,7 +392,7 @@ function InitDynatree(child)
 //                }
             },
             onClick: function(node, event){
-                console.log(node.data.idParent);
+//                console.log(node.data.idParent);
             },
             onDblClick: function(node, event) {
               editNode(node);
@@ -297,7 +457,7 @@ function editNode(node){
       case 13: // [enter]
         // simulate blur to accept new value
         var title = $("input#editNode").val();
-        CM_ModifyDir(node.data.key,IdParent,title);
+        CM_ModifyDir(node.data.key,title);
         $(this).blur();
         break;        
       }
@@ -305,7 +465,7 @@ function editNode(node){
       // Accept new value, when user leaves <input>
       var title = $("input#editNode").val();      
       node.setTitle(title);
-      CM_ModifyDir(node.data.key,IdParent,title);
+      CM_ModifyDir(node.data.key,title);
       
       // Re-enable mouse and keyboard handlling
       tree.$widget.bind();
@@ -314,17 +474,22 @@ function editNode(node){
     });    
 }
 
-function CM_ModifyDir(IdDirectory,IdParentDirectory,NameDirectory)
+function CM_ModifyDir(IdDirectory,NameDirectory)
 {
-    var IdRepositorio = $('#CM_select_repositorios').val();
-    var NombreRepositorio = $('#CM_select_repositorios option:selected').html();
+    var IdRepositorio = $('#CM_select_repositorios option:selected').attr('idrepository');
+    var NombreRepositorio = $('#CM_select_repositorios option:selected').attr('repositoryname');
     var IdEmpresa = $('#CM_select_empresas option:selected').attr('id');
-    IdEmpresa = parseInt(IdEmpresa);
+    
+    if(!parseInt(IdRepositorio) > 0)
+        return Advertencia('No fue posible recuperar el identificador del repositorio');
+    
+    if(!parseInt(IdEmpresa) > 0)
+        return Advertencia('No fue posible obtener el identificador de la empresa');
     
     ajax=objetoAjax();
     ajax.open("POST", 'php/Tree.php',true);
     ajax.setRequestHeader("Content-Type", "application/x-www-form-urlencoded;charset=utf-8;");
-    ajax.send("opcion=ModifyDir&IdRepositorio="+IdRepositorio+"&DataBaseName="+EnvironmentData.DataBaseName+'&NombreRepositorio='+NombreRepositorio+"&IdParentDirectory="+IdParentDirectory+"&NameDirectory="+NameDirectory+"&$IdEmpresa="+IdEmpresa+"&IdDirectory="+IdDirectory+'&nombre_usuario='+EnvironmentData.NombreUsuario+'&id_usuario='+EnvironmentData.IdUsuario);
+    ajax.send('opcion=ModifyDir&NombreRepositorio='+NombreRepositorio+"&NameDirectory="+NameDirectory+"&IdDirectory="+IdDirectory);
     ajax.onreadystatechange=function() 
     {
        if (ajax.readyState===4 && ajax.status===200) 
@@ -342,118 +507,6 @@ function CM_ModifyDir(IdDirectory,IdParentDirectory,NameDirectory)
    };
 }
 
-function ConfirmDeleteDir()
-{
-    var node = $("#contentTree").dynatree("getActiveNode");
-    $('#MensajeConfirmacion').dialog(WindowConfirmacion,{buttons: {"Aceptar": function() { CM_DeleteDir();},Cancelar: function() {$( this ).dialog( "close" );}}});
-    $('#MensajeConfirmacion').empty();
-    $('#MensajeConfirmacion').append('<p>Está a punto de eliminar el directorio "'+node.data.title+'", ¿Desea Continuar?</p>');  
-}
-
-function CM_DeleteDir()
-{
-    $('#MensajeConfirmacion').dialog( "close" );
-    
-    var node = $("#contentTree").dynatree("getActiveNode");
-    if(!node){errorMessage("Seleccione un Directorio"); return;}
-    var NameDirectory= node.data.title;
-    var Path=node.getKeyPath();
-    var IdDirectory=node.data.key;
-    var IdParent_=node.getParent().data.key;
-    if(!(IdParent_>0)){errorMessage("No se puede realizar esta acción sobre este elemento."); return;}
-    var IdRepositorio=$('#CM_select_repositorios').val();
-    var NombreRepositorio=$('#CM_select_repositorios option:selected').html();
-    var IdEmpresa = $('#CM_select_empresas option:selected').attr('id');
-    IdEmpresa = parseInt(IdEmpresa);
-    var title=node.data.title;
-    
-    /* Se envia el listado de XML con cada uno de los Ids que seran eliminados (directorios) */
-    var XMLResponse="<Delete version='1.0' encoding='UTF-8'>";
-            
-    var Bodyxml='';
-    var Children=node.getChildren();
-    var SubChildren=0;
-    
-    
-    if(Children!==null)
-    {
-        for(var cont=0; cont<Children.length; cont++)
-        {
-            SubChildren=Children[cont].getChildren();
-            if(SubChildren!==null)
-            {
-                for(var aux=0; aux<SubChildren.length; aux++)
-                {
-                    Children[Children.length]=SubChildren[aux];
-                }
-            }
-            
-            var IdParent=Children[cont].getParent().data.key;
-            if(!(IdParent)>0){IdParent=0;}
-            
-            Bodyxml+='<Directory>\n\
-                            <IdDirectory>'+Children[cont].data.key+'</IdDirectory>\n\
-                            <IdParent>'+IdParent+'</IdParent>\n\
-                            <title>'+Children[cont].data.title+'</title>\n\\n\
-                            <Path>'+Children[cont].getKeyPath()+'</Path>\n\
-                      </Directory>';              
-//            Cadena+="<p>Nombre=" + Children[cont].data.title + " Id="+Children[cont].data.key+"</p>";            
-            SubChildren=null;
-        }
-        
-    }
-    
-//    Salida(Cadena);
-//    return;
-
-    XMLResponse+=Bodyxml+'</Delete>';
-
-    ajax=objetoAjax();
-    ajax.open("POST", 'php/Tree.php',true);
-    ajax.setRequestHeader("Content-Type", "application/x-www-form-urlencoded;charset=utf-8;");
-    ajax.send("opcion=DeleteDir&IdRepositorio="+IdRepositorio+"&DataBaseName="+EnvironmentData.DataBaseName+'&NombreRepositorio='+NombreRepositorio+"&IdDirectory="+IdDirectory+'&XMLResponse='+XMLResponse+'&IdEmpresa='+IdEmpresa+'&nombre_usuario='+EnvironmentData.NombreUsuario+'&NameDirectory='+NameDirectory+'&Path='+Path+'&title='+title+'&IdParent='+IdParent_+'&IdUsuario='+EnvironmentData.IdUsuario);
-    ajax.onreadystatechange=function() 
-    {
-       if (ajax.readyState===4 && ajax.status===200) 
-       {           
-          if(ajax.responseXML===null){Salida(ajax.responseText);return;}              
-           var xml = ajax.responseXML;
-           $(xml).find("DeleteDir").each(function()
-            {
-                var $DeleteDir=$(this);
-                var estado=$DeleteDir.find("Estado").text();
-                var mensaje=$DeleteDir.find("Mensaje").text();
-                var PathAdvancing=$DeleteDir.find("PathAdvancing").text();
-                var PathStatus=$DeleteDir.find("PathStatus").text();
-                var KeyProcess = $DeleteDir.find("KeyProcess").text();
-                if(estado==="1")
-                {
-                    /* Se quita el directorio y se abre la barra de progreso */
-                    $('.contentDetail').empty();
-                    node.remove();                    
-                    $('body').append('<div id ="'+KeyProcess+'"> <div id = "progress_'+KeyProcess+'"></div> <div id ="detail_'+KeyProcess+'"></div> </div>');
-                    $('#detail_'+KeyProcess).append('<div class="loading"><img src="../img/loadinfologin.gif"></div>');
-                    $('#'+KeyProcess).dialog({title:"Eliminando "+title, width:350, height:200, minWidth:350, minHeight:200,
-                    buttons:{"Cancelar":{click:function(){CancelDeleteDir(PathStatus,PathAdvancing);},text:"Cancelar"}},
-                    });
-                    $('#'+KeyProcess).dialog({ dialogClass: 'no-close' });
-                    $('#progress_'+KeyProcess).progressbar({ value: 0 });
-                    $('#detail_'+KeyProcess).append('<p>Obteniendo detalles de progreso</p>');   
-                    
-                    Process[KeyProcess]=setInterval("ProgressOfDeleting('"+PathAdvancing+"', '"+KeyProcess+"','"+title+"')", 2000);
-                }                
-            });
-            
-            $(xml).find("Error").each(function()
-            {
-                var $Error=$(this);
-                var estado=$Error.find("Estado").text();
-                var mensaje=$Error.find("Mensaje").text();
-                errorMessage(mensaje);
-            });            
-       }        
-   };
-}
 /* Muestra el progreso del proceso de borrado */
 function ProgressOfDeleting(PathAdvancing,KeyProcess,title)
 {        

@@ -631,13 +631,8 @@ class DataBase {
             $tabla_directorios = "CREATE TABLE IF NOT EXISTS dir_$nombre_tabla "
                     . "(`IdDirectory` int(11) NOT NULL AUTO_INCREMENT,"
                     . "`parent_id` int(10) UNSIGNED NOT NULL DEFAULT '0',"
-                    . "`lft` int(11) NOT NULL DEFAULT '0',"
-                    . " `rgt` int(11) NOT NULL DEFAULT '0',"
                     . "`title` varchar(255) NOT NULL,"
-                    . "`alias` varchar(255) NOT NULL DEFAULT '',"
-                    . " `access` tinyint(3) UNSIGNED NOT NULL DEFAULT '0',"
                     . "`path` varchar(255) NOT NULL DEFAULT '',"
-                    . "isExpedient INT DEFAUL 0,"
                     . "PRIMARY KEY (`IdDirectory`)"
                     . ") ENGINE=InnoDB AUTO_INCREMENT=1 DEFAULT CHARSET=utf8";
 
@@ -646,11 +641,9 @@ class DataBase {
                     . "`parent_id` int(10) UNSIGNED NOT NULL,"
                     . "`FlagFather` int(10) UNSIGNED NOT NULL," /* Es el directorio padre de todos los subdirectorios que se eliminaron */
                     . "`title` varchar(255) NOT NULL,"
-                    . " `access` tinyint(3) UNSIGNED NOT NULL DEFAULT '0',"
                     . "`path` varchar(255) NOT NULL DEFAULT '',"
                     . "`IdUsuario` INT NOT NULL,"
                     . "NombreUsuario VARCHAR(50) NOT NULL,"
-                    . "isExpedient INT DEFAUL 0,"
                     . "PRIMARY KEY (`IdDirectory`)"
                     . ") ENGINE=InnoDB AUTO_INCREMENT=1 DEFAULT CHARSET=utf8";
 
@@ -725,8 +718,8 @@ class DataBase {
 
                     $RutaBase = "../Estructuras/$DataBaseName/$nombre_tabla/";
 //                    $RutaPath=".../Configuracion/";                    
-                    $InsertRoot = "INSERT INTO dir_$nombre_tabla (parent_id, lft, rgt, title, alias, path) "
-                            . "VALUES (0,1,2,'$nombre_tabla', 'Root','$RutaBase')";
+                    $InsertRoot = "INSERT INTO dir_$nombre_tabla (IdDirectory, parent_id, title, path) "
+                            . "VALUES (1, 0,'$nombre_tabla','$RutaBase')";
 
                     $ResultInsertRoot = $this->ConsultaInsertReturnId($DataBaseName, $InsertRoot);
                     if (!($ResultInsertRoot > 0))
@@ -746,7 +739,7 @@ class DataBase {
                     $this->SalidaLog("Error al crear Temporal Repositorio $nombre_tabla", $ResultTablaTempRep, "Temporal Repositorio $nombre_tabla creada con éxito");
                 }
                 else {
-                    echo "<p>Error al Crear el Repositorio $ResultTempDir";
+                    echo "<p>Error al Crear el Repositorio temporal $ResultTempDir";
                     continue;
                 }
 
