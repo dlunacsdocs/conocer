@@ -101,14 +101,14 @@ class Tree {
         if(!is_array($right))
             return XML::XMLReponse ("Error", 0, "Error al intentar recuperar la estructura de directorios. $right");
         
-        $this->returnTreeXML($right);
+        XML::XmlArrayResponse("directories", "Directory", $right);
                              
     }
     
     function getDirectoriesArray($dataBaseName, $repositoryName){
         $DB = new DataBase();
         
-        $query = "SELECT IdDirectory, parent_id, title FROM dir_$repositoryName";
+        $query = "SELECT * FROM dir_$repositoryName";
         
         $queryResult = $DB->ConsultaSelect($dataBaseName, $query);
         

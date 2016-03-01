@@ -233,7 +233,7 @@ var ContentMnagement = function () {
 
         $('#CM_select_repositorios').change(function () {
             var IdRepositorio = $('#CM_select_repositorios option:selected').attr('idRepository');
-            console.log(IdRepositorio);
+
             if (parseInt(IdRepositorio) > 0) {
                 var permissions = new ClassPermissions();
                 permissions.ApplyUserPermissions(IdRepositorio);

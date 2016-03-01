@@ -145,7 +145,7 @@ var ExpedientClass = function () {
                         catalogType: type,
                         isFolder: true,
                         expand: true,
-                        parentKey: parentKey,
+                        parentCatalogKey: parentKey,
                         icon: icon
                     };
 
@@ -199,34 +199,52 @@ var ExpedientClass = function () {
     var createPathOfDispositionCatalog = function (path) {
         var xml = "<path version='1.0' encoding='UTF-8'>";
         
-        var repositoryName = $('#CM_select_repositorios').attr('repositoryName');
-        var status = 0;
-        var pathToProcess = [];
+        var repositoryName = $('#CM_select_repositorios option:selected').attr('repositoryname');
         
+        if(repositoryName === undefined)
+            return Advertencia("No fue posible obtener el nombre del repositorio.");
+        
+        var status = 0;
+
         for (var cont = path.length; cont >= 0; cont--) {
             if(cont -1 < 0)
                 continue;
-            
-            var node = path[cont-1];
+            var index = cont -1;
+            var node = path[index];
             var catalogKey = node.data.key;
+            var parentCatalogKey = node.data.parentCatalogKey;
+            var parentNode = _checkIfExistCatalogNode(parentCatalogKey);
             var node = _checkIfExistCatalogNode(catalogKey);
             var catalogNode = $('#catalogDispTree').dynatree('getTree').getNodeByKey(catalogKey);
-            
+            var nodePath;
+                        
             if (node === null){
-                
-                pathToProcess.push(catalogNode.data.key);
+                var idParent = 0;
+                if(parentNode !== null){
+                    idParent = parentNode.data.key;
+                    nodePath = parentNode.getKeyPath();
+                }
+                else 
+                    nodePath = "1";
+
                 xml += '<node>\n\
-                            <parentCatalogKey>'+catalogNode.data.parentKey+'</parentCatalogKey>\n\\n\
+                            <parentCatalogKey>'+catalogNode.data.parentCatalogKey+'</parentCatalogKey>\n\\n\
                             <catalogKey>'+catalogNode.data.nameKey+'</catalogKey>\n\
                             <name>'+catalogNode.data.title+'</name>\n\
+                            <idParent>' + idParent + '</idParent>\n\
+                            <catalogType>'+ catalogNode.data.catalogType +'</catalogType>\n\
+                            <path>' + nodePath + '</path>\n\
                         </node>';
             }
         }
         
         xml += "</path>";
         
-        console.log(pathToProcess);
-
+        if($($.parseXML(xml)).find('node').length === 0)
+            return Advertencia("Ya se ha creado el expediente para la serie seleccionada.");
+        
+        console.log(xml);
+        
         $.ajax({
             async: false,
             cache: false,
@@ -235,12 +253,39 @@ var ExpedientClass = function () {
             url: "Modules/php/Expedient.php",
             data: {option: "createPathOfDispositionCatalog", xml: xml, repositoryName: repositoryName},
             success: function (xml) {
-
                 if ($.parseXML(xml) === null)
                     return errorMessage(error);
                 else
                     xml = $.parseXML(xml);
+                
+                $(xml).find('expedientAdded').each(function(){
+                    var message = $(this).find('message').text();
+                    Notificacion(message);
+                    
+                    $($(xml)).find('directory').each(function(){
+                        var title = $(this).find('title').text();
+                        var idParent = $(this).find('idParent').text();
+                        var catalogKey = $(this).find('title').text();
+                        var id = $(this).find('idDirectory').text();
+                        var type = $(this).find('catalogType').text();
 
+                        var child = {
+                            title: title,
+                            idParent: idParent,
+                            key: id,
+                            isFolder: true,
+                            catalogkey: catalogKey,
+                            parentCatalogKey: parentCatalogKey,
+                            type: type
+                        };
+
+                        var parent = $('#contentTree').dynatree('getTree').getNodeByKey(idParent);
+
+                        if(parent !== null)
+                            parent.addChild(child);
+                    });
+                    status = 1;
+                });
 
                 $(xml).find("Error").each(function ()
                 {
@@ -261,6 +306,7 @@ var ExpedientClass = function () {
      * @returns {undefined}
      */
     var _checkIfExistCatalogNode = function(searchCatalogKey){
+        console.log("buscando clave "+searchCatalogKey);
         var node = $('#contentTree').dynatree('getRoot');
         
         if(node === null)
@@ -270,13 +316,19 @@ var ExpedientClass = function () {
         
         for(var cont = 0; cont < children.length; cont++){
             var child = children[cont];
-            console.log(child);
+            
             if(child === null)
                 continue;
-            
+                        
             var catalogKey = child.data.catalogkey;
             
-            if(String(catalogKey) === searchCatalogKey)
+            if(catalogKey === undefined || catalogKey === null && parseInt(child.data.key) !== 1)
+                continue;
+            
+            console.log("Analizando nodo");
+            console.log(child);
+            
+            if(String(catalogKey) === String(searchCatalogKey))
                 return child;
             
             var subChildren = child.getChildren();
