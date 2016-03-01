@@ -276,13 +276,15 @@ var ExpedientClass = function () {
                             isFolder: true,
                             catalogkey: catalogKey,
                             parentCatalogKey: parentCatalogKey,
-                            type: type
+                            catalogType: type
                         };
 
                         var parent = $('#contentTree').dynatree('getTree').getNodeByKey(idParent);
 
-                        if(parent !== null)
-                            parent.addChild(child);
+                        if(parent !== null){
+                            var childNode = parent.addChild(child);
+                            childNode.activate(true);
+                        }
                     });
                     status = 1;
                 });
@@ -306,7 +308,6 @@ var ExpedientClass = function () {
      * @returns {undefined}
      */
     var _checkIfExistCatalogNode = function(searchCatalogKey){
-        console.log("buscando clave "+searchCatalogKey);
         var node = $('#contentTree').dynatree('getRoot');
         
         if(node === null)

@@ -12,34 +12,31 @@ $(document).ready(function () {
 });
 
 var ContentArbol = function () {
-    var activeNode = $('#contentTree').dynatree('getActiveNode');
-
-    if (activeNode === null)
-        return Advertencia("No fue posible obtener el nodo activo");
-
-    if (String(activeNode) !== 'serie')
-        return Advertencia("Solo puede agregar un legajo sobre una serie");
-
-    var form = $('<input>', {type: "text", class: "form-control"});
-
-    var div = $('<div>', {class: "form-group"});
-    div.append("Nombre: ");
-    div.append(form);
 
     this.addNewDirectoryPanel = function () {
+        var activeNode = $('#contentTree').dynatree('getActiveNode');
+
+        if (activeNode === null)
+            return Advertencia("No fue posible obtener el nodo activo");
+
+        if (!(String(activeNode.data.catalogType) === 'serie' || activeNode.data.isLegajo === true))
+            return Advertencia("Solo puede agregar un legajo sobre una serie u otro legajo");
+
+        var form = $('<input>', {type: "text", class: "form-control"});
+
+        var div = $('<div>', {class: "form-group"});
+        div.append("Nombre: ");
+        div.append(form);
+        
         var dialog = BootstrapDialog.show({
-            title: '<i class="fa fa-folder-open fa-lg"></i> Nuevo',
+            title: '<i class="fa fa-folder fa-lg"></i> Nuevo Legajo',
             message: div,
             closable: true,
             closeByBackdrop: true,
             closeByKeyboard: true,
             size: BootstrapDialog.SIZE_SMALL,
-            buttons: [{
-                    label: 'Cancelar',
-                    action: function (dialogRef) {
-                        dialogRef.close();
-                    }
-                }, {
+            buttons: [
+                {
                     hotkey: 13,
                     icon: "fa fa-plus-circle fa-lg",
                     label: 'Agregar',
@@ -56,7 +53,15 @@ var ContentArbol = function () {
 
                         button.spin();
 
-                        var node = activeNode.addChild({isFolder: true, title: title});
+                        var node = activeNode.addChild({
+                            isFolder: true, 
+                            title: title, 
+                            isLegajo: true,
+                            idParent: activeNode.data.key,
+                            catalogkey: null,
+                            parentCatalogKey: activeNode.data.catalogKey,
+                            catalogType: null
+                        });
 
                         if (addNewDirectory(node))
                             dialogRef.close();
@@ -67,7 +72,14 @@ var ContentArbol = function () {
                         }
 
                     }
-                }],
+                },
+                {
+                    label: 'Cancelar',
+                    action: function (dialogRef) {
+                        dialogRef.close();
+                    }
+                }
+            ],
             onshown: function (dialogRef) {
                 form.focus();
             }
@@ -101,8 +113,7 @@ var ContentArbol = function () {
                 } else
                     xml = $.parseXML(xml);
 
-                $(xml).find("NewDirectory").each(function ()
-                {
+                $(xml).find("NewDirectory").each(function (){
                     var $NewDirectory = $(this);
                     var id = $NewDirectory.find("IdNewDir").text();
 
@@ -201,12 +212,19 @@ var _buildTree = function (tree) {
         var catalogkey = $Directory.find("catalogKey").text();
         var parentCatalogKey = $Directory.find("parentCatalogKey").text();
         var type = $Directory.find("catalogType").text();
-
+        var isLegajo = false;
+                
         if (String(catalogkey).length === 0)
             catalogkey = null;
         
         if(String(parentCatalogKey).length === 0)
             parentCatalogKey = null;
+        
+        if(parseInt(id) > 1 && catalogkey === null)
+            isLegajo = true;
+
+        if(String(type)!== 'fondo' && String(type) !== 'serie' && String(type) !== 'section')
+            type = null;
 
         var child = {
             title: title,
@@ -215,7 +233,8 @@ var _buildTree = function (tree) {
             isFolder: true,
             catalogkey: catalogkey,
             parentCatalogKey: parentCatalogKey,
-            type: type
+            catalogType: type,
+            isLegajo: isLegajo
         };
 
         if (cont === 0)
@@ -247,7 +266,7 @@ function InitDynatree(child)
                 generateIds: false,
                 keyboard: true,
                 expand: true,
-                minExpandLevel: 2,
+                minExpandLevel: 3,
                 children: [child],
                 onActivate: function (node) {
                     node.sortChildren(cmp, false);
@@ -295,6 +314,9 @@ var cmp = function (a, b) {
 };
 
 function editNode(node) {
+    if(!node.data.isLegajo)
+        return Advertencia("No es un legajo lo que intenta modificar.");
+    
     var prevTitle = node.data.title,
             tree = node.tree;
     var IdParent = node.getParent();
@@ -323,7 +345,7 @@ function editNode(node) {
                     case 13: // [enter]
                         // simulate blur to accept new value
                         var title = $("input#editNode").val();
-                        CM_ModifyDir(node.data.key, IdParent, title);
+                        CM_ModifyDir(node.data.key, title);
                         $(this).blur();
                         break;
                 }
@@ -331,7 +353,7 @@ function editNode(node) {
         // Accept new value, when user leaves <input>
         var title = $("input#editNode").val();
         node.setTitle(title);
-        CM_ModifyDir(node.data.key, IdParent, title);
+        CM_ModifyDir(node.data.key, title);
 
         // Re-enable mouse and keyboard handlling
         tree.$widget.bind();
@@ -340,17 +362,23 @@ function editNode(node) {
     });
 }
 
-function CM_ModifyDir(IdDirectory, IdParentDirectory, NameDirectory)
-{
-    var IdRepositorio = $('#CM_select_repositorios').val();
-    var NombreRepositorio = $('#CM_select_repositorios option:selected').html();
+function CM_ModifyDir(idDirectory, title)
+{    
+    var IdRepositorio = $('#CM_select_repositorios').attr('idrepository');
+    var NombreRepositorio = $('#CM_select_repositorios option:selected').attr('repositoryname');
     var IdEmpresa = $('#CM_select_empresas option:selected').attr('id');
     IdEmpresa = parseInt(IdEmpresa);
+    
+    if(!IdEmpresa > 0)
+        return Advertencia("El identificador de la empresa es inválido");
+    
+    if(parseInt(IdRepositorio) > 0)
+        return Advertencia("El identificador del repositorio es inválido.");
 
     ajax = objetoAjax();
     ajax.open("POST", 'php/Tree.php', true);
     ajax.setRequestHeader("Content-Type", "application/x-www-form-urlencoded;charset=utf-8;");
-    ajax.send("opcion=ModifyDir&IdRepositorio=" + IdRepositorio + "&DataBaseName=" + EnvironmentData.DataBaseName + '&NombreRepositorio=' + NombreRepositorio + "&IdParentDirectory=" + IdParentDirectory + "&NameDirectory=" + NameDirectory + "&$IdEmpresa=" + IdEmpresa + "&IdDirectory=" + IdDirectory + '&nombre_usuario=' + EnvironmentData.NombreUsuario + '&id_usuario=' + EnvironmentData.IdUsuario);
+    ajax.send('opcion=ModifyDir&NombreRepositorio=' + NombreRepositorio + "&NameDirectory=" + NameDirectory  + "&IdDirectory=" + IdDirectory);
     ajax.onreadystatechange = function ()
     {
         if (ajax.readyState === 4 && ajax.status === 200)

@@ -311,7 +311,7 @@ var ContentMnagement = function () {
     };
 
 };
-
+ 
 function CleaningContent()
 {
     /* Se limpia árbol y contenedor de archivos */

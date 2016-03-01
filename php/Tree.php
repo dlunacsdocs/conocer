@@ -31,7 +31,7 @@ class Tree {
             {
                 case 'getTree': $this->get_tree($userData); break;
                 case 'InsertDir': $this->InsertDir($userData); break;      
-                case 'ModifyDir': $this->ModifyDir(); break;
+                case 'ModifyDir': $this->ModifyDir($userData); break;
                 case 'DeleteDir': $this->DeleteDir(); break; 
                 case 'GetListReposity': $this->GetListReposity($userData); break; 
             }
@@ -333,40 +333,27 @@ class Tree {
                 
    }
    
-    function ModifyDir()
+    function ModifyDir($userData)
     {
-        $BD= new DataBase();
-        $XML=new XML();
+        $db = new DataBase();
+        $XML =new XML();
         $Log = new Log();
-        $estado=TRUE;
         
 //        $IdRepositorio=filter_input(INPUT_POST, "IdRepositorio");
-        $DataBaseName=filter_input(INPUT_POST, "DataBaseName");
-        $NombreRepositorio=  filter_input(INPUT_POST, "NombreRepositorio");    
-        $NameDirectory=filter_input(INPUT_POST, "NameDirectory");    
-        $IdDirectory=filter_input(INPUT_POST, "IdDirectory");  
-        $NombreUsuario=  filter_input(INPUT_POST, "nombre_usuario");
-        $IdUsuario=filter_input(INPUT_POST, "id_usuario");
+        $DataBaseName = $userData['dataBaseName'];
+        $NombreRepositorio = filter_input(INPUT_POST, "NombreRepositorio");    
+        $NameDirectory = filter_input(INPUT_POST, "NameDirectory");    
+        $IdDirectory = filter_input(INPUT_POST, "IdDirectory");  
+        $NombreUsuario = $userData['userName'];
+        $IdUsuario = $userData['idUser'];
+      
+        $update = "UPDATE dir_$NombreRepositorio SET title='$NameDirectory' WHERE IdDirectory = $IdDirectory";
         
-        $conexion=  $BD->Conexion();
-        if (!$conexion) {
-            echo('No pudo conectarse: ' . mysql_error());
-            return;
-        }        
-        $query = "UPDATE dir_$NombreRepositorio SET title='$NameDirectory' WHERE IdDirectory = $IdDirectory";
-        mysql_select_db($DataBaseName,$conexion);
-        $result = mysql_query($query);
-        if(!$result)
-            {
-                $estado= mysql_error();  
-                $XML->ResponseXML("Error", 0, "Error al intentar modificar el Directorio ".$estado);
-                mysql_close($conexion);
-                return;
-            }                         
-        mysql_close($conexion);
+        if(($resultUpdate = $db->ConsultaQuery($DataBaseName, $update)) != 1)
+                return XML::XMLReponse ("Error", 0, $update);
         
-        $XML->ResponseXML("ModifyDir", 1, "Modificado con éxito".$estado);
         $Log ->Write("19", $IdUsuario, $NombreUsuario, $NameDirectory);
+        $XML->ResponseXML("ModifyDir", 1, "Modificado con éxito");
     }
 
 }

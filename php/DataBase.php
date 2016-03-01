@@ -851,8 +851,8 @@ class DataBase {
 
                     $RutaBase = "../Estructuras/$DataBaseName/$nombre_tabla/";
 //                    $RutaPath=".../Configuracion/";                    
-                    $InsertRoot = "INSERT INTO dir_$nombre_tabla (parent_id, lft, rgt, title, alias, path) "
-                            . "VALUES (0,1,2,'$nombre_tabla', 'Root','$RutaBase')";
+                    $InsertRoot = "INSERT INTO dir_$nombre_tabla (IdDirectory,parent_id, title, path) "
+                            . "VALUES (1, 0,'$nombre_tabla','$RutaBase')";
 
                     $ResultInsertRoot = $this->ConsultaInsertReturnId($DataBaseName, $InsertRoot);
                     if (!($ResultInsertRoot > 0))
