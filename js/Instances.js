@@ -20,3 +20,4 @@ var documentaryValidity;
 var legalFoundation;
 var administrativeUnit;
 var Expedient;
+var TemplateDesigner;

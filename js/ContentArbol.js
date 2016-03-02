@@ -5,11 +5,11 @@
  */
 
 /* Refresh del árbol */
-/* global EnvironmentData, BootstrapDialog, Process, WindowConfirmacion */
+/* global EnvironmentData, BootstrapDialog, Process, WindowConfirmacion, IdDirectory */
 
 $(document).ready(function () {
 
-});
+}); 
 
 var ContentArbol = function () {
 

@@ -913,7 +913,7 @@ var DocumentaryDispositionClass = function(){
      *                                  al catálogo de disposición documental.
      * @returns {Number}
      */
-    var _addFondo = function(action){
+    _addFondo = function(action){
         var docDispositionData = _getDocumentaryDispositionData();
         var activeKeyParent;
                 
@@ -996,7 +996,7 @@ var DocumentaryDispositionClass = function(){
      *                                  al catálogo de disposición documental.
      * @returns {Number}
      */
-    var _addSeccion = function(action){
+    _addSeccion = function(action){
         var docDispositionData = _getDocumentaryDispositionData();  
         var activeNodeFondo = $('#fondoTree').dynatree("getActiveNode");
         var sectionTree = $('#sectionTree').dynatree("getActiveNode");
@@ -1090,7 +1090,7 @@ var DocumentaryDispositionClass = function(){
      *                                  al catálogo de disposición documental.
      * @returns {Number}
      */
-    var _addSerie = function(action){
+    _addSerie = function(action){
         var docDispositionData = _getDocumentaryDispositionData();
         
         if(_checkIfExistsKey(docDispositionData.catalogKey) === 1)
