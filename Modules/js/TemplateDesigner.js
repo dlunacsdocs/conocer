@@ -52,7 +52,7 @@ var TemplateDesigner = function(){
             closeByBackdrop: false,
             closeByKeyboard: true,
             size: BootstrapDialog.SIZE_WIDE,
-            type: BootstrapDialog.TYPE_PRIMARY,
+            type: BootstrapDialog.TYPE_DEFAULT,
             buttons: [
                 {
                     label: 'Cerrar',
