@@ -65,7 +65,7 @@ class Expedient {
         $repositoryName = filter_input(INPUT_POST, "repositoryName");
         $xmlString = filter_input(INPUT_POST, "xml");
         $RoutFile_ = dirname(getcwd());
-        $path = dirname($RoutFile_)."/Estructuras/$instanceName";
+        $path = dirname($RoutFile_)."/Estructuras/$instanceName/$repositoryName";
         $xml = simplexml_load_string($xmlString) or die("Error: No se pudo crear el objeto XML.");
 
         $index = 0;
