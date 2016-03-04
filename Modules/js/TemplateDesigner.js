@@ -154,7 +154,7 @@ var TemplateDesigner = function(){
         
         content.append(header);
         
-        var bottomPanelDiv = $('<div>', {class: "col-xs-12 col-md-12"});
+        var bottomPanelDiv = $('<div>', {id:"bottomPanelDiv", class: "col-xs-12 col-md-12"});
         var bottomPanel = $('<div>', {class: "panel panel-info"});/* Panel inferior con los campos a ir agregando */
         var bottomPanelHeading = $('<div>', {class: "panel-heading"}).append('Seleccione el campo a insertar');
         var bottomPanelBody = $('<div>', {class: "panel-body"});
@@ -162,34 +162,29 @@ var TemplateDesigner = function(){
         bottomPanelBody.append('\
                 <form class="form-horizontal">\n\
                     <div class="form-group">\n\
-                      <label for="inputEmail3" class="col-xs-2 col-sm-2 control-label">Cuadrícula</label>\n\
-                      <div class="col-xs-7 col-sm-4">\n\
-                        <select id = "bottomPanelSelectWidth" class = "form-control">\n\
-                            <option width = "1">1</option>\n\
-                            <option width = "2">2</option>\n\
-                            <option width = "3">3</option>\n\
-                            <option width = "4">4</option>\n\
-                        </select>\n\
-                      </div>\n\
+                        <label for="bottomPanelSelectWidth" class="col-xs-2 col-sm-2 control-label">Cuadrícula</label>\n\
+                        <div class="col-xs-7 col-sm-4">\n\
+                            <select id = "bottomPanelSelectWidth" class = "form-control"></select>\n\
+                        </div>\n\
                     </div>\n\
                     <div class="form-group">\n\
-                        <div class="col-sm-offset-2 col-xs-9 col-sm-6">\n\
+                        <div class = "col-sm-offset-2 col-xs-9 col-sm-6">\n\
                             <div class="checkbox">\n\
                                 <label>\n\
-                                  <input type="checkbox"> Horizontal \n\
+                                  <input type="checkbox" id = "bottomPanelCheckInline"> Horizontal \n\
                                 </label>\n\
                             </div>\n\
                         </div>\n\
                     </div>\n\
                     <div class="form-group">\n\
-                      <label for="bottomPanelFieldSelect" class="col-xs-2 col-sm-2 control-label">Cuadrícula</label>\n\
+                      <label for="bottomPanelFieldSelect" class="col-xs-2 col-sm-2 control-label">Campo</label>\n\
                         <div class="col-xs-7 col-lg-4">\n\
                             <select id = "bottomPanelFieldSelect" class="form-control"><option selected>Seleccione un Campo</option></select>\n\
                         </div>\n\
                     </div>\n\
                     <div class="form-group">\n\
                         <div class="col-sm-offset-2 col-xs-9 col-sm-6">\n\
-                          <button id = "buttonPanelSelectButtonAdd" class="btn btn-primary">Agregar</button>\n\
+                          <a id = "buttonPanelSelectButtonAdd" class="btn btn-primary"><li class = "fa fa-plus-circle fa-lg"></li>Agregar</a>\n\
                         </div>\n\
                     </div>\n\
                 </form>');
@@ -229,11 +224,14 @@ var TemplateDesigner = function(){
                 var bottomPanelSelectWidth = $('#bottomPanelSelectWidth');
                 var buttonPanelSelectButtonAdd = $('#buttonPanelSelectButtonAdd');
                 var bottomPanelFieldSelect = $('#bottomPanelFieldSelect');
+                var bottomPanelCheckInline = $('#bottomPanelCheckInline');
                 
-                bottomPanelSelectWidth.append('<option width = "2">2</option>\n\
-                                                <option width = "4">4</option>\n\
-                                                <option width = "4">4</option>\n\
-                                                <option width = "4">4</option>');
+                bottomPanelSelectWidth.append('<option width = "1">1</option>\n\
+                                                <option width = "2">2</option>\n\
+                                                <option width = "3">3</option>\n\
+                                                <option width = "4">4</option>\n\\n\
+                                                <option width = "5">5</option>\n\
+                                                <option width = "6">6</option>');
                 
                 var forms = GeStructure(repositoryName);
                 $(forms).find("Campo").each(function(){               
@@ -247,8 +245,12 @@ var TemplateDesigner = function(){
                     bottomPanelFieldSelect.append(option);
                });
                
+               /* Otras opciones de campo */
+               
+               bottomPanelFieldSelect.append($('<option>', {fieldName: "CSDocs_textType", fieldType: "text"}).append("Ingresar Texto"));
+               
                buttonPanelSelectButtonAdd.click(function(){
-                   _addForm(content, bottomPanelSelectWidth, bottomPanelFieldSelect);
+                   _addForm(content, bottomPanelSelectWidth, bottomPanelFieldSelect, bottomPanelCheckInline);
                });
             }
         });
@@ -256,16 +258,129 @@ var TemplateDesigner = function(){
         return status;
     };    
     
+    var _getColumnsClass = function(width){
+        var colXs = "col-xs-"+width;
+        var colSm = "col-sm-"+width;
+        var colMd = "col-md-"+width;
+        var colString = colXs+" "+colSm+" "+colMd;
+        
+        return colString;
+    };
+    
     /**
      * @description Ingresa un nuevo formulario en la interfaz de diseño.
      * @param {object} templateContent Objeto que envuelve el contenido de la interfaz del diseñador de plantillas.
      * @returns {undefined}
      */
-    var _addForm = function(templateContent, bottomPanelSelectWidth, bottomPanelSelect){
-        alert(
-                bottomPanelSelectWidth.find('option:selected').attr('width') + ", " +
-                bottomPanelSelect.find('option:selected').attr('fieldname') + ", "
-                );
+    var _addForm = function(templateContent, widthSelect, fieldsSelect, bottomPanelCheckInline){
+        var width = widthSelect.find('option:selected').attr('width');
+        var fieldName = fieldsSelect.find('option:selected').attr('fieldname');
+        
+        if(fieldName === undefined)
+            return Advertencia("Seleccione un campo válido");
+        
+        if(!parseInt(width) > 0)
+            return Advertencia("La longitud no es válida");
+                
+        if(fieldName === 'CSDocs_textType')
+            _addTextType(templateContent, widthSelect);
+        
+        if(bottomPanelCheckInline.is(":checked"))
+            return _addInlineForm(templateContent, width, fieldName);
+        
+        width = parseInt(width) * 2;
+                
+        var colString = _getColumnsClass(width);
+        
+        var wrapper = $('<div>', {class: "wrapper "+colString});
+        var formGroup = $('<div>', {class: "form-group"});
+        var form = $('<input>', {type: "text", class: "form-control"});
+        var label = $('<label>', {}).append(fieldName);
+        
+        formGroup.append(label)
+                .append(form);
+        
+        wrapper.append(formGroup);
+        
+        wrapper.insertBefore($('#bottomPanelDiv'));
+        
+    };        
+    
+    var _addInlineForm = function(templateContent, width, fieldName){
+        width = parseInt(width) * 2 - 2;
+
+        var labelWidth = 2;
+        
+        var labelColString = 'col-xs-'+labelWidth+' col-sm-'+labelWidth+' col-md-'+labelWidth;
+        
+        var colXs = "col-xs-10";
+        var colSm = "col-sm-10";
+        var colMd = "col-md-10";
+        var colString = colXs+" "+colSm+" "+colMd;
+        
+        var inline = '<form class="form-horizontal">\n\
+                         <div class="form-group">\n\
+                            <label for="templateForm_'+fieldName+'" class = "'+ labelColString +' control-label">' + fieldName + '</label>\n\
+                            <div class = "'+colString+'">\n\
+                                <input type="text" class="form-control" id="templateForm_'+fieldName+'" placeholder="Jane Doe">\n\
+                            </div>\n\
+                        </div>\n\
+                      </form>';
+        
+        var wrapper = $('<div>', {class: "wrapper "});
+        
+        $(inline).insertBefore($('#bottomPanelDiv'));
+    };
+    
+    
+    
+    var _addTextType = function(templateContent, width){
+        var content = $('<div>');
+        
+        content.append("<p>Ingrese el texto deseado</p>");
+        
+        var formGroup = $('<div>', {class: "form-group"});
+        var textArea = $('<textarea>', {class: "form-control"});
+        var label = $('<label>');
+        
+        formGroup.append(label)
+                .append(textArea);
+        
+        content.append(formGroup);
+        
+            BootstrapDialog.show({
+            title: '<i class="fa fa-font fa-lg"></i> Ingresar Texto',
+            message: content,
+            closable: true,
+            closeByBackdrop: false,
+            closeByKeyboard: true,
+            size: BootstrapDialog.SIZE_SMALL,
+            type: BootstrapDialog.TYPE_PRIMARY,
+            buttons: [
+                {
+                    label: 'Agregar',
+                    icon: 'fa fa-plus-circle fa-lg',
+                    cssClass: 'btn-primary',
+                    action: function(dialogRef){
+                        var colString = _getColumnsClass(width);
+                        
+                        
+                        var wrapper = $('<div>', {class: "wrapper "+colString});
+
+                        wrapper.insertBefore($('#bottomPanelDiv'));
+                    }
+                },
+                {
+                    label: 'Cerrar',
+                    action: function (dialogRef) {
+                        dialogRef.close();
+                    }
+                }
+            ],
+            onshown: function (dialogRef) {
+
+            }
+        });
     };
     
     var _saveTemplate = function(){
