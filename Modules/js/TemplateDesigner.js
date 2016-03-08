@@ -17,6 +17,7 @@
 /* global BootstrapDialog */
 
 var TemplateDesigner = function(){
+    var fieldCounter = 0;
     /**
      * @description Establece la acción al link del menú príncipal para consturir
      * la interfaz de diseñador de plantillas.
@@ -132,6 +133,8 @@ var TemplateDesigner = function(){
                 });  
                 
                 enterpriseForm.focus();
+                
+                _buildInterface("DANIEL",5, "Documentos");
             }
         });
     };
@@ -142,8 +145,8 @@ var TemplateDesigner = function(){
      */
     var _buildInterface = function(enterpriseKey,idRepository, repositoryName){
         var status = 1;
-        var content = $('<div>', {class: 'row'});
-        var header = $('<div>');
+        var content = $('<div>', {});
+        var header = $('<div>', {class: "row"});
         var dependenceData = $('<div>', {class: "col-xs-6 col-md-6"}).css({"font-size": "2vw"}).append('Datos de dependencia.');
         var logoThumbnail = $('<div>', {class: "col-xs-3 col-md-3"}).append('<a href = "#" class = "thumbnail"><i class="fa fa-picture-o fa-5x icon-border" style = "font-size: 10vw;"></i></a>');     
         var qrThumbnail = $('<div>', {class: 'col-xs-3 col-md-3'}).append('<a href = "#" class = "thumbnail"><i class="fa fa-qrcode fa-5x icon-border" style = "font-size: 12vw;"></i></a>');;
@@ -154,7 +157,11 @@ var TemplateDesigner = function(){
         
         content.append(header);
         
-        var bottomPanelDiv = $('<div>', {id:"bottomPanelDiv", class: "col-xs-12 col-md-12"});
+        var formsDiv = $('<div>', {class: "form-horizontal"});
+        var formHorizontalDiv = $('<div>', {class: 'form-group'});
+//        formsDiv.append(formHorizontalDiv);
+        content.append(formsDiv);
+
         var bottomPanel = $('<div>', {class: "panel panel-info"});/* Panel inferior con los campos a ir agregando */
         var bottomPanelHeading = $('<div>', {class: "panel-heading"}).append('Seleccione el campo a insertar');
         var bottomPanelBody = $('<div>', {class: "panel-body"});
@@ -162,39 +169,36 @@ var TemplateDesigner = function(){
         bottomPanelBody.append('\
                 <form class="form-horizontal">\n\
                     <div class="form-group">\n\
-                        <label for="bottomPanelSelectWidth" class="col-xs-2 col-sm-2 control-label">Cuadrícula</label>\n\
-                        <div class="col-xs-7 col-sm-4">\n\
-                            <select id = "bottomPanelSelectWidth" class = "form-control"></select>\n\
-                        </div>\n\
-                    </div>\n\
-                    <div class="form-group">\n\
-                        <div class = "col-sm-offset-2 col-xs-9 col-sm-6">\n\
-                            <div class="checkbox">\n\
-                                <label>\n\
-                                  <input type="checkbox" id = "bottomPanelCheckInline"> Horizontal \n\
-                                </label>\n\
+                        <label class="col-xs-2 col-sm-2 control-label">Tamaño</label>\n\
+                        <div class="col-xs-4 col-sm-4 col-md-4">\n\
+                                <select id = "bottomPanelSelectWidth" class = "form-control"></select>\n\
                             </div>\n\
-                        </div>\n\
+                            <label class="col-xs-2 col-sm-2control-label">Etiqueta</label>\n\
+                            <div class="col-xs-4 col-sm-4 col-md-4">\n\
+                                <input type = "text" id = "bottomPanelFormTag" class = "form-control">\n\
+                            </div>\n\
                     </div>\n\
                     <div class="form-group">\n\
-                      <label for="bottomPanelFieldSelect" class="col-xs-2 col-sm-2 control-label">Campo</label>\n\
-                        <div class="col-xs-7 col-lg-4">\n\
-                            <select id = "bottomPanelFieldSelect" class="form-control"><option selected>Seleccione un Campo</option></select>\n\
-                        </div>\n\
+                          <label class="col-xs-2 col-sm-2 control-label">Campo</label>\n\
+                            <div class="col-xs-4 col-sm-4 col-md-4">\n\
+                                <select id = "bottomPanelFieldSelect" class="form-control"></select>\n\
+                            </div>\n\
+                          <label class="col-xs-2 col-sm-2 control-label">Tipo</label>\n\
+                            <div class="col-xs-4 col-sm-4 col-md-4">\n\
+                                <input type = "text" id = "bottomPanelFieldTypeSelect" class="form-control" disabled>\n\
+                            </div>\n\
                     </div>\n\
                     <div class="form-group">\n\
                         <div class="col-sm-offset-2 col-xs-9 col-sm-6">\n\
-                          <a id = "buttonPanelSelectButtonAdd" class="btn btn-primary"><li class = "fa fa-plus-circle fa-lg"></li>Agregar</a>\n\
+                          <a id = "buttonPanelSelectButtonAdd" class="btn btn-primary"><li class = "fa fa-plus-circle fa-lg"></li> Agregar</a>\n\
                         </div>\n\
                     </div>\n\
                 </form>');
-        
+         
         bottomPanel.append(bottomPanelHeading)
                 .append(bottomPanelBody);
         
-        bottomPanelDiv.append(bottomPanel);
-        
-        content.append(bottomPanelDiv);
+        content.append(bottomPanel);
         
         BootstrapDialog.show({
             title: '<i class="fa fa-cog fa-lg"></i> Diseñador de Plantillas',
@@ -224,7 +228,6 @@ var TemplateDesigner = function(){
                 var bottomPanelSelectWidth = $('#bottomPanelSelectWidth');
                 var buttonPanelSelectButtonAdd = $('#buttonPanelSelectButtonAdd');
                 var bottomPanelFieldSelect = $('#bottomPanelFieldSelect');
-                var bottomPanelCheckInline = $('#bottomPanelCheckInline');
                 
                 bottomPanelSelectWidth.append('<option width = "1">1</option>\n\
                                                 <option width = "2">2</option>\n\
@@ -250,7 +253,8 @@ var TemplateDesigner = function(){
                bottomPanelFieldSelect.append($('<option>', {fieldName: "CSDocs_textType", fieldType: "text"}).append("Ingresar Texto"));
                
                buttonPanelSelectButtonAdd.click(function(){
-                   _addForm(content, bottomPanelSelectWidth, bottomPanelFieldSelect, bottomPanelCheckInline);
+                   _addForm(formsDiv, bottomPanelSelectWidth, bottomPanelFieldSelect);
+                   
                });
             }
         });
@@ -272,7 +276,7 @@ var TemplateDesigner = function(){
      * @param {object} templateContent Objeto que envuelve el contenido de la interfaz del diseñador de plantillas.
      * @returns {undefined}
      */
-    var _addForm = function(templateContent, widthSelect, fieldsSelect, bottomPanelCheckInline){
+    var _addForm = function(templateContent, widthSelect, fieldsSelect){
         var width = widthSelect.find('option:selected').attr('width');
         var fieldName = fieldsSelect.find('option:selected').attr('fieldname');
         
@@ -283,53 +287,56 @@ var TemplateDesigner = function(){
             return Advertencia("La longitud no es válida");
                 
         if(fieldName === 'CSDocs_textType')
-            _addTextType(templateContent, widthSelect);
-        
-        if(bottomPanelCheckInline.is(":checked"))
-            return _addInlineForm(templateContent, width, fieldName);
-        
-        width = parseInt(width) * 2;
+           return  _addTextType(templateContent, widthSelect);
+             
+         _addInlineForm(templateContent, widthSelect, fieldsSelect);
                 
-        var colString = _getColumnsClass(width);
-        
-        var wrapper = $('<div>', {class: "wrapper "+colString});
-        var formGroup = $('<div>', {class: "form-group"});
-        var form = $('<input>', {type: "text", class: "form-control"});
-        var label = $('<label>', {}).append(fieldName);
-        
-        formGroup.append(label)
-                .append(form);
-        
-        wrapper.append(formGroup);
-        
-        wrapper.insertBefore($('#bottomPanelDiv'));
+//        var colString = _getColumnsClass(width);
+//        
+//        var wrapper = $('<div>', {class: "wrapper "+colString});
+//        var formGroup = $('<div>', {class: "form-group"});
+//        var form = $('<input>', {type: "text", class: "form-control"});
+//        var label = $('<label>', {}).append(fieldName);
+//        
+//        formGroup.append(label)
+//                .append(form);
+//        
+//        wrapper.append(formGroup);
+//        
+//        wrapper.insertBefore($('#bottomPanelDiv'));
+//        
+//        fieldsSelect.find('option:selected').remove();
         
     };        
     
-    var _addInlineForm = function(templateContent, width, fieldName){
-        width = parseInt(width) * 2 - 2;
+    var _addInlineForm = function(templateContent, widthSelect, fieldsSelect){
+        var fieldName = fieldsSelect.find('option:selected').attr('fieldname');
+        var width = widthSelect.find('option:selected').attr('width');
+        width = parseInt(width) * 2;
 
         var labelWidth = 2;
         
+        if(width <= 0)
+            width = 1;
+        
         var labelColString = 'col-xs-'+labelWidth+' col-sm-'+labelWidth+' col-md-'+labelWidth;
         
-        var colXs = "col-xs-10";
-        var colSm = "col-sm-10";
-        var colMd = "col-md-10";
+        var colXs = "col-xs-"+width;
+        var colSm = "col-sm-"+width;
+        var colMd = "col-md-"+width;
         var colString = colXs+" "+colSm+" "+colMd;
         
-        var inline = '<form class="form-horizontal">\n\
-                         <div class="form-group">\n\
-                            <label for="templateForm_'+fieldName+'" class = "'+ labelColString +' control-label">' + fieldName + '</label>\n\
-                            <div class = "'+colString+'">\n\
-                                <input type="text" class="form-control" id="templateForm_'+fieldName+'" placeholder="Jane Doe">\n\
+        var inline = '  <div class = "form-group '+colString+'"\n\
+                            <label for="templateForm_'+fieldName+'" class = "control-label col-md-3">' + fieldName + '</label>\n\
+                            <div class = "col-md-9">\n\
+                                <input type="text" class="form-control" id="templateForm_'+fieldName+'">\n\
                             </div>\n\
                         </div>\n\
-                      </form>';
+                    ';
+           
+        $(templateContent).append(inline);
         
-        var wrapper = $('<div>', {class: "wrapper "});
-        
-        $(inline).insertBefore($('#bottomPanelDiv'));
+        fieldsSelect.find('option:selected').remove();
     };
     
     
