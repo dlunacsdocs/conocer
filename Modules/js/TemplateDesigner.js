@@ -14,10 +14,16 @@
  * limitations under the License.
  */
 
-/* global BootstrapDialog */
+/* global BootstrapDialog, LanguajeDataTable */
 
 var TemplateDesigner = function () {
-    var fieldCounter = 0;
+    var self = this;
+    var repositoryName = null;
+    var enterpriseKey = null;
+    var templateName = null;  
+    var templatesTd;
+    var templatesTD;
+    
     /**
      * @description Establece la acción al link del menú príncipal para consturir
      * la interfaz de diseñador de plantillas.
@@ -25,11 +31,156 @@ var TemplateDesigner = function () {
      */
     this.setActionToLink = function () {
         $('.LinkTemplateDesigner').click(function () {
-            _selectingRepisitory();
+            _showTemplatesManager();
         });
     };
+    
+    var _showTemplatesManager = function(){
+        var content = $('<div>');
+        
+        var table = $('<table>', {id: "templatesTable", class: "table table-striped table-bordered table-hover table-condensed"});
+        var thead = $('<thead>').append('<tr><th>Clave Empresa</th><th>Repositorio</th><th>Plantilla</th><th></th></tr>');
+        table.append(thead);
+        
+        content.append(table);
+         
+        BootstrapDialog.show({
+            title: '<i class="fa fa-wrench fa-lg"></i> Plantillas',
+            message: content,
+            closable: true,
+            closeByBackdrop: false,
+            closeByKeyboard: true,
+            size: BootstrapDialog.SIZE_NORMAL,
+            type: BootstrapDialog.TYPE_PRIMARY,
+            buttons: [
+                {
+                    icon: 'fa fa-play-circle fa-lg',
+                    cssClass: "btn-primary",
+                    label: "Nueva Plantilla",
+                    action: function (dialogRef) {
+                        var button = this;                       
+                        button.spin();
+                        dialogRef.enableButtons(false);
+                        dialogRef.setClosable(false);
 
-    var _selectingRepisitory = function () {
+                        if (_selectingRepository())
+                            dialogRef.close();
+                        else {
+                            button.stopSpin();
+                            dialogRef.enableButtons(true);
+                            dialogRef.setClosable(true);
+                        }
+                    }
+                },
+                {
+                    label: 'Cerrar',
+                    action: function (dialogRef) {
+                        dialogRef.close();
+                    }
+                }
+            ],
+            onshown: function (dialogRef) {
+                templatesTd = table.dataTable({
+                    "sDom": 'Tfrtlip',
+                    "bInfo":false, "autoWidth" : false, "oLanguage":LanguajeDataTable,
+                    "tableTools": {
+                        "aButtons": [
+                            {"sExtends": "text", "sButtonText": '<i class="fa fa-trash fa-lg"></i> Eliminar', "fnClick": function () {
+                                    
+                            }},
+                            {
+                                "sExtends":    "collection",
+                                "sButtonText": '<i class="fa fa-floppy-o fa-lg"></i>',
+                                "aButtons":    [ "csv", "xls", "pdf", "copy" ]
+                            }                          
+                        ]
+                    }                              
+                });  
+
+                templatesTD = new $.fn.dataTable.Api('#templatesTable');
+                
+                templatesTd.find('tbody').on( 'click', 'tr', function () {
+                    templatesTd.$('tr.selected').removeClass('selected');
+                    $(this).addClass('selected');
+                });
+                                
+                var templates = self.getTemplates();
+                
+                $(templates).find('template').each(function(){
+                    var idRepository = $(this).find('idRepository').text();
+                    var repositoryName = $(this).find('repositoryName').text();
+                    var enterpriseKey = $(this).find('enterpriseKey').text();
+                    var icon = '';
+                    var data = [];
+                    var cont = 0;
+                    
+                    $(this).find('templateList').each(function(){
+                        $(this).find('templateName').each(function(){
+                            var templateName = $(this).text();
+                            console.log(templateName);
+                            cont++;
+                            icon = '<li class = "fa fa-view fa-lg"></li>';
+                            data = [enterpriseKey, repositoryName, templateName, icon];
+
+                            var ai = templatesTD.row.add(data).draw();
+                            var n = templatesTd.fnSettings().aoData[ ai[0] ].nTr;
+                        });
+                        
+        //                    n.setAttribute('id', idRepository);                        
+                    });
+                    
+                    if(cont === 0){
+                        data = [enterpriseKey, repositoryName, '', icon];
+                    
+                        var ai = templatesTD.row.add(data).draw();
+                        var n = templatesTd.fnSettings().aoData[ ai[0] ].nTr;
+    //                    n.setAttribute('id', idRepository);
+                    }
+                });
+                
+            }
+        });
+        
+        
+    };
+    
+    this.getTemplates = function(){
+        var templates = null;
+        
+        $.ajax({
+            async: false,
+            cache: false,
+            dataType: "html",
+            type: 'POST',
+            url: "Modules/php/TemplateDesigner.php",
+            data: {option: "getTemplates"},
+            success: function (xml) {
+                if ($.parseXML(xml) === null)
+                    return errorMessage(xml);
+                else
+                    xml = $.parseXML(xml);
+
+                if($(xml).find('template').length > 0)
+                    templates = xml;
+
+
+                $(xml).find('Error').each(function ()
+                {
+                    var Mensaje = $(this).find('Mensaje').text();
+                    errorMessage(Mensaje);
+                });
+            },
+            beforeSend: function () {
+            },
+            error: function (objXMLHttpRequest) {
+                errorMessage(objXMLHttpRequest);
+            }
+        });
+        
+        return templates;
+    };
+
+    var _selectingRepository = function () {
         var content = $('<div>').append('<p>Seleccione un repositorio para iniciar con el diseñador de plantillas</p>');
 
         var formGroup = $('<div>', {class: "form-group"});
@@ -44,13 +195,22 @@ var TemplateDesigner = function () {
         formGroup = $('<div>', {class: "form-group"});
         var repositoryLabel = $('<label>').append("Repositorio");
         var repositoryForm = $('<select>', {class: "form-control"}).append($('<option>', {value: 0}).append('Esperando empresa'));
-
+                
         formGroup.append(repositoryLabel).append(repositoryForm);
 
         content.append(formGroup);
-
+        
+        formGroup = $('<div>', {class: "form-group"});
+        var templateNameForm = $('<input>', {type:"text" ,class: "form-control"});
+        var templateNameLabel = $('<label>').append("Asignar Nombre");
+        
+        formGroup.append(templateNameLabel)
+                .append(templateNameForm);
+        
+        content.append(formGroup);
+        
         BootstrapDialog.show({
-            title: '<i class="fa fa-cog fa-lg"></i> Elección de Repositorio',
+            title: '<i class="fa fa-plus-circle fa-lg"></i> Nueva Plantilla',
             message: content,
             closable: true,
             closeByBackdrop: false,
@@ -69,9 +229,15 @@ var TemplateDesigner = function () {
                         var idRepository = repositoryForm.find('option:selected').attr("idrepository");
                         var repositoryName = repositoryForm.find('option:selected').attr('repositoryname');
                         var enterpriseKey = enterpriseForm.find('option:selected').attr('enterprisekey');
-
+                        var templatename = $.trim(templateNameForm.val());
+                        
                         if (!parseInt(idRepository) > 0)
-                            return;
+                            return 0;
+                        
+                        if(!templatename.length > 0)
+                            return Advertencia("Debe asignar un nombre a la plantilla");
+                        
+                        templateName = templatename;
 
                         button.spin();
                         dialogRef.enableButtons(false);
@@ -115,7 +281,7 @@ var TemplateDesigner = function () {
 
                     if (!parseInt(idEnterprise) > 0) {
                         repositoryForm.empty();
-                        return repositoryForm.append('<option>Esperando Empresa</option>')
+                        return repositoryForm.append('<option>Esperando Empresa</option>');
                     }
 
                     repositoryForm.empty().append('<option>Seleccione un repositorio</option>');
@@ -136,15 +302,21 @@ var TemplateDesigner = function () {
                 enterpriseForm.focus();
 
                 _buildInterface("DANIEL", 5, "Documentos");
+                self.setTemplateName("pruebaTemplate");
             }
         });
     };
-
     /**
      * @description Construye la interfaz príncipal del diseñador de plantillas.
-     * @returns {undefined}
+     * @param {type} enterprisekey
+     * @param {type} idRepository
+     * @param {type} repositoryname
+     * @returns {Number}
      */
-    var _buildInterface = function (enterpriseKey, idRepository, repositoryName) {
+    var _buildInterface = function (enterprisekey, idRepository, repositoryname) {
+        repositoryName = repositoryname;
+        enterpriseKey = enterprisekey;
+        
         var status = 1;
         var content = $('<div>', {});
         var header = $('<div>', {class: "row"});
@@ -298,10 +470,13 @@ var TemplateDesigner = function () {
 
         return colString;
     };
-
+    
     /**
      * @description Ingresa un nuevo formulario en la interfaz de diseño.
-     * @param {object} templateContent Objeto que envuelve el contenido de la interfaz del diseñador de plantillas.
+     * @param {type} templateContent
+     * @param {type} widthSelect
+     * @param {type} fieldsSelect
+     * @param {type} bottomPanelFormTag
      * @returns {undefined}
      */
     var _addForm = function (templateContent, widthSelect, fieldsSelect, bottomPanelFormTag) {
@@ -341,8 +516,8 @@ var TemplateDesigner = function () {
         var fieldNameTag = bottomPanelFormTag.val();
         var fieldName = fieldsSelect.find('option:selected').attr('fieldname');
         var width = widthSelect.find('option:selected').attr('width');
-        var fieldType = $(widthSelect).find('option:selected').attr('fieldType');
-        var fieldLength = $(widthSelect).find('option:selected').attr('fieldLength');
+        var fieldType = fieldsSelect.find('option:selected').attr('fieldType');
+        var fieldLength = fieldsSelect.find('option:selected').attr('fieldLength');
         var bottomPanelFieldType = $('#bottomPanelFieldType');      
         
         width = parseInt(width) * 2;
@@ -364,11 +539,27 @@ var TemplateDesigner = function () {
         var colSm = "col-sm-" + width;
         var colMd = "col-md-" + width;
         var colString = colXs + " " + colSm + " " + colMd;
+        
+        var colStringDivForm = "col-xs-"+formWidth+" col-sm-"+formWidth+" col-md-"+formWidth;
 
-        var inline =    '<div class = "form-group templateWrapper' + colString + '">\n\
-                            <label for="templateForm_' + fieldName + '" class = "control-label ' + labelColString + '">' + fieldNameTag + '</label>\n\
+        var inline =    '<div class = "form-group templateWrapper ' + colString + '" colConfiguration = "'+colString+'">\n\
+                            <label \n\
+                                for = "templateForm_' + fieldName + '" \n\
+                                class = "control-label ' + labelColString + '"\n\
+                                colConfiguration = "'+labelColString+'"\n\
+                            >' 
+                                + fieldNameTag + 
+                            '</label>\n\
                             <div class = "templateField col-md-' + formWidth + '">\n\
-                                <input type="text" class="form-control" fieldName = "' + fieldName+'" fieldNameTag = "' + fieldNameTag + '" fieldType = "'+fieldType+'" fieldLength = "'+fieldLength+'" id="templateForm_' + fieldName + '">\n\
+                                <input type = "text" \n\
+                                    class = "form-control" \n\
+                                    fieldName = "' + fieldName+'" \n\
+                                    fieldNameTag = "' + fieldNameTag + '" \n\
+                                    fieldType = "' + fieldType + '" \n\
+                                    fieldLength = "' + fieldLength + '" \n\
+                                    id = "templateForm_' + fieldName + '"\n\
+                                    colConfiguration = "' + colStringDivForm + '"\n\
+                                >\n\
                             </div>\n\
                         </div>';
 
@@ -378,9 +569,12 @@ var TemplateDesigner = function () {
         
         _setFielDetail(fieldsSelect, bottomPanelFormTag, bottomPanelFieldType);
     };
-
+    
     /**
      * @description Ingresa el detalle de cada campo seleccionado en los formularios de "Etiqueta y Tipo"
+     * @param {type} fieldSelected
+     * @param {type} bottomPanelFormTag
+     * @param {type} bottomPanelFieldType
      * @returns {undefined}
      */
     var _setFielDetail = function(fieldSelected, bottomPanelFormTag, bottomPanelFieldType){
@@ -440,26 +634,93 @@ var TemplateDesigner = function () {
         });
     };
 
-    var _saveTemplate = function () {
-        var templateWrapper = $('.templateWrapper');
-        console.log(templateWrapper);
-        if(templateWrapper.length === 0)
-            return Advertencia('Debe agregar por lo menos un campo');
+    var _saveTemplate = function () {        
+        var status = 0;
+        var xml = _createXmlForSaving();
         
-        $(templateWrapper).each(function(){
-            var templateField = $(this).find('.templateField');
-            console.log(templateField);
-        });
+        if(xml === undefined)
+            return 0;
         
-        return 1;
+        $.ajax({
+        async: false,
+        cache: false,
+        dataType: "html",
+        type: 'POST',
+        url: "Modules/php/TemplateDesigner.php",
+        data: {option: "saveTemplate", xml: xml},
+        success: function (respuesta) {
+            if ($.parseXML(respuesta) === null)
+                return errorMessage(respuesta);
+            else
+                xml = $.parseXML(respuesta);
+            
+            $(xml).find('templateSaved').each(function(){
+                status = 1;
+                var message = $(this).find('Mensaje').text();
+                Notificacion(message);
+            });
+
+            $(xml).find('Error').each(function ()
+            {
+                var Mensaje = $(this).find('Mensaje').text();
+                errorMessage(Mensaje);
+            });
+        },
+        beforeSend: function () {
+        },
+        error: function (objXMLHttpRequest) {
+            errorMessage(objXMLHttpRequest);
+        }
+    });
+        
+        return status;
     };
 
     /**
      * @description Genera la cadena XML para almacenar la plantilla.
      * @returns {undefined}
-     */
+     */ 
     var _createXmlForSaving = function () {
+        var xml = "<template version='1.0' encoding='UTF-8' enterpriseKey = '"+enterpriseKey+"' repositoryName = '"+ repositoryName+ "' templateName = '"+templateName+"'>";
+        var templateWrapper = $('.templateWrapper');
 
+        if(templateWrapper.length === 0)
+            return Advertencia('Debe agregar por lo menos un campo');
+        
+        $(templateWrapper).each(function(){
+            var wrapperConfigration = $(this).attr('colConfiguration');
+            var labelConfigration;
+            
+            $(this).find('label').each(function(){
+                    labelConfigration = $(this).attr('colConfiguration');
+            });
+                        
+            $(this).find('input').each(function(){
+                xml += '\
+                <field>\n\
+                    <fieldName>' + $(this).attr('fieldName') + '</fieldName>\n\
+                    <fieldNameTag>' + $(this).attr('fieldNameTag') + '</fieldNameTag>\n\
+                    <fieldType>' + $(this).attr('fieldType') + '</fieldType>\n\
+                    <fieldLength>' + $(this).attr('fieldLength') + '</fieldLength>\n\
+                    <wrapperConfiguration>' + wrapperConfigration + '</wrapperConfiguration>\n\
+                    <labelConfiguration>' + labelConfigration + '</labelConfiguration>\n\
+                    <inputConfigration> ' + $(this).attr('colConfiguration') + '</inputConfigration> \n\
+                </field>';            
+            });
+        });
+        
+        xml+= "</template>";
+        
+        console.log(xml);
+        
+        return xml;
+       
     };
+    
+    this.setTemplateName = function(newTemplateName){
+        templateName = newTemplateName;
+    };
+    
+    
 };
 

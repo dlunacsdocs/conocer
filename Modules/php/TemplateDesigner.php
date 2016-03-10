@@ -30,6 +30,7 @@ require_once dirname($RoutFile).'/php/XML.php';
 require_once dirname($RoutFile).'/php/Log.php';
 require_once dirname($RoutFile).'/php/Session.php';
 require_once dirname($RoutFile).'/php/Permissions.php';
+require_once dirname($RoutFile).'/php/Repository.php';
 
 class TemplateDesigner {
     private $db;
@@ -48,13 +49,98 @@ class TemplateDesigner {
             $userData = Session::getSessionParameters();
             
             switch (filter_input(INPUT_POST, "option")){
-                case 'addNewTemplate': $this->addNewTemplate($userData); break;
+                case 'saveTemplate': $this->saveTemplate($userData); break;
+                case 'getTemplates': $this->getTemplates($userData); break;
             }
         }
     }
     
-    private function addNewTemplate($userData){
-        var_dump($_POST);
+    private function getTemplates($userData){
+        $RoutFile = dirname(getcwd());
+        $instanceName = $userData['dataBaseName'];
+        $idGroup = $userData['idGroup'];
+        $idUser = $userData['idUser'];
+        
+        $repository = new Repository();
+        $repositories = $repository->GetRepositoriesList($instanceName, 0, $idGroup, $idUser);
+        
+        $doc  = new DOMDocument('1.0','utf-8');
+        $doc->formatOutput = true;
+        $root = $doc->createElement("templatesDetail");
+        
+        for($cont = 0; $cont < count($repositories); $cont++){
+            
+            $idRepository = $repositories[$cont]['IdRepositorio'];
+            $repositoryName = $repositories[$cont]['NombreRepositorio'];
+            $enterpriseKey = $repositories[$cont]['ClaveEmpresa'];
+            
+            $templatesPath = dirname($RoutFile)."/Configuracion/Templates/$instanceName/$enterpriseKey/$repositoryName";
+
+            $templateDir = array();
+            
+            $template = $doc->createElement("template");
+            $templateList = $doc->createElement("templateList");
+            
+            if(file_exists($templatesPath))
+                $templateDir = scandir($templatesPath);
+
+            for($aux = 0; $aux < count($templateDir); $aux++){
+                $templateName = $templateDir[$aux];
+                
+                if($templateName != "." and $templateName != ".."){
+                    $templateNameXml = $doc->createElement("templateName", $templateName);
+                    $templateList->appendChild($templateNameXml);
+                }
+            }
+            
+            $idRepositoryXml = $doc->createElement("idRepository", $idRepository);
+            $template->appendChild($idRepositoryXml);
+            $repositoryNameXml = $doc->createElement("repositoryName", $repositoryName);
+            $template->appendChild($repositoryNameXml);
+            $enterpriseKeyXml = $doc->createElement("enterpriseKey", $enterpriseKey);
+            $template->appendChild($enterpriseKeyXml);
+            $template->appendChild($templateList);
+            $root->appendChild($template);
+            
+        }
+        
+        
+        $doc->appendChild($root);   
+        header ("Content-Type:text/xml");
+        echo $doc->saveXML();  
+            
+    }
+    
+    private function saveTemplate($userData){
+        $RoutFile = dirname(getcwd());
+        $instanceName = $userData['dataBaseName'];
+        $xmlString = filter_input(INPUT_POST, "xml");
+        if(!($xml = simplexml_load_string($xmlString)))
+                return XML::XMLReponse ("Error", 0, "Error al intentar formar el objeto XML");
+        
+        $attributes = $xml->attributes();
+                
+        if(!isset ($attributes['repositoryName']))
+            return XML::XMLReponse ("Error", 0, "No se encontró el repositorio de destino.");
+        
+        if(!isset ($attributes['enterpriseKey']))
+            return XML::XMLReponse("Error", 0, "No se encontró la clave de la empresa destino");
+        
+        if(!isset ($attributes['templateName']))
+            return XML::XMLReponse("Error", 0, "No se asigno un nombre a la plantilla.");
+        
+        $templateName = $attributes['templateName'];
+        $enterpriseKey = $attributes['enterpriseKey'];
+        $repositoryName = $attributes['repositoryName'];
+        $destinPath = dirname($RoutFile)."/Configuracion/Templates/$instanceName/$enterpriseKey/$repositoryName";
+        
+        if(!file_exists($destinPath))
+            if(! ( $createDir = mkdir ($destinPath, 0777, true)))
+                    return XML::XMLReponse ("Error", 0, "No fue posible crear la ruta destino para almacenar la nueva plantilla. <br> $createDir");
+    
+        $xml->saveXML($destinPath."/".$templateName.".xml");
+        
+        XML::XMLReponse("templateSaved", 1, "Plantilla $templateName almacenada");
     }
 }
 
