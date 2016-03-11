@@ -158,11 +158,14 @@ class TemplateDesigner {
         $repositoryName = $attributes['repositoryName'];
         $destinPath = dirname($RoutFile)."/Configuracion/Templates/$instanceName/$enterpriseKey/$repositoryName";
         
+        if(file_exists($destinPath."/".$templateName))
+                return XML::XMLReponse ("Error", 0, "El nombre de la plantilla ya existe");
+        
         if(!file_exists($destinPath))
             if(! ( $createDir = mkdir ($destinPath, 0777, true)))
                     return XML::XMLReponse ("Error", 0, "No fue posible crear la ruta destino para almacenar la nueva plantilla. <br> $createDir");
     
-        $xml->saveXML($destinPath."/".$templateName.".xml");
+        $xml->saveXML($destinPath."/".$templateName);
         
         XML::XMLReponse("templateSaved", 1, "Plantilla $templateName almacenada");
     }

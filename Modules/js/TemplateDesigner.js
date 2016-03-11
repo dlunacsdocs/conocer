@@ -124,7 +124,7 @@ var TemplateDesigner = function () {
                             if($.trim(String(templateName)).length === 0)
                                 return true;
                             
-                            data = [enterpriseKey, repositoryName, templateName, icon];
+                            var data = [enterpriseKey, repositoryName, templateName, icon];
 
                             var ai = templatesTD.row.add(data).draw();
                             var n = templatesTd.fnSettings().aoData[ ai[0] ].nTr;
@@ -134,7 +134,20 @@ var TemplateDesigner = function () {
                     });
                 });
                 
-                $('.viewTemplate').click(function(){
+                _setActionToViewTemplateIcon();
+            }
+        });
+        
+    };
+    
+    /**
+     * @description Agrega el disparador al icono de consultar plantilla. 
+     * @returns {undefined}
+     */
+    var _setActionToViewTemplateIcon = function(){
+        
+        $('.viewTemplate').unbind('click');
+        $('.viewTemplate').click(function(){
                     var trIndex = $('.viewTemplate').index($(this));
                     templatesTd.$('tr.selected').removeClass('selected');
                     templatesTd.$('tbody tr').eq(trIndex).addClass('selected');
@@ -146,10 +159,6 @@ var TemplateDesigner = function () {
                     var templatename = templatesTd.fnGetData(position)[2];
                     self.openTemplate(enterprisekey, repositoryname, templatename);
                 });
-            }
-        });
-        
-        
     };
     
     /**
@@ -193,6 +202,7 @@ var TemplateDesigner = function () {
     };
     
     this.openTemplate = function(enterpriseKey, repositoryName, templateName){
+        console.log("opnenning template");
         if(enterpriseKey === undefined)
             return Advertencia("La clave de empresa debe estar definida.");
         
@@ -203,8 +213,127 @@ var TemplateDesigner = function () {
             return Advertencia("El nombre de la plantilla debe estar definida.");
         
         var template = self.getTemplate(enterpriseKey, repositoryName, templateName);
+                
+        var templateContent = self.buildContentOfTemplate(template);
+       
+        if(templateContent === 0)
+            return Advertencia("No fue posible abrir la plantilla");
+        console.log("objeto Template:");
+        console.log(templateContent);
         
-        console.log(template);
+        var content = $('<div>');
+        
+        var formsDiv = $('<form>', {class: "form-horizontal"});
+        var formWrapper = $('<div>', {class: "row"}).append(formsDiv);
+        content.append(formWrapper);
+        
+        formsDiv.append(templateContent);
+        
+        BootstrapDialog.show({
+            title: '<i class="fa fa-plus-circle fa-lg"></i> Plantilla',
+            message: content,
+            closable: true,
+            closeByBackdrop: false,
+            closeByKeyboard: true,
+            size: BootstrapDialog.SIZE_WIDE,
+            type: BootstrapDialog.TYPE_PRIMARY,
+            buttons: [
+                {
+                    label: 'Cerrar',
+                    action: function (dialogRef) {
+                        dialogRef.close();
+                    }
+                }
+            ],
+            onshown: function (dialogRef) {
+
+            }
+        });
+        
+    };
+    
+    /**
+     * @description Se genera el objeto que contiene la estructura completa de la plantilla a partir
+     * de su Xml.
+     * @param {type} templateXml
+     * @returns {object} contenedor con la estructura de la plantilla ya construida.
+     */
+    this.buildContentOfTemplate = function(templateXml){
+        console.log("buildContentOfTemplate");
+        console.log(templateXml);
+        
+        if(typeof templateXml !== 'object')
+            return 0;
+        
+        var content = $('<div>');
+        
+        $(templateXml).find('header').each(function(){
+            var header = $('<div>', {class: "row headerWrapper"});
+            
+            var dependenceDataDiv = $('<div>', {class: "dependeceData col-xs-6 col-md-6"}).css({"font-size": "2vw"});
+            var logoThumbnailDiv = $('<div>', {class: "logoWrapper col-xs-3 col-md-3"});
+            var qrThumbnailDiv = $('<div>', {class: 'qrWrapper col-xs-3 col-md-3'});
+            
+            var dependeceData = $(this).find('dependeceData').text();
+            dependenceDataDiv.append(dependeceData);
+            
+            var logoPath = $(this).find('logoPath').text();
+            
+            if(!$.trim(logoPath).length > 0 || logoPath === undefined)
+                logoPath = '<a href = "#" class = "thumbnail"><i class="fa fa-picture-o fa-5x icon-border" style = "font-size: 10vw;"></i></a>';
+            
+            logoThumbnailDiv.attr('pathLogo', logoPath).append(logoPath);
+            
+            var qrPath = $(this).find('qrPath').text();
+            
+            if(!$.trim(qrPath).length > 0 || qrPath === undefined)
+                qrPath = '<a href = "#" class = "thumbnail"><i class="fa fa-qrcode fa-5x icon-border" style = "font-size: 12vw;"></i></a>';
+            
+            qrThumbnailDiv.attr('qrPath', qrPath).append(qrPath);
+            
+            header.append(logoThumbnailDiv);
+            header.append(dependenceDataDiv);
+            header.append(qrThumbnailDiv);
+
+            content.append(header);
+        });
+        
+        $(templateXml).find('field').each(function(){
+            var wrapperConfigurationTxt = $(this).find('wrapperConfiguration').text();
+            var labelConfigurationTxt = $(this).find('labelConfiguration').text();
+            var inputConfigrationTxt = $(this).find('inputConfigration').text();
+            
+            var fieldName = $(this).find('fieldName').text();
+            var fieldNameTag = $(this).find('fieldNameTag').text();
+            var fieldType = $(this).find('fieldType').text();
+            var fieldLength = $(this).find('fieldLength').text();
+            
+            
+            var wrapperConfiguration = $('<div>', {class: "form-group templateWrapper "+wrapperConfigurationTxt, colConfiguration:wrapperConfigurationTxt});
+            var labelConfiguration = $('<label>',{for:"templateForm_"+fieldName,
+                                        class: "control-label "+labelConfigurationTxt,
+                                        colConfiguration: labelConfigurationTxt}).append(fieldNameTag);
+            var fieldDiv = $('<div>', {class: "templateField "+inputConfigrationTxt});
+            var form = $('<input>', {class: "form-control", 
+                                    fieldName: fieldName,
+                                    fieldNameTag: fieldNameTag,
+                                    fieldType: fieldType,
+                                    fieldLength: fieldLength,
+                                    id: "templateForm_" + fieldName,
+                                    colConfiguration: inputConfigrationTxt});
+            
+            fieldDiv.append(form);
+            wrapperConfiguration.append(labelConfiguration)
+                    .append(fieldDiv);        
+            
+            console.log("wrapperConfiguration");
+            console.log(wrapperConfiguration);
+            
+            content.append(wrapperConfiguration);
+            
+        });
+        
+        return content;
     };
     
     /**
@@ -217,33 +346,34 @@ var TemplateDesigner = function () {
     this.getTemplate = function(enterpriseKey, repositoryName, templateName){
         var templateStructure = null;
         $.ajax({
-        async: false,
-        cache: false,
-        dataType: "html",
-        type: 'POST',
-        url: "Modules/php/TemplateDesigner.php",
-        data: {option: "getTemplate", enterpriseKey:enterpriseKey, repositoryName:repositoryName, templateName:templateName},
-        success: function (xml) {
-            if ($.parseXML(xml) === null)
-                return errorMessage(xml);
-            else
-                xml = $.parseXML(xml);
-            
-            if($(xml).find('templateStructure').length > 0)
-                templateStructure = xml;
-            
-            $(xml).find('Error').each(function ()
-            {
-                var Mensaje = $(this).find('Mensaje').text();
-                errorMessage(Mensaje);
-            });
-        },
-        beforeSend: function () {
-        },
-        error: function (objXMLHttpRequest) {
-            errorMessage(objXMLHttpRequest);
-        }
-    });
+            async: false,
+            cache: false,
+            dataType: "html",
+            type: 'POST',
+            url: "Modules/php/TemplateDesigner.php",
+            data: {option: "getTemplate", enterpriseKey:enterpriseKey, repositoryName:repositoryName, templateName:templateName},
+            success: function (xml) {
+                if ($.parseXML(xml) === null)
+                    return errorMessage(xml);
+                else
+                    xml = $.parseXML(xml);
+
+                if($(xml).find('template').length > 0)
+                    templateStructure = xml;
+
+                $(xml).find('Error').each(function ()
+                {
+                    var Mensaje = $(this).find('Mensaje').text();
+                    errorMessage(Mensaje);
+                });
+            },
+            beforeSend: function () {
+            },
+            error: function (objXMLHttpRequest) {
+                errorMessage(objXMLHttpRequest);
+            }
+        });
+        return templateStructure;
     };
 
     /**
@@ -307,14 +437,14 @@ var TemplateDesigner = function () {
                         if(!templatename.length > 0)
                             return Advertencia("Debe asignar un nombre a la plantilla");
                         
-                        templateName = templatename;
+                        templateName = templatename+".xml";
 
                         button.spin();
                         dialogRef.enableButtons(false);
                         dialogRef.setClosable(false);
 
                         if (parseInt(idRepository)) {
-                            if (_buildInterface(enterpriseKey, idRepository, repositoryName))
+                            if (_newTemplateInterface(enterpriseKey, idRepository, repositoryName))
                                 dialogRef.close();
                             else {
                                 button.stopSpin();
@@ -371,7 +501,7 @@ var TemplateDesigner = function () {
 
                 enterpriseForm.focus();
 
-                _buildInterface("DANIEL", 5, "Documentos");
+                _newTemplateInterface("DANIEL", 5, "Documentos");
                 self.setTemplateName("pruebaTemplate");
             }
         });
@@ -383,17 +513,17 @@ var TemplateDesigner = function () {
      * @param {type} repositoryname
      * @returns {Number}
      */
-    var _buildInterface = function (enterprisekey, idRepository, repositoryname) {
+    var _newTemplateInterface = function (enterprisekey, idRepository, repositoryname) {
         repositoryName = repositoryname;
         enterpriseKey = enterprisekey;
         
         var status = 1;
         var content = $('<div>', {});
-        var header = $('<div>', {class: "row"});
-        var dependenceData = $('<div>', {class: "col-xs-6 col-md-6"}).css({"font-size": "2vw"}).append('Datos de dependencia.');
-        var logoThumbnail = $('<div>', {class: "col-xs-3 col-md-3"}).append('<a href = "#" class = "thumbnail"><i class="fa fa-picture-o fa-5x icon-border" style = "font-size: 10vw;"></i></a>');
-        var qrThumbnail = $('<div>', {class: 'col-xs-3 col-md-3'}).append('<a href = "#" class = "thumbnail"><i class="fa fa-qrcode fa-5x icon-border" style = "font-size: 12vw;"></i></a>');
-        ;
+        var header = $('<div>', {class: "row headerWrapper"});
+        var dependenceData = $('<div>', {id: "dependeceData", class: "col-xs-6 col-md-6"}).css({"font-size": "2vw"}).append('Datos de dependencia.');
+        var logoThumbnail = $('<div>', {id: "logoWrapper", class: "col-xs-3 col-md-3", logoPath:""}).append('<a href = "#" class = "thumbnail"><i class="fa fa-picture-o fa-5x icon-border" style = "font-size: 10vw;"></i></a>');
+        var qrThumbnail = $('<div>', {id: "qrWrapper" ,class: 'col-xs-3 col-md-3', qrPath:""}).append('<a href = "#" class = "thumbnail"><i class="fa fa-qrcode fa-5x icon-border" style = "font-size: 12vw;"></i></a>');
+        
 
         header.append(logoThumbnail);
         header.append(dependenceData);
@@ -707,7 +837,7 @@ var TemplateDesigner = function () {
     var _saveTemplate = function () {        
         var status = 0;
         var xml = _createXmlForSaving();
-        
+
         if(xml === undefined)
             return 0;
         
@@ -728,6 +858,15 @@ var TemplateDesigner = function () {
                 status = 1;
                 var message = $(this).find('Mensaje').text();
                 Notificacion(message);
+                templatesTd.$('tr.selected').removeClass('selected');
+                var icon = '<a class = "btn btn-info viewTemplate" title = "visualizar plantilla"><li class = "fa fa-book fa-lg"></li></a>';
+                var data = [enterpriseKey, repositoryName, templateName, icon];
+
+                var ai = templatesTD.row.add(data).draw();
+                var n = templatesTd.fnSettings().aoData[ ai[0] ].nTr;
+                n.setAttribute('class', "selected");
+                _setActionToViewTemplateIcon();
+                
             });
 
             $(xml).find('Error').each(function ()
@@ -751,12 +890,43 @@ var TemplateDesigner = function () {
      * @returns {undefined}
      */ 
     var _createXmlForSaving = function () {
+        console.log("creating XML for saving");
         var xml = "<template version='1.0' encoding='UTF-8' enterpriseKey = '"+enterpriseKey+"' repositoryName = '"+ repositoryName+ "' templateName = '"+templateName+"'>";
         var templateWrapper = $('.templateWrapper');
-
+        var headerWrapper = $('.headerWrapper');
+        
+        if(!headerWrapper.length > 0)
+            return Advertencia("No se reconocio el encabezado de la plantilla");
+        
         if(templateWrapper.length === 0)
             return Advertencia('Debe agregar por lo menos un campo');
         
+        /* Se guarda la configuración de la cabecera */
+                
+        var dependeceData = $(headerWrapper).find('#dependeceData');
+        var logoWrapper = $(headerWrapper).find('#logoWrapper');
+        var qrWrapper = $(headerWrapper).find('#qrWrapper');
+        
+        var logoPath = $(dependeceData).attr('logopath');
+        var qrPath = $(dependeceData).attr('qrpath');
+        
+        if(logoPath === undefined)
+            logoPath = "";
+        
+        if(qrPath === undefined)
+            qrPath = "";
+        
+        console.log(dependeceData);
+        console.log(logoWrapper);
+        console.log(qrWrapper);
+        
+        xml +="<header>";
+            xml += "<dependeceData>"+dependeceData.html()+"</dependeceData>";
+            xml += "<logoPath>"+ logoPath +"</logoPath>";
+            xml += "<qrPath>"+ qrPath +"</qrPath>";
+        xml +="</header>";
+        
+        /* Se guarda la configuración de cada formulario */
         $(templateWrapper).each(function(){
             var wrapperConfigration = $(this).attr('colConfiguration');
             var labelConfigration;
@@ -791,6 +961,13 @@ var TemplateDesigner = function () {
         templateName = newTemplateName;
     };
     
+    this.setEnterpriseKey = function(newEnterpriseKey){
+        enterpriseKey = newEnterpriseKey;
+    };
+    
+    this.setRepositoryName = function(newRepositoryName){
+        repositoryName = newRepositoryName;
+    };
     
 };
 
