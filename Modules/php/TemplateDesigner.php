@@ -51,6 +51,7 @@ class TemplateDesigner {
             switch (filter_input(INPUT_POST, "option")){
                 case 'saveTemplate': $this->saveTemplate($userData); break;
                 case 'getTemplates': $this->getTemplates($userData); break;
+                case 'getTemplate': $this->getTemplate($userData); break;
             }
         }
     }
@@ -111,6 +112,29 @@ class TemplateDesigner {
             
     }
     
+    private function getTemplate($userData){
+        $RoutFile = dirname(getcwd());
+        $instanceName = $userData['dataBaseName'];
+        $enterpriseKey = filter_input(INPUT_POST, "enterpriseKey");
+        $repositoryName = filter_input(INPUT_POST, "repositoryName");
+        $templateName = filter_input(INPUT_POST, "templateName");
+        
+        $destinPath = dirname($RoutFile)."/Configuracion/Templates/$instanceName/$enterpriseKey/$repositoryName/$templateName";
+        
+        if(!file_exists($destinPath))
+            return XML::XMLReponse ("Error", 0, "No existe la plantilla seleccionada.");
+        
+        if(!($file = fopen($destinPath, 'r')))
+                return XML::XMLReponse ("Error", 0, "No fue posible abrir la plantilla. $file");
+        $xml = fread($file, filesize($destinPath));
+        
+        fclose($file);
+        
+        $xmlDom = simplexml_load_string($xml);
+        
+        echo $xmlDom->saveXML();
+    }
+
     private function saveTemplate($userData){
         $RoutFile = dirname(getcwd());
         $instanceName = $userData['dataBaseName'];

@@ -63,7 +63,7 @@ var TemplateDesigner = function () {
                         dialogRef.enableButtons(false);
                         dialogRef.setClosable(false);
 
-                        if (_selectingRepository())
+                        if (_newTemplate())
                             dialogRef.close();
                         else {
                             button.stopSpin();
@@ -117,9 +117,13 @@ var TemplateDesigner = function () {
                     $(this).find('templateList').each(function(){
                         $(this).find('templateName').each(function(){
                             var templateName = $(this).text();
-                            console.log(templateName);
+
                             cont++;
-                            icon = '<li class = "fa fa-view fa-lg"></li>';
+                            icon = '<a class = "btn btn-info viewTemplate" title = "visualizar plantilla"><li class = "fa fa-book fa-lg"></li></a>';
+                            
+                            if($.trim(String(templateName)).length === 0)
+                                return true;
+                            
                             data = [enterpriseKey, repositoryName, templateName, icon];
 
                             var ai = templatesTD.row.add(data).draw();
@@ -128,22 +132,30 @@ var TemplateDesigner = function () {
                         
         //                    n.setAttribute('id', idRepository);                        
                     });
-                    
-                    if(cont === 0){
-                        data = [enterpriseKey, repositoryName, '', icon];
-                    
-                        var ai = templatesTD.row.add(data).draw();
-                        var n = templatesTd.fnSettings().aoData[ ai[0] ].nTr;
-    //                    n.setAttribute('id', idRepository);
-                    }
                 });
                 
+                $('.viewTemplate').click(function(){
+                    var trIndex = $('.viewTemplate').index($(this));
+                    templatesTd.$('tr.selected').removeClass('selected');
+                    templatesTd.$('tbody tr').eq(trIndex).addClass('selected');
+                    
+                    var tr = templatesTd.$('tr.selected');
+                    var position = templatesTd.fnGetPosition($(tr)[0]);
+                    var enterprisekey = templatesTd.fnGetData(position)[0];
+                    var repositoryname = templatesTd.fnGetData(position)[1];
+                    var templatename = templatesTd.fnGetData(position)[2];
+                    self.openTemplate(enterprisekey, repositoryname, templatename);
+                });
             }
         });
         
         
     };
     
+    /**
+     * @description Obtiene las plantillas del sistema ordenadas por empresa y repositorio.
+     * @returns {xml|XMLDocument}
+     */
     this.getTemplates = function(){
         var templates = null;
         
@@ -179,8 +191,66 @@ var TemplateDesigner = function () {
         
         return templates;
     };
+    
+    this.openTemplate = function(enterpriseKey, repositoryName, templateName){
+        if(enterpriseKey === undefined)
+            return Advertencia("La clave de empresa debe estar definida.");
+        
+        if(repositoryName === undefined)
+            return Advertencia("El nombre del repositorio debe estar definido.");
+        
+        if(templateName === undefined)
+            return Advertencia("El nombre de la plantilla debe estar definida.");
+        
+        var template = self.getTemplate(enterpriseKey, repositoryName, templateName);
+        
+        console.log(template);
+    };
+    
+    /**
+     * @description Obtiene una plantilla en específico;
+     * @param {String} enterpriseKey
+     * @param {String} repositoryName
+     * @param {String} templateName
+     * @returns {xml} Plantilla.
+     */
+    this.getTemplate = function(enterpriseKey, repositoryName, templateName){
+        var templateStructure = null;
+        $.ajax({
+        async: false,
+        cache: false,
+        dataType: "html",
+        type: 'POST',
+        url: "Modules/php/TemplateDesigner.php",
+        data: {option: "getTemplate", enterpriseKey:enterpriseKey, repositoryName:repositoryName, templateName:templateName},
+        success: function (xml) {
+            if ($.parseXML(xml) === null)
+                return errorMessage(xml);
+            else
+                xml = $.parseXML(xml);
+            
+            if($(xml).find('templateStructure').length > 0)
+                templateStructure = xml;
+            
+            $(xml).find('Error').each(function ()
+            {
+                var Mensaje = $(this).find('Mensaje').text();
+                errorMessage(Mensaje);
+            });
+        },
+        beforeSend: function () {
+        },
+        error: function (objXMLHttpRequest) {
+            errorMessage(objXMLHttpRequest);
+        }
+    });
+    };
 
-    var _selectingRepository = function () {
+    /**
+     * @description Interfaz para agregar una nueva plantilla.
+     * @returns {undefined}
+     */
+    var _newTemplate = function () {
         var content = $('<div>').append('<p>Seleccione un repositorio para iniciar con el diseñador de plantillas</p>');
 
         var formGroup = $('<div>', {class: "form-group"});
