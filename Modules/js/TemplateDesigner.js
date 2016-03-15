@@ -214,7 +214,7 @@ var TemplateDesigner = function () {
         
         var template = self.getTemplate(enterpriseKey, repositoryName, templateName);
                 
-        var templateContent = self.buildContentOfTemplate(template);
+        var templateContent = self.buildContentOfTemplate(template, 1);
        
         if(templateContent === 0)
             return Advertencia("No fue posible abrir la plantilla");
@@ -256,27 +256,32 @@ var TemplateDesigner = function () {
      * @description Se genera el objeto que contiene la estructura completa de la plantilla a partir
      * de su Xml.
      * @param {type} templateXml
+     * @param {boolean} updateMode Modo en el que se construye el diseñador de plantillas. 
+     * En modo update se agregar el panel inferior.
      * @returns {object} contenedor con la estructura de la plantilla ya construida.
      */
-    this.buildContentOfTemplate = function(templateXml){
+    this.buildContentOfTemplate = function(templateXml, updateMode){
         console.log("buildContentOfTemplate");
-        console.log(templateXml);
+//        console.log(templateXml);
         
         if(typeof templateXml !== 'object')
             return 0;
         
         var content = $('<div>');
         
+        var textareaDependenceData;
+        var dependeceData;
+        var dependenceDataDiv;
+        
         $(templateXml).find('header').each(function(){
             var header = $('<div>', {class: "row headerWrapper"});
             
-            var dependenceDataDiv = $('<div>', {class: "dependeceData col-xs-6 col-md-6"}).css({"font-size": "2vw"});
+            dependenceDataDiv = $('<div>', {class: "dependeceData col-xs-6 col-md-6"}).css({"font-size": "2vw"});
             var logoThumbnailDiv = $('<div>', {class: "logoWrapper col-xs-3 col-md-3"});
             var qrThumbnailDiv = $('<div>', {class: 'qrWrapper col-xs-3 col-md-3'});
-            
-            var dependeceData = $(this).find('dependeceData').text();
-            dependenceDataDiv.append(dependeceData);
-            
+            textareaDependenceData = $('<textarea>', {class: "form-control", id: "textareaDependenceData", placeHolder: "Datos de la dependecia"});
+            dependeceData = $(this).find('dependeceData').text();
+                        
             var logoPath = $(this).find('logoPath').text();
             
             if(!$.trim(logoPath).length > 0 || logoPath === undefined)
@@ -296,7 +301,20 @@ var TemplateDesigner = function () {
             header.append(qrThumbnailDiv);
 
             content.append(header);
+            
         });
+        
+        var formsDiv = $('<form>', {class: "form-horizontal"});
+        var formWrapper = $('<div>', {class: "row"}).append(formsDiv);
+        content.append(formWrapper);
+
+        dependenceDataDiv.append(textareaDependenceData);
+        textareaDependenceData.append(dependeceData);
+        _insertBottomPanel(content);
+
+        if(updateMode === 0)
+            dependenceDataDiv.append(dependeceData);            
+        
         
         $(templateXml).find('field').each(function(){
             var wrapperConfigurationTxt = $(this).find('wrapperConfiguration').text();
@@ -329,7 +347,7 @@ var TemplateDesigner = function () {
             console.log("wrapperConfiguration");
             console.log(wrapperConfiguration);
             
-            content.append(wrapperConfiguration);
+            formsDiv.append(wrapperConfiguration);
             
         });
         
@@ -520,11 +538,13 @@ var TemplateDesigner = function () {
         var status = 1;
         var content = $('<div>', {});
         var header = $('<div>', {class: "row headerWrapper"});
-        var dependenceData = $('<div>', {id: "dependeceData", class: "col-xs-6 col-md-6"}).css({"font-size": "2vw"}).append('Datos de dependencia.');
+        var dependenceData = $('<div>', {id: "dependeceData", class: "col-xs-6 col-md-6"}).css({"font-size": "2vw"});
         var logoThumbnail = $('<div>', {id: "logoWrapper", class: "col-xs-3 col-md-3", logoPath:""}).append('<a href = "#" class = "thumbnail"><i class="fa fa-picture-o fa-5x icon-border" style = "font-size: 10vw;"></i></a>');
         var qrThumbnail = $('<div>', {id: "qrWrapper" ,class: 'col-xs-3 col-md-3', qrPath:""}).append('<a href = "#" class = "thumbnail"><i class="fa fa-qrcode fa-5x icon-border" style = "font-size: 12vw;"></i></a>');
-        
+        var textareaDependenceData = $('<textarea>', {class: "form-control", id: "textareaDependenceData", placeHolder: "Datos de la dependecia"});
 
+        dependenceData.append(textareaDependenceData);
+        
         header.append(logoThumbnail);
         header.append(dependenceData);
         header.append(qrThumbnail);
@@ -534,51 +554,15 @@ var TemplateDesigner = function () {
         var formsDiv = $('<form>', {class: "form-horizontal"});
         var formWrapper = $('<div>', {class: "row"}).append(formsDiv);
         content.append(formWrapper);
-
-        var bottomPanel = $('<div>', {class: "panel panel-info"});/* Panel inferior con los campos a ir agregando */
-        var bottomPanelHeading = $('<div>', {class: "panel-heading"}).append('Seleccione el campo a insertar');
-        var bottomPanelBody = $('<div>', {class: "panel-body"});
-
-        bottomPanelBody.append('\
-                <form class="form-horizontal">\n\
-                    <div class="form-group">\n\
-                        <label class="col-xs-2 col-sm-2 control-label">Tamaño</label>\n\
-                        <div class="col-xs-4 col-sm-4 col-md-4">\n\
-                            <select id = "bottomPanelSelectWidth" class = "form-control"></select>\n\
-                        </div>\n\
-                            <label class="col-xs-2 col-sm-2control-label">Etiqueta</label>\n\
-                            <div class="col-xs-4 col-sm-4 col-md-4">\n\
-                                <input type = "text" id = "bottomPanelFormTag" class = "form-control">\n\
-                    </div>\n\
-                    </div>\n\
-                    <div class="form-group">\n\
-                        <label class="col-xs-2 col-sm-2 control-label">Campo</label>\n\
-                        <div class="col-xs-4 col-sm-4 col-md-4">\n\
-                            <select id = "bottomPanelFieldSelect" class="form-control"></select>\n\
-                        </div>\n\
-                        <label class="col-xs-2 col-sm-2 control-label">Tipo</label>\n\
-                        <div class="col-xs-4 col-sm-4 col-md-4">\n\
-                            <input type = "text" id = "bottomPanelFieldType" class="form-control" disabled>\n\
-                        </div>\n\
-                    </div>\n\
-                    <div class="form-group">\n\
-                        <div class="col-sm-offset-2 col-xs-9 col-sm-6">\n\
-                            <a id = "buttonPanelSelectButtonAdd" class="btn btn-primary"><li class = "fa fa-plus-circle fa-lg"></li> Agregar</a>\n\
-                        </div>\n\
-                    </div>\n\
-                </form>');
-
-        bottomPanel.append(bottomPanelHeading)
-                .append(bottomPanelBody);
-
-        content.append(bottomPanel);
+        
+        _insertBottomPanel(content);
 
         BootstrapDialog.show({
             title: '<i class="fa fa-cog fa-lg"></i> Diseñador de Plantillas',
             message: content,
             closable: true,
             closeByBackdrop: false,
-            closeByKeyboard: true,
+            closeByKeyboard: false,
             size: BootstrapDialog.SIZE_WIDE,
             type: BootstrapDialog.TYPE_DEFAULT,
             buttons: [
@@ -639,7 +623,7 @@ var TemplateDesigner = function () {
                     
                     bottomPanelFieldSelect.append(option);
                 });
-                
+                                
                 bottomPanelFieldSelect.change(function () {
                     _setFielDetail($(this),bottomPanelFormTag, bottomPanelFieldType);
                 });
@@ -647,7 +631,8 @@ var TemplateDesigner = function () {
                 /* Otras opciones de campo */
 
                 bottomPanelFieldSelect.append($('<option>', {"fieldName": "CSDocs_textType", "fieldType": "text"}).append("Ingresar Texto"));
-
+                bottomPanelFieldSelect.append($('<option>', {"fieldName": "CSDocs_barcode", "fieldType": "Código de Barras"}).append('Código de Barras'));
+                
                 buttonPanelSelectButtonAdd.click(function () {
                     var fieldTag = $.trim(bottomPanelFormTag.val());
                     
@@ -660,6 +645,51 @@ var TemplateDesigner = function () {
         });
 
         return status;
+    };
+    
+    /**
+     * @description Panel que controla las formas a insertar en la plantilla.
+     * @param {object} content Contenedor donde se inserta el panel.
+     * @returns {undefined}
+     */
+    var _insertBottomPanel = function(content){
+        var bottomPanel = $('<div>', {class: "panel panel-info"});/* Panel inferior con los campos a ir agregando */
+        var bottomPanelHeading = $('<div>', {class: "panel-heading"}).append('Seleccione el campo a insertar');
+        var bottomPanelBody = $('<div>', {class: "panel-body"});
+
+        bottomPanelBody.append('\
+                <form class="form-horizontal">\n\
+                    <div class="form-group">\n\
+                        <label class="col-xs-2 col-sm-2 control-label">Tamaño</label>\n\
+                        <div class="col-xs-4 col-sm-4 col-md-4">\n\
+                            <select id = "bottomPanelSelectWidth" class = "form-control"></select>\n\
+                        </div>\n\
+                            <label class="col-xs-2 col-sm-2control-label">Etiqueta</label>\n\
+                            <div class="col-xs-4 col-sm-4 col-md-4">\n\
+                                <input type = "text" id = "bottomPanelFormTag" class = "form-control">\n\
+                    </div>\n\
+                    </div>\n\
+                    <div class="form-group">\n\
+                        <label class="col-xs-2 col-sm-2 control-label">Campo</label>\n\
+                        <div class="col-xs-4 col-sm-4 col-md-4">\n\
+                            <select id = "bottomPanelFieldSelect" class="form-control"></select>\n\
+                        </div>\n\
+                        <label class="col-xs-2 col-sm-2 control-label">Tipo</label>\n\
+                        <div class="col-xs-4 col-sm-4 col-md-4">\n\
+                            <input type = "text" id = "bottomPanelFieldType" class="form-control" disabled>\n\
+                        </div>\n\
+                    </div>\n\
+                    <div class="form-group">\n\
+                        <div class="col-sm-offset-2 col-xs-9 col-sm-6">\n\
+                            <a id = "buttonPanelSelectButtonAdd" class="btn btn-primary"><li class = "fa fa-plus-circle fa-lg"></li> Agregar</a>\n\
+                        </div>\n\
+                    </div>\n\
+                </form>');
+
+        bottomPanel.append(bottomPanelHeading)
+                .append(bottomPanelBody);
+
+        content.append(bottomPanel);
     };
 
     var _getColumnsClass = function (width) {
@@ -691,25 +721,47 @@ var TemplateDesigner = function () {
 
         if (fieldName === 'CSDocs_textType')
             return  _addTextType(templateContent, widthSelect);
+        
+        if(fieldName === 'CSDocs_barcode')
+            return _addBarcode(templateContent, widthSelect, fieldsSelect, bottomPanelFormTag);
 
         _addInlineForm(templateContent, widthSelect, fieldsSelect, bottomPanelFormTag);
 
-//        var colString = _getColumnsClass(width);
-//        
-//        var wrapper = $('<div>', {class: "wrapper "+colString});
-//        var formGroup = $('<div>', {class: "form-group"});
-//        var form = $('<input>', {type: "text", class: "form-control"});
-//        var label = $('<label>', {}).append(fieldName);
-//        
-//        formGroup.append(label)
-//                .append(form);
-//        
-//        wrapper.append(formGroup);
-//        
-//        wrapper.insertBefore($('#bottomPanelDiv'));
-//        
-//        fieldsSelect.find('option:selected').remove();
-
+    };
+    
+    /**
+     * @description Inserta el código de barras en la plantilla.
+     * @param {object} templateContent
+     * @param {object} widthSelect
+     * @param {object} fieldsSelect
+     * @returns {boolean}
+     */
+    var _addBarcode = function(templateContent, widthSelect, fieldsSelect, bottomPanelFormTag){
+        var width = widthSelect.find('option:selected').attr('width');
+        var bottomPanelFieldType = $('#bottomPanelFieldType');      
+        if(parseInt(width) < 3)
+            width = 3;
+        
+        var formDivWidthSettings = "col-xs-"+width+" col-sm-"+width+" col-md-"+width;
+        var divWidth = "col-xs-12 col-sm-12 col-md-12";
+        
+        var formGroup = $('<div>', {class: "form-group templateWrapper "+formDivWidthSettings, "colConfigration": formDivWidthSettings});
+        var label = $('<label>');
+        var divWrapper = $('<div>', {class: "templateField "+divWidth, style: "text-align: center; font-size: 2vw;"});
+        var barcode = $('<i>', {class: "fa fa-barcode fa-5x"});
+        
+        divWrapper.append(barcode);
+        
+        formGroup.append(label)
+                .append(divWrapper);
+        
+        templateContent.append(formGroup);
+        
+        fieldsSelect.find('option:selected').remove();
+        
+        _setFielDetail(fieldsSelect, bottomPanelFormTag, bottomPanelFieldType);
+        
+        return true;
     };
 
     var _addInlineForm = function (templateContent, widthSelect, fieldsSelect, bottomPanelFormTag) {
@@ -903,7 +955,7 @@ var TemplateDesigner = function () {
         
         /* Se guarda la configuración de la cabecera */
                 
-        var dependeceData = $(headerWrapper).find('#dependeceData');
+        var dependeceData = $(headerWrapper).find('#textareaDependenceData').val();
         var logoWrapper = $(headerWrapper).find('#logoWrapper');
         var qrWrapper = $(headerWrapper).find('#qrWrapper');
         
@@ -921,7 +973,7 @@ var TemplateDesigner = function () {
         console.log(qrWrapper);
         
         xml +="<header>";
-            xml += "<dependeceData>"+dependeceData.html()+"</dependeceData>";
+            xml += "<dependeceData>"+dependeceData+"</dependeceData>";
             xml += "<logoPath>"+ logoPath +"</logoPath>";
             xml += "<qrPath>"+ qrPath +"</qrPath>";
         xml +="</header>";
