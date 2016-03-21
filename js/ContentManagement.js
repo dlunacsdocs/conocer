@@ -210,7 +210,7 @@ var ContentMnagement = function () {
             }
         }).dialogExtend(BotonesWindow);
 
-        $('#CM_select_empresas').change(function () {
+        $('#CM_select_empresas').unbind('change').change(function () {
             CleaningContent();
             var EnterpriseKey = $('#CM_select_empresas').val();
             if (EnterpriseKey !== "0") {
@@ -233,7 +233,7 @@ var ContentMnagement = function () {
             }
         });
 
-        $('#CM_select_repositorios').change(function () {
+        $('#CM_select_repositorios').unbind('change').change(function () {
             var IdRepositorio = $('#CM_select_repositorios option:selected').attr('idRepository');
 
             if (parseInt(IdRepositorio) > 0) {
@@ -244,13 +244,13 @@ var ContentMnagement = function () {
                 CleaningContent();
         });
 
-        $('#form_engine').keydown(function (event) {
+        $('#form_engine').unbind('keydown').keydown(function (event) {
             if (event.which === 13)
                 EngineSearch();
         });
 
 
-        $('.CMModifyDirectory').click(function () {
+        $('.CMModifyDirectory').unbind('click').click(function () {
             var node = $("#contentTree").dynatree("getActiveNode");
 
             if (node)
@@ -259,7 +259,7 @@ var ContentMnagement = function () {
                 Advertencia("Seleccione un directorio");
         });
 
-        $('.CMDeleteDirectory').click(function (){
+        $('.CMDeleteDirectory').unbind('click').click(function (){
             var node = $("#contentTree").dynatree("getActiveNode");
             if (node !== null)
                 contentArbol.ConfirmDeleteDir(node);
@@ -267,30 +267,26 @@ var ContentMnagement = function () {
                 Advertencia("Seleccione un directorio");
         });
 
-        $('.CMCopyFile').click(function () {
+        $('.CMCopyFile').unbind('click').click(function () {
             CopyFile();
         });
 
-        $('.CMPasteFile').on('click', "PasteFile");
+        $('.CMPasteFile').unbind('click').on('click', PasteFile);
 
-        $('.CMCutFile').on('click', 'CutFile');
+        $('.CMCutFile').unbind('click').on('click', CutFile);
+        
+        $('.CMDeleteFile').unbind('click').on('click', deleteFileConfirmation);
 
-        $('.CMDeleteFile').on('click', 'ConfirmDelete');
-
-        $('.CMMassiveUpload').click(function () {
+        $('.CMMassiveUpload').unbind('click').click(function () {
             var tools = new ClassTools();
             tools.DisplayMassiveUploadDialog();
         });
 
-        $('.CMEditFile').click(function () {
-            FileDedit();
-        });
+        $('.CMEditFile').unbind('click').on('click', FileDedit);
 
-        $('.CMUploadFile').click(function () {
-            CM_CargarArchivo();
-        });/* ContentManagemenet.js */
+        $('.CMUploadFile').unbind('click').on('click', CM_CargarArchivo); /* ContentManagemenet.js */
 
-        $('.CMNewDirectory').click(function () {
+        $('.CMNewDirectory').unbind('click').click(function () {
             if ($('#contentTree').is(":empty"))
                 return Advertencia("Debe consultar un repositorio y seleccionar un directorio para agregar uno nuevo.");
 

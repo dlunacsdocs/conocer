@@ -3,7 +3,7 @@
  * To change this template file, choose Tools | Templates
  * and open the template in the editor.
  */
-/* global TableContentDT, TableContentdT, EnvironmentData, EnvironmentData, Random, DataTable */
+/* global TableContentDT, TableContentdT, EnvironmentData, EnvironmentData, Random, DataTable, BootstrapDialog */
 
 var CM_Carga={width:300, height:500, minWidth:300, minHeight:300,modal:true, title:"Carga de Archivo",
     buttons: {Aceptar: function() {$( this ).dialog( "close" );$( this ).dialog( "destroy" );}}};
@@ -492,24 +492,26 @@ function PasteFile()
     
 }
 
-/*******************************************************************************
- *  Elimina un archivo del repositorio
+/**
+ * @description Elimina un archivo del repositorio.
  * @returns {undefined}
  */
-function ConfirmDelete()
+function deleteFileConfirmation()
 {
-    var idRepository = $('#CM_select_repositorios').val();
+    var content = $('<div>');
+    var idRepository = $('#CM_select_repositorios option:selected').attr('idrepository');
+    
     if(!parseInt(idRepository) > 0)
         return Advertencia("No fue posible obtener el identificador del repositorio seleccionado");
     
     if(!validateSystemPermission(idRepository, 'b6d767d2f8ed5d21a44b0e5886680cb9', 1))
         return Advertencia("No tiene permiso de realizar esta acción");
 
-    var IdFile=$('#table_DetailResult tr.selected').attr('id'); 
-    if(!(IdFile>0)){Advertencia('Seleccione antes un archivo'); return;}
-    $('#div_confirmDelete').remove();
-    $('#content_management').append('<div id="div_confirmDelete" class="Mensajes"></div>');
-//    var NombreArchivo=$('#table_DetailResult tbody tr').find("td").eq(0).html();
+    var IdFile = $('#table_DetailResult tr.selected').attr('id'); 
+    
+    if(!(IdFile > 0))
+        return Advertencia('Seleccione antes un archivo');
+    
     var NombreArchivo;
     
     $('#table_DetailResult tr.selected').each(function() {                                
@@ -517,60 +519,107 @@ function ConfirmDelete()
         NombreArchivo=TableContentdT.fnGetData(position)[0];
     }); 
     
-    $('#div_confirmDelete').append('<p>Está apunto de eliminar el archivo '+NombreArchivo+'. ¿Desea continuar?</p>');
-    $('#div_confirmDelete').dialog({width:300, height:250, title:"Mensaje de Confirmación",modal:true,
-        minHeight:250, minWidth:300, buttons:{
-            "Aceptar":function(){$(this).dialog('close');DeleteFile();},
-            "Cancelar":function(){$(this).dialog('close');}
-        }});
+    content.append('<p>Está apunto de eliminar a <b>'+NombreArchivo+'</b>. ¿Desea continuar?</p>');
+    
+    BootstrapDialog.show({
+            title: '<i class="fa fa-exclamation-triangle fa-lg"></i> Eliminar documento',
+            size: BootstrapDialog.SIZE_SMALL,
+            type: BootstrapDialog.TYPE_DANGER,
+            message: content,
+            closable: true,
+            closeByBackdrop: true,
+            closeByKeyboard: true,
+            buttons: [
+                {
+                    icon: 'fa fa-trash-o fa-lg',
+                    label: 'Eliminar',
+                    cssClass: "btn-danger",
+                    action: function (dialogRef) {
+                        var button = this;
+                        button.spin();
+                        dialogRef.enableButtons(false);
+                        dialogRef.setClosable(false);
+
+                        if (DeleteFile())
+                            dialogRef.close();
+                        else {
+                            button.stopSpin();
+                            dialogRef.enableButtons(true);
+                            dialogRef.setClosable(true);
+                        }
+
+                    }
+                },
+                {
+                    label: 'Cerrar',
+                    action: function (dialogRef) {
+                        dialogRef.close();
+                    }
+                }
+            ],
+            onshow: function () {
+
+            },
+            onshown: function (dialogRef) {
+
+            }
+        });
+
 }
 
+/**
+ * @description Método que elimina el documento seleccionado y lo envia a la papelera de reciclaje.
+ * @returns {Number}
+ */
 function DeleteFile()
 {   
-    var IdFile=$('#table_DetailResult tr.selected').attr('id'); 
-    if(!(IdFile>0)){Advertencia('Seleccione antes un archivo'); return;}
-    Loading();
+    var IdFile = $('#table_DetailResult tr.selected').attr('id');
+    
+    if(!(IdFile>0))
+        return Advertencia('Seleccione antes un archivo');
+
     var node = $("#contentTree").dynatree("getActiveNode");
-    var Path=node.getKeyPath();
-    var IdDirectory=node.data.key;    
-    var IdParent=node.getParent();
-    IdParent=IdParent.data.key;
-    var IdRepositorio=$('#CM_select_repositorios').val();
-    var NombreRepositorio=$('#CM_select_repositorios option:selected').html();
+    var IdDirectory = node.data.key;    
+    var IdRepositorio = $('#CM_select_repositorios').val();
+    var NombreRepositorio = $('#CM_select_repositorios option:selected').attr('repositoryname');
     var IdEmpresa = $('#CM_select_empresas option:selected').attr('id');
 
-    if(!(node.data.key>0)){return;}
+    if(!(parseInt(IdDirectory) > 0))
+        return Advertencia("Debe seleccionar un directorio");
         
     $.ajax({
-      async:true, 
+      async:false, 
       cache:false,
       dataType:'html', 
       type: 'POST',   
       url: "php/ContentManagement.php",
-      data: "opcion=DeleteFile&IdRepositorio="+IdRepositorio+'&NombreRepositorio='+NombreRepositorio+'&Path='+Path+'&IdParent='+IdParent+'&IdDirectory='+IdDirectory+'&IdEmpresa='+IdEmpresa+'&IdFile='+IdFile, 
+      data: "opcion=DeleteFile&IdRepositorio="+IdRepositorio+'&NombreRepositorio='+NombreRepositorio+'&IdDirectory='+IdDirectory+'&IdEmpresa='+IdEmpresa+'&IdFile='+IdFile, 
       success:  function(xml){   
-          $('#Loading').dialog('close');
-          if($.parseXML( xml )===null){errorMessage(xml);return 0;}else xml=$.parseXML( xml );
           
-             $(xml).find("DeleteFile").each(function()
-            {
+          if($.parseXML( xml )===null)
+              return errorMessage(xml);
+          else 
+              xml = $.parseXML( xml );
+          
+             $(xml).find("DeleteFile").each(function(){
                 var $UploadFile=$(this);
                 var estado=$UploadFile.find("Estado").text();
                 var mensaje=$UploadFile.find("Mensaje").text();
                 Notificacion(mensaje);
                 TableContentDT.row('tr[id='+IdFile+']').remove().draw( false );
             });
-            $(xml).find("Error").each(function()
-            {
-                var $Error=$(this);
-                var estado=$Error.find("Estado").text();
-                var mensaje=$Error.find("Mensaje").text();
+            
+            $(xml).find("Error").each(function(){
+                var $Error = $(this);
+                var mensaje = $Error.find("Mensaje").text();
                 errorMessage(mensaje);
             });   
       },
       beforeSend:function(){},
-      error:function(objXMLHttpRequest){errorMessage(objXMLHttpRequest); $('#Loading').dialog('close');}
+      error:function(objXMLHttpRequest){errorMessage(objXMLHttpRequest);}
     });
+    
+    return 1;
 }
 
 
