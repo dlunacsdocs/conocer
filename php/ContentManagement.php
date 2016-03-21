@@ -69,10 +69,7 @@ class ContentManagement {
      */
     private function DeleteFile($userData)
     {        
-        $XML=new XML();
-        $BD= new DataBase();
-        $Log = new Log();        
-        $designer=new DesignerForms();
+        $designer = new DesignerForms();
         $Catalog = new Catalog();
         
         $DataBaseName = $userData['dataBaseName'];
@@ -81,8 +78,7 @@ class ContentManagement {
         $IdUsuario = $userData['idUser'];
         $NombreUsuario = $userData['userName'];
         $IdFile=filter_input(INPUT_POST, "IdFile");
-//        $Path=filter_input(INPUT_POST, "Path");
-        $NombreArchivo=  filter_input(INPUT_POST, "NombreArchivo");
+//        $NombreArchivo=  filter_input(INPUT_POST, "NombreArchivo");
 //        $RutaArchivo=  filter_input(INPUT_POST, "RutaArchivo");   /* Archivo que será copiado */
         $IdDirectory=  filter_input(INPUT_POST, "IdDirectory");
         $IdEmpresa=  filter_input(INPUT_POST, "IdEmpresa");
@@ -103,7 +99,7 @@ class ContentManagement {
         
         $GetFile='SELECT *FROM '.$NombreRepositorio." WHERE IdRepositorio=$IdFile";
         
-        $File = $BD->ConsultaSelect($DataBaseName, $GetFile);
+        $File = $this->db->ConsultaSelect($DataBaseName, $GetFile);
         
         $delete='INSERT INTO temp_rep_'.$NombreRepositorio." (IdRepositorio,";
         
@@ -178,26 +174,26 @@ class ContentManagement {
             $DeleteFromRepository="DELETE FROM $NombreRepositorio WHERE IdRepositorio=$IdFile";
         
             
-            if(($ResultTempDelete=$BD->ConsultaInsert($DataBaseName, $delete))==1)/* Se copia delete en tabla temporal */
+            if(($ResultTempDelete = $this->db->ConsultaInsert($DataBaseName, $delete))==1)/* Se copia delete en tabla temporal */
             {                 
-                if(($ResultDelete=$BD->ConsultaQuery($DataBaseName, $DeleteFromRepository))==1)/* Se elimina del repositorio */
+                if(($ResultDelete = $this->db->ConsultaQuery($DataBaseName, $DeleteFromRepository))==1)/* Se elimina del repositorio */
                 {    
                     $DeleteFromGlobal = "UPDATE RepositorioGlobal SET Full = '' WHERE IdFile = $IdFile AND IdRepositorio = $IdRepositorio";
-                    if(($ResultDeleteFromGlobal = $BD->ConsultaQuery($DataBaseName, $DeleteFromGlobal)==1))
+                    if(($ResultDeleteFromGlobal = $this->db->ConsultaQuery($DataBaseName, $DeleteFromGlobal)==1))
                     {
-                        $Log ->Write("25", $IdUsuario, $NombreUsuario, $File['ArrayDatos'][0]["NombreArchivo"], $DataBaseName);
-                        $XML->ResponseXML("DeleteFile", 1, "Archivo Eliminado con éxito.");
+                        Log::WriteEvent("25", $IdUsuario, $NombreUsuario, $File['ArrayDatos'][0]["NombreArchivo"], $DataBaseName);
+                        XML::XMLReponse("DeleteFile", 1, "Archivo Eliminado con éxito.");
 
                     }                    
                 }
                 else
                 {
-                    $BD->ConsultaQuery($DataBaseName, "DELETE FROM temp_rep_$NombreRepositorio WHERE IdRepositorio = $IdFile");
-                    return $XML->ResponseXML("Error", 0, "Error al eliminar el archivo. ".$ResultDelete);
+                    $this->db->ConsultaQuery($DataBaseName, "DELETE FROM temp_rep_$NombreRepositorio WHERE IdRepositorio = $IdFile");
+                    return XML::XMLReponse("Error", 0, "Error al eliminar el archivo. ".$ResultDelete);
                 }
             }  
             else
-                return $XML->ResponseXML("Error", 0, "Error al eliminar el archivo. ".$ResultTempDelete);
+                return XML::XMLReponse("Error", 0, "Error al eliminar el archivo. ".$ResultTempDelete);
     }
     
     private function CutFile($userData)
