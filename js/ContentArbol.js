@@ -419,16 +419,16 @@ function InitDynatree(child)
 {
 
     var isMac = /Mac/.test(navigator.platform);
-    var arbol = $("#contentTree").dynatree(
-            {
-                generateIds: false,
-                keyboard: true,
-                expand: true,
-                minExpandLevel: 3,
-                children: [child],
-                onActivate: function (node) {
-                    node.sortChildren(cmp, false);
-                    GetFiles(node.data.key);
+    var arbol= $("#contentTree").dynatree(
+        {
+            generateIds: false,
+            keyboard: true,
+            expand: true, 
+            minExpandLevel: 2,
+            children: [child],
+            onActivate: function(node) {
+                node.sortChildren(cmp, false);
+                GetFiles(node.data.key);                    
 //                if( event.shiftKey ){                   
 //                  editNode(node);                    
 //                  return false;

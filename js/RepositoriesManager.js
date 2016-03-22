@@ -370,8 +370,8 @@ var ClassRepository = function ()
         n.setAttribute('id', self.AutoincrementId);
 
         Notificacion('Campo ' + FieldsValues.FieldName + ' preparado');
-        
-        FormsNewRepositorydT.$('tr[id = '+self.AutoincrementId+']').click();
+
+        FormsNewRepositorydT.$('tr[id = ' + self.AutoincrementId + ']').click();
 
     };
 
@@ -585,29 +585,29 @@ var ClassRepository = function ()
                 FormsNewRepositorydT.fnUpdate([FieldsValues.RequiredField], position, 3, false);
             });
 
-        }, function(dialogRef){
+        }, function (dialogRef) {
             var buttonEdit = dialogRef.getButton('accept');
             $(buttonEdit).html('<i class="fa fa-pencil-square-o fa-lg"></i> Modificar');
             $(buttonEdit).removeClass('btn-primary').addClass('btn-warning');
             dialogRef.setType(BootstrapDialog.TYPE_WARNING);
             dialogRef.setTitle('<i class="fa fa-pencil-square-o fa-lg"></i> Editar Campo');
-            
+
         },
-        function (dialogRef) {
-            var fieldNameForm = dialogRef.getData('fieldName');
-            var fieldTypeForm = dialogRef.getData('fieldType');
-            var fieldLength = dialogRef.getData('fieldLength');
-            var fieldCheck = dialogRef.getData('requiredCheck');
+                function (dialogRef) {
+                    var fieldNameForm = dialogRef.getData('fieldName');
+                    var fieldTypeForm = dialogRef.getData('fieldType');
+                    var fieldLength = dialogRef.getData('fieldLength');
+                    var fieldCheck = dialogRef.getData('requiredCheck');
 
-            $(fieldNameForm).val(FieldName);
-            $(fieldTypeForm).val(FieldType);
-            $(fieldLength).val(FieldLength);
+                    $(fieldNameForm).val(FieldName);
+                    $(fieldTypeForm).val(FieldType);
+                    $(fieldLength).val(FieldLength);
 
-            if (String(RequiredField) === 'No')
-                $(fieldCheck).prop('checked', false);
-            else if (String(RequiredField) === 'Si')
-                $(fieldCheck).prop('checked', true);
-        });
+                    if (String(RequiredField) === 'No')
+                        $(fieldCheck).prop('checked', false);
+                    else if (String(RequiredField) === 'Si')
+                        $(fieldCheck).prop('checked', true);
+                });
 
     };
 
@@ -626,7 +626,7 @@ var ClassRepository = function ()
                     "tableTools": {
                         "aButtons": [
                             {"sExtends": "text", "sButtonText": '<i class="fa fa-plus-circle fa-lg"></i> Agregar Campo', "fnClick": function () {
-                                    _FormsAddNewField();
+                                    _addFieldToRepository();
                                 }},
                             {"sExtends": "text", "sButtonText": '<i class="fa fa-trash fa-lg"></i> Campo', "fnClick": function () {
                                     _ConfirmDeleteRepositoryField();
@@ -862,75 +862,71 @@ var ClassRepository = function ()
 
     };
 
-    var _FormsAddNewField = function ()
+    var _addFieldToRepository = function ()
     {
 
         var fieldsManager = new FieldsManager();
-        fieldsManager.windowNewField(this._AddNewFieldToRepository);
+        fieldsManager.windowNewField(function (dialogRef) {
 
-    };
 
-    /* Agrega un nuevo campo a un repositorio existente  */
-    var _AddNewFieldToRepository = function ()
-    {
+            var fieldsManager = new FieldsManager();
+            var FieldsValues = fieldsManager.GetFieldsValues(RepositoryDetaildT, RepositoryDetailDT);
+            if (!$.isPlainObject(FieldsValues))
+                return 0;
 
-        var fieldsManager = new FieldsManager();
-        var FieldsValues = fieldsManager.GetFieldsValues(RepositoryDetaildT, RepositoryDetailDT);
-        if (!$.isPlainObject(FieldsValues))
-            return 0;
+            var RepositoryName = $('#RMSelectRepositories option:selected').text();
 
-        var RepositoryName = $('#RMSelectRepositories option:selected').text();
+            var data = {opcion: "AddNewFieldToRepository", RepositoryName: RepositoryName, FieldName: FieldsValues.FieldName, FieldType: FieldsValues.FieldType, FieldLength: FieldsValues.FieldLength, RequiredField: FieldsValues.RequiredField};
 
-        var data = {opcion: "AddNewFieldToRepository", RepositoryName: RepositoryName, FieldName: FieldsValues.FieldName, FieldType: FieldsValues.FieldType, FieldLength: FieldsValues.FieldLength, RequiredField: FieldsValues.RequiredField};
-
-        $.ajax({
-            async: false,
-            cache: false,
-            dataType: "html",
-            type: 'POST',
-            url: "php/Repository.php",
-            data: data,
-            success: function (xml)
-            {
-                if ($.parseXML(xml) === null) {
-                    Salida(xml);
-                    return 0;
-                } else
-                    xml = $.parseXML(xml);
-
-                if ($(xml).find('AddedField').length > 0)
+            $.ajax({
+                async: false,
+                cache: false,
+                dataType: "html",
+                type: 'POST',
+                url: "php/Repository.php",
+                data: data,
+                success: function (xml)
                 {
-                    var Mensaje = $(xml).find('Mensaje').text();
+                    if ($.parseXML(xml) === null) {
+                        Salida(xml);
+                        return 0;
+                    } else
+                        xml = $.parseXML(xml);
 
-                    Notificacion(Mensaje);
+                    if ($(xml).find('AddedField').length > 0)
+                    {
+                        var Mensaje = $(xml).find('Mensaje').text();
 
-                    FieldsValues.RequiredField = FieldsValues.RequiredField.toString();
-                    if (FieldsValues.RequiredField == "false")
-                        FieldsValues.RequiredField = "No";
-                    else
-                        FieldsValues.RequiredField = "Si";
+                        Notificacion(Mensaje);
 
-                    var data = [FieldsValues.FieldName, FieldsValues.FieldType, FieldsValues.FieldLength, FieldsValues.RequiredField];
+                        FieldsValues.RequiredField = FieldsValues.RequiredField.toString();
+                        if (FieldsValues.RequiredField == "false")
+                            FieldsValues.RequiredField = "No";
+                        else
+                            FieldsValues.RequiredField = "Si";
 
-                    var ai = RepositoryDetailDT.row.add(data).draw();
-                    var n = RepositoryDetaildT.fnSettings().aoData[ ai[0] ].nTr;
+                        var data = [FieldsValues.FieldName, FieldsValues.FieldType, FieldsValues.FieldLength, FieldsValues.RequiredField];
 
+                        var ai = RepositoryDetailDT.row.add(data).draw();
+                        var n = RepositoryDetaildT.fnSettings().aoData[ ai[0] ].nTr;
+                        dialogRef.close();
+                    }
+
+                    $(xml).find("Error").each(function ()
+                    {
+                        var $Error = $(this);
+                        var mensaje = $Error.find("Mensaje").text();
+                        errorMessage(mensaje);
+                    });
+
+                },
+                beforeSend: function () {},
+                error: function (jqXHR, textStatus, errorThrown) {
+                    errorMessage(textStatus + "<br>" + errorThrown);
                 }
+            });
 
-                $(xml).find("Error").each(function ()
-                {
-                    var $Error = $(this);
-                    var mensaje = $Error.find("Mensaje").text();
-                    errorMessage(mensaje);
-                });
-
-            },
-            beforeSend: function () {},
-            error: function (jqXHR, textStatus, errorThrown) {
-                errorMessage(textStatus + "<br>" + errorThrown);
-            }
         });
-
     };
 
     /* Dialog que pide el xml para insertar el nuevo repositorio */
