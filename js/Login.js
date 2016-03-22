@@ -7,11 +7,6 @@ var UserData = undefined;
 
 /* global EnvironmentData, userPermissions, modulesControl */
 
-/*******************************************************************************
- * 
- * @returns {true or false dependiendo si existe el usuario en la BD}
- */
-
 function login()
 {
     var Permissions = new ClassPermissions();

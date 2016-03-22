@@ -325,6 +325,7 @@ var TemplateDesigner = function () {
             var fieldNameTag = $(this).find('fieldNameTag').text();
             var fieldType = $(this).find('fieldType').text();
             var fieldLength = $(this).find('fieldLength').text();
+            var widthSize = $(this).find('widthSize').text();
             
             
             var wrapperConfiguration = $('<div>', {class: "form-group templateWrapper "+wrapperConfigurationTxt, colConfiguration:wrapperConfigurationTxt});
@@ -335,6 +336,7 @@ var TemplateDesigner = function () {
             var form = $('<input>', {class: "form-control", 
                                     fieldName: fieldName,
                                     fieldNameTag: fieldNameTag,
+                                    widthSize: widthSize,
                                     fieldType: fieldType,
                                     fieldLength: fieldLength,
                                     id: "templateForm_" + fieldName,
@@ -344,14 +346,107 @@ var TemplateDesigner = function () {
             wrapperConfiguration.append(labelConfiguration)
                     .append(fieldDiv);        
             
-            console.log("wrapperConfiguration");
-            console.log(wrapperConfiguration);
+//            console.log(wrapperConfiguration);
             
             formsDiv.append(wrapperConfiguration);
             
+            if(updateMode === 1){
+                _buildPophoverOfForm(form);
+            }
+            
+        });
+        
+        $('body').on('click', function (e) {
+            $(formsDiv).find('input').each(function () {
+                //the 'is' for buttons that trigger popups
+                //the 'has' for icons within a button that triggers a popup
+                if (!$(this).is(e.target) && $(this).has(e.target).length === 0 && $('.popover').has(e.target).length === 0) {
+                    $(this).popover('hide');
+                }
+            }); 
         });
         
         return content;
+    };
+    
+    /**
+     * @description En modo update cada uno de los formularios podrá editarse mediante la construcción de un pophover.
+     * @param {type} form
+     * @returns {undefined}
+     */
+    var _buildPophoverOfForm = function(form){
+        
+        $(form).popover({
+            html: true,
+            title: function () {
+                var head = $('<div>').append('<li class = "fa fa-pencil-square"></li> Modificar Campo Seleccionado');
+                return head;
+            },
+            content: function () {
+                var formHorizontal = $('<div>', {class: "form-horizontal"});
+                var formGroup = $('<div>', {class: "form-group"});
+                var formWrapper = $('<div>', {class: "col-md-8"});
+                var widthSelectLabel = $('<label>', {class: "col-md-4"}).append("Tamaño");
+                var widthSelect = $('<select>', {id: "popoverTemplateWidthSelect", class: "form-control"});
+                var pophoverContent = $('<div>');
+                
+                formWrapper.append(widthSelect);
+                formGroup.append(widthSelectLabel).append(formWrapper);
+                formHorizontal.append(formGroup);
+                
+                widthSelect.append('<option width = "1">1</option>\n\
+                                    <option width = "2">2</option>\n\
+                                    <option width = "3">3</option>\n\
+                                    <option width = "4">4</option>\n\
+                                    <option width = "5">5</option>\n\
+                                    <option width = "6">6</option>');
+                
+                /* Botón Eliminar */
+                var buttonRemove = $('<a>', {id:"popoverTemplateButtonDelete" ,class: "btn btn-danger", href: "#"}).append('<li class = "fa fa-trash-o fa-lg"></li>');
+                var removeIconWrapper = $('<div>', {class: "col-xs-4 col-sm-4 col-md-4"}).append(buttonRemove);
+                formGroup = $('<div>', {class: "form-group"}).append(removeIconWrapper);
+                
+                /* Boton Modifcar */
+                var buttonModify = $('<a>', {id: "popoverTemplateButtonModify",class: "btn btn-warning", href: "#"}).append($('<li>', {class: "fa fa-pencil-square-o fa-lg"}));
+                var buttonAcceptWrapper = $('<div>', {class: "col-xs-4 col-sm-4 col-md-4"}).append(buttonModify);
+                formGroup.append(buttonAcceptWrapper);
+                formHorizontal.append(formGroup);
+                
+                pophoverContent.append(formHorizontal);
+    
+                return pophoverContent.html();
+            },
+            placement: "top"
+        }).on("show.bs.popover", function () {
+            $(this).data("bs.popover").tip().css("min-width", "250px"); 
+            
+        }).on("shown.bs.popover", function(){
+            var widthSize = $(this).attr('widthSize');
+            widthSize = parseInt(widthSize) / 2;
+            
+            $('#popoverTemplateButtonModify').click(_modifyField);
+            $('#popoverTemplateButtonDelete').click(_deleteField);            
+            $('#popoverTemplateWidthSelect option[width='+ widthSize + ']').prop("selected", true);
+            
+        });
+    };
+    
+    /**
+     * @description Modifica un campo del diseñador de formas.
+     * @param {type} field
+     * @returns {undefined}
+     */
+    var _modifyField = function(field){
+        console.log('_modifyField');
+    };
+    
+    /**
+     * @description Elimina un campo del diseñador de formas.
+     * @param {type} field
+     * @returns {undefined}
+     */
+    var _deleteField = function(field){
+        console.log('_deleteField');
     };
     
     /**
@@ -602,7 +697,7 @@ var TemplateDesigner = function () {
                 bottomPanelSelectWidth.append('<option width = "1">1</option>\n\
                                                 <option width = "2">2</option>\n\
                                                 <option width = "3">3</option>\n\
-                                                <option width = "4">4</option>\n\\n\
+                                                <option width = "4">4</option>\n\
                                                 <option width = "5">5</option>\n\
                                                 <option width = "6">6</option>');
                                                 
@@ -731,9 +826,10 @@ var TemplateDesigner = function () {
     
     /**
      * @description Inserta el código de barras en la plantilla.
-     * @param {object} templateContent
-     * @param {object} widthSelect
-     * @param {object} fieldsSelect
+     * @param {object} templateContent Contenedor
+     * @param {object} widthSelect Fomrulario con el tamaño del campo
+     * @param {object} fieldsSelect Formulario con cada uno de los campos
+     * @param {object} bottomPanelFormTag Formulario de etiqueta del campo
      * @returns {boolean}
      */
     var _addBarcode = function(templateContent, widthSelect, fieldsSelect, bottomPanelFormTag){
@@ -809,6 +905,7 @@ var TemplateDesigner = function () {
                                     fieldNameTag = "' + fieldNameTag + '" \n\
                                     fieldType = "' + fieldType + '" \n\
                                     fieldLength = "' + fieldLength + '" \n\
+                                    widthSize = "' + width + '"\n\
                                     id = "templateForm_' + fieldName + '"\n\
                                     colConfiguration = "' + colStringDivForm + '"\n\
                                 >\n\
@@ -994,6 +1091,7 @@ var TemplateDesigner = function () {
                     <fieldNameTag>' + $(this).attr('fieldNameTag') + '</fieldNameTag>\n\
                     <fieldType>' + $(this).attr('fieldType') + '</fieldType>\n\
                     <fieldLength>' + $(this).attr('fieldLength') + '</fieldLength>\n\
+                    <widthSize>' + $(this).attr('widthSize') + '</widthSize>\n\
                     <wrapperConfiguration>' + wrapperConfigration + '</wrapperConfiguration>\n\
                     <labelConfiguration>' + labelConfigration + '</labelConfiguration>\n\
                     <inputConfigration> ' + $(this).attr('colConfiguration') + '</inputConfigration> \n\
