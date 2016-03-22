@@ -424,8 +424,8 @@ var TemplateDesigner = function () {
             var widthSize = $(this).attr('widthSize');
             widthSize = parseInt(widthSize) / 2;
             
-            $('#popoverTemplateButtonModify').click(_modifyField);
-            $('#popoverTemplateButtonDelete').click(_deleteField);            
+            $('#popoverTemplateButtonModify').click(_modifyField($(this)));
+            $('#popoverTemplateButtonDelete').click(_deleteField($(this)));            
             $('#popoverTemplateWidthSelect option[width='+ widthSize + ']').prop("selected", true);
             
         });
@@ -437,7 +437,55 @@ var TemplateDesigner = function () {
      * @returns {undefined}
      */
     var _modifyField = function(field){
-        console.log('_modifyField');
+        console.log('modifing field');
+        var oldWidth = field.attr('fieldSize');
+        var width = $('#popoverTemplateWidthSelect option:selected').attr('width');
+        width = parseInt(width) * 2;
+        var labelWidth = 3;
+        var formWidth = 9;
+
+        if (width <= 0)
+            width = 1;
+
+        if (width <= 4) {
+            labelWidth = 6;
+            formWidth = 6;
+        }
+        console.log("Parent");
+        console.log($(field).parent());
+        
+        var formWrapper = $(field).parent();
+        formWrapper.removeAttr('col-md-'+oldWidth).attr('col-md-'+width);
+        
+        var labelColString = 'col-xs-' + labelWidth + ' col-sm-' + labelWidth + ' col-md-' + labelWidth;
+        var colString = "col-xs-" + width + " " + "col-sm-" + width + " " + "col-md-" + width;     
+        var colStringDivForm = "col-xs-"+formWidth+" col-sm-"+formWidth+" col-md-"+formWidth;
+        
+        var oldLabelColString = 'col-xs-' + labelWidth + ' col-sm-' + labelWidth + ' col-md-' + labelWidth;
+        var oldColString = "col-xs-" + width + " " + "col-sm-" + width + " " + "col-md-" + width;     
+        var oldColStringDivForm = "col-xs-"+formWidth+" col-sm-"+formWidth+" col-md-"+formWidth;
+        
+//        var inline =    '<div class = "form-group templateWrapper ' + colString + '" colConfiguration = "'+colString+'">\n\
+//                            <label \n\
+//                                for = "templateForm_' + fieldName + '" \n\
+//                                class = "control-label ' + labelColString + '"\n\
+//                                colConfiguration = "'+labelColString+'"\n\
+//                            >' 
+//                                + fieldNameTag + 
+//                            '</label>\n\
+//                            <div class = "templateField col-md-' + formWidth + '">\n\
+//                                <input type = "text" \n\
+//                                    class = "form-control" \n\
+//                                    fieldName = "' + fieldName+'" \n\
+//                                    fieldNameTag = "' + fieldNameTag + '" \n\
+//                                    fieldType = "' + fieldType + '" \n\
+//                                    fieldLength = "' + fieldLength + '" \n\
+//                                    widthSize = "' + width + '"\n\
+//                                    id = "templateForm_' + fieldName + '"\n\
+//                                    colConfiguration = "' + colStringDivForm + '"\n\
+//                                >\n\
+//                            </div>\n\
+//                        </div>';
     };
     
     /**
@@ -446,7 +494,8 @@ var TemplateDesigner = function () {
      * @returns {undefined}
      */
     var _deleteField = function(field){
-        console.log('_deleteField');
+        console.log('deleting field');
+        
     };
     
     /**
@@ -882,12 +931,7 @@ var TemplateDesigner = function () {
         }
 
         var labelColString = 'col-xs-' + labelWidth + ' col-sm-' + labelWidth + ' col-md-' + labelWidth;
-
-        var colXs = "col-xs-" + width;
-        var colSm = "col-sm-" + width;
-        var colMd = "col-md-" + width;
-        var colString = colXs + " " + colSm + " " + colMd;
-        
+        var colString = "col-xs-" + width + " " + "col-sm-" + width + " " + "col-md-" + width;     
         var colStringDivForm = "col-xs-"+formWidth+" col-sm-"+formWidth+" col-md-"+formWidth;
 
         var inline =    '<div class = "form-group templateWrapper ' + colString + '" colConfiguration = "'+colString+'">\n\
