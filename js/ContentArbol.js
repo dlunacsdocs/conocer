@@ -381,7 +381,7 @@ function InitDynatree(child)
             generateIds: false,
             keyboard: true,
             expand: true, 
-            minExpandLevel: 3,
+            minExpandLevel: 2,
             children: [child],
             onActivate: function(node) {
                 node.sortChildren(cmp, false);

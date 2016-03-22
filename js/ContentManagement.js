@@ -127,7 +127,7 @@ var ContentMnagement = function () {
         var contentTree = $('<div>', {
             id: "contentTreeStructure", 
             class: "col-xs-3 col-sm-3 col-md-3 col-lg-3"
-        }).css({"overflow": "auto"}).append('<div id = "contentTree"></div>');
+        }).css({"overflow": "auto", 'max-height': $(window).height()-230}).append('<div id = "contentTree"></div>');
         
         var contentTab = $('<div>', {id: "tabs-1", class: "tab-pane"});
 
