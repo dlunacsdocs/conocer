@@ -594,7 +594,10 @@ function uploadDocument($data) {
 
     for ($cont = 0; $cont < count($catalogs); $cont++) {
         $catalogName = $catalogs[$cont]['NombreCatalogo'];
-
+        
+        if(strlen($catalogName) == 0)
+            continue;
+        
         if (!isset($fields[$catalogName]))
             return array("error" => "No existe el catálogo " . $catalogName,
                 "message" => "Debe anexar el catálogo $catalogName a la "
@@ -768,9 +771,10 @@ function getDocumentMetadata($data){
     }
     
     for($cont = 0; $cont < count($catalogs); $cont++){
-        $fields[$catalogs[$cont]["NombreCatalogo"]] = array("fieldType"=>"integer",
-            "requiredField"=>"true", "fieldName"=>$catalogs[$cont]["NombreCatalogo"], 
-            "fieldLength"=>"" ,"fieldClass"=>"catalog");
+        if(strlen($catalogs[$cont]["NombreCatalogo"])>0)
+            $fields[$catalogs[$cont]["NombreCatalogo"]] = array("fieldType"=>"integer",
+                "requiredField"=>"true", "fieldName"=>$catalogs[$cont]["NombreCatalogo"], 
+                "fieldLength"=>"" ,"fieldClass"=>"catalog");
     }
     
     if((int)$idDocument>0)
