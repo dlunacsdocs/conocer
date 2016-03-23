@@ -70,6 +70,13 @@ class ReadXml {
             $EstructuraEmpresa=$xml->EstructuraEmpresas->CrearEstructuraEmpresa;
             $bd->CrearEstructEmpresa($EstructuraEmpresa);
         }
+        
+        /**************************** INSERT EMPRESAS **************************/
+        if (array_search('EstructuraEmpresas', $array_nodos) !== false) {
+            echo "<p>Encontrado InsertEmpresas Peso=" . count($xml->EstructuraEmpresas->InsertEmpresa) . "</p>";
+            $InsertEmpresas = $xml->EstructuraEmpresas->InsertEmpresa;
+            $bd->insertar_empresa($InsertEmpresas);
+        }
 
 
         /******************************* REPOSITORIOS *****************************/
@@ -119,12 +126,6 @@ class ReadXml {
        
         }   
         
-        /**************************** INSERT EMPRESAS **************************/
-        if (array_search('EstructuraEmpresas', $array_nodos) !== false) {
-            echo "<p>Encontrado InsertEmpresas Peso=" . count($xml->EstructuraEmpresas->InsertEmpresa) . "</p>";
-            $InsertEmpresas = $xml->EstructuraEmpresas->InsertEmpresa;
-            $bd->insertar_empresa($InsertEmpresas);
-        }
     }     
 }
 

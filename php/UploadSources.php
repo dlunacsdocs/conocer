@@ -112,7 +112,7 @@ class UploadSources
                 
             if(!isset($CatalogFields["$NombreCatalogo"]))
             {
-                $this->LogLoadMassive($UserName, "No existe el Catálogo $NombreCatalogo en  ".  basename($FileNameXml));
+                MassiveUpload::LogLoadMassive($UserName, "No existe el Catálogo $NombreCatalogo en  ".  basename($FileNameXml));
                 echo "<p>No existe el List <b>$NombreCatalogo</b> en ".  basename($FileNameXml)."</p>";
                 $NoExisteCampo=1;
                 continue;
@@ -169,7 +169,7 @@ class UploadSources
         if(!file_exists($FileNameXml))
         {
             echo "<p>No se encontró el archivo ".basename($FileNameXml)." </p>";
-            $this->LogLoadMassive($UserName, "No se encontró el archivo ".  basename($FileNameXml));  
+            MassiveUpload::LogLoadMassive($UserName, "No se encontró el archivo ".  basename($FileNameXml));  
             return 0;
         }
         
@@ -218,7 +218,7 @@ class UploadSources
             }
             else
             {
-                $this->LogLoadMassive($UserName, "No existe el Campo $Field en  ".  basename($FileNameXml));
+                MassiveUpload::LogLoadMassive($UserName, "No existe el Campo $Field en  ".  basename($FileNameXml));
                 echo "<p>No existe el Campo $Field en ".  basename($FileNameXml)."</p>";
                 $NoExisteCampo=1;
             }
@@ -234,7 +234,7 @@ class UploadSources
                 
             if(!isset($ArrayCamposDefaultXml["$NombreCatalogo"]))
             {
-                $this->LogLoadMassive($UserName, "No existe el List $NombreCatalogo en  ".  basename($FileNameXml));
+                MassiveUpload::LogLoadMassive($UserName, "No existe el List $NombreCatalogo en  ".  basename($FileNameXml));
                 echo "<p>No existe el List <b>$NombreCatalogo</b> en ".  basename($FileNameXml)."</p>";
                 $NoExisteCampo=1;
                 continue;

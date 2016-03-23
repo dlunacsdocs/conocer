@@ -158,6 +158,13 @@ class XML {
             $EstructuraEmpresa=$xml->EstructuraEmpresas->CrearEstructuraEmpresa;
             $bd->CrearEstructEmpresa($EstructuraEmpresa);
         }
+        
+        /**************************** INSERT EMPRESAS **************************/
+        if (array_search('EstructuraEmpresas', $array_nodos) !== false) {
+            echo "<br><p>Encontrado InsertEmpresas Peso=" . count($xml->EstructuraEmpresas->InsertEmpresa) . "</p><br>";
+            $InsertEmpresas = $xml->EstructuraEmpresas->InsertEmpresa;
+            $bd->insertar_empresa($InsertEmpresas);
+        }
 
 
         /******************************* REPOSITORIOS *****************************/
@@ -203,12 +210,6 @@ class XML {
             $bd->insertar_usuario($StructUsuarios); 
         }   
         
-        /**************************** INSERT EMPRESAS **************************/
-        if (array_search('EstructuraEmpresas', $array_nodos) !== false) {
-            echo "<br><p>Encontrado InsertEmpresas Peso=" . count($xml->EstructuraEmpresas->InsertEmpresa) . "</p><br>";
-            $InsertEmpresas = $xml->EstructuraEmpresas->InsertEmpresa;
-            $bd->insertar_empresa($InsertEmpresas);
-        }
         
     }     
     

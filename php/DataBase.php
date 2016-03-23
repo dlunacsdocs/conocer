@@ -535,7 +535,7 @@ class DataBase {
      */
 
     function CrearEstructEmpresa($EstructuraEmpresa) {
-        echo "<p>*****Creando Tabla Empresa Peso =" . count($EstructuraEmpresa) . "******</p>";
+        echo "<p>*****Creando Control de Empresas: " . count($EstructuraEmpresa) . "******</p>";
 //        $NodosEmpresa=$EstructuraEmpresa->children();
         foreach ($EstructuraEmpresa as $Empresa) {
             $DefaultEstruct = $Empresa->DefaultStructProperties->children();
@@ -587,11 +587,17 @@ class DataBase {
             $TablaEmpresa.=" PRIMARY KEY (`IdEmpresa`)" /* Al modificar, modificar también en la llave foranea del query de repositorio */
                     . ") ENGINE=InnoDB AUTO_INCREMENT=1 DEFAULT CHARSET=utf8";
 //            echo  "<p>$TablaEmpresa</p>";
-            if ($this->crear_tabla($DatabaseName, $TablaEmpresa)) {
+            
+            $this->ConsultaQuery($DatabaseName, "DROP TABLE IF  EXISTS CSDocs_Empresas");
+            
+            if (($createEnterpriseResult = $this->ConsultaQuery($DatabaseName, $TablaEmpresa))) {
+                echo "Control de empresas creado.";
                 /* Se guarda la estructura de la tabla definida por el usuario */
                 $configStructure = array("TipoEstructura" => "Empresa", "DataBaseName" => $DatabaseName, "Atributos" => $atributos);
                 $this->WriteConfig("Empresa", $configStructure);
             }
+            else
+                echo "<p><b>Error</b> al crear el control de empresas. $createEnterpriseResult</p>";
         }
     }
 
@@ -601,7 +607,7 @@ class DataBase {
      */
 
     function insertar_empresa($detalle_empresa) {
-        echo "<p>*****Insertando Empresa  Peso Detalle=" . count($detalle_empresa) . "******</p>";
+        echo "<p>*****Insertando Empresas: " . count($detalle_empresa) . "******</p>";
         $InsertEmpresa = $detalle_empresa;
         foreach ($InsertEmpresa as $Empresa) {
             $DataBase = $Empresa['DataBaseName'];
@@ -636,12 +642,12 @@ class DataBase {
             $query = "INSERT INTO CSDocs_Empresas ($CadenaCampos_) VALUES ($cadena_valores_)";
 
 //            echo "<p>$query</p>";
-            echo "<br> Registrando en la instancia $DataBase";
+            echo "<p><br> Registrando en la instancia <b>$DataBase</b></p>";
 
-            if (($Insert = $this->ConsultaInsert($DataBase, $query)))
+            if (($Insert = $this->ConsultaInsertReturnId($DataBase, $query)) > 0)
                 echo "<p>Empresa registrada</p>";
             else
-                echo "Error al registrar empresa con clave $CE. <br>" . $Insert;
+                echo "<b>Error</b> al registrar empresa con clave $CE. <br>" . $Insert;
         }
     }
 
