@@ -21,6 +21,7 @@ var TemplateDesigner = function () {
     var repositoryName = null;
     var enterpriseKey = null;
     var templateName = null;  
+    var oldTemplateName = null; /* Se utiliza en modo edición para identificar cambios en el nombre de la plantilla */
     var templatesTd;
     var templatesTD;
     
@@ -117,7 +118,7 @@ var TemplateDesigner = function () {
                     $(this).find('templateList').each(function(){
                         $(this).find('templateName').each(function(){
                             var templateName = $(this).text();
-
+                            templateName = templateName.replace(/\.[^/.]+$/, "");
                             cont++;
                             icon = '<a class = "btn btn-info viewTemplate" title = "visualizar plantilla"><li class = "fa fa-book fa-lg"></li></a>';
                             
@@ -212,7 +213,9 @@ var TemplateDesigner = function () {
         if(templateName === undefined)
             return Advertencia("El nombre de la plantilla debe estar definida.");
         
-        var template = self.getTemplate(enterpriseKey, repositoryName, templateName);
+        oldTemplateName = templateName;
+        
+        var template = self.getTemplate(enterpriseKey, repositoryName, templateName+".xml");
                 
         var templateContent = self.buildContentOfTemplate(template, 1);
        
@@ -230,13 +233,13 @@ var TemplateDesigner = function () {
         formsDiv.append(templateContent);
         
         BootstrapDialog.show({
-            title: '<i class="fa fa-plus-circle fa-lg"></i> Plantilla',
+            title: '<i class="fa fa-pencil-square fa-lg"></i> Plantilla <input type = "text" id = "templateDesigneNameForm" >',
             message: content,
             closable: true,
             closeByBackdrop: false,
             closeByKeyboard: true,
             size: BootstrapDialog.SIZE_WIDE,
-            type: BootstrapDialog.TYPE_PRIMARY,
+            type: BootstrapDialog.TYPE_DEFAULT,
             buttons: [
                 {
                     label: 'Cerrar',
@@ -246,7 +249,7 @@ var TemplateDesigner = function () {
                 }
             ],
             onshown: function (dialogRef) {
-
+                $('#templateDesigneNameForm').val(templateName);
             }
         });
         
@@ -326,7 +329,7 @@ var TemplateDesigner = function () {
             var fieldType = $(this).find('fieldType').text();
             var fieldLength = $(this).find('fieldLength').text();
             var widthSize = $(this).find('widthSize').text();
-            
+            var formWidth = $(this).find('formWidth').text();
             
             var wrapperConfiguration = $('<div>', {class: "form-group templateWrapper "+wrapperConfigurationTxt, colConfiguration:wrapperConfigurationTxt});
             var labelConfiguration = $('<label>',{for:"templateForm_"+fieldName,
@@ -336,7 +339,8 @@ var TemplateDesigner = function () {
             var form = $('<input>', {class: "form-control", 
                                     fieldName: fieldName,
                                     fieldNameTag: fieldNameTag,
-                                    widthSize: widthSize,
+                                    widthSize: widthSize,   /* Tamaño del select */
+                                    formWidth: formWidth,   /* Tamaño en columnas */
                                     fieldType: fieldType,
                                     fieldLength: fieldLength,
                                     id: "templateForm_" + fieldName,
@@ -351,7 +355,7 @@ var TemplateDesigner = function () {
             formsDiv.append(wrapperConfiguration);
             
             if(updateMode === 1){
-                _buildPophoverOfForm(form);
+                _buildPophoverOfForm(form, updateMode);
             }
             
         });
@@ -374,7 +378,7 @@ var TemplateDesigner = function () {
      * @param {type} form
      * @returns {undefined}
      */
-    var _buildPophoverOfForm = function(form){
+    var _buildPophoverOfForm = function(form, updateMode){
         
         $(form).popover({
             html: true,
@@ -402,12 +406,12 @@ var TemplateDesigner = function () {
                                     <option width = "6">6</option>');
                 
                 /* Botón Eliminar */
-                var buttonRemove = $('<a>', {id:"popoverTemplateButtonDelete" ,class: "btn btn-danger", href: "#"}).append('<li class = "fa fa-trash-o fa-lg"></li>');
+                var buttonRemove = $('<a>', {id:"popoverTemplateButtonDelete" , class: "btn btn-danger", href: "#"}).append('<li class = "fa fa-trash-o fa-lg"></li>');
                 var removeIconWrapper = $('<div>', {class: "col-xs-4 col-sm-4 col-md-4"}).append(buttonRemove);
                 formGroup = $('<div>', {class: "form-group"}).append(removeIconWrapper);
                 
                 /* Boton Modifcar */
-                var buttonModify = $('<a>', {id: "popoverTemplateButtonModify",class: "btn btn-warning", href: "#"}).append($('<li>', {class: "fa fa-pencil-square-o fa-lg"}));
+                var buttonModify = $('<a>', {id: "popoverTemplateButtonModify", class: "btn btn-warning", href: "#"}).append($('<li>', {class: "fa fa-pencil-square-o fa-lg"}));
                 var buttonAcceptWrapper = $('<div>', {class: "col-xs-4 col-sm-4 col-md-4"}).append(buttonModify);
                 formGroup.append(buttonAcceptWrapper);
                 formHorizontal.append(formGroup);
@@ -421,11 +425,22 @@ var TemplateDesigner = function () {
             $(this).data("bs.popover").tip().css("min-width", "250px"); 
             
         }).on("shown.bs.popover", function(){
-            var widthSize = $(this).attr('widthSize');
+            var field = $(this);
+            var widthSize = $(this).attr('widthsize');
             widthSize = parseInt(widthSize) / 2;
+            console.log(widthSize);
+            $('#popoverTemplateButtonModify').unbind('click').click(function(){
+                console.log("click modify");
+                _modifyField(field);
+                if(updateMode === 1)
+                    _saveTemplate();
+            });
             
-            $('#popoverTemplateButtonModify').click(_modifyField($(this)));
-            $('#popoverTemplateButtonDelete').click(_deleteField($(this)));            
+            $('#popoverTemplateButtonDelete').unbind('click').click(function(){
+                console.log("click delete");
+                _deleteField(field);
+            });            
+            
             $('#popoverTemplateWidthSelect option[width='+ widthSize + ']').prop("selected", true);
             
         });
@@ -438,12 +453,16 @@ var TemplateDesigner = function () {
      */
     var _modifyField = function(field){
         console.log('modifing field');
-        var oldWidth = field.attr('fieldSize');
+        console.log(field);
+        var oldWidth = $(field).attr('widthsize');
         var width = $('#popoverTemplateWidthSelect option:selected').attr('width');
         width = parseInt(width) * 2;
         var labelWidth = 3;
         var formWidth = 9;
-
+        
+        var oldFormWidth =  $(field).attr('formWidth');
+        var oldLabelWidth = 12 - parseInt(oldFormWidth);
+        
         if (width <= 0)
             width = 1;
 
@@ -451,41 +470,50 @@ var TemplateDesigner = function () {
             labelWidth = 6;
             formWidth = 6;
         }
+        
+        if(oldWidth <= 4){
+            oldLabelWidth = 3;
+            oldFormWidth = 9;
+        }
+        
+        console.log('oldWidth '+oldWidth);
         console.log("Parent");
-        console.log($(field).parent());
-        
-        var formWrapper = $(field).parent();
-        formWrapper.removeAttr('col-md-'+oldWidth).attr('col-md-'+width);
-        
-        var labelColString = 'col-xs-' + labelWidth + ' col-sm-' + labelWidth + ' col-md-' + labelWidth;
+        console.log($(field).parents());
+                 
         var colString = "col-xs-" + width + " " + "col-sm-" + width + " " + "col-md-" + width;     
         var colStringDivForm = "col-xs-"+formWidth+" col-sm-"+formWidth+" col-md-"+formWidth;
+        var labelColString = 'col-xs-' + labelWidth + ' col-sm-' + labelWidth + ' col-md-' + labelWidth;
         
-        var oldLabelColString = 'col-xs-' + labelWidth + ' col-sm-' + labelWidth + ' col-md-' + labelWidth;
-        var oldColString = "col-xs-" + width + " " + "col-sm-" + width + " " + "col-md-" + width;     
-        var oldColStringDivForm = "col-xs-"+formWidth+" col-sm-"+formWidth+" col-md-"+formWidth;
+        var oldColStringDivForm = "col-xs-"+oldFormWidth+" col-sm-"+oldFormWidth+" col-md-"+oldFormWidth;
+        var oldLabelColString = 'col-xs-' + oldLabelWidth + ' col-sm-' + oldLabelWidth + ' col-md-' + oldLabelWidth;
+        var oldColString = "col-xs-" + oldWidth + " " + "col-sm-" + oldWidth + " " + "col-md-" + oldWidth;     
         
-//        var inline =    '<div class = "form-group templateWrapper ' + colString + '" colConfiguration = "'+colString+'">\n\
-//                            <label \n\
-//                                for = "templateForm_' + fieldName + '" \n\
-//                                class = "control-label ' + labelColString + '"\n\
-//                                colConfiguration = "'+labelColString+'"\n\
-//                            >' 
-//                                + fieldNameTag + 
-//                            '</label>\n\
-//                            <div class = "templateField col-md-' + formWidth + '">\n\
-//                                <input type = "text" \n\
-//                                    class = "form-control" \n\
-//                                    fieldName = "' + fieldName+'" \n\
-//                                    fieldNameTag = "' + fieldNameTag + '" \n\
-//                                    fieldType = "' + fieldType + '" \n\
-//                                    fieldLength = "' + fieldLength + '" \n\
-//                                    widthSize = "' + width + '"\n\
-//                                    id = "templateForm_' + fieldName + '"\n\
-//                                    colConfiguration = "' + colStringDivForm + '"\n\
-//                                >\n\
-//                            </div>\n\
-//                        </div>';
+        console.log(oldLabelColString);
+        console.log(oldColString);
+        console.log(oldColStringDivForm);
+        
+        var formGroup = $(field).parents()[1];
+        console.log(formGroup);
+        
+        var formWrapper = $(formGroup).find('.templateField')[0];
+        console.log(formWrapper);
+        
+        $(formGroup).removeClass(oldColString).addClass(colString)
+                .removeAttr('colConfiguration').attr('colConfiguration', colString);
+        
+        $(formWrapper).removeClass('col-md-'+oldWidth).addClass('col-md-'+width);
+        
+        $(field).removeAttr('colConfiguration').attr('colConfiguration', colStringDivForm)
+                .removeAttr('widthSize').attr('widthSize', width);
+        
+        var label = $(formGroup).children()[0];
+        console.log(label);
+        
+        
+        $(label).removeClass(oldLabelColString).addClass(labelColString)
+                .removeAttr('colConfiguration').attr('colConfiguration', labelColString);
+        
+
     };
     
     /**
@@ -599,7 +627,7 @@ var TemplateDesigner = function () {
                         if(!templatename.length > 0)
                             return Advertencia("Debe asignar un nombre a la plantilla");
                         
-                        templateName = templatename+".xml";
+                        templateName = templatename;
 
                         button.spin();
                         dialogRef.enableButtons(false);
@@ -663,7 +691,7 @@ var TemplateDesigner = function () {
 
                 enterpriseForm.focus();
 
-                _newTemplateInterface("DANIEL", 5, "Documentos");
+//                _newTemplateInterface("DANIEL", 5, "Documentos");
                 self.setTemplateName("pruebaTemplate");
             }
         });
@@ -702,7 +730,7 @@ var TemplateDesigner = function () {
         _insertBottomPanel(content);
 
         BootstrapDialog.show({
-            title: '<i class="fa fa-cog fa-lg"></i> Diseñador de Plantillas',
+            title: '<i class="fa fa-cog fa-lg"></i> Diseñador de Plantillas <input type = "text" id = "templateDesigneNameForm" value = "' + templateName + '">',
             message: content,
             closable: true,
             closeByBackdrop: false,
@@ -939,6 +967,7 @@ var TemplateDesigner = function () {
                                 for = "templateForm_' + fieldName + '" \n\
                                 class = "control-label ' + labelColString + '"\n\
                                 colConfiguration = "'+labelColString+'"\n\
+                                labelWidth = "' + labelWidth + '"\n\
                             >' 
                                 + fieldNameTag + 
                             '</label>\n\
@@ -950,6 +979,7 @@ var TemplateDesigner = function () {
                                     fieldType = "' + fieldType + '" \n\
                                     fieldLength = "' + fieldLength + '" \n\
                                     widthSize = "' + width + '"\n\
+                                    formWidth = "' + formWidth + '"\n\
                                     id = "templateForm_' + fieldName + '"\n\
                                     colConfiguration = "' + colStringDivForm + '"\n\
                                 >\n\
@@ -1027,9 +1057,9 @@ var TemplateDesigner = function () {
         });
     };
 
-    var _saveTemplate = function () {        
+    var _saveTemplate = function (updateMode) {        
         var status = 0;
-        var xml = _createXmlForSaving();
+        var xml = _createXmlForSaving(updateMode);
 
         if(xml === undefined)
             return 0;
@@ -1040,7 +1070,7 @@ var TemplateDesigner = function () {
         dataType: "html",
         type: 'POST',
         url: "Modules/php/TemplateDesigner.php",
-        data: {option: "saveTemplate", xml: xml},
+        data: {option: "saveTemplate", xml: xml, updateMode:updateMode, oldTemplateName: oldTemplateName},
         success: function (respuesta) {
             if ($.parseXML(respuesta) === null)
                 return errorMessage(respuesta);
@@ -1082,9 +1112,15 @@ var TemplateDesigner = function () {
      * @description Genera la cadena XML para almacenar la plantilla.
      * @returns {undefined}
      */ 
-    var _createXmlForSaving = function () {
+    var _createXmlForSaving = function (updateMode) {
         console.log("creating XML for saving");
-        var xml = "<template version='1.0' encoding='UTF-8' enterpriseKey = '"+enterpriseKey+"' repositoryName = '"+ repositoryName+ "' templateName = '"+templateName+"'>";
+        
+        templateName = $.trim($('#templateDesigneNameForm').val());
+        
+        if(templateName.length === 0)
+            return Advertencia("Seleccione un nombre válido para la plantilla");
+        
+        var xml = "<template version='1.0' encoding='UTF-8' enterpriseKey = '"+enterpriseKey+"' repositoryName = '"+ repositoryName+ "' templateName = '"+templateName+".xml"+"'>";
         var templateWrapper = $('.templateWrapper');
         var headerWrapper = $('.headerWrapper');
         
@@ -1136,6 +1172,7 @@ var TemplateDesigner = function () {
                     <fieldType>' + $(this).attr('fieldType') + '</fieldType>\n\
                     <fieldLength>' + $(this).attr('fieldLength') + '</fieldLength>\n\
                     <widthSize>' + $(this).attr('widthSize') + '</widthSize>\n\
+                    <formWidth>' + $(this).attr('formWidth') + '</formWidth>\n\
                     <wrapperConfiguration>' + wrapperConfigration + '</wrapperConfiguration>\n\
                     <labelConfiguration>' + labelConfigration + '</labelConfiguration>\n\
                     <inputConfigration> ' + $(this).attr('colConfiguration') + '</inputConfigration> \n\

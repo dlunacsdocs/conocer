@@ -139,6 +139,8 @@ class TemplateDesigner {
         $RoutFile = dirname(getcwd());
         $instanceName = $userData['dataBaseName'];
         $xmlString = filter_input(INPUT_POST, "xml");
+        $updateMode = filter_input(INPUT_POST, "updateMode");
+        
         if(!($xml = simplexml_load_string($xmlString)))
                 return XML::XMLReponse ("Error", 0, "Error al intentar formar el objeto XML");
         
@@ -158,8 +160,9 @@ class TemplateDesigner {
         $repositoryName = $attributes['repositoryName'];
         $destinPath = dirname($RoutFile)."/Configuracion/Templates/$instanceName/$enterpriseKey/$repositoryName";
         
-        if(file_exists($destinPath."/".$templateName))
-                return XML::XMLReponse ("Error", 0, "El nombre de la plantilla ya existe");
+        if(strcasecmp($updateMode, "1") != 0)
+            if(file_exists($destinPath."/".$templateName))
+                    return XML::XMLReponse ("Error", 0, "El nombre de la plantilla ya existe");
         
         if(!file_exists($destinPath))
             if(! ( $createDir = mkdir ($destinPath, 0777, true)))
