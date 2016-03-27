@@ -202,7 +202,11 @@ var TemplateDesigner = function () {
         return templates;
     };
     
-    this.openTemplate = function(enterpriseKey, repositoryName, templateName){
+    this.openTemplate = function(enterprisekey, repositoryname, templatename){
+        enterpriseKey = enterprisekey;
+        repositoryName = repositoryname;
+        templateName = templatename;
+        
         console.log("opnenning template");
         if(enterpriseKey === undefined)
             return Advertencia("La clave de empresa debe estar definida.");
@@ -221,9 +225,9 @@ var TemplateDesigner = function () {
        
         if(templateContent === 0)
             return Advertencia("No fue posible abrir la plantilla");
-        console.log("objeto Template:");
-        console.log(templateContent);
-        
+//        console.log("objeto Template:");
+//        console.log(templateContent);
+
         var content = $('<div>');
         
         var formsDiv = $('<form>', {class: "form-horizontal"});
@@ -365,7 +369,7 @@ var TemplateDesigner = function () {
                 //the 'is' for buttons that trigger popups
                 //the 'has' for icons within a button that triggers a popup
                 if (!$(this).is(e.target) && $(this).has(e.target).length === 0 && $('.popover').has(e.target).length === 0) {
-                    $(this).popover('hide');
+                        $(this).popover('hide');
                 }
             }); 
         });
@@ -376,10 +380,14 @@ var TemplateDesigner = function () {
     /**
      * @description En modo update cada uno de los formularios podrá editarse mediante la construcción de un pophover.
      * @param {type} form
+     * @param {boolean} updateMode Modo edición.
      * @returns {undefined}
      */
     var _buildPophoverOfForm = function(form, updateMode){
-        
+        var modified = 0;
+        var fieldConfiguration = _getFieldConfiguration(form);
+        console.log("building");
+        console.log(fieldConfiguration);
         $(form).popover({
             html: true,
             title: function () {
@@ -401,15 +409,18 @@ var TemplateDesigner = function () {
                 _modifyFormTarget(field);
                 if(updateMode === 1)
                     _saveTemplate(updateMode);
+                field.popover('hide');
+                modified = 0;
             });
             
             $('#popoverTemplateButtonDelete').unbind('click').click(function(){
-                _deleteField(field);
+                _deleteFieldConfirm(field);
             });            
             
             $('#popoverTemplateWidthSelect option[width='+ widthSize + ']').prop("selected", true);
             
             $('#popoverTemplateWidthSelect').unbind('change').change(function(){
+                modified = 1;
                 _modifyFieldWidth(field);
             });
             
@@ -417,14 +428,25 @@ var TemplateDesigner = function () {
                 _modifyFormTarget();
             });
             
+        }).on('hide.bs.popover', function(){
+            if(modified){
+                console.log("Debe modificarse");
+                console.log("hide");
+                console.log(form);
+                console.log(modified);
+                console.log(fieldConfiguration);
+                _setFieldConfiguration(form, fieldConfiguration);
+        }
+            
         });
     };
     
     /**
      * @description Devuelve un objeto que compone el contenido del popover de edición de campos.
+     * @param {object} field Objeto de referencia al formulario activo
      * @returns {$}
      */
-    var _getPopoverBody = function(field){        
+    var _getPopoverBody = function(field){
         var formHorizontal = $('<div>', {class: "form-horizontal"});
         var formGroup = $('<div>', {class: "form-group"});
         var formWrapper = $('<div>', {class: "col-md-9"});
@@ -468,6 +490,72 @@ var TemplateDesigner = function () {
     };
     
     /**
+     * @description Obtiene los parámetros de configuración de un campo.
+     * @param {type} field
+     * @returns {TemplateDesigner._getFieldConfiguration.TemplateDesignerAnonym$39}
+     */
+    var _getFieldConfiguration = function(field){
+        var width = $(field).attr('widthsize');
+        var formWidth = $(field).attr('formwidth');
+        var labelWidth = 12 - parseInt(formWidth);      
+        
+        var colString = "col-xs-" + width + " " + "col-sm-" + width + " " + "col-md-" + width;     
+        var colStringDivForm = "col-xs-"+formWidth+" col-sm-"+formWidth+" col-md-"+formWidth;
+        var labelColString = 'col-xs-' + labelWidth + ' col-sm-' + labelWidth + ' col-md-' + labelWidth;
+        
+        return {colString:colString, colStringDivForm: colStringDivForm, labelColString: labelColString,
+            width: width, labelWidth: labelWidth, formWidth: formWidth};
+    };
+    
+    /**
+     * @description Inserta una configuración a un campo.
+     * @param {type} field
+     * @param {type} data
+     * @returns {undefined}
+     */
+    var _setFieldConfiguration = function(field, data){
+        console.log("setFieldConfiguration");
+        var width = data.width;
+        var formWidth = data.formWidth;
+        var colString = data.colString;
+        var colStringDivForm = data.colStringDivForm;
+        var labelColString = data.labelColString;
+        
+        console.log(data);
+        console.log("colString: "+colString);
+        console.log("colStringDivForm: "+colStringDivForm);
+        console.log("labelColString: "+labelColString);
+        
+        var formGroup = $(field).parents()[1];        
+        var formWrapper = $(formGroup).find('.templateField')[0];
+        var label = $(formGroup).children()[0];
+        
+        console.log("formGroup");
+        console.log(formGroup);
+        console.log("formWrapper");
+        console.log(formWrapper);
+        console.log("label");
+        console.log(label);
+        
+        $(formGroup).removeClass()
+                .addClass('form-group').addClass('templateFormWrapper').addClass(colString)
+                .removeAttr('colConfiguration').attr('colConfiguration', colString);
+        
+        $(formWrapper).removeClass()
+                .addClass('templateField').addClass(colStringDivForm);
+        
+        $(field).removeAttr('colConfiguration').attr('colConfiguration', colStringDivForm)
+                .removeAttr('widthSize').attr('widthSize', width)
+                .removeAttr('formWidth').attr('formWidth',formWidth);
+                
+        $(label).removeClass()
+                .addClass(labelColString)
+                .addClass('control-label').addClass(labelColString)
+                .removeAttr('colConfiguration').attr('colConfiguration', labelColString);
+                
+    };
+    
+    /**
      * @description Modifica  tamaño de un campo del diseñador de formas
      * @param {type} field
      * @returns {undefined}
@@ -477,9 +565,9 @@ var TemplateDesigner = function () {
         var width = $('#popoverTemplateWidthSelect option:selected').attr('width');
         var labelWidth = 3;
         var formWidth = 9;
-        var oldWidth = $(field).attr('widthsize');
-        var oldFormWidth =  $(field).attr('formWidth');
-        var oldLabelWidth = 12 - parseInt(oldFormWidth);
+//        var oldWidth = $(field).attr('widthsize');
+//        var oldFormWidth =  $(field).attr('formWidth');
+//        var oldLabelWidth = 12 - parseInt(oldFormWidth);
         width = parseInt(width) * 2;
         
         if (width <= 4) {
@@ -491,25 +579,34 @@ var TemplateDesigner = function () {
         var colStringDivForm = "col-xs-"+formWidth+" col-sm-"+formWidth+" col-md-"+formWidth;
         var labelColString = 'col-xs-' + labelWidth + ' col-sm-' + labelWidth + ' col-md-' + labelWidth;
         
-        var oldColStringDivForm = "col-xs-"+oldFormWidth+" col-sm-"+oldFormWidth+" col-md-"+oldFormWidth;
-        var oldLabelColString = 'col-xs-' + oldLabelWidth + ' col-sm-' + oldLabelWidth + ' col-md-' + oldLabelWidth;
-        var oldColString = "col-xs-" + oldWidth + " " + "col-sm-" + oldWidth + " " + "col-md-" + oldWidth;     
+        console.log(colString);
+        console.log(colStringDivForm);
+        console.log(labelColString);
+        
+//        var oldColStringDivForm = "col-xs-"+oldFormWidth+" col-sm-"+oldFormWidth+" col-md-"+oldFormWidth;
+//        var oldLabelColString = 'col-xs-' + oldLabelWidth + ' col-sm-' + oldLabelWidth + ' col-md-' + oldLabelWidth;
+//        var oldColString = "col-xs-" + oldWidth + " " + "col-sm-" + oldWidth + " " + "col-md-" + oldWidth;     
         
         var formGroup = $(field).parents()[1];        
         var formWrapper = $(formGroup).find('.templateField')[0];
         var label = $(formGroup).children()[0];
         
-        $(formGroup).removeClass(oldColString).addClass(colString)
-                .removeAttr('colConfiguration').attr('colConfiguration', colString);
+        var data = {colString:colString, colStringDivForm:colStringDivForm, labelColString:labelColString,
+            width:width, labelWidth:labelWidth, formWidth:formWidth};
+        console.log(data);
+        _setFieldConfiguration(field, data);
         
-        $(formWrapper).removeClass(oldColStringDivForm).addClass(colStringDivForm);
-        
-        $(field).removeAttr('colConfiguration').attr('colConfiguration', colStringDivForm)
-                .removeAttr('widthSize').attr('widthSize', width)
-                .removeAttr('formWidth').attr('formWidth',formWidth);
-                
-        $(label).removeClass(oldLabelColString).addClass(labelColString)
-                .removeAttr('colConfiguration').attr('colConfiguration', labelColString);
+//        $(formGroup).removeClass(oldColString).addClass(colString)
+//                .removeAttr('colConfiguration').attr('colConfiguration', colString);
+//        
+//        $(formWrapper).removeClass(oldColStringDivForm).addClass(colStringDivForm);
+//        
+//        $(field).removeAttr('colConfiguration').attr('colConfiguration', colStringDivForm)
+//                .removeAttr('widthSize').attr('widthSize', width)
+//                .removeAttr('formWidth').attr('formWidth',formWidth);
+//                
+//        $(label).removeClass(oldLabelColString).addClass(labelColString)
+//                .removeAttr('colConfiguration').attr('colConfiguration', labelColString);
         
     };
     
@@ -526,14 +623,65 @@ var TemplateDesigner = function () {
         $(label).html($.trim(newLabel));
     };
      
-    /**
+    var _deleteFieldConfirm = function(field){
+        console.log('deleting field');
+        var formGroup = $(field).parents()[1];        
+        var label = $(formGroup).children()[0];
+        
+        var content = $('<div>').append('<p>Desea continuar para eliminar el campo <b>' + $(label).html() + '</b></p>');
+        BootstrapDialog.show({
+            title: '<li class = "fa fa-exclamation-triangle fa-lg"></li> Mensaje de Confirmación',
+            message: content,
+            closable: true,
+            closeByBackdrop: true,
+            closeByKeyboard: true,
+            size: BootstrapDialog.SIZE_SMALL,
+            type: BootstrapDialog.TYPE_DANGER,
+            buttons: [
+                {
+                    label: "Eliminar",
+                    cssClass: "btn-danger",
+                    icon: "fa fa-trash-o fa-lg",
+                    hotkey: 13,
+                    action: function(dialogRef){
+                        var button = this;
+                        button.spin();
+                        dialogRef.enableButtons(false);
+                        dialogRef.setClosable(false);
+                        if(_deleteField(field)){
+                            dialogRef.close();
+                            field.popover('destroy');
+                        }
+                        else{
+                            button.stopSpin();
+                            dialogRef.enableButtons(true);
+                            dialogRef.setClosable(true);
+                        }
+                    }
+                },
+                {
+                    label: 'Cerrar',
+                    action: function (dialogRef) {
+                        dialogRef.close();
+                    }
+                }
+            ],
+            onshown: function (dialogRef) {
+                
+            }
+        });
+    };
+     
+     /**
      * @description Elimina un campo del diseñador de formas.
      * @param {type} field
      * @returns {undefined}
      */
-    var _deleteField = function(field){
-        console.log('deleting field');
-        
+    var _deleteField = function(field){        
+        var formGroup = $(field).parents()[1];      
+        $(formGroup).remove();
+        _saveTemplate(1);
+        return 1;
     };
     
     /**
@@ -1091,15 +1239,16 @@ var TemplateDesigner = function () {
                 status = 1;
                 var message = $(this).find('Mensaje').text();
                 Notificacion(message);
-                templatesTd.$('tr.selected').removeClass('selected');
-                var icon = '<a class = "btn btn-info viewTemplate" title = "visualizar plantilla"><li class = "fa fa-book fa-lg"></li></a>';
-                var data = [enterpriseKey, repositoryName, templateName, icon];
+                if(updateMode !== 1){
+                    templatesTd.$('tr.selected').removeClass('selected');
+                    var icon = '<a class = "btn btn-info viewTemplate" title = "visualizar plantilla"><li class = "fa fa-book fa-lg"></li></a>';
+                    var data = [enterpriseKey, repositoryName, templateName, icon];
 
-                var ai = templatesTD.row.add(data).draw();
-                var n = templatesTd.fnSettings().aoData[ ai[0] ].nTr;
-                n.setAttribute('class', "selected");
-                _setActionToViewTemplateIcon();
-                
+                    var ai = templatesTD.row.add(data).draw();
+                    var n = templatesTd.fnSettings().aoData[ ai[0] ].nTr;
+                    n.setAttribute('class', "selected");
+                    _setActionToViewTemplateIcon();
+                }
             });
 
             $(xml).find('Error').each(function ()
@@ -1140,6 +1289,8 @@ var TemplateDesigner = function () {
         if(templateWrapper.length === 0)
             return Advertencia('Debe agregar por lo menos un campo');
         
+        console.log(templateWrapper);
+        
         /* Se guarda la configuración de la cabecera */
                 
         var dependeceData = $(headerWrapper).find('#textareaDependenceData').val();
@@ -1168,29 +1319,28 @@ var TemplateDesigner = function () {
         /* Se guarda la configuración de cada formulario */
         $(templateWrapper).each(function(){
             var wrapperConfigration = $(this).attr('colconfiguration');
-            var labelConfigration;
-            
-            $(this).find('label').each(function(){
-                    labelConfigration = $(this).attr('colconfiguration');
-            });
+            var label = $(this).find('label')[0];
+            var labelConfiguration = $(label).attr('colconfiguration');
+            console.log($(this).find('label')[0]);
+            console.log(labelConfiguration);
                         
-            $(this).find('input').each(function(){
-                var fieldName = $(this).attr('fieldName');
-                
-                if(fieldName !== undefined)
-                    xml += '\
-                    <field>\n\
-                        <fieldName>' + fieldName + '</fieldName>\n\
-                        <fieldNameTag>' + $(this).attr('fieldNameTag') + '</fieldNameTag>\n\
-                        <fieldType>' + $(this).attr('fieldType') + '</fieldType>\n\
-                        <fieldLength>' + $(this).attr('fieldLength') + '</fieldLength>\n\
-                        <widthSize>' + $(this).attr('widthSize') + '</widthSize>\n\
-                        <formWidth>' + $(this).attr('formWidth') + '</formWidth>\n\
-                        <wrapperConfiguration>' + wrapperConfigration + '</wrapperConfiguration>\n\
-                        <labelConfiguration>' + labelConfigration + '</labelConfiguration>\n\
-                        <inputConfigration> ' + $(this).attr('colConfiguration') + '</inputConfigration> \n\
-                    </field>';            
-            });
+            var field = $(this).find('input')[0];
+            console.log(field);
+            var fieldName = $(field).attr('fieldName');
+
+            if(fieldName !== undefined)
+                xml += '\
+                <field>\n\
+                    <fieldName>' + fieldName + '</fieldName>\n\
+                    <fieldNameTag>' + $(field).attr('fieldNameTag') + '</fieldNameTag>\n\
+                    <fieldType>' + $(field).attr('fieldType') + '</fieldType>\n\
+                    <fieldLength>' + $(field).attr('fieldLength') + '</fieldLength>\n\
+                    <widthSize>' + $(field).attr('widthSize') + '</widthSize>\n\
+                    <formWidth>' + $(field).attr('formWidth') + '</formWidth>\n\
+                    <wrapperConfiguration>' + wrapperConfigration + '</wrapperConfiguration>\n\
+                    <labelConfiguration>' + labelConfiguration + '</labelConfiguration>\n\
+                    <inputConfigration> ' + $(field).attr('colConfiguration') + '</inputConfigration> \n\
+                </field>';            
         });
         
         xml+= "</template>";

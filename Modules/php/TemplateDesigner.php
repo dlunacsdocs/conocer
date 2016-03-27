@@ -160,9 +160,14 @@ class TemplateDesigner {
         $repositoryName = $attributes['repositoryName'];
         $destinPath = dirname($RoutFile)."/Configuracion/Templates/$instanceName/$enterpriseKey/$repositoryName";
         
-        if(strcasecmp($updateMode, "1") != 0)
+        if(strcasecmp($updateMode, "1") != 0){
             if(file_exists($destinPath."/".$templateName))
                     return XML::XMLReponse ("Error", 0, "El nombre de la plantilla ya existe");
+        }
+        else{
+            if(file_exists($destinPath."/".$templateName))
+                unlink ($destinPath."/".$templateName);
+        }
         
         if(!file_exists($destinPath))
             if(! ( $createDir = mkdir ($destinPath, 0777, true)))
@@ -170,7 +175,10 @@ class TemplateDesigner {
     
         $xml->saveXML($destinPath."/".$templateName);
         
-        XML::XMLReponse("templateSaved", 1, "Plantilla $templateName almacenada");
+        if(strcasecmp($updateMode, "1") == 0)
+            XML::XMLReponse("templateSaved", 1, "Plantilla $templateName actualizada");
+        else
+            XML::XMLReponse("templateSaved", 1, "Plantilla $templateName almacenada");
     }
 }
 
