@@ -220,21 +220,15 @@ var TemplateDesigner = function () {
         oldTemplateName = templateName;
         
         var template = self.getTemplate(enterpriseKey, repositoryName, templateName+".xml");
-                
         var templateContent = self.buildContentOfTemplate(template, 1);
-       
         if(templateContent === 0)
             return Advertencia("No fue posible abrir la plantilla");
 //        console.log("objeto Template:");
 //        console.log(templateContent);
 
         var content = $('<div>');
-        
-        var formsDiv = $('<form>', {class: "form-horizontal"});
-        var formWrapper = $('<div>', {class: "row"}).append(formsDiv);
-        content.append(formWrapper);
-        
-        formsDiv.append(templateContent);
+
+        content.append(templateContent);
         
         BootstrapDialog.show({
             title: '<i class="fa fa-pencil-square fa-lg"></i> Plantilla <input type = "text" id = "templateDesigneNameForm" >',
@@ -254,6 +248,9 @@ var TemplateDesigner = function () {
             ],
             onshown: function (dialogRef) {
                 $('#templateDesigneNameForm').val(templateName);
+                var formHorizontal = $(templateContent).find('.form-horizontal')[0];
+                _setBottomPanelData($(formHorizontal), 1);
+                _removeRemainingFields();
             }
         });
         
@@ -318,7 +315,7 @@ var TemplateDesigner = function () {
         dependenceDataDiv.append(textareaDependenceData);
         textareaDependenceData.append(dependeceData);
         _insertBottomPanel(content);
-
+                
         if(updateMode === 0)
             dependenceDataDiv.append(dependeceData);            
         
@@ -364,7 +361,13 @@ var TemplateDesigner = function () {
             
         });
         
-        $('body').on('click', function (e) {
+        _hidePopoverClickOutside(formsDiv);
+        
+        return content;
+    };
+    
+    var _hidePopoverClickOutside = function(formsDiv){
+        $('body').unbind('click').on('click', function (e) {
             $(formsDiv).find('input').each(function () {
                 //the 'is' for buttons that trigger popups
                 //the 'has' for icons within a button that triggers a popup
@@ -373,8 +376,27 @@ var TemplateDesigner = function () {
                 }
             }); 
         });
+    };
+    
+    /**
+     * @descripcion Obtiene los campos que no se han ingresado a la plantilla.
+     * @param {object} fields Objeto con los campos del sistema. 
+     * @returns {undefined}
+     */
+    var _removeRemainingFields = function(){
+        var mappedFields = $('.templateFormWrapper');
+        $(mappedFields).each(function(){
+            var field = $(this).find('input')[0];
+            var fieldName = $(field).attr('fieldName');
+            
+            $('#bottomPanelFieldSelect option[fieldName = ' + fieldName + ']').remove();
+        });
         
-        return content;
+        var templateBarcodeWrapper = $('.templateBarcodeWrapper');
+        if(templateBarcodeWrapper.length < 0)
+            $('#bottomPanelFieldSelect option[fieldName = CSDocs_barcode]').remove();
+        
+        $('#bottomPanelFieldSelect').change();
     };
     
     /**
@@ -409,8 +431,8 @@ var TemplateDesigner = function () {
                 _modifyFormTarget(field);
                 if(updateMode === 1)
                     _saveTemplate(updateMode);
-                field.popover('hide');
                 modified = 0;
+                field.popover('hide');
             });
             
             $('#popoverTemplateButtonDelete').unbind('click').click(function(){
@@ -583,10 +605,6 @@ var TemplateDesigner = function () {
         console.log(colStringDivForm);
         console.log(labelColString);
         
-//        var oldColStringDivForm = "col-xs-"+oldFormWidth+" col-sm-"+oldFormWidth+" col-md-"+oldFormWidth;
-//        var oldLabelColString = 'col-xs-' + oldLabelWidth + ' col-sm-' + oldLabelWidth + ' col-md-' + oldLabelWidth;
-//        var oldColString = "col-xs-" + oldWidth + " " + "col-sm-" + oldWidth + " " + "col-md-" + oldWidth;     
-        
         var formGroup = $(field).parents()[1];        
         var formWrapper = $(formGroup).find('.templateField')[0];
         var label = $(formGroup).children()[0];
@@ -595,18 +613,6 @@ var TemplateDesigner = function () {
             width:width, labelWidth:labelWidth, formWidth:formWidth};
         console.log(data);
         _setFieldConfiguration(field, data);
-        
-//        $(formGroup).removeClass(oldColString).addClass(colString)
-//                .removeAttr('colConfiguration').attr('colConfiguration', colString);
-//        
-//        $(formWrapper).removeClass(oldColStringDivForm).addClass(colStringDivForm);
-//        
-//        $(field).removeAttr('colConfiguration').attr('colConfiguration', colStringDivForm)
-//                .removeAttr('widthSize').attr('widthSize', width)
-//                .removeAttr('formWidth').attr('formWidth',formWidth);
-//                
-//        $(label).removeClass(oldLabelColString).addClass(labelColString)
-//                .removeAttr('colConfiguration').attr('colConfiguration', labelColString);
         
     };
     
@@ -872,7 +878,7 @@ var TemplateDesigner = function () {
         var logoThumbnail = $('<div>', {id: "logoWrapper", class: "col-xs-3 col-md-3", logoPath:""}).append('<a href = "#" class = "thumbnail"><i class="fa fa-picture-o fa-5x icon-border" style = "font-size: 10vw;"></i></a>');
         var qrThumbnail = $('<div>', {id: "qrWrapper" ,class: 'col-xs-3 col-md-3', qrPath:""}).append('<a href = "#" class = "thumbnail"><i class="fa fa-qrcode fa-5x icon-border" style = "font-size: 12vw;"></i></a>');
         var textareaDependenceData = $('<textarea>', {class: "form-control", id: "textareaDependenceData", placeHolder: "Datos de la dependecia"});
-
+        
         dependenceData.append(textareaDependenceData);
         
         header.append(logoThumbnail);
@@ -922,55 +928,8 @@ var TemplateDesigner = function () {
                     }
                 }
             ],
-            onshown: function (dialogRef) {
-                var bottomPanelSelectWidth = $('#bottomPanelSelectWidth');
-                var buttonPanelSelectButtonAdd = $('#buttonPanelSelectButtonAdd');
-                var bottomPanelFieldSelect = $('#bottomPanelFieldSelect');
-                var bottomPanelFieldType = $('#bottomPanelFieldType');
-                var bottomPanelFormTag = $('#bottomPanelFormTag');
-
-                bottomPanelSelectWidth.append('<option width = "1">1</option>\n\
-                                                <option width = "2">2</option>\n\
-                                                <option width = "3">3</option>\n\
-                                                <option width = "4">4</option>\n\
-                                                <option width = "5">5</option>\n\
-                                                <option width = "6">6</option>');
-                                                
-                var forms = GeStructure(repositoryName);
-                
-                $(forms).find("Campo").each(function (index) {
-                    var fieldName = $(this).find("name").text();
-                    var fieldType = $(this).find("type").text();
-                    var fieldLength = $(this).find("long").text();
-                    var required = $(this).find("required").text();
-
-                    var option = $('<option>', {"fieldName": fieldName, "fieldType": fieldType, "fieldLength": fieldLength}).append(fieldName);
-                    
-                    if(index===0){
-                        bottomPanelFormTag.val(fieldName);
-                        bottomPanelFieldType.val(fieldType);
-                    }
-                    
-                    bottomPanelFieldSelect.append(option);
-                });
-                                
-                bottomPanelFieldSelect.change(function () {
-                    _setFielDetail($(this),bottomPanelFormTag, bottomPanelFieldType);
-                });
-
-                /* Otras opciones de campo */
-
-                bottomPanelFieldSelect.append($('<option>', {"fieldName": "CSDocs_textType", "fieldType": "text"}).append("Ingresar Texto"));
-                bottomPanelFieldSelect.append($('<option>', {"fieldName": "CSDocs_barcode", "fieldType": "Código de Barras"}).append('Código de Barras'));
-                
-                buttonPanelSelectButtonAdd.click(function () {
-                    var fieldTag = $.trim(bottomPanelFormTag.val());
-                    
-                    if (fieldTag.length > 0)
-                        _addForm(formsDiv, bottomPanelSelectWidth, bottomPanelFieldSelect, bottomPanelFormTag);
-                    else
-                        Advertencia("Ingrese una etiqueta para el campo.");
-                });
+            onshown: function (dialogRef) {                
+                _setBottomPanelData(formsDiv, 0);
             }
         });
 
@@ -1022,6 +981,63 @@ var TemplateDesigner = function () {
         content.append(bottomPanel);
     };
 
+/**
+ * @description Insertado los campos en el select del panel inferior
+ * @param {boolean} updateMode Modo edición
+ * @param {type} formsDiv
+ * @returns {undefined}
+ */
+    var _setBottomPanelData  = function(formsDiv, updateMode){
+        var bottomPanelSelectWidth = $('#bottomPanelSelectWidth');
+        var buttonPanelSelectButtonAdd = $('#buttonPanelSelectButtonAdd');
+        var bottomPanelFieldSelect = $('#bottomPanelFieldSelect');
+        var bottomPanelFieldType = $('#bottomPanelFieldType');
+        var bottomPanelFormTag = $('#bottomPanelFormTag');
+        var forms = GeStructure(repositoryName);
+        
+        bottomPanelSelectWidth.append('<option width = "1">1</option>\n\
+                                                <option width = "2">2</option>\n\
+                                                <option width = "3">3</option>\n\
+                                                <option width = "4">4</option>\n\
+                                                <option width = "5">5</option>\n\
+                                                <option width = "6">6</option>');
+                                                                
+                $(forms).find("Campo").each(function (index) {
+                    var fieldName = $(this).find("name").text();
+                    var fieldType = $(this).find("type").text();
+                    var fieldLength = $(this).find("long").text();
+                    var required = $(this).find("required").text();
+
+                    var option = $('<option>', {"fieldName": fieldName, "fieldType": fieldType, "fieldLength": fieldLength}).append(fieldName);
+                    
+                    if(index===0){
+                        bottomPanelFormTag.val(fieldName);
+                        bottomPanelFieldType.val(fieldType);
+                    }
+                    
+                    bottomPanelFieldSelect.append(option);
+                });
+                                
+                bottomPanelFieldSelect.change(function () {
+                    _setFielDetail($(this),bottomPanelFormTag, bottomPanelFieldType);
+                });
+
+                /* Otras opciones de campo */
+
+                bottomPanelFieldSelect.append($('<option>', {"fieldName": "CSDocs_textType", "fieldType": "text"}).append("Ingresar Texto"));
+                bottomPanelFieldSelect.append($('<option>', {"fieldName": "CSDocs_barcode", "fieldType": "Código de Barras"}).append('Código de Barras'));
+                
+                buttonPanelSelectButtonAdd.click(function () {
+                    var fieldTag = $.trim(bottomPanelFormTag.val());
+                    
+                    if (fieldTag.length > 0)
+                        _addForm(updateMode, formsDiv, bottomPanelSelectWidth, bottomPanelFieldSelect, bottomPanelFormTag);
+                    else
+                        Advertencia("Ingrese una etiqueta para el campo.");
+                });
+        
+    };
+
     var _getColumnsClass = function (width) {
         var colXs = "col-xs-" + width;
         var colSm = "col-sm-" + width;
@@ -1039,7 +1055,7 @@ var TemplateDesigner = function () {
      * @param {type} bottomPanelFormTag
      * @returns {undefined}
      */
-    var _addForm = function (templateContent, widthSelect, fieldsSelect, bottomPanelFormTag) {
+    var _addForm = function (updateMode, templateContent, widthSelect, fieldsSelect, bottomPanelFormTag) {
         var width = widthSelect.find('option:selected').attr('width');
         var fieldName = fieldsSelect.find('option:selected').attr('fieldname');
 
@@ -1055,8 +1071,9 @@ var TemplateDesigner = function () {
         if(fieldName === 'CSDocs_barcode')
             return _addBarcode(templateContent, widthSelect, fieldsSelect, bottomPanelFormTag);
 
-        _addInlineForm(templateContent, widthSelect, fieldsSelect, bottomPanelFormTag);
-
+        var form = _addInlineForm(templateContent, widthSelect, fieldsSelect, bottomPanelFormTag);
+        _buildPophoverOfForm(form, 0);
+        _hidePopoverClickOutside(templateContent);
     };
     
     /**
@@ -1076,7 +1093,7 @@ var TemplateDesigner = function () {
         var formDivWidthSettings = "col-xs-"+width+" col-sm-"+width+" col-md-"+width;
         var divWidth = "col-xs-12 col-sm-12 col-md-12";
         
-        var formGroup = $('<div>', {class: "form-group templateWrapper "+formDivWidthSettings, "colConfigration": formDivWidthSettings});
+        var formGroup = $('<div>', {class: "form-group templateBarcodeWrapper "+formDivWidthSettings, "colConfigration": formDivWidthSettings});
         var label = $('<label>');
         var divWrapper = $('<div>', {class: "templateField "+divWidth, style: "text-align: center; font-size: 2vw;"});
         var barcode = $('<i>', {class: "fa fa-barcode fa-5x"});
@@ -1119,36 +1136,36 @@ var TemplateDesigner = function () {
         var labelColString = 'col-xs-' + labelWidth + ' col-sm-' + labelWidth + ' col-md-' + labelWidth;
         var colString = "col-xs-" + width + " " + "col-sm-" + width + " " + "col-md-" + width;     
         var colStringDivForm = "col-xs-"+formWidth+" col-sm-"+formWidth+" col-md-"+formWidth;
+        
+        var form = $('<input>', {
+                    type: "text", 
+                    class: "form-control",
+                    fieldName: fieldName,
+                    fieldNameTag: fieldNameTag,
+                    fieldType: fieldType,
+                    fieldLength: fieldLength,
+                    widthSize: width,
+                    formWidth: formWidth,
+                    id: "templateForm_"+fieldName,
+                    colConfiguration: colStringDivForm});
+                
+        var formGroup = $('<div>', {
+            class: "form-group templateFormWrapper "+colString,
+            colConfiguration: colString})
+                                .append($('<label>', {for: "templateForm_"+fieldName,
+                                                      class: "control-label " + labelColString,
+                                                      labelConfiguration: labelColString,
+                                                      labelWidth: labelWidth}).append(fieldNameTag))
+                                .append($('<div>', {class: "templateField col-md-"+formWidth
+                                                    }).append(form));
 
-        var inline =    '<div class = "form-group templateFormWrapper ' + colString + '" colConfiguration = "'+colString+'">\n\
-                            <label \n\
-                                for = "templateForm_' + fieldName + '" \n\
-                                class = "control-label ' + labelColString + '"\n\
-                                colConfiguration = "'+labelColString+'"\n\
-                                labelWidth = "' + labelWidth + '"\n\
-                            >' 
-                                + fieldNameTag + 
-                            '</label>\n\
-                            <div class = "templateField col-md-' + formWidth + '">\n\
-                                <input type = "text" \n\
-                                    class = "form-control" \n\
-                                    fieldName = "' + fieldName+'" \n\
-                                    fieldNameTag = "' + fieldNameTag + '" \n\
-                                    fieldType = "' + fieldType + '" \n\
-                                    fieldLength = "' + fieldLength + '" \n\
-                                    widthSize = "' + width + '"\n\
-                                    formWidth = "' + formWidth + '"\n\
-                                    id = "templateForm_' + fieldName + '"\n\
-                                    colConfiguration = "' + colStringDivForm + '"\n\
-                                >\n\
-                            </div>\n\
-                        </div>';
-
-        templateContent.append(inline);
+        templateContent.append(formGroup);
 
         fieldsSelect.find('option:selected').remove();
         
         _setFielDetail(fieldsSelect, bottomPanelFormTag, bottomPanelFieldType);
+        
+        return form;
     };
     
     /**
