@@ -323,7 +323,7 @@ var TemplateDesigner = function () {
         $(templateXml).find('field').each(function(){
             var wrapperConfigurationTxt = $(this).find('wrapperConfiguration').text();
             var labelConfigurationTxt = $(this).find('labelConfiguration').text();
-            var inputConfigrationTxt = $(this).find('inputConfigration').text();
+            var inputConfigrationTxt = $(this).find('inputConfiguration').text();
             
             var fieldName = $(this).find('fieldName').text();
             var fieldNameTag = $(this).find('fieldNameTag').text();
@@ -380,7 +380,6 @@ var TemplateDesigner = function () {
     
     /**
      * @descripcion Obtiene los campos que no se han ingresado a la plantilla.
-     * @param {object} fields Objeto con los campos del sistema. 
      * @returns {undefined}
      */
     var _removeRemainingFields = function(){
@@ -1049,6 +1048,7 @@ var TemplateDesigner = function () {
     
     /**
      * @description Ingresa un nuevo formulario en la interfaz de diseño.
+     * @param {boolean} updateMode Modo edición.
      * @param {type} templateContent
      * @param {type} widthSelect
      * @param {type} fieldsSelect
@@ -1068,12 +1068,22 @@ var TemplateDesigner = function () {
         if (fieldName === 'CSDocs_textType')
             return  _addTextType(templateContent, widthSelect);
         
-        if(fieldName === 'CSDocs_barcode')
-            return _addBarcode(templateContent, widthSelect, fieldsSelect, bottomPanelFormTag);
+        if(fieldName === 'CSDocs_barcode'){
+            var barcodeWrapper =  _addBarcode(updateMode, templateContent, widthSelect, fieldsSelect, bottomPanelFormTag);
+            _buildPophoverOfForm(barcodeWrapper, updateMode);
+            
+            if(updateMode === 1)
+            _saveTemplate(1);
+        
+            return _hidePopoverClickOutside(templateContent);
+        }
 
         var form = _addInlineForm(templateContent, widthSelect, fieldsSelect, bottomPanelFormTag);
         _buildPophoverOfForm(form, 0);
         _hidePopoverClickOutside(templateContent);
+        
+        if(updateMode === 1)
+            _saveTemplate(1);
     };
     
     /**
@@ -1082,20 +1092,33 @@ var TemplateDesigner = function () {
      * @param {object} widthSelect Fomrulario con el tamaño del campo
      * @param {object} fieldsSelect Formulario con cada uno de los campos
      * @param {object} bottomPanelFormTag Formulario de etiqueta del campo
-     * @returns {boolean}
+     * @param {boolean} updateMode Modo edición
+     * @returns {object} divWrapper 
      */
-    var _addBarcode = function(templateContent, widthSelect, fieldsSelect, bottomPanelFormTag){
+    var _addBarcode = function(updateMode, templateContent, widthSelect, fieldsSelect, bottomPanelFormTag){
         var width = widthSelect.find('option:selected').attr('width');
-        var bottomPanelFieldType = $('#bottomPanelFieldType');      
+        var bottomPanelFieldType = $('#bottomPanelFieldType');    
+        
+        width = parseInt(width) * 2;
         if(parseInt(width) < 3)
             width = 3;
         
-        var formDivWidthSettings = "col-xs-"+width+" col-sm-"+width+" col-md-"+width;
+        var formDivWidthSettings = "col-xs-3 col-sm-3 col-md-3";
         var divWidth = "col-xs-12 col-sm-12 col-md-12";
-        
-        var formGroup = $('<div>', {class: "form-group templateBarcodeWrapper "+formDivWidthSettings, "colConfigration": formDivWidthSettings});
+
+        var formGroup = $('<div>', {class: "form-group templateFormWrapper "+formDivWidthSettings, 
+                                    "colConfigration": formDivWidthSettings,
+                                    isSystemType: true,
+                                    systemType: "barcode",
+                                    fieldName: "CSDocs_barcode",
+                                    widthsize: width,
+                                    formwidth: 12
+                                    });
         var label = $('<label>');
-        var divWrapper = $('<div>', {class: "templateField "+divWidth, style: "text-align: center; font-size: 2vw;"});
+        var divWrapper = $('<div>', {class: "templateField "+divWidth, 
+                            style: "text-align: center; font-size: 2vw;",
+                            widthsize: width,
+                            formwidth: 12});
         var barcode = $('<i>', {class: "fa fa-barcode fa-5x"});
         
         divWrapper.append(barcode);
@@ -1109,7 +1132,26 @@ var TemplateDesigner = function () {
         
         _setFielDetail(fieldsSelect, bottomPanelFormTag, bottomPanelFieldType);
         
-        return true;
+        return divWrapper;
+    };
+    
+    /**
+     * @description Obtiene el detalle de los campos de tipo sistema p.e. código de barras.
+     * @param {object} wrapper Objeto que contiene el campo de tipo elemento del sistema.
+     * @returns {object}
+     */
+    var _getDetailOfSystemTypeField = function(wrapper){        
+        var fieldName = $(wrapper).attr('fieldName');
+        var fieldNameTag = $(wrapper).attr('fieldNameTag');
+        var widthSize = $(wrapper).attr('widthSize');
+        var formWidth = $(wrapper).attr('formWidth');
+        var wrapperConfiguration = $(wrapper).attr('wrapperConfiguration');
+        var labelConfiguration = $(wrapper).attr('labelConfiguration');
+        var inputConfiguration = $(wrapper).attr('inputConfiguration');
+        
+        return {fieldName: fieldName, fieldNameTag: fieldNameTag, widthSize:widthSize,
+                formWidth: formWidth, wrapperConfiguration: wrapperConfiguration,
+                labelConfiguration: labelConfiguration, inputConfiguration: inputConfiguration};
     };
 
     var _addInlineForm = function (templateContent, widthSelect, fieldsSelect, bottomPanelFormTag) {
@@ -1154,7 +1196,7 @@ var TemplateDesigner = function () {
             colConfiguration: colString})
                                 .append($('<label>', {for: "templateForm_"+fieldName,
                                                       class: "control-label " + labelColString,
-                                                      labelConfiguration: labelColString,
+                                                      colConfiguration: labelColString,
                                                       labelWidth: labelWidth}).append(fieldNameTag))
                                 .append($('<div>', {class: "templateField col-md-"+formWidth
                                                     }).append(form));
@@ -1235,7 +1277,7 @@ var TemplateDesigner = function () {
     var _saveTemplate = function (updateMode) {        
         var status = 0;
         var xml = _createXmlForSaving();
-        
+        return 0;
         if(xml === undefined)
             return 0;
  
@@ -1335,15 +1377,26 @@ var TemplateDesigner = function () {
         
         /* Se guarda la configuración de cada formulario */
         $(templateWrapper).each(function(){
+            console.log($(this));
             var wrapperConfigration = $(this).attr('colconfiguration');
+            var systemType = $(this).attr('issystemtype');            
             var label = $(this).find('label')[0];
             var labelConfiguration = $(label).attr('colconfiguration');
-            console.log($(this).find('label')[0]);
+            console.log("Label");
+            console.log(label);
             console.log(labelConfiguration);
                         
             var field = $(this).find('input')[0];
+            
+            if(systemType === "true"){
+                console.log("Se detecto un elemento del sistema.");
+                console.log($(this));
+                field = _getDetailOfSystemTypeField($(this));
+            }
+                        
             console.log(field);
             var fieldName = $(field).attr('fieldName');
+            
 
             if(fieldName !== undefined)
                 xml += '\
@@ -1356,7 +1409,7 @@ var TemplateDesigner = function () {
                     <formWidth>' + $(field).attr('formWidth') + '</formWidth>\n\
                     <wrapperConfiguration>' + wrapperConfigration + '</wrapperConfiguration>\n\
                     <labelConfiguration>' + labelConfiguration + '</labelConfiguration>\n\
-                    <inputConfigration> ' + $(field).attr('colConfiguration') + '</inputConfigration> \n\
+                    <inputConfiguration> ' + $(field).attr('colConfiguration') + '</inputConfiguration> \n\
                 </field>';            
         });
         
