@@ -90,6 +90,7 @@ var DocumentaryDispositionClass = function(){
             message: panelContent,
             buttons: [            
                 {
+                    hotkey: 13,
                     icon: 'fa fa-plus-circle fa-lg',
                     label: 'Agregar',
                     cssClass:"btn-primary",
@@ -966,8 +967,6 @@ var DocumentaryDispositionClass = function(){
             else
                 return 0;
         }
-        else 
-            return 0;
         
         var childNode = activeNode.addChild(newNode);
         
@@ -1056,8 +1055,6 @@ var DocumentaryDispositionClass = function(){
             else
                 return 0;
         }
-        else 
-            return 0;
         
         var childNode = activeNodeSection.addChild(newNode);
           
@@ -1141,8 +1138,6 @@ var DocumentaryDispositionClass = function(){
             else
                 return 0;
         }  
-        else
-            return 0;
         
         var childNode = activeNodeSerie.addChild(newNode);
             

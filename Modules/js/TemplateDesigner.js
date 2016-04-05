@@ -331,6 +331,10 @@ var TemplateDesigner = function () {
             var fieldLength = $(this).find('fieldLength').text();
             var widthSize = $(this).find('widthSize').text();
             var formWidth = $(this).find('formWidth').text();
+            var systemTypeWrapper = null;
+            
+            if(fieldName === "CSDocs_barcode")
+                return systemTypeWrapper = _addBarcode(1, formsDiv, 3, '', "");
             
             var wrapperConfiguration = $('<div>', {class: "form-group templateFormWrapper "+wrapperConfigurationTxt, colConfiguration:wrapperConfigurationTxt});
             var labelConfiguration = $('<label>',{for:"templateForm_"+fieldName,
@@ -392,6 +396,7 @@ var TemplateDesigner = function () {
         });
         
         var templateBarcodeWrapper = $('.templateBarcodeWrapper');
+        
         if(templateBarcodeWrapper.length < 0)
             $('#bottomPanelFieldSelect option[fieldName = CSDocs_barcode]').remove();
         
@@ -683,6 +688,11 @@ var TemplateDesigner = function () {
      * @returns {undefined}
      */
     var _deleteField = function(field){        
+        var formGroup = $(field).parents()[1];        
+        var label = $(formGroup).children()[0];
+        var selectFieldName = $('#bottomPanelFieldSelect').append(
+                    $('<option>', {}).append($(label).html())
+                );
         var formGroup = $(field).parents()[1];      
         $(formGroup).remove();
         _saveTemplate(1);
@@ -1073,7 +1083,7 @@ var TemplateDesigner = function () {
             _buildPophoverOfForm(barcodeWrapper, updateMode);
             
             if(updateMode === 1)
-            _saveTemplate(1);
+                _saveTemplate(1);
         
             return _hidePopoverClickOutside(templateContent);
         }
@@ -1096,10 +1106,15 @@ var TemplateDesigner = function () {
      * @returns {object} divWrapper 
      */
     var _addBarcode = function(updateMode, templateContent, widthSelect, fieldsSelect, bottomPanelFormTag){
-        var width = widthSelect.find('option:selected').attr('width');
+        console.log("adding barcode");
+        var width = widthSelect;
+        if(typeof widthSelect === 'object')
+            widthSelect.find('option:selected').attr('width');
+        
         var bottomPanelFieldType = $('#bottomPanelFieldType');    
         
         width = parseInt(width) * 2;
+        
         if(parseInt(width) < 3)
             width = 3;
         
@@ -1107,13 +1122,21 @@ var TemplateDesigner = function () {
         var divWidth = "col-xs-12 col-sm-12 col-md-12";
 
         var formGroup = $('<div>', {class: "form-group templateFormWrapper "+formDivWidthSettings, 
-                                    "colConfigration": formDivWidthSettings,
+                                    "colConfiguration": formDivWidthSettings,
                                     isSystemType: true,
                                     systemType: "barcode",
                                     fieldName: "CSDocs_barcode",
+                                    fieldNameTag: "CSDocs_barcode",
+                                    labelConfiguration: "0",
+                                    inputConfiguration: "0",
+                                    fieldLength: "0",
+                                    fieldType: "",
                                     widthsize: width,
                                     formwidth: 12
                                     });
+                                    
+        $(formGroup).css({"cursor": "pointer"});
+        
         var label = $('<label>');
         var divWrapper = $('<div>', {class: "templateField "+divWidth, 
                             style: "text-align: center; font-size: 2vw;",
@@ -1128,9 +1151,11 @@ var TemplateDesigner = function () {
         
         templateContent.append(formGroup);
         
-        fieldsSelect.find('option:selected').remove();
+        if(typeof fieldsSelect === 'object')
+            fieldsSelect.find('option:selected').remove();
         
-        _setFielDetail(fieldsSelect, bottomPanelFormTag, bottomPanelFieldType);
+        if(updateMode === 0)
+            _setFielDetail(fieldsSelect, bottomPanelFormTag, bottomPanelFieldType);
         
         return divWrapper;
     };
@@ -1140,18 +1165,28 @@ var TemplateDesigner = function () {
      * @param {object} wrapper Objeto que contiene el campo de tipo elemento del sistema.
      * @returns {object}
      */
-    var _getDetailOfSystemTypeField = function(wrapper){        
+    var _getDetailOfSystemTypeField = function(wrapper){     
         var fieldName = $(wrapper).attr('fieldName');
         var fieldNameTag = $(wrapper).attr('fieldNameTag');
         var widthSize = $(wrapper).attr('widthSize');
         var formWidth = $(wrapper).attr('formWidth');
-        var wrapperConfiguration = $(wrapper).attr('wrapperConfiguration');
-        var labelConfiguration = $(wrapper).attr('labelConfiguration');
-        var inputConfiguration = $(wrapper).attr('inputConfiguration');
+        var wrapperConfiguration = $(wrapper).attr('wrapperconfiguration');
+        var labelConfiguration = $(wrapper).attr('labelconfiguration');
+        var inputConfiguration = $(wrapper).attr('inputconfiguration');
+        var isSystemType = $(wrapper).attr('issystemtype');
         
-        return {fieldName: fieldName, fieldNameTag: fieldNameTag, widthSize:widthSize,
-                formWidth: formWidth, wrapperConfiguration: wrapperConfiguration,
-                labelConfiguration: labelConfiguration, inputConfiguration: inputConfiguration};
+        return {
+            fieldName: fieldName, 
+            fieldNameTag: fieldNameTag, 
+            widthSize:widthSize,
+            formWidth: formWidth, 
+            fieldLength: 3,
+            fieldType: "",
+            wrapperConfiguration: wrapperConfiguration,
+            labelConfiguration: labelConfiguration, 
+            inputConfiguration: inputConfiguration,
+            isSystemType: isSystemType
+        };
     };
 
     var _addInlineForm = function (templateContent, widthSelect, fieldsSelect, bottomPanelFormTag) {
@@ -1189,7 +1224,9 @@ var TemplateDesigner = function () {
                     widthSize: width,
                     formWidth: formWidth,
                     id: "templateForm_"+fieldName,
-                    colConfiguration: colStringDivForm});
+                    colConfiguration: colStringDivForm,
+                    isSystemType: false
+                });
                 
         var formGroup = $('<div>', {
             class: "form-group templateFormWrapper "+colString,
@@ -1277,7 +1314,7 @@ var TemplateDesigner = function () {
     var _saveTemplate = function (updateMode) {        
         var status = 0;
         var xml = _createXmlForSaving();
-        return 0;
+
         if(xml === undefined)
             return 0;
  
@@ -1377,26 +1414,31 @@ var TemplateDesigner = function () {
         
         /* Se guarda la configuración de cada formulario */
         $(templateWrapper).each(function(){
-            console.log($(this));
             var wrapperConfigration = $(this).attr('colconfiguration');
-            var systemType = $(this).attr('issystemtype');            
             var label = $(this).find('label')[0];
             var labelConfiguration = $(label).attr('colconfiguration');
+            
             console.log("Label");
             console.log(label);
             console.log(labelConfiguration);
                         
             var field = $(this).find('input')[0];
+            var inputConfiguration = $(field).attr('colConfiguration');
+            var systemType = $(this).attr('issystemtype');    
             
             if(systemType === "true"){
                 console.log("Se detecto un elemento del sistema.");
                 console.log($(this));
                 field = _getDetailOfSystemTypeField($(this));
+                console.log($(field).attr('fieldNameTag'));
+                labelConfiguration = $(field).attr('labelConfiguration');
+                inputConfiguration = $(field).attr('inputConfiguration');
             }
+            else
+                systemType = false;
                         
             console.log(field);
             var fieldName = $(field).attr('fieldName');
-            
 
             if(fieldName !== undefined)
                 xml += '\
@@ -1409,7 +1451,8 @@ var TemplateDesigner = function () {
                     <formWidth>' + $(field).attr('formWidth') + '</formWidth>\n\
                     <wrapperConfiguration>' + wrapperConfigration + '</wrapperConfiguration>\n\
                     <labelConfiguration>' + labelConfiguration + '</labelConfiguration>\n\
-                    <inputConfiguration> ' + $(field).attr('colConfiguration') + '</inputConfiguration> \n\
+                    <inputConfiguration> ' + inputConfiguration + '</inputConfiguration>\n\
+                    <isSystemType>' + systemType + '</isSystemType>\n\
                 </field>';            
         });
         
