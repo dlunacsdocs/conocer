@@ -358,6 +358,8 @@ class DataBase {
             ArchivoConcentracion INT(3) DEFAULT 0,
             ArchivoDesconcentracion INT(3) DEFAULT 0,
             Total INT(4),
+            AnosHistorico INT(3) NOT NULL DEFAULT 0,
+            SolicitudInformacion NOT NULL DEFAULT 0
             idLegalFoundation INT NOT NULL DEFAULT 0,
             Eliminacion INT(3) DEFAULT 0,
             Concentracion INT(3) DEFAULT 0,
@@ -790,13 +792,21 @@ class DataBase {
             $tabla_repositorio = "CREATE TABLE IF NOT EXISTS $nombre_tabla "
                     . "(IdRepositorio INT NOT NULL AUTO_INCREMENT, "
                     . "IdDirectory INT NOT NULL,"
-                    . "IdEmpresa INT NOT NULL,";
+                    . "IdEmpresa INT NOT NULL,"
+                    . "FechaApertura DATETIME,"
+                    . "FechaCierreExpediente DATETIME"
+                    . "AlarmaPrimaria DATETIME,"
+                    . "AlarmaTransfSec DATETIME,"
+                    . "CSDocs_Observaciones TEXT,";
             $tabla_temporal_repositorio = "CREATE TABLE IF NOT EXISTS temp_rep_$nombre_tabla "
                     . "(IdRepositorio INT NOT NULL, "
                     . "IdDirectory INT NOT NULL,"
                     . "IdEmpresa INT NOT NULL,"
                     . "IdUsuario INT NOT NULL,"
-                    . "NombreUsuario VARCHAR(50) NOT NULL,";
+                    . "NombreUsuario VARCHAR(50) NOT NULL,"
+                    . "AlarmaPrimaria DATETIME,"
+                    . "AlarmaTransfSec DATETIME,"
+                    . "CSDocs_Observaciones TEXT,";
 
             /*             * ********** Se recorren los campos de Default ******************* */
             foreach ($DefaultEstruct as $estructura) {

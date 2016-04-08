@@ -22,24 +22,24 @@
  */
 
 
-var ArchivalClass = function(){
+var ArchivalClass = function () {
     var self = this;
-    
-    this.buildModule = function(){
+
+    this.buildModule = function () {
         console.log("Construyendo Módulo Archivística...");
 
-        var li = $('<li>',{class: "here LinkArchival"});
+        var li = $('<li>', {class: "here LinkArchival"});
         var vigenciDocLi = $('<li>', {class: "here LinkDocumentaryValidity"}).append('<a href = "#">Vigencia Documental</a>');
         var fundamentoLegal = $('<li>', {class: "here LinkLegalFoundation"}).append('<a href = "#">Fundamento Legal</a>');
-        var dispDoc = $('<li>',{class:"LinkDocumentaryDisposition"}).append('<a href="#">Cat. de Dispos. Documental</a>');
-        var administrativeUnit = $('<li>',{class:"LinkAdministrativeUnit"}).append('<a href="#">Unidad Administrativa</a>');
+        var dispDoc = $('<li>', {class: "LinkDocumentaryDisposition"}).append('<a href="#">Cat. de Dispos. Documental</a>');
+        var administrativeUnit = $('<li>', {class: "LinkAdministrativeUnit"}).append('<a href="#">Unidad Administrativa</a>');
 
-        var sublist = $('<ul>',{class:"sublist", id: "archivalMenuNavbar"}).append(dispDoc);
+        var sublist = $('<ul>', {class: "sublist", id: "archivalMenuNavbar"}).append(dispDoc);
         sublist.append(vigenciDocLi);
         sublist.append(fundamentoLegal);
         sublist.append(administrativeUnit);
 
-        var a = $('<a>', {href:"#Disposición Documental"}).append("Archivística");
+        var a = $('<a>', {href: "#Disposición Documental"}).append("Archivística");
 
         li.append(a);
         li.append(sublist);
@@ -48,140 +48,163 @@ var ArchivalClass = function(){
 
         _getModules();
     };
-    
-    var _getModules = function(){
-        _getDocumentaryDisposition();     
+
+    var _getModules = function () {
+        _getDocumentaryDisposition();
         _getDocumentaryValidity();
         _getLegalFoundation();
         _getAdministrativeUnit();
         _getExpedient();
         _getTemplateDesigner();
+        _getFieldsAssociator();
     };
-    
+
     /**
      * @description Construye interfaz de diseñador de plantillas de expediente.
      * @returns {Boolean}
      */
-    var _getTemplateDesigner = function(){
+    var _getTemplateDesigner = function () {
         var status = false;
         $.ajaxSetup({async: false});
-        $.getScript( "Modules/js/TemplateDesigner.js" )
-            .done(function( script, textStatus ) {
-                status = true;
-                var templateDesigner = $('<li>',{class:"LinkTemplateDesigner"}).append('<a href="#">Diseñador de Plantilla</a>');
-                $('#archivalMenuNavbar').append(templateDesigner);
-                
-                TemplateDesigner = new TemplateDesigner();
-                TemplateDesigner.setActionToLink();
-            })
-            .fail(function( jqxhr, settings, exception ) {
-        });
+        $.getScript("Modules/js/TemplateDesigner.js")
+                .done(function (script, textStatus) {
+                    status = true;
+                    var templateDesigner = $('<li>', {class: "LinkTemplateDesigner"}).append('<a href="#">Diseñador de Plantilla</a>');
+                    $('#archivalMenuNavbar').append(templateDesigner);
+
+                    TemplateDesigner = new TemplateDesigner();
+                    TemplateDesigner.setActionToLink();
+                })
+                .fail(function (jqxhr, settings, exception) {
+                });
         $.ajaxSetup({async: true});
-        
+
         return status;
     };
-    
+
     /*
      * @description Agrega el módulo de Disposición Documental al CSDocs.
      * @returns {Boolean}
      */
-    var _getDocumentaryDisposition = function(){
+    var _getDocumentaryDisposition = function () {
         var status = false;
         $.ajaxSetup({async: false});
-        $.getScript( "Modules/js/DocumentaryDisposition.js" )
-            .done(function( script, textStatus ) {
-              status = true;
-            documentaryDisposition = new DocumentaryDispositionClass();
-            documentaryDisposition.setActionToLinkDocumentaryDispositionMenu();
-            })
-            .fail(function( jqxhr, settings, exception ) {
-        });
+        $.getScript("Modules/js/DocumentaryDisposition.js")
+                .done(function (script, textStatus) {
+                    status = true;
+                    documentaryDisposition = new DocumentaryDispositionClass();
+                    documentaryDisposition.setActionToLinkDocumentaryDispositionMenu();
+                })
+                .fail(function (jqxhr, settings, exception) {
+                });
         $.ajaxSetup({async: true});
-        
+
         return status;
     };
-    
+
     /**
      * @description Construye la interfaz de valídez documental.
      * @returns {Boolean}
      */
-    var _getDocumentaryValidity = function(){
+    var _getDocumentaryValidity = function () {
         var status = false;
         $.ajaxSetup({async: false});
-        $.getScript( "Modules/js/DocumentaryValidity.js" )
-            .done(function( script, textStatus ) {
-              status = true;
-              documentaryValidity = new DocumentaryValidity();
-              documentaryValidity.setActionToLinkDocumentaryValidity();
-            })
-            .fail(function( jqxhr, settings, exception ) {
-            });
-    
+        $.getScript("Modules/js/DocumentaryValidity.js")
+                .done(function (script, textStatus) {
+                    status = true;
+                    documentaryValidity = new DocumentaryValidity();
+                    documentaryValidity.setActionToLinkDocumentaryValidity();
+                })
+                .fail(function (jqxhr, settings, exception) {
+                });
+
         $.ajaxSetup({async: true});
-        
+
         return status;
     };
-    
+
     /***
      * @description Obtiene el script para ejecutar las funciones de la clase Fundamento Legal.
      * @returns {Boolean}
      */
-    var _getLegalFoundation = function(){
+    var _getLegalFoundation = function () {
         var status = false;
         $.ajaxSetup({async: false});
-        $.getScript( "Modules/js/LegalFoundation.js" )
-            .done(function( script, textStatus ) {
-              status = true;
-              legalFoundation = new LegalFoundation();
-              legalFoundation.setActionToLink();
-            })
-            .fail(function( jqxhr, settings, exception ) {
-            });
-    
+        $.getScript("Modules/js/LegalFoundation.js")
+                .done(function (script, textStatus) {
+                    status = true;
+                    legalFoundation = new LegalFoundation();
+                    legalFoundation.setActionToLink();
+                })
+                .fail(function (jqxhr, settings, exception) {
+                });
+
         $.ajaxSetup({async: true});
-        
+
         return status;
     };
-    
+
     /**
      * @description Construye interfaz de la Unidad Administrativa.
      * @returns {Boolean}
      */
-    var _getAdministrativeUnit = function(){
+    var _getAdministrativeUnit = function () {
         var status = false;
         $.ajaxSetup({async: false});
-        $.getScript( "Modules/js/AdministrativeUnit.js" )
-            .done(function( script, textStatus ) {
-              status = true;
-              administrativeUnit = new AdministrativeUnit();
-              administrativeUnit.setActionToLink();
-            })
-            .fail(function( jqxhr, settings, exception ) {
-            });
-        
+        $.getScript("Modules/js/AdministrativeUnit.js")
+                .done(function (script, textStatus) {
+                    status = true;
+                    administrativeUnit = new AdministrativeUnit();
+                    administrativeUnit.setActionToLink();
+                })
+                .fail(function (jqxhr, settings, exception) {
+                });
+
         $.ajaxSetup({async: true});
-        
+
         return status;
     };
-    
+
     /**
      * @description Se crea la instancia para el módulo expediente.
      * @returns {Boolean}
      */
-    var _getExpedient = function(){
+    var _getExpedient = function () {
         console.log("contruyendo menú expediente.");
         var status = false;
         $.ajaxSetup({async: false});
-        $.getScript( "Modules/js/Expedient.js" )
-            .done(function( script, textStatus ) {
-              status = true;
-              Expedient = new ExpedientClass();
-            })
-            .fail(function( jqxhr, settings, exception ) {
-            });
-        
+        $.getScript("Modules/js/Expedient.js")
+                .done(function (script, textStatus) {
+                    status = true;
+                    Expedient = new ExpedientClass();
+                })
+                .fail(function (jqxhr, settings, exception) {
+                });
+
         $.ajaxSetup({async: true});
-        
+
         return status;
-    };  
+    };
+
+    var _getFieldsAssociator = function () {
+        console.log("Construyendo menú Asociación de Campos");
+
+        var status = false;
+        $.ajaxSetup({async: false});
+        $.getScript("Modules/js/FieldsAssociator.js")
+                .done(function (script, textStatus) {
+                    status = true;
+                    var fieldsAssociatorItem = $('<li>', {class: "LinkFieldsAssociator"}).append('<a href="#">Asociar Campos</a>');
+                    $('#archivalMenuNavbar').append(fieldsAssociatorItem);
+                    fieldsAssociator = new FieldsAssociator();
+                    fieldsAssociator.setActionToLink();
+                })
+                .fail(function (jqxhr, settings, exception) {
+                });
+
+        $.ajaxSetup({async: true});
+
+        return status;
+
+    };
 };

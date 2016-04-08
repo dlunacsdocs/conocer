@@ -78,14 +78,25 @@ var DocumentaryValidity = function(){
         
         var serieTable = $('<table>',{class:"table table-striped table-bordered table-hover table-condensed display hover", id: "serieTable"});
         thead = $('<thead>').append('\
-            <tr><th columnName = "NameKey">Clave Serie</th><th columnName = "Description">Descripción</th>\n\
-            <th columnName = "Administrativo">A</th><th columnName = "Legal">L</th><th columnName = "Fiscal">F</th>\n\
-            <th columnName = "ArchivoTramite">AT</th><th columnName = "ArchivoConcentracion">AC</th>\n\
-            <th columnName = "ArchivoDesconcentracion">AD</th><th columnName = "Total">TOT</th>\n\
-            <th columnName = "idLegalFoundation">FL</th><th columnName = "Eliminacion">E</th>\n\
-            <th columnName = "Concentracion">C</th><th columnName = "Muestreo">M</th><th columnName = "Publica">P</th>\n\
-            <th columnName = "Reservada">R</th><th columnName = "Confidencial">C</th>\n\
-            <th columnName = "ParcialmenteReservada">PR</th><th class = "TotalExpedientes">TE</th></tr>');
+            <tr><th columnName = "NameKey">Clave Serie</th>\n\
+            <th columnName = "Description">Descripción</th>\n\
+            <th columnName = "Administrativo">A</th>\n\
+            <th columnName = "Legal">L</th><th columnName = "Fiscal">F</th>\n\
+            <th columnName = "ArchivoTramite">AT</th>\n\
+            <th columnName = "ArchivoConcentracion">AC</th>\n\
+            <th columnName = "ArchivoDesconcentracion">AD</th>\n\
+            <th columnName = "Total">TOT</th>\n\
+            <th columnName = "AnosHistorico">AH</th>\n\
+            <th columnName = "SolicitudInformacion">SI</th>\n\
+            <th columnName = "idLegalFoundation">FL</th>\n\
+            <th columnName = "Eliminacion">E</th>\n\
+            <th columnName = "Concentracion">C</th>\n\
+            <th columnName = "Muestreo">M</th><th columnName = "Publica">P</th>\n\
+            <th columnName = "Reservada">R</th>\n\
+            <th columnName = "Confidencial">C</th>\n\
+            <th columnName = "ParcialmenteReservada">PR</th>\n\
+            <th class = "TotalExpedientes">TE</th></tr>');
+        
         serieTable.append(thead);
         
         fondoDiv.append("<br>").append(fondoTable);
@@ -221,7 +232,7 @@ var DocumentaryValidity = function(){
             
             /* No puede cambiarse la clave de la serie 
              * No puede editarse el total de expedientes*/
-            if(index > 1 && index !== 17 && index !== 8 && index !== 9)   
+            if(index > 1 && index !== 19 && index !== 8 && index !== 11)   
                 $(this).editable( '../Modules/php/DocumentaryValidity.php', {                  
                     tooltip   : 'Click para editar...',
                     name:"value",
@@ -400,6 +411,8 @@ var DocumentaryValidity = function(){
         var archivoConcentracion = $(serie).find('ArchivoConcentracion').text();
         var archivoDesconcentracion = $(serie).find('ArchivoDesconcentracion').text();
         var total = $(serie).find('Total').text();
+        var anosHistorico = $(serie).find('AnosHistorico').text();
+        var solicitudInformacion = $(serie).find('AnosInformacion').text();
         var foundationKey = $(serie).find('FoundationKey').text();
         var eliminacion = $(serie).find('Eliminacion').text();
         var concentracion = $(serie).find('Concentracion').text();
@@ -416,10 +429,28 @@ var DocumentaryValidity = function(){
             foundationKey = foundationKey +' <a class = "btn btn-default legalFoundationBtn" style = "display:none"><li class = "fa fa-eye fa-lg"></li></a>';
 
                 
-        data = [nameKey, description, administrativo, legal, fiscal, archivoTramite,
-        archivoConcentracion, archivoDesconcentracion, total, foundationKey, eliminacion,
-        concentracion, muestreo, publica, reservada, confidencial, parcialmenteReservada,
-        totalExpedientes];
+        data = [
+            nameKey, 
+            description, 
+            administrativo, 
+            legal, 
+            fiscal, 
+            archivoTramite,
+            archivoConcentracion, 
+            archivoDesconcentracion, 
+            total,
+            anosHistorico, 
+            solicitudInformacion, 
+            foundationKey, 
+            eliminacion,
+            concentracion, 
+            muestreo, 
+            publica, 
+            reservada, 
+            confidencial, 
+            parcialmenteReservada,
+            totalExpedientes
+        ];
     
         var ai = serieTableDT.row.add(data).draw();
         var n = serieTabledT.fnSettings().aoData[ ai[0] ].nTr;

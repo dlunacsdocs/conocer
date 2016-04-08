@@ -1475,6 +1475,6 @@ var TemplateDesigner = function () {
     this.setRepositoryName = function(newRepositoryName){
         repositoryName = newRepositoryName;
     };
-    
+       
 };
 
