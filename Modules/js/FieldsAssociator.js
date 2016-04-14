@@ -29,7 +29,10 @@ var FieldsAssociator = function () {
     var repositorySelect;
     var enterpriseSelect;
     var templateSelect;
-
+    var objectAssociated = [];   /*Array que contiene la estructura de campos a asociar */
+    var templateName;
+    var enterpriseKey;
+    var repositoryName;
 
     this.setActionToLink = function () {
         $('.LinkFieldsAssociator').click(function () {
@@ -42,6 +45,8 @@ var FieldsAssociator = function () {
      * @returns {undefined}
      */
     var _showInterface = function () {
+        objectAssociated = [];
+        templateName = "";
         var content = $('<div>');
         var formGroup = $('<div>', {class: "form-group"});
         var enterpriseSelectInterface = $('<select>', {class: "form-control"});
@@ -76,7 +81,10 @@ var FieldsAssociator = function () {
                         var button = this;
                         button.spin();
                         dialogRef.enableButtons(false);
-                        if (_showInterfaceOfAssociate($(enterpriseSelectInterface).find('option:selected')[0], $(repositorySelectInterface).find('option:selected')[0]), $(templateSelect).find('option:selected'[0]))
+                        var templateForm = $(templateSelect).find('option:selected')[0];
+                        console.log("Form template");
+                        console.log(templateForm);
+                        if (_showInterfaceOfAssociate(templateForm))
                             dialogRef.close();
                         else {
                             button.stopSpin();
@@ -192,7 +200,8 @@ var FieldsAssociator = function () {
                     var option = $('<option>', {
                         "idRepository": idRepository,
                         "repositoryName": repositoryName,
-                        "enterpriseKey": enterpriseKey
+                        "enterpriseKey": enterpriseKey,
+                        "templateName": templateName
                     }).append(templateName);
 
                     if (String(idRepository) === String(idRepositoryInterface))
@@ -212,23 +221,21 @@ var FieldsAssociator = function () {
      * @param {object} repositoryselect
      * @returns {undefined}
      */
-    var _showInterfaceOfAssociate = function (enterpriseselect, repositoryselect, templateselect) {
-        if (!parseInt($(enterpriseselect).attr('idEnterprise')) > 0)
-            return Advertencia("No fue posible obtener el identificador de la empresa");
+    var _showInterfaceOfAssociate = function (templateselect) {
+        console.log("Template");
+        console.log(templateselect);
 
-        if (!parseInt($(repositoryselect).attr('idRepository')) > 0)
+        if (!parseInt($(templateselect).attr('idrepository')) > 0)
             return Advertencia("No se pudo obtener el identificador del repositorio");
 
-        enterpriseSelect = enterpriseselect;
-        repositorySelect = repositoryselect;
-        templateSelect = templateselect;
-
-        var template = $(templateSelect).attr("templateName");
-
+        templateName = $(templateselect).attr("templatename");
+        enterpriseKey = $(templateselect).attr("enterprisekey");
+        repositoryName = $(templateselect).attr("repositoryname");
+        
         var content = $('<div>');
         var formGroup = $('<div>', {class: "form-group"});
         var systemFieldsSelect = $('<select>', {class: "form-control"});
-        formGroup.append($('<label>').append('Sistema'))
+        formGroup.append($('<label>').append('Campo Sistema'))
                 .append(systemFieldsSelect);
 
         content.append(formGroup);
@@ -253,13 +260,24 @@ var FieldsAssociator = function () {
                     label: 'Asociar',
                     cssClass: "btn-primary",
                     action: function (dialogRef) {
+                       if(_associate(systemFieldsSelect, disassociatedFieldsSelect) === 0)
+                           dialogRef.close();
+                    }
+                },
+                {
+                    icon: "fa fa-cogs fa-lg",
+                    label: "Generar",
+                    cssClass: "",
+                    action: function(dialogRef){
                         var button = this;
                         button.spin();
+                        dialogRef.setClosable(false);
                         dialogRef.enableButtons(false);
-                        if (_associate())
+                        if(_createAssociation())
                             dialogRef.close();
-                        else {
+                        else{
                             button.stopSpin();
+                            dialogRef.setClosable(true);
                             dialogRef.enableButtons(true);
                         }
                     }
@@ -274,7 +292,7 @@ var FieldsAssociator = function () {
             onshown: function (dialogRef) {
                 var systemFields = _getSystemFields();
                 console.log(systemFields);
-                var fieldsDissasociated = _getFieldsDissasociated($(repositorySelect).attr('repositoryName'));
+                var fieldsDissasociated = _getFieldsDissasociated(repositoryName);
                 console.log(fieldsDissasociated);
 
                 for (var i = 0; i < systemFields.length; i++) {
@@ -286,12 +304,17 @@ var FieldsAssociator = function () {
                             var fieldObject = fields[cont];
                             var fieldTag = fieldObject.fieldTag;
                             var columnName = fieldObject.columnName;
-                            console.log(fields[cont]);
-                            console.log(fieldTag);
-                            var option = $('<option>', {columnName: columnName}).append(fieldTag);
+                            
+                            var option = $('<option>', {
+                                columnName: columnName, 
+                                fieldTag:fieldTag,
+                                tableName: tableName
+                            }).append(fieldTag);
+                            
+                            console.log(option);
+                            
                             systemFieldsSelect.append(option);
-                            console.log(tableName);
-                            console.log(fields);
+                            
                         }
                         
                     }
@@ -310,6 +333,8 @@ var FieldsAssociator = function () {
                 });
             }
         });
+        
+        return 1;
     };
 
     /**
@@ -342,14 +367,14 @@ var FieldsAssociator = function () {
                             {fieldName: "publica", columnName: "Publica", fieldTag: "Pública"},
                             {fieldName: "reservada", columnName: "reservada", fieldTag: "Reservada"},
                             {fieldName: "confidencial", columnName: "Confidencial", fieldTag: "Confidencial"},
-                            {fieldName: "parcialmenteReservada", columnName: "ParcialmenteReservada", fieldTag: "Pacialmente Reservada"},
+                            {fieldName: "parcialmenteReservada", columnName: "ParcialmenteReservada", fieldTag: "Pacialmente Reservada"}
                         ]},
                     {
                         "repository": [
                             {fieldName: "fechaApertura", columnName: "FechaApertura", fieldTag: "Fecha Apertura", isRepository: true},
                             {fieldName: "fechaCierre", columnName: "FechaCierre", fieldTag: "Fecha Cierre Expediente", isRepository: true},
                             {fieldName: "alarmaPrimaria", columnName: "AlarmaPrimaria", fieldTag: "Alarma Primaria", isRepository: true},
-                            {fieldName: "alarmaTransfSec", columnName: "AlarmaTransfSec", fieldTag: "Fecha Apertura", isRepository: true},
+                            {fieldName: "alarmaTransfSec", columnName: "AlarmaTransfSec", fieldTag: "Fecha Apertura", isRepository: true}
                         ]
                     }
                 ];
@@ -369,13 +394,116 @@ var FieldsAssociator = function () {
     };
 
     /**
-     * 
+     * @description Mantiene en memoria un objeto con los campos por asociar.
      * @param {object} disassociatedFieldsSelect Objeto select con el listado de campos por asociar.
      * @param {object} systemFieldsSelect Objeto con el listado de campos del sistema.
      * @returns {Number}
      */
-    var _associate = function (disassociatedFieldsSelect, systemFieldsSelect) {
-
+    var _associate = function (systemFieldsSelect, disassociatedFieldsSelect) {    
+        systemFieldsSelect = $(systemFieldsSelect).find('option:selected')[0];
+        disassociatedFieldsSelect = $(disassociatedFieldsSelect).find('option:selected')[0];
+        
+        var systemField =  
+                {
+                    columnName: $(systemFieldsSelect).attr('columnName'), 
+                    fieldTag: $(systemFieldsSelect).attr('fieldTag'),
+                    tableName: $(systemFieldsSelect).attr('tableName')
+                };
+                            
+        var userField = 
+                {
+                    fieldType: $(disassociatedFieldsSelect).attr('fieldType'), 
+                    fieldName: $(disassociatedFieldsSelect).attr('fieldName'), 
+                    fieldLength: $(disassociatedFieldsSelect).attr('fieldLength'), 
+                    required: $(disassociatedFieldsSelect).attr('required')
+                };
+        
+        var fields = {"system": systemField, userField: userField};
+        console.log("_associate");
+        console.log(fields);
+        objectAssociated.push(fields);
+        
+        $(systemFieldsSelect).remove();
+        $(disassociatedFieldsSelect).remove();
+        
+        var systemFieldsSize = $(systemFieldsSelect).find('option[]').length;
+        var userFieldsSize = $(disassociatedFieldsSelect).length;
+        
+        if(systemFieldsSize !== userFieldsSize)
+            return 0;
+        
         return 1;
+    };
+    
+    /**
+     * @description Genera un xml a partir de un objeto que se mantiene en memoria con los campos por asociar.
+     * @returns {XML} Devuelve un String con el XML de los campos asociados.
+     */
+    var _createXml = function(){
+        var fields = objectAssociated;
+        console.log("creating xml");
+
+        var xml = "<association version='1.0' encoding='UTF-8' templateName = '"+templateName+"' enterpriseKey = '" + enterpriseKey + "' repositoryName = '" + repositoryName + "'>";
+        
+            for(var cont = 0; cont < fields.length; cont++){
+                console.log(fields[cont]);
+                xml+= "<field>";
+                    xml+= "<system>";
+                        xml+= "<columnName>" + fields[cont].system.columnName + "</columnName>";
+                        xml+= "<fieldTag>" + fields[cont].system.fieldTag + "</fieldTag>";
+                        xml+= "<tableName>" + fields[cont].system.tableName + "</tableName>";
+                    xml+= "</system>";
+                    xml+= "<userField>";
+                        xml+= "<fieldType>" + fields[cont].userField.fieldType + "</fieldType>";
+                        xml+= "<fieldName>" + fields[cont].userField.fieldName + "</fieldName>";
+                        xml+= "<fieldLength>" + fields[cont].userField.fieldLength + "</fieldLength>";
+                        xml+= "<required>" + fields[cont].userField.required + "</required>";
+                    xml+= "</userField>";
+                xml+= "</field>";
+            }
+        
+        xml+= "</association>";
+        
+        return xml;
+    };
+    
+    /**
+     * @returns {Boolean}
+     */
+    var _createAssociation = function(){
+        var status = 0;
+        if(objectAssociated.length === 0)
+            return Advertencia("Debe asociar los campos del sistema con los campos de usuario.");
+        
+        var xml = _createXml();
+//        console.log(xml);
+        $.ajax({
+            async: false,
+            cache: false,
+            dataType: "html",
+            type: 'POST',
+            url: "Modules/php/FieldsAssociator.php",
+            data: {option: "createAssociation", xml: xml},
+            success: function (xml) {
+                if ($.parseXML(xml) === null)
+                    return errorMessage(error);
+                else
+                    xml = $.parseXML(xml);
+                
+                $(xml).find('fieldsAssociated').each(function(){
+                    var message = $(this).find('Mensaje').text();
+                    Notificacion(message);
+                    status = 1;
+                });
+                
+                $(xml).find("Error").each(function (){
+                    var mensaje = $(this).find("Mensaje").text();
+                    errorMessage(mensaje);
+                });
+
+            },
+            error: function(jqXHR, textStatus, errorThrown){errorMessage(textStatus +"<br>"+ errorThrown);}
+        });
+        return status;
     };
 };

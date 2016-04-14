@@ -27,7 +27,7 @@ class LegalFoundation {
             $idSession = Session::getIdSession();
         
             if($idSession == null)
-                return XML::XMLReponse ("Error", 0, "Repository::No existe una sesión activa, por favor vuelva a iniciar sesión");
+                return XML::XMLReponse ("Error", 0, "LegalFoundation::No existe una sesión activa, por favor vuelva a iniciar sesión");
 
             $userData = Session::getSessionParameters();
             
