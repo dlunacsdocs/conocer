@@ -49,6 +49,8 @@ class Expedient {
             switch (filter_input(INPUT_POST, "option")) {
                 case "createPathOfDispositionCatalog": $this->createPathOfDispositionCatalog($userData);
                     break;
+                case "associateTemplate": $this->associateTemplate($userData);
+                    break;
             }
         }
     }
@@ -130,6 +132,21 @@ class Expedient {
         $root->appendChild($newDirectories);
         header ("Content-Type:text/xml");
         echo $doc->saveXML();
+    }
+    
+    private function associateTemplate($userData){
+        $instanceName = $userData['dataBaseName'];
+        $enterpriseKey = filter_input(INPUT_POST, "enterpriseKey");
+        $repositoyrName = filter_input(INPUT_POST, "repositoryName");
+        $templateName = filter_input(INPUT_POST, "templateName");
+        $RoutFile = dirname(getcwd());
+        $templateAssociatedPath = "$RoutFile/Configuracion/Templates/$instanceName/$enterpriseKey/$repositoyrName/$templateName";
+        $insertTemplate = "INSERT INTO $repositoyrName (templatePath) VALUES ('$templateAssociatedPath')";
+        
+        if(($result = $this->db->ConsultaInsert($instanceName, $insertTemplate)) != 1)
+                return XML::XMLReponse ("Error", 0, "<p><b>Error</b> al intentar asociar la plantilla. $result</p>");
+        
+        XML::XMLReponse("templateAssociated", 1, "Plantilla asociada.");
     }
 
 }

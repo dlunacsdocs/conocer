@@ -132,10 +132,11 @@ var FieldsAssociator = function () {
                         repositorySelectInterface.find('option').remove();
                         repositorySelectInterface.append($('<option>').append('Seleccione repositorio'));
                         var repositories = repository.GetRepositories(enterpriseKey);
-
+                        var idRepository = 0;
+                        var repositoryName;
                         $(repositories).find('Repository').each(function () {
-                            var idRepository = $(repositories).find('IdRepositorio').text();
-                            var repositoryName = $(repositories).find('NombreRepositorio').text();
+                            idRepository = $(repositories).find('IdRepositorio').text();
+                            repositoryName = $(repositories).find('NombreRepositorio').text();
 
                             if (!parseInt(idRepository) > 0)
                                 return _cleanSelectForm(templateSelect, "Esperando Repositorio");
@@ -152,7 +153,7 @@ var FieldsAssociator = function () {
 
                         $(repositorySelectInterface).unbind('change').change(function () {
                             var idRepositoryInterface = $(this).find('option:selected').attr('idrepository');
-                            var templates = TemplateDesigner.getTemplates();
+                            var templates = TemplateDesigner.getTemplates(enterpriseKey, idRepository, repositoryName);
                             _setTemplates(templates, templateSelect, idRepositoryInterface);
                         });
                     } else {

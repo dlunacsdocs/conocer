@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-/* global BootstrapDialog */
+/* global BootstrapDialog, TemplateDesigner */
 
 var ExpedientClass = function () {
     var self = this;
@@ -44,7 +44,199 @@ var ExpedientClass = function () {
 
         if (parseInt(activeNode.data.isExpedient) === 1)
             return Advertencia("Ya existe un expediente.");
+        
+        if (!(String(activeNode.data.catalogType) === 'serie' || activeNode.data.isLegajo === true))
+            _openDocumentaryDispositionInterface();
+        else
+            _templateSelectionInterface();
 
+    };
+    
+    /**
+     * @description Interface para selección de plantilla en el expediente.
+     * @returns {undefined}
+     */
+    var _templateSelectionInterface = function(){
+        var idRepository = $('#CM_select_repositorios option:selected').attr('idRepository');
+        var repositoryName = $('#CM_select_repositorios option:selected').attr('repositoryname');
+        var enterpriseKey = $('#CM_select_empresas option:selected').attr('value');
+
+        var templates = TemplateDesigner.getTemplates(enterpriseKey, idRepository, repositoryName);
+        
+        var formGroup = $('<div>', {class: "form-group"});
+        var templateForm = $('<select>', {class: "form-control"});
+        
+        formGroup.append(
+                    $('<label>').append('Plantilla')
+                    )
+                    .append(templateForm);
+                
+        var content = $('<div>').append(formGroup);
+        
+        BootstrapDialog.show({
+            title: '<i class="fa fa-folder-open fa-lg"></i> Nuevo Expediente',
+            size: BootstrapDialog.SIZE_SMALL,
+            type: BootstrapDialog.TYPE_PRIMARY,
+            message: content,
+            closable: true,
+            closeByBackdrop: true,
+            closeByKeyboard: true,
+            buttons: [
+                {
+                    icon: 'fa fa-plus-circle fa-lg',
+                    label: 'Agregar Expediente',
+                    cssClass: "btn-primary",
+                    action: function (dialogRef) {
+                        var button = this;
+                        dialogRef.enableButtons(false);
+                        dialogRef.setClosable(false);
+                        if(_associateTemplate(templateForm))
+                            dialogRef.close();
+                        else{
+                            dialogRef.setClosable(true);
+                            dialogRef.enableButtons(true);
+                        }
+                    }
+                },
+                {
+                    label: 'Cerrar',
+                    action: function (dialogRef) {
+                        dialogRef.close();
+                    }
+                }
+            ],
+            onshow: function (dialogRef) {
+                $(templates).find('template').each(function () {
+                    var idRepository = $(this).find('idRepository').text();
+                    var repositoryName = $(this).find('repositoryName').text();
+                    var enterpriseKey = $(this).find('enterpriseKey').text();
+
+                    $(this).find('templateList').each(function () {
+                        $(this).find('templateName').each(function () {
+                            var templateName = $(this).text();
+                            templateName = templateName.replace(/\.[^/.]+$/, "");
+
+                            var option = $('<option>', {
+                                "idRepository": idRepository,
+                                "repositoryName": repositoryName,
+                                "enterpriseKey": enterpriseKey,
+                                "templateName": templateName
+                            }).append(templateName);
+                            
+                            templateForm.append(option);
+
+                        });
+                    });
+
+
+                });
+            },
+            onshown: function (dialogRef) {
+
+            }
+        });
+    };
+    
+    /**
+     * @description Asocia una plantilla en un legajo.
+     * @param {Object} templateForm Select Form que contiene la plantilla seleccionada por el usuario.
+     * @returns {undefined}
+     */
+    var _associateTemplate = function(templateForm){
+        var templateSelected = $(templateForm).find('option:selected')[0];
+        if(typeof templateSelected !== 'object')
+            return Advertencia("Debe seleccionar un template");
+        
+        var templateObject = _getTemplate(templateSelected);
+        
+        _openDisassociatedTemplate(templateObject);
+        return 1;
+    };
+    
+    var _getTemplate = function(templateSelected){
+        return TemplateDesigner.getTemplate($(templateSelected).attr('enterprisekey'), $(templateSelected).attr('repositoryName'), $(templateSelected).attr('templatename') + ".xml");
+    };
+    
+    var _openDisassociatedTemplate = function(templateObject){
+        BootstrapDialog.show({
+            title: '<i class="fa fa-folder-open fa-lg"></i> Asociar Plantilla',
+            size: BootstrapDialog.SIZE_WIDE,
+            type: BootstrapDialog.TYPE_PRIMARY,
+            message: content,
+            closable: true,
+            closeByBackdrop: false,
+            closeByKeyboard: true,
+            buttons: [
+                {
+                    icon: 'fa fa-plus-circle fa-lg',
+                    label: 'Agregar',
+                    cssClass: "btn-primary",
+                    action: function (dialogRef) {
+                        
+                    }
+                },
+                {
+                    label: 'Cerrar',
+                    action: function (dialogRef) {
+                        dialogRef.close();
+                    }
+                }
+            ],
+            onshow: function () {
+            },
+            onshown: function (dialogRef) {
+
+            }
+        });
+    };
+        
+    var _addTemplate = function(templateForm){
+        var templateSelected = $(templateForm).find('option:selected')[0];
+        
+        if(typeof templateSelected !== 'object')
+            return Advertencia("Debe seleccionar un template");
+
+        $.ajax({
+            async: false,
+            cache: false,
+            dataType: "html",
+            type: 'POST',
+            url: "Modules/php/Expedient.php",
+            data: {
+                option: "associateTemplate",
+                enterpriseKey: $(templateSelected).attr('enterprisekey'),
+                repositoryName: $(templateSelected).attr('repositoryname'),
+                templateName: $(templateSelected).attr('templatename') + ".xml"
+            },
+            success: function (xml) {
+                if ($.parseXML(xml) === null)
+                    return errorMessage(error);
+                else
+                    xml = $.parseXML(xml);
+                
+                $(xml).find('templateAssociated').each(function(){
+                    var message = $(this).find('message').text();
+                    Notificacion(message);
+
+                });
+
+                $(xml).find("Error").each(function ()
+                {
+                    var mensaje = $(this).find("Mensaje").text();
+                    errorMessage(mensaje);
+                });
+
+            },
+            error: function(jqXHR, textStatus, errorThrown){errorMessage(textStatus +"<br>"+ errorThrown);}
+        });
+    };
+   
+    /**
+     * @description Interface que muestra el catálogo de disposición documental para la selección de 
+     *  una serie
+     * @returns {undefined}
+     */
+    var _openDocumentaryDispositionInterface = function(){
         var content = $('<div>');
 
         var catalogDispTree = $('<div>', {id: "catalogDispTree"});
@@ -158,7 +350,6 @@ var ExpedientClass = function () {
                 });
             }
         });
-
     };
 
     var addNewExpedient = function (activeNode) {

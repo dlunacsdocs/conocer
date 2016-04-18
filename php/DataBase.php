@@ -772,6 +772,8 @@ class DataBase {
                     . "parentCatalogKey VARCHAR(50) NOT NULL,"
                     . "catalogType INT DEFAULT 0,"
                     . "isExpedient INT DEFAULT 0,"
+                    . "isFrontPage INT DEFAULT 0,"
+                    . "templatePath TEXT DEFAULT NULL,"
                     . "PRIMARY KEY (`IdDirectory`)"
                     . ") ENGINE=InnoDB AUTO_INCREMENT=1 DEFAULT CHARSET=utf8";
 

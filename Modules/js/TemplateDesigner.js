@@ -164,10 +164,17 @@ var TemplateDesigner = function () {
     
     /**
      * @description Obtiene las plantillas del sistema ordenadas por empresa y repositorio.
+     * @param {Integer} idRepository Id del repositorio seleccionado.
+     * @param {String} enterpriseKey Clave de la empresa.
+     * @param {String} repositoryName Nombre del repositorio.
      * @returns {xml|XMLDocument}
      */
-    this.getTemplates = function(){
-        var templates = null;
+    this.getTemplates = function(enterpriseKey, idRepository, repositoryName){
+        return _getFilteredTemplates(enterpriseKey, idRepository, repositoryName);
+    };
+    
+    var _getFilteredTemplates = function(enterpriseKey, idRepository, repositoryName){
+        var templates;        
         
         $.ajax({
             async: false,
@@ -175,7 +182,11 @@ var TemplateDesigner = function () {
             dataType: "html",
             type: 'POST',
             url: "Modules/php/TemplateDesigner.php",
-            data: {option: "getTemplates"},
+            data: {
+                option: "getTemplates", 
+                enterpriseKey:enterpriseKey, 
+                idRepository:idRepository, 
+                repositoryName:repositoryName},
             success: function (xml) {
                 if ($.parseXML(xml) === null)
                     return errorMessage(xml);
@@ -184,7 +195,6 @@ var TemplateDesigner = function () {
 
                 if($(xml).find('template').length > 0)
                     templates = xml;
-
 
                 $(xml).find('Error').each(function ()
                 {

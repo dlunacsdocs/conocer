@@ -56,24 +56,41 @@ class TemplateDesigner {
         }
     }
     
+    /**
+     * Se obtienen los templates del sistema. En caso de especificar Clave de empresa
+     * y nombre del repositorio se hace el filtro a la busqueda.
+     * @param type $userData
+     */
     private function getTemplates($userData){
         $RoutFile = dirname(getcwd());
         $instanceName = $userData['dataBaseName'];
         $idGroup = $userData['idGroup'];
         $idUser = $userData['idUser'];
+        $enterpriseKey = filter_input(INPUT_POST, "enterpriseKey");
+        $repositoryName = filter_input(INPUT_POST, "repositoryName");
+        $idRepository = filter_input(INPUT_POST, "idRepository");
         
         $repository = new Repository();
-        $repositories = $repository->GetRepositoriesList($instanceName, 0, $idGroup, $idUser);
+        $repositories = array();
         
+        if($enterpriseKey == FALSE or $repositoryName == FALSE)
+            $repositories = $repository->GetRepositoriesList($instanceName, 0, $idGroup, $idUser);
+        else
+            $repositories[] = array(
+                "ClaveEmpresa" => $enterpriseKey,
+                "IdRepositorio" => $idRepository,
+                "NombreRepositorio" => $repositoryName
+            );
+                
         $doc  = new DOMDocument('1.0','utf-8');
         $doc->formatOutput = true;
         $root = $doc->createElement("templatesDetail");
         
         for($cont = 0; $cont < count($repositories); $cont++){
             
-            $idRepository = $repositories[$cont]['IdRepositorio'];
-            $repositoryName = $repositories[$cont]['NombreRepositorio'];
-            $enterpriseKey = $repositories[$cont]['ClaveEmpresa'];
+                $idRepository = $repositories[$cont]['IdRepositorio'];
+                $repositoryName = $repositories[$cont]['NombreRepositorio'];
+                $enterpriseKey = $repositories[$cont]['ClaveEmpresa'];
             
             $templatesPath = dirname($RoutFile)."/Configuracion/Templates/$instanceName/$enterpriseKey/$repositoryName";
 
@@ -87,13 +104,15 @@ class TemplateDesigner {
 
             for($aux = 0; $aux < count($templateDir); $aux++){
                 $templateName = $templateDir[$aux];
-                
-                if($templateName != "." and $templateName != ".."){
+                                
+                if($templateName != "." and $templateName != ".." and $templateName != ".DS_Store" and $templateName != "@eaDir"){
+                    if(strpos($templateName, "_associated") !==false ) 
+                       continue;
                     $templateNameXml = $doc->createElement("templateName", $templateName);
                     $templateList->appendChild($templateNameXml);
                 }
             }
-            
+                        
             $idRepositoryXml = $doc->createElement("idRepository", $idRepository);
             $template->appendChild($idRepositoryXml);
             $repositoryNameXml = $doc->createElement("repositoryName", $repositoryName);
@@ -104,7 +123,6 @@ class TemplateDesigner {
             $root->appendChild($template);
             
         }
-        
         
         $doc->appendChild($root);   
         header ("Content-Type:text/xml");
