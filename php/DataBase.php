@@ -359,7 +359,7 @@ class DataBase {
             ArchivoDesconcentracion INT(3) DEFAULT 0,
             Total INT(4),
             AnosHistorico INT(3) NOT NULL DEFAULT 0,
-            SolicitudInformacion NOT NULL DEFAULT 0,
+            SolicitudInformacion INT NOT NULL DEFAULT 0,
             idLegalFoundation INT NOT NULL DEFAULT 0,
             Eliminacion INT(3) DEFAULT 0,
             Concentracion INT(3) DEFAULT 0,
