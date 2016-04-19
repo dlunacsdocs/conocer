@@ -6,6 +6,7 @@ Configuracion/RestoreTrash
 Configuracion/DeleteDirectory
 Configuracion/EmptyTrash
 Configuracion/Templates
+Configuracion/ConexionBD/BD.ini
 
 
  
