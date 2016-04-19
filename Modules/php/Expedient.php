@@ -51,6 +51,8 @@ class Expedient {
                     break;
                 case "associateTemplate": $this->associateTemplate($userData);
                     break;
+                case "getTemplateData": $this->getTemplateData($userData);
+                    break;
             }
         }
     }
@@ -147,6 +149,23 @@ class Expedient {
                 return XML::XMLReponse ("Error", 0, "<p><b>Error</b> al intentar asociar la plantilla. $result</p>");
         
         XML::XMLReponse("templateAssociated", 1, "Plantilla asociada.");
+    }
+    
+    private function getTemplateData($userData){
+        $instanceName = $userData['dataBaseName'];
+        $enterpriseKey = filter_input(INPUT_POST, "enterpriseKey");
+        $repositoryName = filter_input(INPUT_POST, "repositoryName");
+        $templateName = filter_input(INPUT_POST, "templateName");
+        $RoutFile = dirname(dirname(getcwd()));
+        $templateAssociatedPath = "$RoutFile/Configuracion/Templates/$instanceName/$enterpriseKey/$repositoryName/$templateName"."_associated.xml";
+        
+        if(!file_exists($templateAssociatedPath))
+            return XML::XMLReponse ("Error", 0, "No existe la plantilla <b>$templateName</b> en $templateAssociatedPath");
+        
+        $xml = simplexml_load_file($templateAssociatedPath);
+        
+        var_dump($xml);
+        
     }
 
 }

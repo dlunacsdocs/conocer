@@ -18,7 +18,9 @@
 
 var ExpedientClass = function () {
     var self = this;
-
+    var templateName;
+    var enterpriseKey;
+    var repositoryName;
     /**
      * @description Inserta el link del menú expediente.
      * @returns {undefined}
@@ -44,35 +46,35 @@ var ExpedientClass = function () {
 
         if (parseInt(activeNode.data.isExpedient) === 1)
             return Advertencia("Ya existe un expediente.");
-        
+
         if (!(String(activeNode.data.catalogType) === 'serie' || activeNode.data.isLegajo === true))
             _openDocumentaryDispositionInterface();
         else
             _templateSelectionInterface();
 
     };
-    
+
     /**
      * @description Interface para selección de plantilla en el expediente.
      * @returns {undefined}
      */
-    var _templateSelectionInterface = function(){
+    var _templateSelectionInterface = function () {
         var idRepository = $('#CM_select_repositorios option:selected').attr('idRepository');
         var repositoryName = $('#CM_select_repositorios option:selected').attr('repositoryname');
         var enterpriseKey = $('#CM_select_empresas option:selected').attr('value');
 
         var templates = TemplateDesigner.getTemplates(enterpriseKey, idRepository, repositoryName);
-        
+
         var formGroup = $('<div>', {class: "form-group"});
         var templateForm = $('<select>', {class: "form-control"});
-        
+
         formGroup.append(
-                    $('<label>').append('Plantilla')
-                    )
-                    .append(templateForm);
-                
+                $('<label>').append('Plantilla')
+                )
+                .append(templateForm);
+
         var content = $('<div>').append(formGroup);
-        
+
         BootstrapDialog.show({
             title: '<i class="fa fa-folder-open fa-lg"></i> Nuevo Expediente',
             size: BootstrapDialog.SIZE_SMALL,
@@ -90,9 +92,9 @@ var ExpedientClass = function () {
                         var button = this;
                         dialogRef.enableButtons(false);
                         dialogRef.setClosable(false);
-                        if(_associateTemplate(templateForm))
+                        if (_associateTemplate(templateForm))
                             dialogRef.close();
-                        else{
+                        else {
                             dialogRef.setClosable(true);
                             dialogRef.enableButtons(true);
                         }
@@ -122,7 +124,7 @@ var ExpedientClass = function () {
                                 "enterpriseKey": enterpriseKey,
                                 "templateName": templateName
                             }).append(templateName);
-                            
+
                             templateForm.append(option);
 
                         });
@@ -136,28 +138,45 @@ var ExpedientClass = function () {
             }
         });
     };
-    
+
     /**
      * @description Asocia una plantilla en un legajo.
      * @param {Object} templateForm Select Form que contiene la plantilla seleccionada por el usuario.
      * @returns {undefined}
      */
-    var _associateTemplate = function(templateForm){
+    var _associateTemplate = function (templateForm) {
         var templateSelected = $(templateForm).find('option:selected')[0];
-        if(typeof templateSelected !== 'object')
+        if (typeof templateSelected !== 'object')
             return Advertencia("Debe seleccionar un template");
-        
-        var templateObject = _getTemplate(templateSelected);
+
+        var templateObject = _getTemplate($(templateSelected));
+        enterpriseKey = $(templateSelected).attr('enterprisekey');
+        repositoryName = $(templateSelected).attr('repositoryName');
+        templateName = $(templateSelected).attr('templatename');
         
         _openDisassociatedTemplate(templateObject);
         return 1;
     };
-    
-    var _getTemplate = function(templateSelected){
+
+    var _getTemplate = function (templateSelected) {
         return TemplateDesigner.getTemplate($(templateSelected).attr('enterprisekey'), $(templateSelected).attr('repositoryName'), $(templateSelected).attr('templatename') + ".xml");
     };
     
-    var _openDisassociatedTemplate = function(templateObject){
+    /**
+     * @description Devuelve un objeto HTML construido a través del XML de la plantilla seleccionada.
+     * @param {type} templateXml
+     * @returns {Number|$|object}
+     */
+    var _buildObjectOfTemplate = function(templateXml){
+        return TemplateDesigner.buildContentOfTemplate(templateXml);
+    };
+
+    var _openDisassociatedTemplate = function (templateXml) {
+        
+        var templateObject = _buildObjectOfTemplate(templateXml);        
+        var content = $('<div>', {id: "templateContent"});
+        content.append(templateObject);
+
         BootstrapDialog.show({
             title: '<i class="fa fa-folder-open fa-lg"></i> Asociar Plantilla',
             size: BootstrapDialog.SIZE_WIDE,
@@ -172,7 +191,14 @@ var ExpedientClass = function () {
                     label: 'Agregar',
                     cssClass: "btn-primary",
                     action: function (dialogRef) {
-                        
+                        dialogRef.enableButtons(false);
+                        dialogRef.setClosable(false);
+                        if (_addTemplate())
+                            dialogRef.close();
+                        else {
+                            dialogRef.enableButtons(true);
+                            dialogRef.setClosable(true);
+                        }
                     }
                 },
                 {
@@ -183,17 +209,50 @@ var ExpedientClass = function () {
                 }
             ],
             onshow: function () {
+                _getTemplateData(content, templateXml);
             },
             onshown: function (dialogRef) {
 
             }
         });
     };
-        
-    var _addTemplate = function(templateForm){
+    
+    var _getTemplateData = function(content, templateXml){
+        $.ajax({
+            async: false,
+            cache: false,
+            dataType: "html",
+            type: 'POST',
+            url: "Modules/php/Expedient.php",
+            data: {
+                option: "getTemplateData",
+                enterpriseKey: enterpriseKey,
+                repositoryName: repositoryName,
+                templateName: templateName
+            },
+            success: function (xml) {
+                if ($.parseXML(xml) === null)
+                    return errorMessage(error);
+                else
+                    xml = $.parseXML(xml);
+
+                $(xml).find("Error").each(function ()
+                {
+                    var mensaje = $(this).find("Mensaje").text();
+                    errorMessage(mensaje);
+                });
+
+            },
+            error: function (jqXHR, textStatus, errorThrown) {
+                errorMessage(textStatus + "<br>" + errorThrown);
+            }
+        });
+    };
+
+    var _addTemplate = function (templateForm) {
         var templateSelected = $(templateForm).find('option:selected')[0];
-        
-        if(typeof templateSelected !== 'object')
+
+        if (typeof templateSelected !== 'object')
             return Advertencia("Debe seleccionar un template");
 
         $.ajax({
@@ -213,8 +272,8 @@ var ExpedientClass = function () {
                     return errorMessage(error);
                 else
                     xml = $.parseXML(xml);
-                
-                $(xml).find('templateAssociated').each(function(){
+
+                $(xml).find('templateAssociated').each(function () {
                     var message = $(this).find('message').text();
                     Notificacion(message);
 
@@ -227,16 +286,18 @@ var ExpedientClass = function () {
                 });
 
             },
-            error: function(jqXHR, textStatus, errorThrown){errorMessage(textStatus +"<br>"+ errorThrown);}
+            error: function (jqXHR, textStatus, errorThrown) {
+                errorMessage(textStatus + "<br>" + errorThrown);
+            }
         });
     };
-   
+
     /**
      * @description Interface que muestra el catálogo de disposición documental para la selección de 
      *  una serie
      * @returns {undefined}
      */
-    var _openDocumentaryDispositionInterface = function(){
+    var _openDocumentaryDispositionInterface = function () {
         var content = $('<div>');
 
         var catalogDispTree = $('<div>', {id: "catalogDispTree"});
@@ -389,18 +450,18 @@ var ExpedientClass = function () {
      */
     var createPathOfDispositionCatalog = function (path) {
         var xml = "<path version='1.0' encoding='UTF-8'>";
-        
+
         var repositoryName = $('#CM_select_repositorios option:selected').attr('repositoryname');
-        
-        if(repositoryName === undefined)
+
+        if (repositoryName === undefined)
             return Advertencia("No fue posible obtener el nombre del repositorio.");
-        
+
         var status = 0;
 
         for (var cont = path.length; cont >= 0; cont--) {
-            if(cont -1 < 0)
+            if (cont - 1 < 0)
                 continue;
-            var index = cont -1;
+            var index = cont - 1;
             var node = path[index];
             var catalogKey = node.data.key;
             var parentCatalogKey = node.data.parentCatalogKey;
@@ -408,34 +469,33 @@ var ExpedientClass = function () {
             var node = _checkIfExistCatalogNode(catalogKey);
             var catalogNode = $('#catalogDispTree').dynatree('getTree').getNodeByKey(catalogKey);
             var nodePath;
-                        
-            if (node === null){
+
+            if (node === null) {
                 var idParent = 0;
-                if(parentNode !== null){
+                if (parentNode !== null) {
                     idParent = parentNode.data.key;
                     nodePath = parentNode.getKeyPath();
-                }
-                else 
+                } else
                     nodePath = "1";
 
                 xml += '<node>\n\
-                            <parentCatalogKey>'+catalogNode.data.parentCatalogKey+'</parentCatalogKey>\n\\n\
-                            <catalogKey>'+catalogNode.data.nameKey+'</catalogKey>\n\
-                            <name>'+catalogNode.data.title+'</name>\n\
+                            <parentCatalogKey>' + catalogNode.data.parentCatalogKey + '</parentCatalogKey>\n\\n\
+                            <catalogKey>' + catalogNode.data.nameKey + '</catalogKey>\n\
+                            <name>' + catalogNode.data.title + '</name>\n\
                             <idParent>' + idParent + '</idParent>\n\
-                            <catalogType>'+ catalogNode.data.catalogType +'</catalogType>\n\
+                            <catalogType>' + catalogNode.data.catalogType + '</catalogType>\n\
                             <path>' + nodePath + '</path>\n\
                         </node>';
             }
         }
-        
+
         xml += "</path>";
-        
-        if($($.parseXML(xml)).find('node').length === 0)
+
+        if ($($.parseXML(xml)).find('node').length === 0)
             return Advertencia("Ya se ha creado el expediente para la serie seleccionada.");
-        
+
         console.log(xml);
-        
+
         $.ajax({
             async: false,
             cache: false,
@@ -448,12 +508,12 @@ var ExpedientClass = function () {
                     return errorMessage(error);
                 else
                     xml = $.parseXML(xml);
-                
-                $(xml).find('expedientAdded').each(function(){
+
+                $(xml).find('expedientAdded').each(function () {
                     var message = $(this).find('message').text();
                     Notificacion(message);
-                    
-                    $($(xml)).find('directory').each(function(){
+
+                    $($(xml)).find('directory').each(function () {
                         var title = $(this).find('title').text();
                         var idParent = $(this).find('idParent').text();
                         var catalogKey = $(this).find('title').text();
@@ -472,7 +532,7 @@ var ExpedientClass = function () {
 
                         var parent = $('#contentTree').dynatree('getTree').getNodeByKey(idParent);
 
-                        if(parent !== null){
+                        if (parent !== null) {
                             var childNode = parent.addChild(child);
                             childNode.activate(true);
                         }
@@ -487,48 +547,50 @@ var ExpedientClass = function () {
                 });
 
             },
-            error: function(jqXHR, textStatus, errorThrown){errorMessage(textStatus +"<br>"+ errorThrown);}
+            error: function (jqXHR, textStatus, errorThrown) {
+                errorMessage(textStatus + "<br>" + errorThrown);
+            }
         });
 
         return status;
     };
-    
+
     /**
      * @description Recorre la estructura de directorios en busca de una clave de un catálogo en específico
      * @param {type} catalogKey
      * @returns {undefined}
      */
-    var _checkIfExistCatalogNode = function(searchCatalogKey){
+    var _checkIfExistCatalogNode = function (searchCatalogKey) {
         var node = $('#contentTree').dynatree('getRoot');
-        
-        if(node === null)
+
+        if (node === null)
             return null;
-        
+
         var children = node.getChildren();
-        
-        for(var cont = 0; cont < children.length; cont++){
+
+        for (var cont = 0; cont < children.length; cont++) {
             var child = children[cont];
-            
-            if(child === null)
+
+            if (child === null)
                 continue;
-                        
+
             var catalogKey = child.data.catalogkey;
-            
-            if(catalogKey === undefined || catalogKey === null && parseInt(child.data.key) !== 1)
+
+            if (catalogKey === undefined || catalogKey === null && parseInt(child.data.key) !== 1)
                 continue;
-            
+
             console.log("Analizando nodo");
             console.log(child);
-            
-            if(String(catalogKey) === String(searchCatalogKey))
+
+            if (String(catalogKey) === String(searchCatalogKey))
                 return child;
-            
+
             var subChildren = child.getChildren();
-            
-            if(subChildren !== null)
+
+            if (subChildren !== null)
                 children = children.concat(subChildren);
         }
-        
+
         return null;
     };
 };
