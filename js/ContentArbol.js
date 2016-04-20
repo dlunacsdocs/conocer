@@ -56,9 +56,9 @@ var ContentArbol = function () {
                         var node = activeNode.addChild({
                             isFolder: true, 
                             title: title, 
-                            isLegajo: true,
+                            isLegajo: 1,
                             idParent: activeNode.data.key,
-                            catalogkey: null,
+                            catalogKey: activeNode.data.catalogkey,
                             parentCatalogKey: activeNode.data.catalogKey,
                             catalogType: null
                         });
@@ -104,7 +104,14 @@ var ContentArbol = function () {
             dataType: "html",
             type: 'POST',
             url: "php/Tree.php",
-            data: "opcion=InsertDir&NombreRepositorio=" + NombreRepositorio + "&NameDirectory=" + NameDirectory + "&Path=" + pathNode,
+            data: {
+                opcion:"InsertDir", 
+                repositoryName:NombreRepositorio,
+                NameDirectory: NameDirectory,
+                Path:pathNode, 
+                catalogKey: node.data.catalogKey,
+                isLegajo: node.data.isLegajo
+            },
             success: function (xml) {
 
                 if ($.parseXML(xml) === null) {
@@ -118,7 +125,6 @@ var ContentArbol = function () {
                     var id = $NewDirectory.find("IdNewDir").text();
 
                     node.data.key = id;
-
                     status = 1;
                 });
 

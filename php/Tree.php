@@ -123,17 +123,18 @@ class Tree {
     {
                
         $DataBaseName = $userData['dataBaseName'];
-        $NombreRepositorio = filter_input(INPUT_POST, "NombreRepositorio");       
+        $NombreRepositorio = filter_input(INPUT_POST, "repositoryName");       
         $NameDirectory = filter_input(INPUT_POST, "NameDirectory");
         $NombreUsuario = $userData['userName'];
         $IdUsuario = $userData['idUser'];
         $Path = filter_input(INPUT_POST, "Path");   
         $RoutFile = dirname(getcwd());
-
+        $catalogKey = filter_input(INPUT_POST, "catalogKey");
+        $isLegajo = filter_input(INPUT_POST, "isLegajo");
         $PathFinal = dirname($Path)."/";
         $IdParentDirectory = basename($PathFinal);
             
-        $ultimo_id = $this->addNewDirectory($DataBaseName, $NombreRepositorio, $NameDirectory, $IdParentDirectory, $PathFinal);    
+        $ultimo_id = $this->addNewDirectory($DataBaseName, $NombreRepositorio, $NameDirectory, $IdParentDirectory, $PathFinal, $catalogKey, $isLegajo);    
            
         if(is_numeric($ultimo_id))
             $PathFinal.=$ultimo_id;
@@ -159,12 +160,12 @@ class Tree {
         
     }
     
-    function addNewDirectory($dataBaseMame, $repositoryName, $dirname, $idParent, $path){
+    function addNewDirectory($dataBaseMame, $repositoryName, $dirname, $idParent, $path, $catalogKey = null, $isLegajo = null){
         
         $DB = new DataBase();
         
-        $Insert = "INSERT INTO dir_$repositoryName(parent_id,title, path) VALUES "
-                . "($idParent,'$dirname','$path')";            
+        $Insert = "INSERT INTO dir_$repositoryName(parent_id,title, path, catalogKey, isLegajo) VALUES "
+                . "($idParent,'$dirname','$path', '$catalogKey', $isLegajo)";            
         
         if(!(($resultInsert = $DB->ConsultaInsertReturnId($dataBaseMame, $Insert))>0))
                 return $resultInsert;

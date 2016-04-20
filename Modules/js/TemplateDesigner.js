@@ -271,10 +271,11 @@ var TemplateDesigner = function () {
      * de su Xml.
      * @param {type} templateXml
      * @param {boolean} updateMode Modo en el que se construye el diseñador de plantillas. 
+     * @param {boolean} openFromContent Bandera que indica que se abre la plantilla desde el panel principal.
      * En modo update se agregar el panel inferior.
      * @returns {object} contenedor con la estructura de la plantilla ya construida.
      */
-    this.buildContentOfTemplate = function(templateXml, updateMode){
+    this.buildContentOfTemplate = function(templateXml, updateMode, openFromContent){
         console.log("buildContentOfTemplate");
 //        console.log(templateXml);
         
@@ -324,7 +325,9 @@ var TemplateDesigner = function () {
 
         dependenceDataDiv.append(textareaDependenceData);
         textareaDependenceData.append(dependeceData);
-        _insertBottomPanel(content);
+        
+        if(openFromContent !== 1)
+            _insertBottomPanel(content);
                 
         if(updateMode === 0)
             dependenceDataDiv.append(dependeceData);            

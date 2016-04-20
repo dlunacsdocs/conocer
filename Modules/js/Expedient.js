@@ -168,7 +168,7 @@ var ExpedientClass = function () {
      * @returns {Number|$|object}
      */
     var _buildObjectOfTemplate = function(templateXml){
-        return TemplateDesigner.buildContentOfTemplate(templateXml);
+        return TemplateDesigner.buildContentOfTemplate(templateXml, 0, 1);
     };
 
     var _openDisassociatedTemplate = function (templateXml) {

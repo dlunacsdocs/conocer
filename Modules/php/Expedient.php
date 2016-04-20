@@ -151,6 +151,11 @@ class Expedient {
         XML::XMLReponse("templateAssociated", 1, "Plantilla asociada.");
     }
     
+    /**
+     * Devuelve la información generando un query dinámicamente 
+     * @param type $userData
+     * @return type
+     */
     private function getTemplateData($userData){
         $instanceName = $userData['dataBaseName'];
         $enterpriseKey = filter_input(INPUT_POST, "enterpriseKey");
@@ -163,9 +168,21 @@ class Expedient {
             return XML::XMLReponse ("Error", 0, "No existe la plantilla <b>$templateName</b> en $templateAssociatedPath");
         
         $xml = simplexml_load_file($templateAssociatedPath);
+        $DocumentaryDisposition = "";
+        $DocumentValidity = "";
+        $repository = "";
         
-        var_dump($xml);
+        $getData = "SELECT DocumentaryDisposition.*, DocumentValidity.* 
+                    FROM CSDocs_DocumentValidity DocumentValidity LEFT JOIN  
+                    CSDocs_DocumentaryDisposition DocumentaryDisposition 
+                    ON DocumentValidity.idDocDisposition = DocumentaryDisposition.idDocumentaryDisposition";
         
+        $data = $this->db->ConsultaSelect($instanceName, $getData);
+        
+        if($data["Estado"] != 1)
+            return XML::XMLReponse ("Error", 0, "<p><b>Error</b> al obtener los datos de la plantilla</p><br>".$data['Estado']);
+        
+        XML::XmlArrayResponse("templateData", "data", $data['ArrayDatos']);
     }
 
 }
