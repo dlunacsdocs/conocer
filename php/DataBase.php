@@ -279,7 +279,7 @@ class DataBase {
                 . "RutaArchivo TEXT NOT NULL,"
                 . "UsuarioPublicador VARCHAR(50) NOT NULL,"
                 . "FechaIngreso DATETIME NOT NULL,"
-                . "Full TEXT NOT NULL,"
+                . "Full TEXT CHARACTER SET latin1 COLLATE latin1_fulltext_ci NOT NULL,"
                 . "PRIMARY KEY (IdGlobal),"
                 . "FULLTEXT (Full)"
                 . ")ENGINE = MYISAM DEFAULT CHARSET=utf8 COLLATE=utf8_spanish_ci";
