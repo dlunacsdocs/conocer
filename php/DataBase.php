@@ -280,8 +280,7 @@ class DataBase {
                 . "UsuarioPublicador VARCHAR(50) NOT NULL,"
                 . "FechaIngreso DATETIME NOT NULL,"
                 . "Full TEXT CHARACTER SET latin1 COLLATE latin1_fulltext_ci NOT NULL,"
-                . "PRIMARY KEY (IdGlobal),"
-                . "FULLTEXT (Full)"
+                . "PRIMARY KEY (IdGlobal)"
                 . ")ENGINE = MYISAM DEFAULT CHARSET=utf8 COLLATE=utf8_spanish_ci";
 
         if (($EstadoTablaGlobal = $this->ConsultaQuery($DataBaseName, $TablaGlobalRepositorios)) != 1)
