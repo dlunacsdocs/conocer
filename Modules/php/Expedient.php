@@ -161,11 +161,12 @@ class Expedient {
         $enterpriseKey = filter_input(INPUT_POST, "enterpriseKey");
         $repositoryName = filter_input(INPUT_POST, "repositoryName");
         $templateName = filter_input(INPUT_POST, "templateName");
+        $catalogkey = filter_input(INPUT_POST, "catalogkey");
         $RoutFile = dirname(dirname(getcwd()));
         $templateAssociatedPath = "$RoutFile/Configuracion/Templates/$instanceName/$enterpriseKey/$repositoryName/$templateName"."_associated.xml";
         
         if(!file_exists($templateAssociatedPath))
-            return XML::XMLReponse ("Error", 0, "No existe la plantilla <b>$templateName</b> en $templateAssociatedPath");
+            return XML::XMLReponse ("Warning", 0, "No existe la plantilla de relación de campos de <b>$templateName</b>. Debe relacionar los campos desde el menú -> Asociar de Campos");
         
         $xml = simplexml_load_file($templateAssociatedPath);
         $DocumentaryDisposition = "";
@@ -175,7 +176,8 @@ class Expedient {
         $getData = "SELECT DocumentaryDisposition.*, DocumentValidity.* 
                     FROM CSDocs_DocumentValidity DocumentValidity LEFT JOIN  
                     CSDocs_DocumentaryDisposition DocumentaryDisposition 
-                    ON DocumentValidity.idDocDisposition = DocumentaryDisposition.idDocumentaryDisposition";
+                    ON DocumentValidity.idDocDisposition = DocumentaryDisposition.idDocumentaryDisposition 
+                    WHERE DocumentaryDisposition.NameKey = '$catalogkey'";
         
         $data = $this->db->ConsultaSelect($instanceName, $getData);
         

@@ -344,41 +344,47 @@ var FieldsAssociator = function () {
      */
     var _getSystemFields = function () {
         var fields =
-                [
-                    {
-                        "DocumentaryDisposition": [
-                            {fieldName: "fondo", columnName: "Name", fieldTag: "Fondo", table: "DocumentaryDisposition"},
-                            {fieldName: "section", columnName: "Name", fieldTag: "Sección", table: "DocumentaryDisposition"},
-                            {fieldName: "Serie", columnName: "Name", fieldTag: "Serie", table: "DocumentaryDisposition"}
-                        ]},
-                    {
-                        "DocumentValidity": [
-                            {fieldName: "numExpedient", fieldTag: "Número de Expediente"},
-                            {fieldName: "administrativo", columnName: "Administrativo", fieldTag: "Administrativo"},
-                            {fieldName: "legal", columnName: "Legal", fieldTag: "Legal"},
-                            {fieldName: "fiscal", columnName: "Fiscal", fieldTag: "Fiscal"},
-                            {fieldName: "legal", columnName: "Legal", fieldTag: "Legal"},
-                            {fieldName: "archivoTramite", columnName: "ArchivoTramite", fieldTag: "Archivo en Trámite"},
-                            {fieldName: "archivoConcentracion", columnName: "ArchivoConcentracion", fieldTag: "Archivo Concentración"},
-                            {fieldName: "archivoDesconcentracion", columnName: "ArchivoDesconcentracion", fieldTag: "Archivo Desconcentracion"},
-                            {fieldName: "fundamentoLegal", columnName: "idLegalFoundation", fieldTag: "Fundamento Legal", tableRelation: "LegalFoundation"},
-                            {fieldName: "eliminacion", columnName: "concentracion", fieldTag: "Cocentración"},
-                            {fieldName: "concentracion", columnName: "Concentracion", fieldTag: "Concentración"},
-                            {fieldName: "muestreo", columnName: "Muestreo", fieldTag: "Muestreo"},
-                            {fieldName: "publica", columnName: "Publica", fieldTag: "Pública"},
-                            {fieldName: "reservada", columnName: "reservada", fieldTag: "Reservada"},
-                            {fieldName: "confidencial", columnName: "Confidencial", fieldTag: "Confidencial"},
-                            {fieldName: "parcialmenteReservada", columnName: "ParcialmenteReservada", fieldTag: "Pacialmente Reservada"}
-                        ]},
-                    {
-                        "repository": [
-                            {fieldName: "fechaApertura", columnName: "FechaApertura", fieldTag: "Fecha Apertura", isRepository: true},
-                            {fieldName: "fechaCierre", columnName: "FechaCierre", fieldTag: "Fecha Cierre Expediente", isRepository: true},
-                            {fieldName: "alarmaPrimaria", columnName: "AlarmaPrimaria", fieldTag: "Alarma Primaria", isRepository: true},
-                            {fieldName: "alarmaTransfSec", columnName: "AlarmaTransfSec", fieldTag: "Fecha Apertura", isRepository: true}
-                        ]
-                    }
-                ];
+            [
+                {
+                    "DocumentaryDisposition": [
+                        {fieldName: "fondo", columnName: "Name", fieldTag: "Fondo", table: "DocumentaryDisposition"},
+                        {fieldName: "section", columnName: "Name", fieldTag: "Sección", table: "DocumentaryDisposition"},
+                        {fieldName: "Serie", columnName: "Name", fieldTag: "Serie", table: "DocumentaryDisposition"}
+                    ]
+                },
+                {
+                    "DocumentValidity": [
+                        {fieldName: "administrativo", columnName: "Administrativo", fieldTag: "Administrativo"},
+                        {fieldName: "legal", columnName: "Legal", fieldTag: "Legal"},
+                        {fieldName: "fiscal", columnName: "Fiscal", fieldTag: "Fiscal"},
+                        {fieldName: "legal", columnName: "Legal", fieldTag: "Legal"},
+                        {fieldName: "archivoTramite", columnName: "ArchivoTramite", fieldTag: "Archivo en Trámite"},
+                        {fieldName: "archivoConcentracion", columnName: "ArchivoConcentracion", fieldTag: "Archivo Concentración"},
+                        {fieldName: "archivoDesconcentracion", columnName: "ArchivoDesconcentracion", fieldTag: "Archivo Desconcentracion"},
+                        {fieldName: "fundamentoLegal", columnName: "idLegalFoundation", fieldTag: "Fundamento Legal", tableRelation: "LegalFoundation"},
+                        {fieldName: "eliminacion", columnName: "concentracion", fieldTag: "Cocentración"},
+                        {fieldName: "concentracion", columnName: "Concentracion", fieldTag: "Concentración"},
+                        {fieldName: "muestreo", columnName: "Muestreo", fieldTag: "Muestreo"},
+                        {fieldName: "publica", columnName: "Publica", fieldTag: "Pública"},
+                        {fieldName: "reservada", columnName: "reservada", fieldTag: "Reservada"},
+                        {fieldName: "confidencial", columnName: "Confidencial", fieldTag: "Confidencial"},
+                        {fieldName: "parcialmenteReservada", columnName: "ParcialmenteReservada", fieldTag: "Pacialmente Reservada"}
+                    ]
+                },
+                {
+                    "repository": [
+                        {fieldName: "fechaApertura", columnName: "FechaApertura", fieldTag: "Fecha Apertura", isRepository: true},
+                        {fieldName: "fechaCierre", columnName: "FechaCierre", fieldTag: "Fecha Cierre Expediente", isRepository: true},
+                        {fieldName: "alarmaPrimaria", columnName: "AlarmaPrimaria", fieldTag: "Alarma Primaria", isRepository: true},
+                        {fieldName: "alarmaTransfSec", columnName: "AlarmaTransfSec", fieldTag: "Fecha Apertura", isRepository: true}
+                    ]
+                },
+                {
+                    "System":[
+                        {fieldName: "numExpedient", fieldTag: "Número de Expediente"}
+                    ]
+                }
+            ];
 
         return fields;
     };

@@ -21,6 +21,7 @@ var ExpedientClass = function () {
     var templateName;
     var enterpriseKey;
     var repositoryName;
+    var catalogKey;
     /**
      * @description Inserta el link del menú expediente.
      * @returns {undefined}
@@ -47,10 +48,10 @@ var ExpedientClass = function () {
         if (parseInt(activeNode.data.isExpedient) === 1)
             return Advertencia("Ya existe un expediente.");
 
-        if (!(String(activeNode.data.catalogType) === 'serie' || activeNode.data.isLegajo === true))
+        if (!(String(activeNode.data.catalogType) === 'serie' || activeNode.data.isLegajo !== 1))
             _openDocumentaryDispositionInterface();
         else
-            _templateSelectionInterface();
+            _templateSelectionInterface(activeNode);
 
     };
 
@@ -58,11 +59,12 @@ var ExpedientClass = function () {
      * @description Interface para selección de plantilla en el expediente.
      * @returns {undefined}
      */
-    var _templateSelectionInterface = function () {
+    var _templateSelectionInterface = function (activeNode) {
         var idRepository = $('#CM_select_repositorios option:selected').attr('idRepository');
         var repositoryName = $('#CM_select_repositorios option:selected').attr('repositoryname');
         var enterpriseKey = $('#CM_select_empresas option:selected').attr('value');
-
+        catalogKey = activeNode.data.catalogkey;
+        console.log("catalogKey: "+catalogKey);
         var templates = TemplateDesigner.getTemplates(enterpriseKey, idRepository, repositoryName);
 
         var formGroup = $('<div>', {class: "form-group"});
@@ -228,16 +230,21 @@ var ExpedientClass = function () {
                 option: "getTemplateData",
                 enterpriseKey: enterpriseKey,
                 repositoryName: repositoryName,
-                templateName: templateName
+                templateName: templateName,
+                catalogKey: catalogKey
             },
             success: function (xml) {
                 if ($.parseXML(xml) === null)
                     return errorMessage(error);
                 else
                     xml = $.parseXML(xml);
-
-                $(xml).find("Error").each(function ()
-                {
+                
+                $(xml).find("Warning").each(function (){
+                    var mensaje = $(this).find("Mensaje").text();
+                    Advertencia(mensaje);
+                });
+                
+                $(xml).find("Error").each(function (){
                     var mensaje = $(this).find("Mensaje").text();
                     errorMessage(mensaje);
                 });
