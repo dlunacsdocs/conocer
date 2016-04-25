@@ -357,7 +357,6 @@ var FieldsAssociator = function () {
                         {fieldName: "administrativo", columnName: "Administrativo", fieldTag: "Administrativo"},
                         {fieldName: "legal", columnName: "Legal", fieldTag: "Legal"},
                         {fieldName: "fiscal", columnName: "Fiscal", fieldTag: "Fiscal"},
-                        {fieldName: "legal", columnName: "Legal", fieldTag: "Legal"},
                         {fieldName: "archivoTramite", columnName: "ArchivoTramite", fieldTag: "Archivo en Trámite"},
                         {fieldName: "archivoConcentracion", columnName: "ArchivoConcentracion", fieldTag: "Archivo Concentración"},
                         {fieldName: "archivoDesconcentracion", columnName: "ArchivoDesconcentracion", fieldTag: "Archivo Desconcentracion"},
@@ -387,6 +386,10 @@ var FieldsAssociator = function () {
             ];
 
         return fields;
+    };
+    
+    this.getSystemFields = function(){
+        return _getSystemFields();
     };
 
     /**

@@ -431,6 +431,9 @@ class DataBase {
 
         if (file_exists("$RoutFile/Configuracion/MassiveUpload/$InstanceName"))
             exec("rm -R $RoutFile/Configuracion/MassiveUpload/$InstanceName");
+        
+        if (file_exists("$RoutFile/Configuracion/Templates/$InstanceName"))
+            exec("rm -R $RoutFile/Configuracion/Templates/$InstanceName");
 
         XML::XMLReponse("DeleteInstance", 1, "Instancia $InstanceName eliminada");
     }

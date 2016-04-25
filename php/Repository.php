@@ -311,9 +311,6 @@ class Repository {
     {
         $DataBaseName = filter_input(INPUT_POST, "DataBaseName");
         $IdRepositorio = filter_input(INPUT_POST, "IdRepositorio");
-        $IdGroup = filter_input(INPUT_POST, "IdGroup");
-        $IdUsuario = filter_input(INPUT_POST, "IdUsuario");
-        $NombreUsuario = filter_input(INPUT_POST, "NombreUsuario");
         $IdEnterprise = filter_input(INPUT_POST, "IdEnterprise");
         $IdRepository = filter_input(INPUT_POST, "IdRepository");
         $RepositoryName = filter_input(INPUT_POST, "RepositoryName");

@@ -48,7 +48,7 @@ var ExpedientClass = function () {
         if (parseInt(activeNode.data.isExpedient) === 1)
             return Advertencia("Ya existe un expediente.");
 
-        if (!(String(activeNode.data.catalogType) === 'serie' || activeNode.data.isLegajo !== 1))
+        if (!(String(activeNode.data.catalogType) === 'serie' || activeNode.data.isLegajo === 1))
             _openDocumentaryDispositionInterface();
         else
             _templateSelectionInterface(activeNode);
@@ -57,6 +57,7 @@ var ExpedientClass = function () {
 
     /**
      * @description Interface para selección de plantilla en el expediente.
+     * @param {Object} activeNode Nodo activo en el árbol de directorios
      * @returns {undefined}
      */
     var _templateSelectionInterface = function (activeNode) {
@@ -178,7 +179,8 @@ var ExpedientClass = function () {
         var templateObject = _buildObjectOfTemplate(templateXml);        
         var content = $('<div>', {id: "templateContent"});
         content.append(templateObject);
-
+        console.log("open dissasociated template");
+        console.log(templateObject);
         BootstrapDialog.show({
             title: '<i class="fa fa-folder-open fa-lg"></i> Asociar Plantilla',
             size: BootstrapDialog.SIZE_WIDE,
@@ -211,15 +213,18 @@ var ExpedientClass = function () {
                 }
             ],
             onshow: function () {
-                _getTemplateData(content, templateXml);
+                
             },
             onshown: function (dialogRef) {
-
+                var templateData = _getTemplateData(content, templateXml);
+                var templateAssociated = _getTemplateAssociated();
+                _setDataToTemplate(templateXml,templateData, templateAssociated);
             }
         });
     };
     
     var _getTemplateData = function(content, templateXml){
+        var templateData = null;
         $.ajax({
             async: false,
             cache: false,
@@ -239,6 +244,9 @@ var ExpedientClass = function () {
                 else
                     xml = $.parseXML(xml);
                 
+                if($(xml).find('templateData').length > 0)
+                    templateData = xml;
+                
                 $(xml).find("Warning").each(function (){
                     var mensaje = $(this).find("Mensaje").text();
                     Advertencia(mensaje);
@@ -254,6 +262,95 @@ var ExpedientClass = function () {
                 errorMessage(textStatus + "<br>" + errorThrown);
             }
         });
+        
+        return templateData;
+    };
+    
+    var _getTemplateAssociated = function(){
+        var templateAssociated = null;
+        $.ajax({
+            async: false,
+            cache: false,
+            dataType: "html",
+            type: 'POST',
+            url: "Modules/php/Expedient.php",
+            data: {
+                option: "getTemplateAssociated",
+                enterpriseKey: enterpriseKey,
+                repositoryName: repositoryName,
+                templateName: templateName
+            },
+            success: function (xml) {
+                if ($.parseXML(xml) === null)
+                    return errorMessage(error);
+                else
+                    xml = $.parseXML(xml);
+
+                if($(xml).find('association').length > 0)
+                    templateAssociated = xml;
+                
+                $(xml).find("Error").each(function ()
+                {
+                    var mensaje = $(this).find("Mensaje").text();
+                    errorMessage(mensaje);
+                });
+
+            },
+            error: function (jqXHR, textStatus, errorThrown) {
+                errorMessage(textStatus + "<br>" + errorThrown);
+            }
+        });
+        
+        return templateAssociated;
+    };
+    
+    var _setDataToTemplate = function(template, templateData, templateAssociated){
+        console.log("set data to template...");
+        console.log(templateData);
+        console.log("template");
+        console.log(template);
+        console.log("templateAssociated");
+        console.log(templateAssociated);
+        var fieldsAssociator = new FieldsAssociator();
+        var systemFields = fieldsAssociator.getSystemFields();
+        console.log("systemFields");
+        console.log(systemFields);
+        
+        $(templateAssociated).find('field').each(function(){
+            var fieldName = $(this).find('system').find('fieldName').text();
+            var columnName = $(this).find('system').find('columnName').text();
+            var fieldNameUser = $(this).find('userField').find('fieldName').text();
+            var idForm = '#templateForm_'+fieldNameUser;
+            var fieldValue = $(templateData).find(columnName).text();
+            console.log("fieldName: "+ fieldNameUser + " columnName: " + columnName + " fieldValue: " + fieldValue + "idForm: " + idForm);
+            if($(idForm).length > 0)
+                $(idForm).val(fieldValue);
+            else
+                console.log("No existe "+idForm);
+        });
+        
+//        for (var i = 0; i < systemFields.length; i++) {
+//            var obj = systemFields[i];
+//            for (var key in obj) {
+//                var tableName = key;
+//                var fields = obj[key];
+//                for(var cont = 0; cont < fields.length; cont++){
+//                    var fieldObject = fields[cont];
+//                    var fieldTag = fieldObject.fieldTag;
+//                    var columnName = fieldObject.columnName;
+//                    var fieldName = fieldObject.fieldName;
+//                    console.log("columnName: "+columnName);
+//                    var fieldValue = $(templateData).find(columnName).text();
+//                    var idForm = '#templateForm_'+fieldName;
+//                    console.log("fieldName: "+fieldName+ " fieldValue: "+fieldValue + " en "+ idForm);
+//                    $(idForm).val(fieldValue);
+//                    
+//
+//                }
+//
+//            }
+//        }
+                
     };
 
     var _addTemplate = function (templateForm) {

@@ -53,6 +53,8 @@ class Expedient {
                     break;
                 case "getTemplateData": $this->getTemplateData($userData);
                     break;
+                case "getTemplateAssociated": $this->getTemplateAssociated($userData);
+                    break;
             }
         }
     }
@@ -185,6 +187,28 @@ class Expedient {
             return XML::XMLReponse ("Error", 0, "<p><b>Error</b> al obtener los datos de la plantilla</p><br>".$data['Estado']);
         
         XML::XmlArrayResponse("templateData", "data", $data['ArrayDatos']);
+    }
+    
+    /**
+     * Devuelve el XML con los campos asociados
+     */
+    private function getTemplateAssociated($userData){
+        $instanceName = $userData['dataBaseName'];
+        $enterpriseKey = filter_input(INPUT_POST, "enterpriseKey");
+        $repositoryName = filter_input(INPUT_POST, "repositoryName");
+        $templateName = filter_input(INPUT_POST, "templateName");
+        
+        $RoutFile = dirname(dirname(getcwd()));
+        $templateAssociatedPath = "$RoutFile/Configuracion/Templates/$instanceName/$enterpriseKey/$repositoryName/$templateName"."_associated.xml";
+        
+        if(!file_exists($templateAssociatedPath))
+            return XML::XMLReponse ("Warning", 0, "No existe la plantilla de relación de campos de <b>$templateName</b>. Debe relacionar los campos desde el menú -> Asociar de Campos");
+        
+        if(!($xml = simplexml_load_file($templateAssociatedPath)))
+                return XML::XMLReponse("Error", 0, "<p>No se ha podido abrir el XML</p>");
+        
+        header ("Content-Type:text/xml");
+        echo $xml->saveXML();
     }
 
 }
