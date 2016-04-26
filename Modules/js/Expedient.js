@@ -22,6 +22,8 @@ var ExpedientClass = function () {
     var enterpriseKey;
     var repositoryName;
     var catalogKey;
+    var templateData;
+    var templateAssociated;
     /**
      * @description Inserta el link del menú expediente.
      * @returns {undefined}
@@ -216,9 +218,9 @@ var ExpedientClass = function () {
                 
             },
             onshown: function (dialogRef) {
-                var templateData = _getTemplateData(content, templateXml);
+                var templatedata = _getTemplateData(content, templateXml);
                 var templateAssociated = _getTemplateAssociated();
-                _setDataToTemplate(templateXml,templateData, templateAssociated);
+                _setDataToTemplate(templatedata, templateAssociated);
             }
         });
     };
@@ -304,61 +306,57 @@ var ExpedientClass = function () {
         return templateAssociated;
     };
     
-    var _setDataToTemplate = function(template, templateData, templateAssociated){
-        console.log("set data to template...");
-        console.log(templateData);
-        console.log("template");
-        console.log(template);
-        console.log("templateAssociated");
-        console.log(templateAssociated);
+    /**
+     * @description Ingresa la información a la plantilla.
+     * @param {type} template
+     * @param {type} templatedata
+     * @param {type} templateassociated
+     * @returns {undefined}
+     */
+    var _setDataToTemplate = function(templatedata, templateassociated){
+        templateData = templatedata;
+        templateAssociated = templateassociated;
         var fieldsAssociator = new FieldsAssociator();
         var systemFields = fieldsAssociator.getSystemFields();
-        console.log("systemFields");
-        console.log(systemFields);
         
-        $(templateAssociated).find('field').each(function(){
+        $(templateassociated).find('field').each(function(){
             var fieldName = $(this).find('system').find('fieldName').text();
             var columnName = $(this).find('system').find('columnName').text();
             var fieldNameUser = $(this).find('userField').find('fieldName').text();
             var idForm = '#templateForm_'+fieldNameUser;
-            var fieldValue = $(templateData).find(columnName).text();
-            console.log("fieldName: "+ fieldNameUser + " columnName: " + columnName + " fieldValue: " + fieldValue + "idForm: " + idForm);
+            var fieldValue = $(templatedata).find(columnName).text();
+            var tName = _getTableName(systemFields, columnName);
+            console.log("fieldName: "+ fieldNameUser + " columnName: " + columnName + " fieldValue: " + fieldValue + "idForm: " + idForm + " tName: "+tName);
             if($(idForm).length > 0)
-                $(idForm).val(fieldValue);
+                $(idForm).val(fieldValue).attr('tName', tName);
             else
                 console.log("No existe "+idForm);
         });
         
-//        for (var i = 0; i < systemFields.length; i++) {
-//            var obj = systemFields[i];
-//            for (var key in obj) {
-//                var tableName = key;
-//                var fields = obj[key];
-//                for(var cont = 0; cont < fields.length; cont++){
-//                    var fieldObject = fields[cont];
-//                    var fieldTag = fieldObject.fieldTag;
-//                    var columnName = fieldObject.columnName;
-//                    var fieldName = fieldObject.fieldName;
-//                    console.log("columnName: "+columnName);
-//                    var fieldValue = $(templateData).find(columnName).text();
-//                    var idForm = '#templateForm_'+fieldName;
-//                    console.log("fieldName: "+fieldName+ " fieldValue: "+fieldValue + " en "+ idForm);
-//                    $(idForm).val(fieldValue);
-//                    
-//
-//                }
-//
-//            }
-//        }
-                
+    };
+    
+    var _getTableName = function(systemFields, columnname){
+        for (var i = 0; i < systemFields.length; i++) {
+                    var obj = systemFields[i];
+                    for (var key in obj) {
+                        var tableName = key;
+                        var fields = obj[key];
+                        for(var cont = 0; cont < fields.length; cont++){
+                            var fieldObject = fields[cont];
+                            var fieldTag = fieldObject.fieldTag;
+                            var columnName = fieldObject.columnName;
+                            if(String(columnName).toLowerCase() === String(columnname).toLowerCase())
+                                return tableName;
+                        }
+                        
+                    }
+                }
     };
 
-    var _addTemplate = function (templateForm) {
-        var templateSelected = $(templateForm).find('option:selected')[0];
-
-        if (typeof templateSelected !== 'object')
-            return Advertencia("Debe seleccionar un template");
-
+    var _addTemplate = function () {
+        var objectDataTemplate = _getBuildObjectDataTemplate();
+        console.log("objectDataTemplate");
+        console.log(objectDataTemplate);
         $.ajax({
             async: false,
             cache: false,
@@ -366,10 +364,11 @@ var ExpedientClass = function () {
             type: 'POST',
             url: "Modules/php/Expedient.php",
             data: {
-                option: "associateTemplate",
-                enterpriseKey: $(templateSelected).attr('enterprisekey'),
-                repositoryName: $(templateSelected).attr('repositoryname'),
-                templateName: $(templateSelected).attr('templatename') + ".xml"
+                option: "addTemplate",
+                enterpriseKey: enterpriseKey,
+                repositoryName: repositoryName,
+                templateName: templateName + ".xml",
+                objectDataTemplate: objectDataTemplate
             },
             success: function (xml) {
                 if ($.parseXML(xml) === null)
@@ -377,10 +376,9 @@ var ExpedientClass = function () {
                 else
                     xml = $.parseXML(xml);
 
-                $(xml).find('templateAssociated').each(function () {
+                $(xml).find('templateAdded').each(function () {
                     var message = $(this).find('message').text();
                     Notificacion(message);
-
                 });
 
                 $(xml).find("Error").each(function ()
@@ -394,6 +392,46 @@ var ExpedientClass = function () {
                 errorMessage(textStatus + "<br>" + errorThrown);
             }
         });
+    };
+    
+    var _getBuildObjectDataTemplate = function(){
+        var xml = "<template version='1.0' encoding='UTF-8' templateName = '"+templateName+"' enterpriseKey = '" + enterpriseKey + "' repositoryName = '" + repositoryName + "'>";
+        
+        $(templateAssociated).find('field').each(function(){
+            var fieldName = $(this).find('system').find('fieldName').text();
+            var columnName = $(this).find('system').find('columnName').text();
+            var fieldNameUser = $(this).find('userField').find('fieldName').text();
+            var idForm = '#templateForm_'+fieldNameUser;
+            var fieldValue = $(templateData).find(columnName).text();
+            var tableName = $(idForm).attr('tName');
+            var fieldType = $(idForm).attr('fieldtype');
+            var fieldlength = $(idForm).attr('fieldlength');
+            console.log("fieldName: "+ fieldNameUser + " columnName: " + columnName + " fieldValue: " + fieldValue + "idForm: " + idForm);
+            xml+= "<field>";
+            if($(idForm).length > 0)
+                xml += "<fieldValue>" + $(idForm).val(fieldValue) + "</fieldValue>\n\
+                        <columnName>" + columnName + "</columnName>\n\
+                        <fieldName> " + fieldNameUser + "</fieldName>\n\
+                        <tableName> " + tableName + "</tableName>\n\
+                        <fieldType>" + fieldType + "</fieldType>\n\
+                        <fieldLength>" + fieldlength + "</fieldLength>";
+            else
+                console.log("No existe "+idForm);
+            
+            xml += "</field>";
+        });
+        
+        xml += "</template>";
+        
+        return xml;
+    };
+    
+    /**
+     * @description Agrega el directorio del expediente.
+     * @returns {undefined}
+     */
+    var _addTemplateDirectory = function(){
+        
     };
 
     /**

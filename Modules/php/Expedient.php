@@ -55,6 +55,8 @@ class Expedient {
                     break;
                 case "getTemplateAssociated": $this->getTemplateAssociated($userData);
                     break;
+                case 'addTemplate': $this->addTemplate($userData);
+                    break;
             }
         }
     }
@@ -209,6 +211,26 @@ class Expedient {
         
         header ("Content-Type:text/xml");
         echo $xml->saveXML();
+    }
+    
+    /**
+     * Método que ingresa la plantilla a un expediente.
+     * @param type $userData
+     * @return type
+     */
+    private function addTemplate($userData){
+        $instanceName = $userData['dataBaseName'];
+        $enterpriseKey = filter_input(INPUT_POST, "enterpriseKey");
+        $repositoryName = filter_input(INPUT_POST, "repositoryName");
+        $templateName = filter_input(INPUT_POST, "templateName");
+        $RoutFile = dirname(dirname(getcwd()));
+        $templateAssociatedPath = "$RoutFile/Configuracion/Templates/$instanceName/$enterpriseKey/$repositoryName/$templateName"."_associated.xml";
+        $objectDataTemplate = filter_input(INPUT_POST, "objectDataTemplate");
+        
+        if(!($xml = simplexml_load_string($objectDataTemplate)))
+                return XML::XMLReponse ("Error", 0, "<p>No fue posible cargar el XML, es posible que no se haya formado correctamente</p>");
+        
+        $insert = "";
     }
 
 }
