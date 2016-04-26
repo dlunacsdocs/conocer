@@ -408,8 +408,8 @@ var ExpedientClass = function () {
             var fieldlength = $(idForm).attr('fieldlength');
             console.log("fieldName: "+ fieldNameUser + " columnName: " + columnName + " fieldValue: " + fieldValue + "idForm: " + idForm);
             xml+= "<field>";
-            if($(idForm).length > 0)
-                xml += "<fieldValue>" + $(idForm).val(fieldValue) + "</fieldValue>\n\
+            if($(idForm).length > 0 )
+                xml += "<fieldValue>" + $(idForm).val() + "</fieldValue>\n\
                         <columnName>" + columnName + "</columnName>\n\
                         <fieldName> " + fieldNameUser + "</fieldName>\n\
                         <tableName> " + tableName + "</tableName>\n\

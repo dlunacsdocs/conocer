@@ -226,11 +226,20 @@ class Expedient {
         $RoutFile = dirname(dirname(getcwd()));
         $templateAssociatedPath = "$RoutFile/Configuracion/Templates/$instanceName/$enterpriseKey/$repositoryName/$templateName"."_associated.xml";
         $objectDataTemplate = filter_input(INPUT_POST, "objectDataTemplate");
+        $columns = array();
         
         if(!($xml = simplexml_load_string($objectDataTemplate)))
                 return XML::XMLReponse ("Error", 0, "<p>No fue posible cargar el XML, es posible que no se haya formado correctamente</p>");
         
-        $insert = "";
+        $insert = "INSERT INTO ";
+        foreach ($xml->field as $key => $value){
+            $columns["$value->tableName"] = $value->tableName;
+           
+        }
+        
+        $insert.=implode(", ",array_keys($columns));
+        
+        echo $insert;
     }
 
 }
