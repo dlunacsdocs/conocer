@@ -372,15 +372,18 @@ var DocumentaryDispositionClass = function(){
      * @param {type} keyNode
      * @returns {Number}
      */
-    var _checkIfExistsKey = function(keyNode){
-        var fondoNode = $('#fondoTree').dynatree("getTree").getNodeByKey(keyNode);
-        var sectionNode = $('#sectionTree').dynatree("getTree").getNodeByKey(keyNode);
-        var serieNode = $('#serieTree').dynatree("getTree").getNodeByKey(keyNode);
-        
-        if(fondoNode === null && sectionNode === null && serieNode === null)
-            return 0;
-        else
-            return 1;
+    var _checkIfExistsKey = function(activeNode, key){
+        console.log("searchChildKey... " + key);
+        var children = activeNode.getChildren();
+        if(children !== null)
+            for(var cont = 0; cont < children.length; cont++){
+                var catalogKey = children[cont].data.key;
+                console.log("buscando... "+catalogKey);
+                console.log(children[cont].data);
+                if(String(catalogKey) === String(key))
+                    return 1;
+            }
+        return 0;
         
     };
     
@@ -907,6 +910,24 @@ var DocumentaryDispositionClass = function(){
         return idDocDisposition;
     };
     
+    var _generateKey = function(activeNode){
+        var path = activeNode.getKeyPath();
+        return String(path).replace("/", ".");
+    };
+    
+    var _searchChildKey = function(activeNode, key){
+        console.log("searchChildKey... " + key);
+        var children = activeNode.getChildren();
+        for(var cont = 0; cont < children.length; cont++){
+            var catalogKey = children[cont].data.key;
+            console.log("buscando... "+catalogKey);
+            console.log(children[cont].data);
+            if(String(catalogKey) === String(key))
+                return 1;
+        }
+        return 0;
+    };
+    
      /*
      * @description Agrega un elemento a Fondo, en el catálogo de Disposición 
      *              Documental de manera dinámica y solo en memoria en el árbol de Fondo.
@@ -917,10 +938,6 @@ var DocumentaryDispositionClass = function(){
     _addFondo = function(action){
         var docDispositionData = _getDocumentaryDispositionData();
         var activeKeyParent;
-                
-        if(_checkIfExistsKey(docDispositionData.catalogKey) === 1)
-            return Advertencia("La clave <b>"+docDispositionData.catalogKey+"</b> que intenta ingresar ya existe");
-                
         var activeNode = $("#fondoTree").dynatree("getRoot");
         
         if(activeNode.getChildren() !== null){
@@ -936,10 +953,14 @@ var DocumentaryDispositionClass = function(){
         
         if(activeNode === null)
             return Advertencia("No pudo ser recuperado el nodo activo de la estructura <b>Fondo</b>");
-              
+        
+        var keyGenerated = _generateKey(activeNode)+"."+docDispositionData.catalogKey;
+        if(_checkIfExistsKey(activeNode, keyGenerated))
+            return Advertencia("La clave que intenta ingresar ya existe");
+
         var newNode = {
             title: docDispositionData.catalogName,
-            key: docDispositionData.catalogKey,
+            key: keyGenerated,
             tooltip: docDispositionData.catalogDescript,
             description: docDispositionData.catalogDescript,
             structureType: "fondo",
@@ -1003,10 +1024,7 @@ var DocumentaryDispositionClass = function(){
         var sectionKey, sectionKeyParent;
         var serieTree;
         var childNodeSerie;
-        
-        if(_checkIfExistsKey(docDispositionData.catalogKey) === 1)
-            return Advertencia("La clave <b>"+docDispositionData.catalogKey+"</b> que intenta ingresar ya existe");
-        
+                
         
         if(sectionTree === null)
             return Advertencia("No se ha activado una <b>sección</b>");
@@ -1024,11 +1042,16 @@ var DocumentaryDispositionClass = function(){
         if(activeNodeSection === null)
             return Advertencia("No existe la estructura de  <b>Sección</b>");
         
+        var keyGenerated = _generateKey(activeNodeSection)+"."+docDispositionData.catalogKey;
+        console.log(keyGenerated);
+        if(_checkIfExistsKey(activeNodeSection, keyGenerated) === 1)
+            return Advertencia("La clave <b>"+docDispositionData.catalogKey+"</b> que intenta ingresar ya existe");
+
         var newNode = {
             title: docDispositionData.catalogName,
             tooltip: docDispositionData.catalogDescript,
             description: docDispositionData.catalogDescript,
-            key: docDispositionData.catalogKey,
+            key: keyGenerated,
             structureType: "section",
             isFolder: true,
             expand: true,
@@ -1088,11 +1111,7 @@ var DocumentaryDispositionClass = function(){
      * @returns {Number}
      */
     _addSerie = function(action){
-        var docDispositionData = _getDocumentaryDispositionData();
-        
-        if(_checkIfExistsKey(docDispositionData.catalogKey) === 1)
-            return Advertencia("La clave <b>"+docDispositionData.catalogKey+"</b> que intenta ingresar ya existe");
-                
+        var docDispositionData = _getDocumentaryDispositionData();                
         var serieTree = $("#serieTree").dynatree("getRoot");
         
         if(serieTree === null)
@@ -1108,11 +1127,15 @@ var DocumentaryDispositionClass = function(){
         if(activeNodeSerie === null)
             return Advertencia("Debe seleccionar una  ó subserie");
         
+        var keyGenerated = _generateKey(activeNodeSerie)+"."+docDispositionData.catalogKey;
+        if(_checkIfExistsKey(activeNodeSerie, keyGenerated) === 1)
+            return Advertencia("La clave <b>"+docDispositionData.catalogKey+"</b> que intenta ingresar ya existe");
+        
         var newNode = {
             title: docDispositionData.catalogName,
             tooltip: docDispositionData.catalogDescript,
             description: docDispositionData.catalogDescript,
-            key: docDispositionData.catalogKey,
+            key: keyGenerated,
             structureType: "serie",
             isFolder: true,
             expand: true,

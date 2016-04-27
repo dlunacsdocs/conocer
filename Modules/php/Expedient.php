@@ -99,7 +99,7 @@ class Expedient {
                 if((int)$node->idParent > 0)
                     $idParent = $node->idParent;
                                 
-            $insert = "INSERT INTO dir_$repositoryName (parent_id, title, catalogKey, parentCatalogKey, catalogType, dDocDisposition) ";
+            $insert = "INSERT INTO dir_$repositoryName (parent_id, title, catalogKey, parentCatalogKey, catalogType, idDocDisposition) ";
 
             $insert.= "VALUES ($idParent, '$catalogKey', '$catalogKey', '$parentCatalogKey', '$catalogType', $idDocDisposition)";
             

@@ -371,11 +371,17 @@ var FieldsAssociator = function () {
                     ]
                 },
                 {
+                    "AdministrativeUnit": [
+                        {fieldName: "Unidad_Administrativa", columnName: "Name", fieldTag: "Unidad Administrativa"}
+                    ]
+                },
+                {
                     "repository": [
                         {fieldName: "fechaApertura", columnName: "FechaApertura", fieldTag: "Fecha Apertura", isRepository: true, editable: true},
                         {fieldName: "fechaCierre", columnName: "FechaCierre", fieldTag: "Fecha Cierre Expediente", isRepository: true, editable: true},
                         {fieldName: "alarmaPrimaria", columnName: "AlarmaPrimaria", fieldTag: "Alarma Primaria", isRepository: true, editable: true},
-                        {fieldName: "alarmaTransfSec", columnName: "AlarmaTransfSec", fieldTag: "Fecha Apertura", isRepository: true, editable: true}
+                        {fieldName: "alarmaTransfSec", columnName: "AlarmaTransfSec", fieldTag: "Fecha Apertura", isRepository: true, editable: true},
+                        {fieldName: "asunto", columnName: "Asunto", fieldTag: "Asunto", isRepository: true, editable: true}
                     ]
                 },
                 {

@@ -328,7 +328,6 @@ class DataBase {
                 Description VARCHAR(255) NOT NULL,
                 NodeType VARCHAR(10) NOT NULL,
                 ParentKey VARCHAR(25),
-                UNIQUE (NameKey),
                 PRIMARY KEY (idDocumentaryDisposition)
             ) DEFAULT CHARSET=utf8";
         
@@ -770,7 +769,7 @@ class DataBase {
                     . "`parent_id` int(10) UNSIGNED NOT NULL DEFAULT '0',"
                     . "`title` varchar(255) NOT NULL,"
                     . "`path` varchar(255) NOT NULL DEFAULT '',"
-                    . "idDocDisposition NOT NULL DEFAULT 0,"
+                    . "idDocDisposition INT NOT NULL DEFAULT 0,"
                     . "catalogKey VARCHAR(50) NOT NULL,"
                     . "parentCatalogKey VARCHAR(50) NOT NULL,"
                     . "catalogType VARCHAR(10) DEFAULT 0,"
