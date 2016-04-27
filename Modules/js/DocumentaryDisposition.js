@@ -1086,7 +1086,9 @@ var DocumentaryDispositionClass = function(){
         /* Agregando Sección a Serie */
         serieTree = $('#serieTree').dynatree("getTree");
         
-        sectionKeyParent = $('#sectionTree').dynatree("getTree").getNodeByKey(docDispositionData.catalogKey).getParent().data.key;
+        sectionKeyParent = 0;
+        if($('#sectionTree').dynatree("getTree").getNodeByKey(docDispositionData.catalogKey) !== null)
+            sectionKeyParent = $('#sectionTree').dynatree("getTree").getNodeByKey(docDispositionData.catalogKey).getParent().data.key;
         
         if(serieTree.getNodeByKey(sectionKeyParent) !== null)          
             serieTree = serieTree.getNodeByKey(sectionKeyParent);
