@@ -21,6 +21,7 @@ var ExpedientClass = function () {
     var templateName;
     var enterpriseKey;
     var repositoryName;
+    var idDocDisposition = 0;
     var catalogKey;
     var templateData;
     var templateAssociated;
@@ -67,6 +68,7 @@ var ExpedientClass = function () {
         var repositoryName = $('#CM_select_repositorios option:selected').attr('repositoryname');
         var enterpriseKey = $('#CM_select_empresas option:selected').attr('value');
         catalogKey = activeNode.data.catalogkey;
+        idDocDisposition = activeNode.data.idDocDisposition;
         console.log("catalogKey: "+catalogKey);
         var templates = TemplateDesigner.getTemplates(enterpriseKey, idRepository, repositoryName);
 
@@ -238,6 +240,7 @@ var ExpedientClass = function () {
                 enterpriseKey: enterpriseKey,
                 repositoryName: repositoryName,
                 templateName: templateName,
+                idDocDisposition: idDocDisposition,
                 catalogKey: catalogKey
             },
             success: function (xml) {
@@ -326,6 +329,7 @@ var ExpedientClass = function () {
             var idForm = '#templateForm_'+fieldNameUser;
             var fieldValue = $(templatedata).find(columnName).text();
             var tName = _getTableName(systemFields, columnName);
+            console.log("setting data to template");
             console.log("fieldName: "+ fieldNameUser + " columnName: " + columnName + " fieldValue: " + fieldValue + "idForm: " + idForm + " tName: "+tName);
             if($(idForm).length > 0)
                 $(idForm).val(fieldValue).attr('tName', tName);
@@ -354,6 +358,9 @@ var ExpedientClass = function () {
     };
 
     var _addTemplate = function () {
+        var activeNode = $('#contentTree').dynatree('getTree').getActiveNode();
+
+        _addTemplateDirectory();
         var objectDataTemplate = _getBuildObjectDataTemplate();
         console.log("objectDataTemplate");
         console.log(objectDataTemplate);
@@ -368,7 +375,8 @@ var ExpedientClass = function () {
                 enterpriseKey: enterpriseKey,
                 repositoryName: repositoryName,
                 templateName: templateName + ".xml",
-                objectDataTemplate: objectDataTemplate
+                objectDataTemplate: objectDataTemplate,
+                path: activeNode.data.path
             },
             success: function (xml) {
                 if ($.parseXML(xml) === null)
@@ -431,7 +439,31 @@ var ExpedientClass = function () {
      * @returns {undefined}
      */
     var _addTemplateDirectory = function(){
+        console.log("adding template Directory");
+        var activeNode = $('#contentTree').dynatree('getActiveNode');
+        if (activeNode === null)
+            return Advertencia("No fue posible obtener el nodo activo");
+        var path = getPath(activeNode);
+        var tree = new ContentArbol();
+        var node = activeNode.addChild({
+                            isFolder: true, 
+                            title: templateName, 
+                            path: path,
+                            isLegajo: 0,
+                            idParent: activeNode.data.key,
+                            catalogKey: activeNode.data.catalogkey,
+                            parentCatalogKey: activeNode.data.catalogKey,
+                            catalogType: null,
+                            isExpedient: 0,
+                            isFrontPage: 1
+                        });
+        node.data.unselectable = true;
+        node.activate(true);
+        node.focus(true);
+                        
+        var idDirectory = tree.addNewDirectory(node);
         
+        return idDirectory;
     };
 
     /**
@@ -559,8 +591,8 @@ var ExpedientClass = function () {
         var path = getPath(activeNode);
 
         var status = createPathOfDispositionCatalog(path);
-
-
+                        
+                        
 
         return status;
     };
@@ -621,6 +653,7 @@ var ExpedientClass = function () {
                     nodePath = "1";
 
                 xml += '<node>\n\
+                            <idDocDisposition>' + catalogNode.data.idDocDisposition + '</idDocDisposition>\n\
                             <parentCatalogKey>' + catalogNode.data.parentCatalogKey + '</parentCatalogKey>\n\\n\
                             <catalogKey>' + catalogNode.data.nameKey + '</catalogKey>\n\
                             <name>' + catalogNode.data.title + '</name>\n\

@@ -12,7 +12,7 @@ $(document).ready(function () {
 }); 
 
 var ContentArbol = function () {
-
+    var self = this;
     this.addNewDirectoryPanel = function () {
         var activeNode = $('#contentTree').dynatree('getActiveNode');
 
@@ -63,7 +63,7 @@ var ContentArbol = function () {
                             catalogType: null
                         });
 
-                        if (addNewDirectory(node))
+                        if (parseInt(self.addNewDirectory(node)) > 0)
                             dialogRef.close();
                         else {
                             button.stopSpin();
@@ -86,8 +86,8 @@ var ContentArbol = function () {
         });
     };
 
-    var addNewDirectory = function (node) {
-        var status = 0;
+    this.addNewDirectory = function (node) {
+        var newId = 0;
         var pathNode = node.getKeyPath();
         var NameDirectory = node.data.title;
         node.data.unselectable = true;
@@ -110,7 +110,9 @@ var ContentArbol = function () {
                 NameDirectory: NameDirectory,
                 Path:pathNode, 
                 catalogKey: node.data.catalogKey,
-                isLegajo: node.data.isLegajo
+                isLegajo: node.data.isLegajo,
+                isExpedient: node.data.isExpedient,
+                isFrontPage: node.data.isFrontPage
             },
             success: function (xml) {
 
@@ -125,7 +127,7 @@ var ContentArbol = function () {
                     var id = $NewDirectory.find("IdNewDir").text();
 
                     node.data.key = id;
-                    status = 1;
+                    newId = id;
                 });
 
                 $(xml).find("Error").each(function ()
@@ -142,7 +144,7 @@ var ContentArbol = function () {
             }
         });
 
-        return status;
+        return newId;
     };
     
     this.ConfirmDeleteDir = function(node){
@@ -377,7 +379,10 @@ var _buildTree = function (tree) {
         var parentCatalogKey = $Directory.find("parentCatalogKey").text();
         var type = $Directory.find("catalogType").text();
         var isLegajo = false;
-                
+        var isExpedient = $Directory.find('isExpedient').text();
+        var isFrontPage = $Directory.find('isFrontPage').text();
+        var idDocDisposition = $Directory.find('idDocDisposition').text();
+        
         if (String(catalogkey).length === 0)
             catalogkey = null;
         
@@ -393,12 +398,15 @@ var _buildTree = function (tree) {
         var child = {
             title: title,
             idParent: idParent,
+            idDocDisposition: idDocDisposition,
             key: id,
             isFolder: true,
             catalogkey: catalogkey,
             parentCatalogKey: parentCatalogKey,
             catalogType: type,
-            isLegajo: isLegajo
+            isLegajo: isLegajo,           
+            isExpedient: isExpedient,
+            isFrontPage: isFrontPage
         };
 
         if (cont === 0)

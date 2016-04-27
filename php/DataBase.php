@@ -770,6 +770,7 @@ class DataBase {
                     . "`parent_id` int(10) UNSIGNED NOT NULL DEFAULT '0',"
                     . "`title` varchar(255) NOT NULL,"
                     . "`path` varchar(255) NOT NULL DEFAULT '',"
+                    . "idDocDisposition NOT NULL DEFAULT 0,"
                     . "catalogKey VARCHAR(50) NOT NULL,"
                     . "parentCatalogKey VARCHAR(50) NOT NULL,"
                     . "catalogType VARCHAR(10) DEFAULT 0,"
@@ -799,7 +800,7 @@ class DataBase {
                     . "IdDirectory INT NOT NULL,"
                     . "IdEmpresa INT NOT NULL,"
                     . "FechaApertura DATETIME,"
-                    . "FechaCierreExpediente DATETIME"
+                    . "FechaCierreExpediente DATETIME,"
                     . "AlarmaPrimaria DATETIME,"
                     . "AlarmaTransfSec DATETIME,"
                     . "CSDocs_Observaciones TEXT,";

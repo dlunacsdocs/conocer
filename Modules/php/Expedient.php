@@ -90,6 +90,7 @@ class Expedient {
             $catalogKey = $node->catalogKey;
             $catalogType = $node->catalogType;
             $parentCatalogKey = $node->parentCatalogKey;
+            $idDocDisposition = $node->idDocDisposition;
             
             if($index == 0)
                 $path .= "/". $node->path;
@@ -98,9 +99,9 @@ class Expedient {
                 if((int)$node->idParent > 0)
                     $idParent = $node->idParent;
                                 
-            $insert = "INSERT INTO dir_$repositoryName (parent_id, title, catalogKey, parentCatalogKey, catalogType) ";
+            $insert = "INSERT INTO dir_$repositoryName (parent_id, title, catalogKey, parentCatalogKey, catalogType, dDocDisposition) ";
 
-            $insert.= "VALUES ($idParent, '$catalogKey', '$catalogKey', '$parentCatalogKey', '$catalogType')";
+            $insert.= "VALUES ($idParent, '$catalogKey', '$catalogKey', '$parentCatalogKey', '$catalogType', $idDocDisposition)";
             
             $idParentXml = $doc->createElement("idParent", $idParent);
             
@@ -162,10 +163,11 @@ class Expedient {
      */
     private function getTemplateData($userData){
         $instanceName = $userData['dataBaseName'];
+        $idDocDisposition = filter_input(INPUT_POST, "idDocDisposition");
         $enterpriseKey = filter_input(INPUT_POST, "enterpriseKey");
         $repositoryName = filter_input(INPUT_POST, "repositoryName");
         $templateName = filter_input(INPUT_POST, "templateName");
-        $catalogkey = filter_input(INPUT_POST, "catalogkey");
+        $catalogkey = filter_input(INPUT_POST, "catalogKey");
         $RoutFile = dirname(dirname(getcwd()));
         $templateAssociatedPath = "$RoutFile/Configuracion/Templates/$instanceName/$enterpriseKey/$repositoryName/$templateName"."_associated.xml";
         
@@ -181,8 +183,8 @@ class Expedient {
                     FROM CSDocs_DocumentValidity DocumentValidity LEFT JOIN  
                     CSDocs_DocumentaryDisposition DocumentaryDisposition 
                     ON DocumentValidity.idDocDisposition = DocumentaryDisposition.idDocumentaryDisposition 
-                    WHERE DocumentaryDisposition.NameKey = '$catalogkey'";
-        
+                    WHERE DocumentaryDisposition.idDocumentaryDisposition = $idDocDisposition";
+
         $data = $this->db->ConsultaSelect($instanceName, $getData);
         
         if($data["Estado"] != 1)
