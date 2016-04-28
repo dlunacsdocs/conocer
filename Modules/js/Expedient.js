@@ -480,7 +480,7 @@ var ExpedientClass = function () {
 
         BootstrapDialog.show({
             title: '<i class="fa fa-folder-open fa-lg"></i> Nuevo Expediente',
-            size: BootstrapDialog.SIZE_SMALL,
+            size: BootstrapDialog.SIZE_WIDE,
             type: BootstrapDialog.TYPE_PRIMARY,
             message: content,
             closable: true,

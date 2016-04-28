@@ -253,7 +253,7 @@ var DocumentaryDispositionClass = function(){
         
         var dialog = BootstrapDialog.show({
             title: 'Catálogo de Disposición Documental',
-            size: BootstrapDialog.SIZE_NORMAL,
+            size: BootstrapDialog.SIZE_WIDE,
             closable: true,
             message: tabbable,
             draggable: false,
@@ -290,8 +290,8 @@ var DocumentaryDispositionClass = function(){
                 
                 $('#fondoTree').dynatree({
                     minExpandLevel: 2,
-                    onActivate: function(node) {
-//                        console.log(node);
+                    onClick: function(node) {
+                        console.log(node);
                     },
                     keyboard: true
                 });
@@ -305,8 +305,8 @@ var DocumentaryDispositionClass = function(){
                 
                 $('#sectionTree').dynatree({
                     minExpandLevel: 2,
-                    onActivate: function(node) {
-//                        console.log(node);
+                    onClick: function(node) {
+                        console.log(node);
                     },
                     keyboard: true
                 });
@@ -320,8 +320,8 @@ var DocumentaryDispositionClass = function(){
                 
                 $('#serieTree').dynatree({
                     minExpandLevel: 2,
-                    onActivate: function(node) {
-//                        console.log(node);
+                    onClick: function(node) {
+                        console.log(node);
                     },
                     keyboard: true
                 });
@@ -739,10 +739,17 @@ var DocumentaryDispositionClass = function(){
                         var key = $('#catalogKeyDocDispo').val();
                         var description = $('#catalogDescripDocDispo').val();
                         
+                        if(node.getParent() !== null)
+                            if(node.getParent().data.key !== 0)
+                                key = String(node.getParent().data.key) + "." + key;
+
+                        //key = _generateKey(node) + key;
+                        console.log("Modifing");
+                        console.log("keyGenerated: " + key);
                         if(String(oldKey) === key)
                             console.log("La clave no ha cambiado");
                         else{
-                            if(_checkIfExistsKey(key) === 1){
+                            if(_checkIfExistsKey(node,key) === 1){
                                 button.stopSpin();
                                 return Advertencia("La clave <b>"+key+"</b> que intenta ingresar ya existe");
                             }
@@ -751,7 +758,8 @@ var DocumentaryDispositionClass = function(){
                         var dataToUpdate = {
                             idDocDisposition:node.data.idDocDisposition, 
                             catalogName: title, 
-                            nameKey: key, 
+                            nameKey: key,
+                            key: key,
                             structureType: node.data.structureType, 
                             description: description, 
                             parentKey: node.getParent().data.key,
@@ -802,8 +810,9 @@ var DocumentaryDispositionClass = function(){
                 }
             ],
             onshown: function(dialogRef){
+                var keyClean = _removeKeyGenerated(node);
                 $('#catalogNameDocDispo').val(node.data.title);
-                $('#catalogKeyDocDispo').val(node.data.key);
+                $('#catalogKeyDocDispo').val(keyClean);
                 $('#catalogDescripDocDispo').val(node.data.description);
             }
         });
@@ -910,9 +919,45 @@ var DocumentaryDispositionClass = function(){
         return idDocDisposition;
     };
     
+    /*
+     * @description Genera una clavepara una nueva area
+     * @param {Object} activeNode Nodo activo en el catalogo de disposicion
+     * @returns {String} Clave generada
+     */
     var _generateKey = function(activeNode){
-        var path = activeNode.getKeyPath();
-        return String(path).replace("/", ".");
+        if(activeNode.getParent() === null)
+            return "";
+        else
+            return String(activeNode.data.key) + ".";
+    };
+    
+    
+    /**
+     * @description Reestablece la clave original introducida por el usuario.
+     * @param {Object} activeNode Nodo activo en la interfaz del catalogo de disposicion documental
+     * @returns {String} Clave original
+     */
+    var _removeKeyGenerated = function(activeNode){
+        console.log("removing key generated...");
+        var sectionType = activeNode.data.structureType;
+        var parentKey = null;
+        if(String(sectionType).toLowerCase() === 'section'){
+            parentKey = $('#sectionTree').dynatree('getTree').getNodeByKey(activeNode.data.key);
+            if(parentKey !== null)
+                parentKey = parentKey.getParent();
+        }
+        else
+            if(activeNode.getParent() !== null)
+                if(activeNode.getParent().data.key !== 0)
+                    parentKey = activeNode.getParent();
+        
+        console.log(parentKey);
+        
+        var activeKey = String(activeNode.data.key);
+        if(parentKey !== null)
+            return activeKey.replace(String(parentKey.data.key)+".", "");
+        else
+            return activeKey;
     };
     
     var _searchChildKey = function(activeNode, key){
@@ -954,7 +999,8 @@ var DocumentaryDispositionClass = function(){
         if(activeNode === null)
             return Advertencia("No pudo ser recuperado el nodo activo de la estructura <b>Fondo</b>");
         
-        var keyGenerated = _generateKey(activeNode)+"."+docDispositionData.catalogKey;
+        var keyGenerated = _generateKey(activeNode) + docDispositionData.catalogKey;
+        console.log("keyGenerated: " + keyGenerated);
         if(_checkIfExistsKey(activeNode, keyGenerated))
             return Advertencia("La clave que intenta ingresar ya existe");
 
@@ -1042,8 +1088,8 @@ var DocumentaryDispositionClass = function(){
         if(activeNodeSection === null)
             return Advertencia("No existe la estructura de  <b>Sección</b>");
         
-        var keyGenerated = _generateKey(activeNodeSection)+"."+docDispositionData.catalogKey;
-        console.log(keyGenerated);
+        var keyGenerated = _generateKey(activeNodeSection) + docDispositionData.catalogKey;
+        console.log("keyGenerated: " + keyGenerated);
         if(_checkIfExistsKey(activeNodeSection, keyGenerated) === 1)
             return Advertencia("La clave <b>"+docDispositionData.catalogKey+"</b> que intenta ingresar ya existe");
 
@@ -1129,7 +1175,8 @@ var DocumentaryDispositionClass = function(){
         if(activeNodeSerie === null)
             return Advertencia("Debe seleccionar una  ó subserie");
         
-        var keyGenerated = _generateKey(activeNodeSerie)+"."+docDispositionData.catalogKey;
+        var keyGenerated = _generateKey(activeNodeSerie) + docDispositionData.catalogKey;
+        console.log("keyGenerated: " + keyGenerated);
         if(_checkIfExistsKey(activeNodeSerie, keyGenerated) === 1)
             return Advertencia("La clave <b>"+docDispositionData.catalogKey+"</b> que intenta ingresar ya existe");
         
