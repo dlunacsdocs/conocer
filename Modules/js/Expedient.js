@@ -536,7 +536,10 @@ var ExpedientClass = function () {
                             nameKey: 0,
                             key: 0
                         }],
-                    onKeydown: null
+                    onKeydown: null,
+                    onClick: function(node){
+                        console.log(node);
+                    }
                 });
 
                 var catalogDisposition = new DocumentaryDispositionClass();
@@ -571,7 +574,7 @@ var ExpedientClass = function () {
                         description: description,
                         catalogType: type,
                         isFolder: true,
-                        expand: true,
+//                        expand: true,
                         parentCatalogKey: parentKey,
                         icon: icon
                     };
@@ -588,13 +591,120 @@ var ExpedientClass = function () {
     };
 
     var addNewExpedient = function (activeNode) {
-        var path = getPath(activeNode);
+//        var path = getPath(activeNode);
+//        var path = _getStructureDispositionCatalog(activeNode);
+        var path = _getDocDispoKeyPath(activeNode);
+        console.log("Result Path:");
+        console.log(path);
 
         var status = createPathOfDispositionCatalog(path);
-                        
-                        
-
         return status;
+    };
+    
+    var _getDocDispoKeyPath = function(activeNode){
+        var path = String(activeNode.getKeyPath());
+        var keyPath = [];
+        console.log(path);
+        path = path.split("/");
+        for(var cont = path.length - 1; cont >= 2; cont--){
+            var node = $('#catalogDispTree').dynatree('getTree').getNodeByKey(path[cont]);
+            var child = $('#catalogDispTree').dynatree('getTree').getNodeByKey(path[cont+1]);
+
+            console.log("Enviando child");
+            console.log(child);
+            var newKey = _getNewCatalogNamePath(node, child);
+            node.data.newKey = newKey;
+
+            console.log("clave Obtenida: " + newKey);
+            keyPath.push(node);
+            
+            var parent = parent = node.getParent();
+            if(parent !== null)
+                parent = _getNewCatalogNamePath(parent, node);
+            node.data.newParentCatalogKey = parent;
+            console.log("New Parent Key Path: " + parent);
+            
+        }
+        console.log("Resultado Final");
+        console.log(keyPath);
+        
+        return keyPath;
+    };
+    
+    var _getNewCatalogNamePath = function(activeNode, child){
+        console.log("+++");
+        console.log("   ");
+        console.log("procesando: " + activeNode.data.key);
+        if(child !== null)
+            console.log("child: "+child.data.key);
+        if(activeNode === null)
+            return "";
+        var path = [activeNode];
+        var catalogPath = "";
+        for(var cont = 0; cont < path.length; cont++){
+            console.log(path);
+            var node = path[cont];
+            var parent = node.getParent();
+
+            if(cont > 0)
+                child = path[cont-1];
+//            else if(child === null)
+//                console.log("No tiene hijo");
+            
+            if (node === null) 
+                continue;
+            if (!parseInt(node.data.idDocDisposition) > 0)
+                continue;
+            
+            var keyErased = String(node.data.key).replace(node.data.parentCatalogKey + ".", "");
+            
+            console.log("retirando: " + node.data.parentCatalogKey + ". a " + node.data.key);
+            console.log("keyErased: "+keyErased);
+            
+            if(child !== null)
+                console.log("child: " + child.data.key);
+            
+            var catalogType         = node.data.catalogType;
+            var catalogTypeParent   = null;
+            var catalogTypeChild    = null;
+            
+            if(child !== null)
+                catalogTypeChild = child.data.catalogType;
+            if(parent !== null){
+                console.log("Agregando Parent");
+                catalogTypeParent = parent.data.catalogType;
+                path.push(parent);
+            }
+            
+            if(parent === null){
+                console.log("Hijo nulo");
+                catalogPath = keyErased + "/";
+            }else if(String(catalogType) === String(catalogTypeParent)){
+                console.log("Padre de igual tipo pero hijo de igual tipo " +catalogType + " == " +catalogTypeParent);
+                if(String(catalogType) === String(catalogTypeChild)){
+                    console.log("Hijo igual " + catalogType + "== " + catalogTypeChild);
+                    catalogPath = keyErased + "." + catalogPath;
+                }
+                else{
+                    console.log("Hijo diferente " + catalogType + "!= " + catalogTypeChild);
+                    catalogPath = keyErased + "/" + catalogPath;
+                }
+            }
+            else{
+                console.log("Padre diferente  " + catalogType + " != " + catalogTypeParent);
+                if(String(catalogType) === String(catalogTypeChild)){
+                    console.log("Hijo igual " + catalogType + "== " + catalogTypeChild);
+                    catalogPath = keyErased + "." + catalogPath;
+                }
+                else{
+                    console.log("Hijo diferente " + catalogType + "!= " + catalogTypeChild);
+                    catalogPath = keyErased + "/" + catalogPath;
+                }
+            }
+            
+            console.log("catalogPath: "+catalogPath);
+        }
+        return catalogPath;
     };
 
     var getPath = function (activeNode) {
@@ -638,9 +748,14 @@ var ExpedientClass = function () {
             var index = cont - 1;
             var node = path[index];
             var catalogKey = node.data.key;
+            var idDocDisposition = node.data.idDocDisposition;
+            var newParentCatalogKey = node.data.newParentCatalogKey;
             var parentCatalogKey = node.data.parentCatalogKey;
-            var parentNode = _checkIfExistCatalogNode(parentCatalogKey);
-            var node = _checkIfExistCatalogNode(catalogKey);
+            var title = node.data.title;
+            var catalogType = node .data.catalogType;
+            var newKey = node.data.newKey;
+            var parentNode = _checkIfExistCatalogNode(newParentCatalogKey, catalogType);
+            var node = _checkIfExistCatalogNode(newKey, catalogType);
             var catalogNode = $('#catalogDispTree').dynatree('getTree').getNodeByKey(catalogKey);
             var nodePath;
 
@@ -653,10 +768,11 @@ var ExpedientClass = function () {
                     nodePath = "1";
 
                 xml += '<node>\n\
-                            <idDocDisposition>' + catalogNode.data.idDocDisposition + '</idDocDisposition>\n\
-                            <parentCatalogKey>' + catalogNode.data.parentCatalogKey + '</parentCatalogKey>\n\\n\
-                            <catalogKey>' + catalogNode.data.nameKey + '</catalogKey>\n\
-                            <name>' + catalogNode.data.title + '</name>\n\
+                            <idDocDisposition>' + idDocDisposition + '</idDocDisposition>\n\
+                            <newParentCatalogKey>' + newParentCatalogKey + '</newParentCatalogKey>\n\
+                            <parentCatalogKey>' + parentCatalogKey + '</parentCatalogKey>\n\\n\
+                            <catalogKey>' + newKey + '</catalogKey>\n\
+                            <name>' + title + '</name>\n\
                             <idParent>' + idParent + '</idParent>\n\
                             <catalogType>' + catalogNode.data.catalogType + '</catalogType>\n\
                             <path>' + nodePath + '</path>\n\
@@ -735,7 +851,8 @@ var ExpedientClass = function () {
      * @param {type} catalogKey
      * @returns {undefined}
      */
-    var _checkIfExistCatalogNode = function (searchCatalogKey) {
+    var _checkIfExistCatalogNode = function (searchCatalogKey, catalogType) {
+        console.log("Buscando a "+searchCatalogKey);
         var node = $('#contentTree').dynatree('getRoot');
 
         if (node === null)
@@ -745,23 +862,23 @@ var ExpedientClass = function () {
 
         for (var cont = 0; cont < children.length; cont++) {
             var child = children[cont];
-
+            
             if (child === null)
                 continue;
-
+            
             var catalogKey = child.data.catalogkey;
-
+            
             if (catalogKey === undefined || catalogKey === null && parseInt(child.data.key) !== 1)
                 continue;
 
-            console.log("Analizando nodo");
+            console.log("Analizando nodo y comparando " + catalogKey + " , " + searchCatalogKey);
             console.log(child);
 
             if (String(catalogKey) === String(searchCatalogKey))
                 return child;
 
             var subChildren = child.getChildren();
-
+                       
             if (subChildren !== null)
                 children = children.concat(subChildren);
         }

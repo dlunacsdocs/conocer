@@ -319,7 +319,7 @@ var DocumentaryDispositionClass = function(){
                                 /* ______Serie______ */
                 
                 $('#serieTree').dynatree({
-                    minExpandLevel: 2,
+//                    minExpandLevel: 2,
                     onClick: function(node) {
                         console.log(node);
                     },
@@ -960,19 +960,6 @@ var DocumentaryDispositionClass = function(){
             return activeKey;
     };
     
-    var _searchChildKey = function(activeNode, key){
-        console.log("searchChildKey... " + key);
-        var children = activeNode.getChildren();
-        for(var cont = 0; cont < children.length; cont++){
-            var catalogKey = children[cont].data.key;
-            console.log("buscando... "+catalogKey);
-            console.log(children[cont].data);
-            if(String(catalogKey) === String(key))
-                return 1;
-        }
-        return 0;
-    };
-    
      /*
      * @description Agrega un elemento a Fondo, en el catálogo de Disposición 
      *              Documental de manera dinámica y solo en memoria en el árbol de Fondo.
@@ -1546,8 +1533,8 @@ var DocumentaryDispositionClass = function(){
                 tooltip: $(node).find('Name').text(),
                 description: $(node).find('Description').text(),
                 structureType: $(node).find('NodeType').text(),
-                isFolder: true,
-                expand: true,
+//                isFolder: true,
+//                expand: true,
                 icon: "/img/archival/seccion.png"
             };
             
