@@ -355,7 +355,7 @@ class DataBase {
             ArchivoTramite INT(3) DEFAULT 0,
             ArchivoConcentracion INT(3) DEFAULT 0,
             ArchivoDesconcentracion INT(3) DEFAULT 0,
-            Total INT(4),
+            Total INT(4) DEFAULT 0,
             AnosHistorico INT(3) NOT NULL DEFAULT 0,
             SolicitudInformacion INT NOT NULL DEFAULT 0,
             idLegalFoundation INT NOT NULL DEFAULT 0,

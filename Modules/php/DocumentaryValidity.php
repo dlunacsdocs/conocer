@@ -64,7 +64,7 @@ class DocumentaryValidity {
         $idDocValidity = filter_input(INPUT_POST, "idDocValidity");
         $columnName = filter_input(INPUT_POST, "columName");
         
-        $update = "UPDATE CSDocs_DocumentValidity SET $columnName = '$value' WHERE idDocValidity = $idDocValidity";
+        $update = "UPDATE CSDocs_DocumentValidity SET $columnName = '$value', Total = Total + 1  WHERE idDocValidity = $idDocValidity";
         
         if(($updateResult = $this->db->ConsultaQuery($instanceName, $update)) != 1)
                 return XML::XMLReponse ("Error", 0, "<b>Error</b> al intentar ingresar el dato. Detalles: $updateResult");

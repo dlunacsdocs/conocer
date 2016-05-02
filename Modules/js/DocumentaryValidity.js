@@ -463,21 +463,26 @@ var DocumentaryValidity = function(){
         var atColumn = serieTableDT.column(5).data();
         var acColumn = serieTableDT.column(6).data();
         var adColumn = serieTableDT.column(7).data();
-        
-        
-        for(var cont = 0; cont < atColumn.length; cont++){
+        console.log(serieTableDT.rows().nodes());
+        var trArray = serieTableDT.rows().nodes();
+        for(var cont = 0; cont < trArray.length; cont++){
             var atValue = atColumn[cont];
             var acValue = acColumn[cont];
             var adValue = adColumn[cont];
             var rowTotal = 0;           
-            var tr = serieTabledT.find('tr')[cont+1];
- 
-            if(!isNaN(atValue) && !isNaN(acValue) && !isNaN(adValue)){
+//            var tr = serieTabledT.find('tr')[cont+1];
+            var tr = trArray[cont];
+            console.log("atValue: " + atValue + " acValue: " + acValue + "adValue: " +adValue);
+            if(isNaN(atValue) === false && isNaN(acValue) === false && isNaN(adValue) === false){
                 rowTotal = parseInt(atValue) + parseInt(acValue) + parseInt(adValue);
-
-                serieTabledT.fnUpdate([rowTotal],tr,8,true);   
+                console.log("Sumando: " + rowTotal);
+                console.log(tr);
+                if(tr !== undefined)
+                    serieTabledT.fnUpdate([rowTotal],tr,8, true);   
             }
-                       
+            else
+                console.log("No fue posible obtener el total");
+           
         }
     };  
     
