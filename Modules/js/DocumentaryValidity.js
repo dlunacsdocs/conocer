@@ -78,24 +78,32 @@ var DocumentaryValidity = function(){
         
         var serieTable = $('<table>',{class:"table table-striped table-bordered table-hover table-condensed display hover", id: "serieTable"});
         thead = $('<thead>').append('\
-            <tr><th columnName = "NameKey">Clave Serie</th>\n\
-            <th columnName = "Description">Descripción</th>\n\
-            <th columnName = "Administrativo">A</th>\n\
-            <th columnName = "Legal">L</th><th columnName = "Fiscal">F</th>\n\
-            <th columnName = "ArchivoTramite">AT</th>\n\
-            <th columnName = "ArchivoConcentracion">AC</th>\n\
-            <th columnName = "ArchivoDesconcentracion">AD</th>\n\
-            <th columnName = "Total">TOT</th>\n\
-            <th columnName = "AnosHistorico">AH</th>\n\
-            <th columnName = "SolicitudInformacion">SI</th>\n\
-            <th columnName = "idLegalFoundation">FL</th>\n\
-            <th columnName = "Eliminacion">E</th>\n\
-            <th columnName = "Concentracion">C</th>\n\
-            <th columnName = "Muestreo">M</th><th columnName = "Publica">P</th>\n\
-            <th columnName = "Reservada">R</th>\n\
-            <th columnName = "Confidencial">C</th>\n\
-            <th columnName = "ParcialmenteReservada">PR</th>\n\
-            <th class = "TotalExpedientes">TE</th></tr>');
+            <tr>\n\
+                <th columnName = "NameKey">Clave Serie</th>         \n\
+                <th columnName = "Description">Descripción</th>     \n\
+                <th columnName = "Administrativo">A</th>            \n\
+                <th columnName = "Legal">L</th>                     \n\
+                <th columnName = "Fiscal">F</th>                    \n\
+                <th columnName = "Informativo">I</th>               \n\
+                <th columnName = "Testimonial">T</th>               \n\
+                <th columnName = "Evidencial">E</th>                \n\
+                <th columnName = "ArchivoTramite">AT</th>           \n\
+                <th columnName = "ArchivoConcentracion">AC</th>     \n\
+                <th columnName = "ArchivoDesconcentracion">AD</th>  \n\
+                <th columnName = "Total">TOT</th>                   \n\
+                <th columnName = "AnosHistorico">AH</th>            \n\
+                <th columnName = "SolicitudInformacion">SI</th>     \n\
+                <th columnName = "idLegalFoundation">FL</th>        \n\
+                <th columnName = "Eliminacion">E</th>               \n\
+                <th columnName = "Concentracion">C</th>             \n\
+                <th columnName = "Muestreo">M</th>                  \n\
+                <th columnName = "Publica">P</th>                   \n\
+                <th columnName = "Reservada">R</th>                 \n\
+                <th columnName = "Confidencial">C</th>              \n\
+                <th columnName = "Mixta">M</th>                     \n\
+                <th columnName = "ParcialmenteReservada">PR</th>    \n\
+                <th class = "TotalExpedientes">TE</th>              \n\
+            </tr>');
         
         serieTable.append(thead);
         
@@ -232,7 +240,7 @@ var DocumentaryValidity = function(){
             
             /* No puede cambiarse la clave de la serie 
              * No puede editarse el total de expedientes*/
-            if(index > 1 && index !== 19 && index !== 8 && index !== 11)   
+            if(index > 1 && index !== 24 && index !== 11 && index !== 15)   
                 $(this).editable( '../Modules/php/DocumentaryValidity.php', {                  
                     tooltip   : 'Click para editar...',
                     name:"value",
@@ -407,6 +415,9 @@ var DocumentaryValidity = function(){
         var administrativo = $(serie).find('Administrativo').text();
         var legal = $(serie).find('Legal').text();
         var fiscal = $(serie).find('Fiscal').text();
+        var informativo = $(serie).find("Informativo").text();
+        var testimonial = $(serie).find('Testimonial').text();
+        var evidencial = $(serie).find('Evidencial').text();       
         var archivoTramite = $(serie).find('ArchivoTramite').text();
         var archivoConcentracion = $(serie).find('ArchivoConcentracion').text();
         var archivoDesconcentracion = $(serie).find('ArchivoDesconcentracion').text();
@@ -420,6 +431,7 @@ var DocumentaryValidity = function(){
         var publica = $(serie).find('Publica').text();
         var reservada = $(serie).find('Reservada').text();
         var confidencial = $(serie).find('Confidencial').text();
+        var mixta = $(serie).find('Mixta').text();
         var parcialmenteReservada = $(serie).find('ParcialmenteReservada').text();
         var totalExpedientes = $(serie).find('TotalExpedientes').text();
         
@@ -435,6 +447,9 @@ var DocumentaryValidity = function(){
             administrativo, 
             legal, 
             fiscal, 
+            informativo,
+            testimonial,
+            evidencial,
             archivoTramite,
             archivoConcentracion, 
             archivoDesconcentracion, 
@@ -448,10 +463,11 @@ var DocumentaryValidity = function(){
             publica, 
             reservada, 
             confidencial, 
+            mixta,
             parcialmenteReservada,
             totalExpedientes
         ];
-    
+            
         var ai = serieTableDT.row.add(data).draw();
         var n = serieTabledT.fnSettings().aoData[ ai[0] ].nTr;
         n.setAttribute('idDocDisposition',idDocDisposition);
@@ -460,9 +476,9 @@ var DocumentaryValidity = function(){
     };
          
     var _setTotal = function(){
-        var atColumn = serieTableDT.column(5).data();
-        var acColumn = serieTableDT.column(6).data();
-        var adColumn = serieTableDT.column(7).data();
+        var atColumn = serieTableDT.column(8).data();
+        var acColumn = serieTableDT.column(9).data();
+        var adColumn = serieTableDT.column(10).data();
         console.log(serieTableDT.rows().nodes());
         var trArray = serieTableDT.rows().nodes();
         for(var cont = 0; cont < trArray.length; cont++){
@@ -478,7 +494,7 @@ var DocumentaryValidity = function(){
                 console.log("Sumando: " + rowTotal);
                 console.log(tr);
                 if(tr !== undefined)
-                    serieTabledT.fnUpdate([rowTotal],tr,8, true);   
+                    serieTabledT.fnUpdate([rowTotal],tr,11, true);   
             }
             else
                 console.log("No fue posible obtener el total");
