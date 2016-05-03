@@ -171,6 +171,9 @@ class Expedient {
         $RoutFile = dirname(dirname(getcwd()));
         $templateAssociatedPath = "$RoutFile/Configuracion/Templates/$instanceName/$enterpriseKey/$repositoryName/$templateName"."_associated.xml";
         
+        if(!(int) $idDocDisposition > 0)
+            return XML::XMLReponse ("Error", 0, "<p>No se obtuvo un identificador para la consulta</p>");
+        
         if(!file_exists($templateAssociatedPath))
             return XML::XMLReponse ("Warning", 0, "No existe la plantilla de relación de campos de <b>$templateName</b>. Debe relacionar los campos desde el menú -> Asociar de Campos");
         

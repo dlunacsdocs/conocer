@@ -240,7 +240,7 @@ var DocumentaryValidity = function(){
             
             /* No puede cambiarse la clave de la serie 
              * No puede editarse el total de expedientes*/
-            if(index > 1 && index !== 24 && index !== 11 && index !== 15)   
+            if(index > 1 && index !== 23 && index !== 11 && index !== 14)   
                 $(this).editable( '../Modules/php/DocumentaryValidity.php', {                  
                     tooltip   : 'Click para editar...',
                     name:"value",

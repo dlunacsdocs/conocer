@@ -382,7 +382,7 @@ var _buildTree = function (tree) {
         var isExpedient = $Directory.find('isExpedient').text();
         var isFrontPage = $Directory.find('isFrontPage').text();
         var idDocDisposition = $Directory.find('idDocDisposition').text();
-        
+
         if (String(catalogkey).length === 0)
             catalogkey = null;
         
