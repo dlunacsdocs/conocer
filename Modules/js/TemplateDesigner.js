@@ -158,7 +158,7 @@ var TemplateDesigner = function () {
                     var enterprisekey = templatesTd.fnGetData(position)[0];
                     var repositoryname = templatesTd.fnGetData(position)[1];
                     var templatename = templatesTd.fnGetData(position)[2];
-                    self.openTemplate(enterprisekey, repositoryname, templatename);
+                    self.openTemplate(1,enterprisekey, repositoryname, templatename);
                 });
     };
     
@@ -212,7 +212,7 @@ var TemplateDesigner = function () {
         return templates;
     };
     
-    this.openTemplate = function(enterprisekey, repositoryname, templatename){
+    this.openTemplate = function(updateMode,enterprisekey, repositoryname, templatename){
         enterpriseKey = enterprisekey;
         repositoryName = repositoryname;
         templateName = templatename;
@@ -249,6 +249,25 @@ var TemplateDesigner = function () {
             size: BootstrapDialog.SIZE_WIDE,
             type: BootstrapDialog.TYPE_DEFAULT,
             buttons: [
+                {
+                    label: 'Almacenar',
+                    icon: 'fa fa-floppy-o fa-lg',
+                    cssClass: 'btn-primary',
+                    action: function (dialogRef) {
+                        var button = this;
+                        button.spin();
+                        dialogRef.setClosable(false);
+                        dialogRef.enableButtons(false);
+                        
+                        if(_saveTemplate(1))
+                            dialogRef.close();
+                        else{
+                            dialogRef.setClosable(true);
+                            dialogRef.enableButtons(true);
+                            button.stopSpin();
+                        }
+                    }
+                },
                 {
                     label: 'Cerrar',
                     action: function (dialogRef) {
@@ -323,14 +342,17 @@ var TemplateDesigner = function () {
         var formWrapper = $('<div>', {class: "row"}).append(formsDiv);
         content.append(formWrapper);
 
-        dependenceDataDiv.append(textareaDependenceData);
-        textareaDependenceData.append(dependeceData);
         
         if(openFromContent !== 1)
             _insertBottomPanel(content);
                 
         if(updateMode === 0)
-            dependenceDataDiv.append(dependeceData);            
+            dependenceDataDiv.append(dependeceData);
+        else{
+            dependenceDataDiv.append(textareaDependenceData);
+            textareaDependenceData.append(dependeceData);
+        }
+            
         
         
         $(templateXml).find('field').each(function(){

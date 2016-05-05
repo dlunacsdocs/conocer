@@ -18,13 +18,14 @@
 
 var ExpedientClass = function () {
     var self = this;
-    var templateName;
-    var enterpriseKey;
-    var repositoryName;
+    var templateName = null;
+    var enterpriseKey = null;
+    var repositoryName = null;
     var idDocDisposition = 0;
-    var catalogKey;
-    var templateData;
-    var templateAssociated;
+    var catalogKey = null;
+    var templateData = null;
+    var templateAssociated = null;
+    var frontPageName = null;
     /**
      * @description Inserta el link del menú expediente.
      * @returns {undefined}
@@ -51,11 +52,10 @@ var ExpedientClass = function () {
         if (parseInt(activeNode.data.isExpedient) === 1)
             return Advertencia("Ya existe un expediente.");
 
-        if (!(String(activeNode.data.catalogType) === 'serie' || activeNode.data.isLegajo === 1))
-            _openDocumentaryDispositionInterface();
-        else
+        if (String(activeNode.data.catalogType) === 'serie' || activeNode.data.isLegajo === 1)
             _templateSelectionInterface(activeNode);
-
+        else if(parseInt(activeNode.data.key) === 1)
+            _openDocumentaryDispositionInterface();
     };
 
     /**
@@ -64,12 +64,13 @@ var ExpedientClass = function () {
      * @returns {undefined}
      */
     var _templateSelectionInterface = function (activeNode) {
+        var content = $('<div>');
         var idRepository = $('#CM_select_repositorios option:selected').attr('idRepository');
         var repositoryName = $('#CM_select_repositorios option:selected').attr('repositoryname');
         var enterpriseKey = $('#CM_select_empresas option:selected').attr('value');
         catalogKey = activeNode.data.catalogkey;
         idDocDisposition = activeNode.data.idDocDisposition;
-        console.log("catalogKey: "+catalogKey);
+        console.log("catalogKey: "+catalogKey + " idDocDisposition: " + idDocDisposition);
         var templates = TemplateDesigner.getTemplates(enterpriseKey, idRepository, repositoryName);
 
         var formGroup = $('<div>', {class: "form-group"});
@@ -79,11 +80,20 @@ var ExpedientClass = function () {
                 $('<label>').append('Plantilla')
                 )
                 .append(templateForm);
-
-        var content = $('<div>').append(formGroup);
+        
+        content.append(formGroup);
+        
+        formGroup = $('<div>', {class: "form-group"});
+        var expedientNameForm = $('<input>', {class: "form-control", id: "frontPageName", disabled: "disabled"});
+        formGroup.append('<label>Nombre</label>')
+                .append(expedientNameForm);
+        
+        content.append(formGroup);
+        
+        var title = _getTitleTypeOfExpedient();
 
         BootstrapDialog.show({
-            title: '<i class="fa fa-folder-open fa-lg"></i> Nuevo Expediente',
+            title: '<i class="fa fa-folder-open fa-lg"></i> ' + title,
             size: BootstrapDialog.SIZE_SMALL,
             type: BootstrapDialog.TYPE_PRIMARY,
             message: content,
@@ -93,7 +103,7 @@ var ExpedientClass = function () {
             buttons: [
                 {
                     icon: 'fa fa-plus-circle fa-lg',
-                    label: 'Agregar Expediente',
+                    label: 'Agregar',
                     cssClass: "btn-primary",
                     action: function (dialogRef) {
                         var button = this;
@@ -136,14 +146,39 @@ var ExpedientClass = function () {
 
                         });
                     });
-
-
                 });
             },
             onshown: function (dialogRef) {
-
+                var expedientName = _getExpedientName();
+                expedientNameForm.val(expedientName);
             }
         });
+    };
+    
+    var _getTitleTypeOfExpedient = function(){
+        var activeNode = $('#contentTree').dynatree('getTree').getActiveNode();
+        if(activeNode === null)
+             Advertencia("Debe seleccionar una serie");
+        if(parseInt(activeNode.data.isExpedient) === 1)
+            return "Nuevo Expediente";
+        else
+            return "Nueva Plantilla";
+    };
+    
+    /**
+     * @description Retorna el nombre del expediente que ser creado (Nombre del directorio)
+     * @returns {String}
+     */
+    var _getExpedientName = function(){
+        var d = new Date();
+        var n = d.getFullYear(); 
+        var activeNode = $('#contentTree').dynatree('getTree').getActiveNode();
+        if(activeNode === null){
+             Advertencia("Debe seleccionar una serie");
+             return null;
+         }
+         
+        return activeNode.data.title + n + ":1";
     };
 
     /**
@@ -152,6 +187,7 @@ var ExpedientClass = function () {
      * @returns {undefined}
      */
     var _associateTemplate = function (templateForm) {
+        frontPageName = $.trim($('#frontPageName').val());
         var templateSelected = $(templateForm).find('option:selected')[0];
         if (typeof templateSelected !== 'object')
             return Advertencia("Debe seleccionar un template");
@@ -317,6 +353,8 @@ var ExpedientClass = function () {
      * @returns {undefined}
      */
     var _setDataToTemplate = function(templatedata, templateassociated){
+        console.log("templateData");
+        console.log(templatedata);
         templateData = templatedata;
         templateAssociated = templateassociated;
         var fieldsAssociator = new FieldsAssociator();
@@ -330,7 +368,7 @@ var ExpedientClass = function () {
             var fieldValue = $(templatedata).find(columnName).text();
             var tName = _getTableName(systemFields, columnName);
             console.log("setting data to template");
-            console.log("fieldName: "+ fieldNameUser + " columnName: " + columnName + " fieldValue: " + fieldValue + "idForm: " + idForm + " tName: "+tName);
+            console.log("fieldName: "+ fieldNameUser + " columnName: " + columnName + " fieldValue: " + fieldValue + " idForm: " + idForm + " tName: "+tName);
             if($(idForm).length > 0)
                 $(idForm).val(fieldValue).attr('tName', tName);
             else
@@ -359,9 +397,8 @@ var ExpedientClass = function () {
 
     var _addTemplate = function () {
         var activeNode = $('#contentTree').dynatree('getTree').getActiveNode();
-
-        _addTemplateDirectory();
-        var objectDataTemplate = _getBuildObjectDataTemplate();
+//        _addFrontPageDirectory();
+        var objectDataTemplate = _getBuildObjectDataTemplate(activeNode);
         console.log("objectDataTemplate");
         console.log(objectDataTemplate);
         $.ajax({
@@ -402,7 +439,7 @@ var ExpedientClass = function () {
         });
     };
     
-    var _getBuildObjectDataTemplate = function(){
+    var _getBuildObjectDataTemplate = function(activeNode){
         var xml = "<template version='1.0' encoding='UTF-8' templateName = '"+templateName+"' enterpriseKey = '" + enterpriseKey + "' repositoryName = '" + repositoryName + "'>";
         
         $(templateAssociated).find('field').each(function(){
@@ -434,11 +471,50 @@ var ExpedientClass = function () {
         return xml;
     };
     
+    var _getKeyErased = function(node){
+        return String(node.data.key).replace(node.data.parentCatalogKey + ".", "");
+    };
+    
+    /**
+     * @description Se obtiene el fondo a partir de la estructura de directorios.
+     * @param {type} activeNode
+     * @returns {undefined}
+     */
+    var _getFondo = function(activeNode){
+        var keyErased = getKeyErased(activeNode);
+    };
+    
+    /**
+     * @description Se obtiene la seccion a partir de la estructura de directorios.
+     * @param {type} activeNode
+     * @returns {undefined}
+     */
+    var _getSection = function(activeNode){
+        
+    };
+    
+    /**
+     * @description Se obtiene la serie a partir de la estructura de directorios
+     * @param {type} activeNode
+     * @returns {undefined}
+     */
+    var getSerie = function(activeNode){
+        
+    };
+    /**
+     * @description Se retorna la subserie a partir de la estructura de directorios.
+     * @param {type} activeNode
+     * @returns {undefined}
+     */
+    var getSubSerie = function(activeNode){
+        
+    };
+    
     /**
      * @description Agrega el directorio del expediente.
      * @returns {undefined}
      */
-    var _addTemplateDirectory = function(){
+    var _addFrontPageDirectory = function(){
         console.log("adding template Directory");
         var activeNode = $('#contentTree').dynatree('getActiveNode');
         if (activeNode === null)
@@ -447,7 +523,7 @@ var ExpedientClass = function () {
         var tree = new ContentArbol();
         var node = activeNode.addChild({
                             isFolder: true, 
-                            title: templateName, 
+                            title: frontPageName, 
                             path: path,
                             isLegajo: 0,
                             idParent: activeNode.data.key,
@@ -474,7 +550,7 @@ var ExpedientClass = function () {
     var _openDocumentaryDispositionInterface = function () {
         var content = $('<div>');
 
-        var catalogDispTree = $('<div>', {id: "catalogDispTree"});
+        var catalogDispTree = $('<div>', {id: "catalogDispTree", style: "max-height: calc(100vh - 200px); overflow-y: auto;"});
 
         content.append(catalogDispTree);
 
@@ -810,6 +886,7 @@ var ExpedientClass = function () {
                         var catalogKey = $(this).find('title').text();
                         var id = $(this).find('idDirectory').text();
                         var type = $(this).find('catalogType').text();
+                        var idDocDisposition = $(this).find('idDocDisposition').text();
 
                         var child = {
                             title: title,
@@ -818,7 +895,8 @@ var ExpedientClass = function () {
                             isFolder: true,
                             catalogkey: catalogKey,
                             parentCatalogKey: parentCatalogKey,
-                            catalogType: type
+                            catalogType: type,
+                            idDocDisposition: idDocDisposition
                         };
 
                         var parent = $('#contentTree').dynatree('getTree').getNodeByKey(idParent);

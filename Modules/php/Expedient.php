@@ -129,6 +129,8 @@ class Expedient {
             $directory->appendChild($catalogTypeXml);
             $parentCatalogKeyXml = $doc->createElement("parentCatalogKey", $parentCatalogKey);
             $directory->appendChild($parentCatalogKeyXml);
+            $idDocDispositionXml = $doc->createElement("idDocDisposition", $idDocDisposition);
+            $directory->appendChild($idDocDispositionXml);
             $newDirectories->appendChild($directory);    
 
             $index++;
@@ -232,17 +234,20 @@ class Expedient {
         $templateAssociatedPath = "$RoutFile/Configuracion/Templates/$instanceName/$enterpriseKey/$repositoryName/$templateName"."_associated.xml";
         $objectDataTemplate = filter_input(INPUT_POST, "objectDataTemplate");
         $columns = array();
+        $values = array();
         
         if(!($xml = simplexml_load_string($objectDataTemplate)))
                 return XML::XMLReponse ("Error", 0, "<p>No fue posible cargar el XML, es posible que no se haya formado correctamente</p>");
         
-        $insert = "INSERT INTO ";
+        $insert = "INSERT INTO $repositoryName (";
         foreach ($xml->field as $key => $value){
-            $columns["$value->tableName"] = $value->tableName;
-           
+            $columns["$value->columnName"] = $value->columnName;
+            $value = DataBase::FieldFormat($value->fieldValue, $value->fieldType);
+            $values[] = $value;
         }
         
-        $insert.=implode(", ",array_keys($columns));
+        $insert.= implode(", ",array_keys($columns)) . ") VALUES (";
+        $insert.= implode(", ", $values) . " )";
         
         echo $insert;
     }

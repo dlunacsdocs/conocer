@@ -204,9 +204,9 @@ var DocumentaryDispositionClass = function(){
         var sectionLi = $('<li>').append('<a href="#sectionTree" optionName = "Seccion" data-toggle="tab"><span class = "archivalSectionIcon"></span> Sección</a>');
         var serieLi = $('<li>').append('<a href="#serieTree" optionName = "Serie" data-toggle="tab"><span class = "archivalSerieIcon"></span> Serie</a>');
         
-        var fondoDiv = $('<div>',{id:"fondoTree", class:"tab-pane active"});
-        var sectionDiv = $('<div>',{id: "sectionTree", class:"tab-pane"});
-        var serieDiv = $('<div>',{id: "serieTree", class:"tab-pane"});
+        var fondoDiv = $('<div>',{id:"fondoTree", class:"tab-pane active", style: "max-height: calc(100vh - 200px); overflow: auto;"});
+        var sectionDiv = $('<div>',{id: "sectionTree", class:"tab-pane", style: "max-height: calc(100vh - 200px); overflow: auto;"});
+        var serieDiv = $('<div>',{id: "serieTree", class:"tab-pane", style: "max-height: calc(100vh - 100px); overflow: auto;"});
         
         var tabContent = $('<div>', {class:"tab-content"});
         

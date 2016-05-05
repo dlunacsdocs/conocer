@@ -802,8 +802,6 @@ class DataBase {
                     . "(IdRepositorio INT NOT NULL AUTO_INCREMENT, "
                     . "IdDirectory INT NOT NULL,"
                     . "IdEmpresa INT NOT NULL,"
-                    . "FechaApertura DATETIME,"
-                    . "FechaCierreExpediente DATETIME,"
                     . "AlarmaPrimaria DATETIME,"
                     . "AlarmaTransfSec DATETIME,"
                     . "CSDocs_Observaciones TEXT,";
@@ -811,8 +809,6 @@ class DataBase {
                     . "(IdRepositorio INT NOT NULL, "
                     . "IdDirectory INT NOT NULL,"
                     . "IdEmpresa INT NOT NULL,"
-                    . "IdUsuario INT NOT NULL,"
-                    . "NombreUsuario VARCHAR(50) NOT NULL,"
                     . "AlarmaPrimaria DATETIME,"
                     . "AlarmaTransfSec DATETIME,"
                     . "CSDocs_Observaciones TEXT,";

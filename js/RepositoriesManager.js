@@ -338,13 +338,88 @@ var ClassRepository = function ()
             $(this).addClass('selected');
         });
 
-        $(content).find('.fa-spinner').remove();
+        _addFieldsByDefault();
+
+        $(content).find('.fa-spinner').remove();        
     };
 
     var _displayWindowNewField = function ()
     {
         var fieldsManager = new FieldsManager();
         var dialogRef = fieldsManager.windowNewField(_validateNewField);
+    };
+    
+    /**
+     * @description Campos de Default para el repositorio (Proyecto Conocer)
+     * @returns {Array}
+     */
+    var _getDefaultFields = function(){
+        var defaultFields = [
+            {"Fondo":[{fieldType: "TEXT", requiredField: false}]},
+            {"Seccion":[{fieldType: "TEXT", requiredField: false}]},
+            {"Serie":[{fieldType: "TEXT", requiredField: false}]}, 
+            {"Subserie":[{fieldType: "TEXT", requiredField: false}]},
+            {"FechaApertura":[{fieldType: "DATE", requiredField: false}]},
+            {"FechaCierre":[{fieldType: "DATE", requiredField: false}]},
+            {"Asunto":[{fieldType: "TEXT", requiredField: false}]},
+            {"Administrativo":[{fieldType: "INT", requiredField: false}]},
+            {"Legal":[{fieldType: "INT", requiredField: false}]},
+            {"Fiscal":[{fieldType: "INT", requiredField: false}]},
+            {"ArchivoTramite":[{fieldType: "INT", requiredField: false}]},
+            {"ArchivoConcentracion":[{fieldType: "INT", requiredField: false}]},
+            {"ArchivoDesconcentracion":[{fieldType: "INT", requiredField: false}]},
+            {"Fundamento_Legal":[{fieldType: "TEXT", requiredField: false}]},
+            {"Eliminacion":[{fieldType: "INT", requiredField: false}]},
+            {"Concentracion":[{fieldType: "INT", requiredField: false}]},
+            {"Muestreo":[{fieldType: "INT", requiredField: false}]},
+            {"Publica":[{fieldType: "INT", requiredField: false}]},
+            {"Reservada":[{fieldType: "INT", requiredField: false}]},
+            {"Confidencial":[{fieldType: "INT", requiredField: false}]},
+            {"Parcialmente_Reservada":[{fieldType: "INT", requiredField: false}]},
+            {"Num_Expedient":[{fieldType: "TEXT", requiredField: false}]},
+            {"UnidadAdministrativa":[{fieldType: "TEXT", requiredField: false}]}
+            
+        ];
+        return defaultFields;
+    };
+    
+    /**
+     * @description Campos que se agregan por default al repositorio.
+     * @returns {Boolean}
+     */
+    var _addFieldsByDefault = function(){
+        var systemFields = _getDefaultFields();
+        for (var i = 0; i < systemFields.length; i++) {
+            var obj = systemFields[i];
+            for (var key in obj) {
+                var fieldName = key;
+                var fields = obj[key];
+                for(var cont = 0; cont < fields.length; cont++){
+                    var fieldObject = fields[cont];
+                        var FieldsValues = {
+                            FieldName: fieldName, 
+                            FieldType: fieldObject.fieldType, 
+                            FieldLength: "", 
+                            RequiredField: fieldObject.requiredField
+                        };
+
+                        self.AutoincrementId++;
+
+                        if (FieldsValues.RequiredField)
+                            FieldsValues.RequiredField = 'Si';
+                        else
+                            FieldsValues.RequiredField = 'No';
+        
+                        var data = [FieldsValues.FieldName, FieldsValues.FieldType, FieldsValues.FieldLength, FieldsValues.RequiredField];
+                        var ai = FormsNewRepositoryDT.row.add(data).draw();
+                        var n = FormsNewRepositorydT.fnSettings().aoData[ ai[0] ].nTr;
+                        n.setAttribute('id', self.AutoincrementId);
+
+                }
+
+            }
+        }
+      return true;  
     };
 
     var _validateNewField = function (dialogRef)

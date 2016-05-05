@@ -479,26 +479,21 @@ var DocumentaryValidity = function(){
         var atColumn = serieTableDT.column(8).data();
         var acColumn = serieTableDT.column(9).data();
         var adColumn = serieTableDT.column(10).data();
-        console.log(serieTableDT.rows().nodes());
-        var trArray = serieTableDT.rows().nodes();
+        var trArray  = serieTableDT.rows().nodes();
+        
         for(var cont = 0; cont < trArray.length; cont++){
-            var atValue = atColumn[cont];
-            var acValue = acColumn[cont];
-            var adValue = adColumn[cont];
+            var atValue  = atColumn[cont];
+            var acValue  = acColumn[cont];
+            var adValue  = adColumn[cont];
             var rowTotal = 0;           
-//            var tr = serieTabledT.find('tr')[cont+1];
-            var tr = trArray[cont];
-            console.log("atValue: " + atValue + " acValue: " + acValue + "adValue: " +adValue);
+            var tr       = trArray[cont];
             if(isNaN(atValue) === false && isNaN(acValue) === false && isNaN(adValue) === false){
                 rowTotal = parseInt(atValue) + parseInt(acValue) + parseInt(adValue);
-                console.log("Sumando: " + rowTotal);
-                console.log(tr);
                 if(tr !== undefined)
                     serieTabledT.fnUpdate([rowTotal],tr,11, true);   
             }
             else
-                console.log("No fue posible obtener el total");
-           
+                console.log("No fue posible obtener el total " + tr);
         }
     };  
     
@@ -553,9 +548,7 @@ var DocumentaryValidity = function(){
                                 dialogRef.enableButtons(true);
                                 dialogRef.setClosable(true);
                             }
-                                            
                         });
-                        
                     }
                 },
                 {
