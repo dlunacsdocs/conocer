@@ -353,7 +353,8 @@ var FieldsAssociator = function () {
                         {fieldName: "Subserie", columnName: "subserie", fieldTag: "Subserie", isRepository: true},                        
                         {fieldName: "FechaApertura", columnName: "FechaApertura", fieldTag: "Fecha Apertura", isRepository: true, editable: true},
                         {fieldName: "FechaCierre", columnName: "FechaCierre", fieldTag: "Fecha Cierre Expediente", isRepository: true, editable: true},
-                        {fieldName: "Asunto", columnName: "Asunto", fieldTag: "Asunto", isRepository: true, editable: true}
+                        {fieldName: "Asunto", columnName: "Asunto", fieldTag: "Asunto", isRepository: true, editable: true},
+                        {fieldName: "NumeroExpediente", columnName: "NumeroExpediente", fieldTag: "Número de Expediente"}
                     ]
                 },
                 {
@@ -383,13 +384,8 @@ var FieldsAssociator = function () {
                     ]
                 },
                 {
-                    "System":[
-                        {fieldName: "numExpedient", fieldTag: "Número de Expediente"}
-                    ]
-                },
-                {
                     "AdministrativeUnit": [
-                        {fieldName: "Unidad_Administrativa", columnName: "Name", fieldTag: "Unidad Administrativa",tableRelation:"LegalFoundation", catalogType:true}
+                        {fieldName: "Unidad_Administrativa", columnName: "UnidadAdministrativa", fieldTag: "Unidad Administrativa",tableRelation:"LegalFoundation", catalogType:true}
                     ]
                 }
             ];

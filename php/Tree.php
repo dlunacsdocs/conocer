@@ -108,7 +108,9 @@ class Tree {
     function getDirectoriesArray($dataBaseName, $repositoryName){
         $DB = new DataBase();
         
-        $query = "SELECT * FROM dir_$repositoryName";
+        $query = "SELECT dir.*, doc.Name FROM dir_$repositoryName dir 
+                LEFT JOIN CSDocs_DocumentaryDisposition doc ON dir.idDocDisposition = doc.idDocumentaryDisposition 
+                LEFT JOIN auto_$repositoryName auto ON auto.id_expedient = dir.IdDirectory";
         
         $queryResult = $DB->ConsultaSelect($dataBaseName, $query);
         
@@ -140,7 +142,9 @@ class Tree {
             $isExpedient = 0;
         if(!is_numeric($isFrontPage))
             $isFrontPage = 0;
-            
+        if(!is_numeric($isFrontPage))
+            $isFrontPage = 0;
+        
         $ultimo_id = $this->addNewDirectory($DataBaseName, $NombreRepositorio, $NameDirectory, $IdParentDirectory, $PathFinal, $catalogKey, $isLegajo, $isExpedient, $isFrontPage);    
            
         if(is_numeric($ultimo_id))

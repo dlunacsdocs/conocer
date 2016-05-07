@@ -781,6 +781,7 @@ class DataBase {
                     . "isFrontPage INT DEFAULT 0,"
                     . "templatePath TEXT DEFAULT NULL,"
                     . "isLegajo INT NOT NULL DEFAULT 0,"
+                    . "autoincrement INT DEFAULT 0,"
                     . "PRIMARY KEY (`IdDirectory`)"
                     . ") ENGINE=InnoDB AUTO_INCREMENT=1 DEFAULT CHARSET=utf8";
 
@@ -792,6 +793,15 @@ class DataBase {
                     . "`path` varchar(255) NOT NULL DEFAULT '',"
                     . "`IdUsuario` INT NOT NULL,"
                     . "NombreUsuario VARCHAR(50) NOT NULL,"
+                    . "idDocDisposition INT NOT NULL DEFAULT 0,"
+                    . "catalogKey VARCHAR(50) NOT NULL,"
+                    . "parentCatalogKey VARCHAR(50) NOT NULL,"
+                    . "catalogType VARCHAR(10) DEFAULT 0,"
+                    . "isExpedient INT DEFAULT 0,"
+                    . "isFrontPage INT DEFAULT 0,"
+                    . "templatePath TEXT DEFAULT NULL,"
+                    . "isLegajo INT NOT NULL DEFAULT 0,"
+                    . "autoincrement INT DEFAULT 0,"
                     . "PRIMARY KEY (`IdDirectory`)"
                     . ") ENGINE=InnoDB AUTO_INCREMENT=1 DEFAULT CHARSET=utf8";
 
@@ -812,6 +822,11 @@ class DataBase {
                     . "AlarmaPrimaria DATETIME,"
                     . "AlarmaTransfSec DATETIME,"
                     . "CSDocs_Observaciones TEXT,";
+            
+            if(($resAutoincrTable = $this->createAutoincremenetTable($DataBaseName, $Repositorio->NombreRepositorio)) != 1){
+                echo $resAutoincrTable;    
+                return;
+            }
 
             /*             * ********** Se recorren los campos de Default ******************* */
             foreach ($DefaultEstruct as $estructura) {
@@ -945,6 +960,20 @@ class DataBase {
             else
                 echo "<p>Repositorio Creado <b>$Repositorio->NombreRepositorio</b></p>";
         }
+    }
+    
+    private function createAutoincremenetTable($datataBaseName, $repositoryName){
+        $table = "CREATE TABLE IF NOT EXISTS auto_$repositoryName(
+                id_autoincremenet INT NOT NULL AUTO_INCREMENT,
+                id_expedient INT NOT NULL,
+                autoincrement INT,
+                PRIMARY KEY (id_autoincremenet)
+                )";
+        
+        if(($result = $this->ConsultaQuery($datataBaseName, $table)) != 1)
+               return $result;
+        else
+            return 1;
     }
 
     /*     * *************************************************************************
@@ -1657,7 +1686,7 @@ class DataBase {
 
         if (strcasecmp($FieldType, "date") == 0) {
 //                $FieldValue_ = trim($FieldValue,'\'\t\n\r\0\x0B');
-            $FormattedField = "'$FieldValue";
+            $FormattedField = "'$FieldValue'";
             return $FormattedField;
         }
 
@@ -1667,7 +1696,7 @@ class DataBase {
             return $FormattedField;
         }
 
-        return "No se reconoce el tipo de dato  FieldFormat::";
+        return null;
     }
 
 }

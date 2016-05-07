@@ -19,7 +19,7 @@ var ContentArbol = function () {
         if (activeNode === null)
             return Advertencia("No fue posible obtener el nodo activo");
 
-        if (!(String(activeNode.data.catalogType) === 'serie' || activeNode.data.isLegajo === true))
+        if (parseInt(activeNode.data.isFrontPage) !== 1 || parseInt(activeNode.data.isLegajo) !== 1)
             return Advertencia("Solo puede agregar un legajo sobre una serie u otro legajo");
 
         var form = $('<input>', {type: "text", class: "form-control"});
@@ -112,7 +112,8 @@ var ContentArbol = function () {
                 catalogKey: node.data.catalogKey,
                 isLegajo: node.data.isLegajo,
                 isExpedient: node.data.isExpedient,
-                isFrontPage: node.data.isFrontPage
+                isFrontPage: node.data.isFrontPage,
+                autoincrement: node.data.autoincrement
             },
             success: function (xml) {
 
@@ -121,7 +122,7 @@ var ContentArbol = function () {
                     return 0;
                 } else
                     xml = $.parseXML(xml);
-
+                
                 $(xml).find("NewDirectory").each(function (){
                     var $NewDirectory = $(this);
                     var id = $NewDirectory.find("IdNewDir").text();
@@ -382,6 +383,8 @@ var _buildTree = function (tree) {
         var isExpedient = $Directory.find('isExpedient').text();
         var isFrontPage = $Directory.find('isFrontPage').text();
         var idDocDisposition = $Directory.find('idDocDisposition').text();
+        var docDispositionName = $Directory.find('Name').text();
+        var autoincrement = $Directory.find('autoincrement').text();
 
         if (String(catalogkey).length === 0)
             catalogkey = null;
@@ -399,6 +402,7 @@ var _buildTree = function (tree) {
             title: title,
             idParent: idParent,
             idDocDisposition: idDocDisposition,
+            docDispositionName: docDispositionName,
             key: id,
             isFolder: true,
             catalogkey: catalogkey,
@@ -406,7 +410,8 @@ var _buildTree = function (tree) {
             catalogType: type,
             isLegajo: isLegajo,           
             isExpedient: isExpedient,
-            isFrontPage: isFrontPage
+            isFrontPage: isFrontPage,
+            autoincrement: autoincrement
         };
 
         if (cont === 0)

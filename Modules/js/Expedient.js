@@ -52,7 +52,7 @@ var ExpedientClass = function () {
         if (parseInt(activeNode.data.isExpedient) === 1)
             return Advertencia("Ya existe un expediente.");
 
-        if (String(activeNode.data.catalogType) === 'serie' || activeNode.data.isLegajo === 1)
+        if (String(activeNode.data.catalogType) === 'serie')
             _templateSelectionInterface(activeNode);
         else if(parseInt(activeNode.data.key) === 1)
             _openDocumentaryDispositionInterface();
@@ -70,7 +70,7 @@ var ExpedientClass = function () {
         var enterpriseKey = $('#CM_select_empresas option:selected').attr('value');
         catalogKey = activeNode.data.catalogkey;
         idDocDisposition = activeNode.data.idDocDisposition;
-        console.log("catalogKey: "+catalogKey + " idDocDisposition: " + idDocDisposition);
+//        console.log("catalogKey: "+catalogKey + " idDocDisposition: " + idDocDisposition);
         var templates = TemplateDesigner.getTemplates(enterpriseKey, idRepository, repositoryName);
 
         var formGroup = $('<div>', {class: "form-group"});
@@ -84,7 +84,7 @@ var ExpedientClass = function () {
         content.append(formGroup);
         
         formGroup = $('<div>', {class: "form-group"});
-        var expedientNameForm = $('<input>', {class: "form-control", id: "frontPageName", disabled: "disabled"});
+        var expedientNameForm = $('<input>', {class: "form-control", id: "frontPageName"});
         formGroup.append('<label>Nombre</label>')
                 .append(expedientNameForm);
         
@@ -105,6 +105,7 @@ var ExpedientClass = function () {
                     icon: 'fa fa-plus-circle fa-lg',
                     label: 'Agregar',
                     cssClass: "btn-primary",
+                    hotkey: 13,
                     action: function (dialogRef) {
                         var button = this;
                         dialogRef.enableButtons(false);
@@ -178,7 +179,7 @@ var ExpedientClass = function () {
              return null;
          }
          
-        return activeNode.data.title + n + ":1";
+        return activeNode.data.title + n + "/1";
     };
 
     /**
@@ -237,7 +238,7 @@ var ExpedientClass = function () {
                     action: function (dialogRef) {
                         dialogRef.enableButtons(false);
                         dialogRef.setClosable(false);
-                        if (_addTemplate())
+                        if (frontPage.upload())
                             dialogRef.close();
                         else {
                             dialogRef.enableButtons(true);
@@ -347,7 +348,6 @@ var ExpedientClass = function () {
     
     /**
      * @description Ingresa la información a la plantilla.
-     * @param {type} template
      * @param {type} templatedata
      * @param {type} templateassociated
      * @returns {undefined}
@@ -355,6 +355,7 @@ var ExpedientClass = function () {
     var _setDataToTemplate = function(templatedata, templateassociated){
         console.log("templateData");
         console.log(templatedata);
+        var activeNode = $('#contentTree').dynatree('getTree').getActiveNode();
         templateData = templatedata;
         templateAssociated = templateassociated;
         var fieldsAssociator = new FieldsAssociator();
@@ -369,8 +370,19 @@ var ExpedientClass = function () {
             var tName = _getTableName(systemFields, columnName);
             console.log("setting data to template");
             console.log("fieldName: "+ fieldNameUser + " columnName: " + columnName + " fieldValue: " + fieldValue + " idForm: " + idForm + " tName: "+tName);
-            if($(idForm).length > 0)
-                $(idForm).val(fieldValue).attr('tName', tName);
+                            
+            if($(idForm).length > 0){
+                if(String(fieldNameUser).toLowerCase() === 'fondo')
+                    $(idForm).val(_getCatalogType(activeNode, "fondo")).attr('tName', tName);
+                else if(String(fieldNameUser).toLowerCase() === 'seccion')
+                    $(idForm).val(_getCatalogType(activeNode, "section")).attr('tName', tName);
+                else if(String(fieldNameUser).toLowerCase() === 'serie')
+                    $(idForm).val(_getCatalogType(activeNode, "serie")).attr('tName', tName);
+                else if(String(fieldNameUser).toLowerCase() === 'subserie')
+                    $(idForm).val(_getSubCatalogType(activeNode, "serie")).attr('tName', tName);
+                else
+                    $(idForm).val(fieldValue).attr('tName', tName);
+            }
             else
                 console.log("No existe "+idForm);
         });
@@ -394,50 +406,6 @@ var ExpedientClass = function () {
                     }
                 }
     };
-
-    var _addTemplate = function () {
-        var activeNode = $('#contentTree').dynatree('getTree').getActiveNode();
-//        _addFrontPageDirectory();
-        var objectDataTemplate = _getBuildObjectDataTemplate(activeNode);
-        console.log("objectDataTemplate");
-        console.log(objectDataTemplate);
-        $.ajax({
-            async: false,
-            cache: false,
-            dataType: "html",
-            type: 'POST',
-            url: "Modules/php/Expedient.php",
-            data: {
-                option: "addTemplate",
-                enterpriseKey: enterpriseKey,
-                repositoryName: repositoryName,
-                templateName: templateName + ".xml",
-                objectDataTemplate: objectDataTemplate,
-                path: activeNode.data.path
-            },
-            success: function (xml) {
-                if ($.parseXML(xml) === null)
-                    return errorMessage(error);
-                else
-                    xml = $.parseXML(xml);
-
-                $(xml).find('templateAdded').each(function () {
-                    var message = $(this).find('message').text();
-                    Notificacion(message);
-                });
-
-                $(xml).find("Error").each(function ()
-                {
-                    var mensaje = $(this).find("Mensaje").text();
-                    errorMessage(mensaje);
-                });
-
-            },
-            error: function (jqXHR, textStatus, errorThrown) {
-                errorMessage(textStatus + "<br>" + errorThrown);
-            }
-        });
-    };
     
     var _getBuildObjectDataTemplate = function(activeNode){
         var xml = "<template version='1.0' encoding='UTF-8' templateName = '"+templateName+"' enterpriseKey = '" + enterpriseKey + "' repositoryName = '" + repositoryName + "'>";
@@ -451,19 +419,19 @@ var ExpedientClass = function () {
             var tableName = $(idForm).attr('tName');
             var fieldType = $(idForm).attr('fieldtype');
             var fieldlength = $(idForm).attr('fieldlength');
-            console.log("fieldName: "+ fieldNameUser + " columnName: " + columnName + " fieldValue: " + fieldValue + "idForm: " + idForm);
-            xml+= "<field>";
-            if($(idForm).length > 0 )
-                xml += "<fieldValue>" + $(idForm).val() + "</fieldValue>\n\
-                        <columnName>" + columnName + "</columnName>\n\
-                        <fieldName> " + fieldNameUser + "</fieldName>\n\
-                        <tableName> " + tableName + "</tableName>\n\
-                        <fieldType>" + fieldType + "</fieldType>\n\
-                        <fieldLength>" + fieldlength + "</fieldLength>";
+//            console.log("fieldName: "+ fieldNameUser + " columnName: " + columnName + " fieldValue: " + fieldValue + "idForm: " + idForm);
+            if($(idForm).length > 0 ){
+                xml+= "<field>";
+                    xml+= "<fieldValue>" + $(idForm).val() + "</fieldValue>\n\
+                            <columnName>" + columnName + "</columnName>\n\
+                            <fieldName> " + fieldNameUser + "</fieldName>\n\
+                            <tableName> " + tableName + "</tableName>\n\
+                            <fieldType>" + fieldType + "</fieldType>\n\
+                            <fieldLength>" + fieldlength + "</fieldLength>";
+                xml += "</field>";
+            }
             else
                 console.log("No existe "+idForm);
-            
-            xml += "</field>";
         });
         
         xml += "</template>";
@@ -478,70 +446,52 @@ var ExpedientClass = function () {
     /**
      * @description Se obtiene el fondo a partir de la estructura de directorios.
      * @param {type} activeNode
-     * @returns {undefined}
+     * @param {type} typeSearched
+     * @returns {String|node@call;getParent.data.title|Window.data.title}
      */
-    var _getFondo = function(activeNode){
-        var keyErased = getKeyErased(activeNode);
-    };
-    
-    /**
-     * @description Se obtiene la seccion a partir de la estructura de directorios.
-     * @param {type} activeNode
-     * @returns {undefined}
-     */
-    var _getSection = function(activeNode){
-        
-    };
-    
-    /**
-     * @description Se obtiene la serie a partir de la estructura de directorios
-     * @param {type} activeNode
-     * @returns {undefined}
-     */
-    var getSerie = function(activeNode){
-        
-    };
-    /**
-     * @description Se retorna la subserie a partir de la estructura de directorios.
-     * @param {type} activeNode
-     * @returns {undefined}
-     */
-    var getSubSerie = function(activeNode){
-        
-    };
-    
-    /**
-     * @description Agrega el directorio del expediente.
-     * @returns {undefined}
-     */
-    var _addFrontPageDirectory = function(){
-        console.log("adding template Directory");
-        var activeNode = $('#contentTree').dynatree('getActiveNode');
-        if (activeNode === null)
-            return Advertencia("No fue posible obtener el nodo activo");
-        var path = getPath(activeNode);
-        var tree = new ContentArbol();
-        var node = activeNode.addChild({
-                            isFolder: true, 
-                            title: frontPageName, 
-                            path: path,
-                            isLegajo: 0,
-                            idParent: activeNode.data.key,
-                            catalogKey: activeNode.data.catalogkey,
-                            parentCatalogKey: activeNode.data.catalogKey,
-                            catalogType: null,
-                            isExpedient: 0,
-                            isFrontPage: 1
-                        });
-        node.data.unselectable = true;
-        node.activate(true);
-        node.focus(true);
-                        
-        var idDirectory = tree.addNewDirectory(node);
-        
-        return idDirectory;
-    };
+    var _getCatalogType = function(activeNode, typeSearched){
+        var parents = [activeNode];
 
+        for(var cont = 0; cont < parents.length; cont++){
+            var node = parents[cont];
+            if(node !== null){
+                var catalogType = String(node.data.catalogType).toLowerCase();
+                var parent = node.getParent();
+                if(catalogType === String(typeSearched).toLowerCase()){
+                    if(parent !== null){
+                        return parent.data.docDispositionName;
+                    }
+                    else
+                        return node.data.docDispositionName;
+                }
+                else
+                    if(node.getParent() !== null)
+                        parents.push(node.getParent());
+            }   
+        }
+        return "No existe";
+    };
+    
+    var _getSubCatalogType = function(activeNode, typeSearched){
+        var parents = [activeNode];
+
+        for(var cont = 0; cont < parents.length; cont++){
+            var node = parents[cont];
+            if(node !== null){
+                var catalogType = String(node.data.catalogType).toLowerCase();
+                if(catalogType === String(typeSearched).toLowerCase()){
+                    if(node.getParent() !== null){
+                        if(String(node.getParent().data.catalogType).toLowerCase() === typeSearched)
+                            return node.data.docDispositionName;
+                    }
+                }
+                else
+                    if(node.getParent() !== null)
+                        parents.push(node.getParent());
+            }   
+        }
+        return "";
+    };
     /**
      * @description Interface que muestra el catálogo de disposición documental para la selección de 
      *  una serie
@@ -670,9 +620,8 @@ var ExpedientClass = function () {
 //        var path = getPath(activeNode);
 //        var path = _getStructureDispositionCatalog(activeNode);
         var path = _getDocDispoKeyPath(activeNode);
-        console.log("Result Path:");
-        console.log(path);
-
+//        console.log("Result Path:");
+//        console.log(path);
         var status = createPathOfDispositionCatalog(path);
         return status;
     };
@@ -680,26 +629,23 @@ var ExpedientClass = function () {
     var _getDocDispoKeyPath = function(activeNode){
         var path = String(activeNode.getKeyPath());
         var keyPath = [];
-        console.log(path);
+//        console.log(path);
         path = path.split("/");
         for(var cont = path.length - 1; cont >= 2; cont--){
             var node = $('#catalogDispTree').dynatree('getTree').getNodeByKey(path[cont]);
             var child = $('#catalogDispTree').dynatree('getTree').getNodeByKey(path[cont+1]);
-
-            console.log("Enviando child");
-            console.log(child);
+//            console.log("Enviando child");
+//            console.log(child);
             var newKey = _getNewCatalogNamePath(node, child);
             node.data.newKey = newKey;
-
-            console.log("clave Obtenida: " + newKey);
+//            console.log("clave Obtenida: " + newKey);
             keyPath.push(node);
             
             var parent = parent = node.getParent();
             if(parent !== null)
                 parent = _getNewCatalogNamePath(parent, node);
             node.data.newParentCatalogKey = parent;
-            console.log("New Parent Key Path: " + parent);
-            
+//            console.log("New Parent Key Path: " + parent);
         }
         console.log("Resultado Final");
         console.log(keyPath);
@@ -708,17 +654,17 @@ var ExpedientClass = function () {
     };
     
     var _getNewCatalogNamePath = function(activeNode, child){
-        console.log("+++");
-        console.log("   ");
-        console.log("procesando: " + activeNode.data.key);
-        if(child !== null)
-            console.log("child: "+child.data.key);
+//        console.log("+++");
+//        console.log("   ");
+//        console.log("procesando: " + activeNode.data.key);
+//        if(child !== null)
+//            console.log("child: "+child.data.key);
         if(activeNode === null)
             return "";
         var path = [activeNode];
         var catalogPath = "";
         for(var cont = 0; cont < path.length; cont++){
-            console.log(path);
+//            console.log(path);
             var node = path[cont];
             var parent = node.getParent();
 
@@ -734,11 +680,11 @@ var ExpedientClass = function () {
             
             var keyErased = String(node.data.key).replace(node.data.parentCatalogKey + ".", "");
             
-            console.log("retirando: " + node.data.parentCatalogKey + ". a " + node.data.key);
-            console.log("keyErased: "+keyErased);
+//            console.log("retirando: " + node.data.parentCatalogKey + ". a " + node.data.key);
+//            console.log("keyErased: "+keyErased);
             
-            if(child !== null)
-                console.log("child: " + child.data.key);
+//            if(child !== null)
+//                console.log("child: " + child.data.key);
             
             var catalogType         = node.data.catalogType;
             var catalogTypeParent   = null;
@@ -747,33 +693,33 @@ var ExpedientClass = function () {
             if(child !== null)
                 catalogTypeChild = child.data.catalogType;
             if(parent !== null){
-                console.log("Agregando Parent");
+//                console.log("Agregando Parent");
                 catalogTypeParent = parent.data.catalogType;
                 path.push(parent);
             }
             
             if(parent === null){
-                console.log("Hijo nulo");
+//                console.log("Hijo nulo");
                 catalogPath = keyErased + "/";
             }else if(String(catalogType) === String(catalogTypeParent)){
-                console.log("Padre de igual tipo pero hijo de igual tipo " +catalogType + " == " +catalogTypeParent);
+//                console.log("Padre de igual tipo pero hijo de igual tipo " +catalogType + " == " +catalogTypeParent);
                 if(String(catalogType) === String(catalogTypeChild)){
-                    console.log("Hijo igual " + catalogType + "== " + catalogTypeChild);
+//                    console.log("Hijo igual " + catalogType + "== " + catalogTypeChild);
                     catalogPath = keyErased + "." + catalogPath;
                 }
                 else{
-                    console.log("Hijo diferente " + catalogType + "!= " + catalogTypeChild);
+//                    console.log("Hijo diferente " + catalogType + "!= " + catalogTypeChild);
                     catalogPath = keyErased + "/" + catalogPath;
                 }
             }
             else{
-                console.log("Padre diferente  " + catalogType + " != " + catalogTypeParent);
+//                console.log("Padre diferente  " + catalogType + " != " + catalogTypeParent);
                 if(String(catalogType) === String(catalogTypeChild)){
-                    console.log("Hijo igual " + catalogType + "== " + catalogTypeChild);
+//                    console.log("Hijo igual " + catalogType + "== " + catalogTypeChild);
                     catalogPath = keyErased + "." + catalogPath;
                 }
                 else{
-                    console.log("Hijo diferente " + catalogType + "!= " + catalogTypeChild);
+//                    console.log("Hijo diferente " + catalogType + "!= " + catalogTypeChild);
                     catalogPath = keyErased + "/" + catalogPath;
                 }
             }
@@ -783,11 +729,8 @@ var ExpedientClass = function () {
         return catalogPath;
     };
 
-    var getPath = function (activeNode) {
-        var path = [];
-
-        path.push(activeNode);
-
+    var getPath = function (activeNode){
+        var path = [activeNode];
         var parent = activeNode.getParent();
 
         for (var cont = 0; cont < path.length; cont++) {
@@ -797,16 +740,13 @@ var ExpedientClass = function () {
                     path.push(parent);
             }
         }
-
         return path;
-
     };
 
     /**
      * @description Crea el path de la serie del catálogo de disposición documental
-     * Comprueba si el path ya existe sino lo crea.
-     * @param {Array} Array con los nodos que conforman el path del catálogo de disposición documental
-     * @returns {Boolean}
+     * @param {type} path
+     * @returns {Number}
      */
     var createPathOfDispositionCatalog = function (path) {
         var xml = "<path version='1.0' encoding='UTF-8'>";
@@ -887,6 +827,7 @@ var ExpedientClass = function () {
                         var id = $(this).find('idDirectory').text();
                         var type = $(this).find('catalogType').text();
                         var idDocDisposition = $(this).find('idDocDisposition').text();
+                        var docDispositionName = $(this).find('docDispositionName').text();
 
                         var child = {
                             title: title,
@@ -896,7 +837,9 @@ var ExpedientClass = function () {
                             catalogkey: catalogKey,
                             parentCatalogKey: parentCatalogKey,
                             catalogType: type,
-                            idDocDisposition: idDocDisposition
+                            idDocDisposition: idDocDisposition,
+                            docDispositionName: docDispositionName,
+                            autoincrement: 0
                         };
 
                         var parent = $('#contentTree').dynatree('getTree').getNodeByKey(idParent);
@@ -926,11 +869,12 @@ var ExpedientClass = function () {
 
     /**
      * @description Recorre la estructura de directorios en busca de una clave de un catálogo en específico
-     * @param {type} catalogKey
-     * @returns {undefined}
+     * @param {String} searchCatalogKey
+     * @param {String} catalogType
+     * @returns {ExpedientClass._checkIfExistCatalogNode.children|ExpedientClass._checkIfExistCatalogNode.child}
      */
     var _checkIfExistCatalogNode = function (searchCatalogKey, catalogType) {
-        console.log("Buscando a "+searchCatalogKey);
+//        console.log("Buscando a "+searchCatalogKey);
         var node = $('#contentTree').dynatree('getRoot');
 
         if (node === null)
@@ -948,10 +892,8 @@ var ExpedientClass = function () {
             
             if (catalogKey === undefined || catalogKey === null && parseInt(child.data.key) !== 1)
                 continue;
-
-            console.log("Analizando nodo y comparando " + catalogKey + " , " + searchCatalogKey);
-            console.log(child);
-
+//            console.log("Analizando nodo y comparando " + catalogKey + " , " + searchCatalogKey);
+//            console.log(child);
             if (String(catalogKey) === String(searchCatalogKey))
                 return child;
 
@@ -962,5 +904,89 @@ var ExpedientClass = function () {
         }
 
         return null;
+    };
+    var expedient = {
+        addExpedientInterface: function(){
+            
+        }
+    };
+    var frontPage = {
+        upload: function(){
+            var activeNode = $('#contentTree').dynatree('getTree').getActiveNode();
+            var idDirectory = frontPage.addFrontPageDirectory();
+            var objectDataTemplate = _getBuildObjectDataTemplate(activeNode);
+            console.log("objectDataTemplate");
+            console.log(objectDataTemplate);
+            $.ajax({
+                async: false,
+                cache: false,
+                dataType: "html",
+                type: 'POST',
+                url: "Modules/php/Expedient.php",
+                data: {
+                    option: "addTemplate",
+                    enterpriseKey: enterpriseKey,
+                    repositoryName: repositoryName,
+                    idDirectory: idDirectory,
+                    directoryKeyPath: activeNode.getKeyPath(),
+                    catalogKey: activeNode.catalogKey,
+                    templateName: templateName + ".xml",
+                    objectDataTemplate: objectDataTemplate,
+                    path: activeNode.data.path
+                },
+                success: function (xml) {
+                    if ($.parseXML(xml) === null)
+                        return errorMessage(error);
+                    else
+                        xml = $.parseXML(xml);
+
+                    $(xml).find('templateAdded').each(function () {
+                        var message = $(this).find('message').text();
+                        Notificacion(message);
+                    });
+
+                    $(xml).find("Error").each(function ()
+                    {
+                        var mensaje = $(this).find("Mensaje").text();
+                        errorMessage(mensaje);
+                    });
+
+                },
+                error: function (jqXHR, textStatus, errorThrown) {
+                    errorMessage(textStatus + "<br>" + errorThrown);
+                }
+            });
+        },       
+            /**
+        * @description Agrega el directorio del expediente.
+        * @returns {undefined}
+        */
+        addFrontPageDirectory: function(){
+           var activeNode = $('#contentTree').dynatree('getActiveNode');
+           if (activeNode === null)
+               return Advertencia("No fue posible obtener el nodo activo");
+           var path = getPath(activeNode);
+           var tree = new ContentArbol();
+           var node = activeNode.addChild({
+                               isFolder: true, 
+                               title: frontPageName, 
+                               path: path,
+                               isLegajo: 0,
+                               directoryKeyPath: activeNode.getKeyPath(),
+                               idParent: activeNode.data.key,
+                               catalogKey: activeNode.data.catalogkey,
+                               parentCatalogKey: activeNode.data.catalogKey,
+                               idDocDisposition: 0,
+                               catalogType: null,
+                               isExpedient: 0,
+                               isFrontPage: 1,
+                               autoincrement: 0
+                           });
+           node.data.unselectable = true;
+
+           var idDirectory = tree.addNewDirectory(node);
+
+           return idDirectory;
+       }
     };
 };

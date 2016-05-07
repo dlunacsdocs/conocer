@@ -362,6 +362,7 @@ var ClassRepository = function ()
             {"FechaApertura":[{fieldType: "DATE", requiredField: false}]},
             {"FechaCierre":[{fieldType: "DATE", requiredField: false}]},
             {"Asunto":[{fieldType: "TEXT", requiredField: false}]},
+            {"NumeroExpediente":[{fieldType: "TEXT", requiredField: false}]},
             {"Administrativo":[{fieldType: "INT", requiredField: false}]},
             {"Legal":[{fieldType: "INT", requiredField: false}]},
             {"Fiscal":[{fieldType: "INT", requiredField: false}]},
@@ -376,7 +377,6 @@ var ClassRepository = function ()
             {"Reservada":[{fieldType: "INT", requiredField: false}]},
             {"Confidencial":[{fieldType: "INT", requiredField: false}]},
             {"Parcialmente_Reservada":[{fieldType: "INT", requiredField: false}]},
-            {"Num_Expedient":[{fieldType: "TEXT", requiredField: false}]},
             {"UnidadAdministrativa":[{fieldType: "TEXT", requiredField: false}]}
             
         ];

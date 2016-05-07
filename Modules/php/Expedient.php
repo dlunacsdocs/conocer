@@ -91,6 +91,7 @@ class Expedient {
             $catalogType = $node->catalogType;
             $parentCatalogKey = $node->parentCatalogKey;
             $idDocDisposition = $node->idDocDisposition;
+            $docDispositionName = $node->name;
             
             if($index == 0)
                 $path .= "/". $node->path;
@@ -119,12 +120,13 @@ class Expedient {
             $idDirectory = $idParent;
             
             $directory = $doc->createElement("directory");
+            $directory->appendChild($idParentXml);
             $dirTitle = $doc->createElement("title", $catalogKey);
             $directory->appendChild($dirTitle);
             $idDirectoryXml = $doc->createElement("idDirectory", $idDirectory);
             $directory->appendChild($idDirectoryXml);
-            
-            $directory->appendChild($idParentXml);
+            $docDispositionNameXml = $doc->createElement("docDispositionName",$docDispositionName);
+            $directory->appendChild($docDispositionNameXml);
             $catalogTypeXml = $doc->createElement("catalogType", $catalogType);
             $directory->appendChild($catalogTypeXml);
             $parentCatalogKeyXml = $doc->createElement("parentCatalogKey", $parentCatalogKey);
@@ -231,25 +233,42 @@ class Expedient {
         $repositoryName = filter_input(INPUT_POST, "repositoryName");
         $templateName = filter_input(INPUT_POST, "templateName");
         $RoutFile = dirname(dirname(getcwd()));
+        $directoryPath = filter_input(INPUT_POST, "directoryKeyPath");
+        $PathFinal = dirname($directoryPath)."/";
+        $IdParentDirectory = basename($PathFinal);
         $templateAssociatedPath = "$RoutFile/Configuracion/Templates/$instanceName/$enterpriseKey/$repositoryName/$templateName"."_associated.xml";
         $objectDataTemplate = filter_input(INPUT_POST, "objectDataTemplate");
         $columns = array();
         $values = array();
         
+        $xmlPathDestination = "$RoutFile/Estructuras/$instanceName/$repositoryName$PathFinal";
+
         if(!($xml = simplexml_load_string($objectDataTemplate)))
                 return XML::XMLReponse ("Error", 0, "<p>No fue posible cargar el XML, es posible que no se haya formado correctamente</p>");
         
+        $insert = $this->buildQueryStringInsert($xml, $repositoryName);
+        $idExpedient = $this->db->ConsultaInsertReturnId($instanceName, $insert);
+        if((int)$idExpedient > 0){
+            $xml->saveXML($xmlPathDestination."Plantilla.xml");
+            return XML::XMLReponse("templateAdded", 1, "Cartula Almacenanda");
+        }
+        else
+            return XML::XMLReponse ("Error", 0, "<p><b>Error</b> al almacenar la plantilla</p>".$idExpedient);        
+    }
+    
+    private function buildQueryStringInsert(SimpleXMLElement $xml, $repositoryName){
         $insert = "INSERT INTO $repositoryName (";
-        foreach ($xml->field as $key => $value){
+        foreach ($xml->field as $value){
             $columns["$value->columnName"] = $value->columnName;
-            $value = DataBase::FieldFormat($value->fieldValue, $value->fieldType);
+            $fieldType = $value->fieldType;
+            $value = DataBase::FieldFormat($value->fieldValue, $fieldType);
             $values[] = $value;
         }
         
         $insert.= implode(", ",array_keys($columns)) . ") VALUES (";
         $insert.= implode(", ", $values) . " )";
         
-        echo $insert;
+        return $insert;
     }
 
 }
