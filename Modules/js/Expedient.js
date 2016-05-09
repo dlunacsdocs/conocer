@@ -19,6 +19,7 @@
 var ExpedientClass = function () {
     var self = this;
     var templateName = null;
+    var idEnterprise = null;
     var enterpriseKey = null;
     var repositoryName = null;
     var idDocDisposition = 0;
@@ -194,6 +195,7 @@ var ExpedientClass = function () {
             return Advertencia("Debe seleccionar un template");
 
         var templateObject = _getTemplate($(templateSelected));
+        idEnterprise = $(templateSelected).attr('idrepository');
         enterpriseKey = $(templateSelected).attr('enterprisekey');
         repositoryName = $(templateSelected).attr('repositoryName');
         templateName = $(templateSelected).attr('templatename');
@@ -419,7 +421,7 @@ var ExpedientClass = function () {
             var tableName = $(idForm).attr('tName');
             var fieldType = $(idForm).attr('fieldtype');
             var fieldlength = $(idForm).attr('fieldlength');
-//            console.log("fieldName: "+ fieldNameUser + " columnName: " + columnName + " fieldValue: " + fieldValue + "idForm: " + idForm);
+            console.log("fieldName: "+ fieldNameUser + " columnName: " + columnName + " fieldValue: " + fieldValue + "idForm: " + idForm);
             if($(idForm).length > 0 ){
                 xml+= "<field>";
                     xml+= "<fieldValue>" + $(idForm).val() + "</fieldValue>\n\
@@ -925,6 +927,7 @@ var ExpedientClass = function () {
                 url: "Modules/php/Expedient.php",
                 data: {
                     option: "addTemplate",
+                    idEnterprise: idEnterprise,
                     enterpriseKey: enterpriseKey,
                     repositoryName: repositoryName,
                     idDirectory: idDirectory,
@@ -941,7 +944,7 @@ var ExpedientClass = function () {
                         xml = $.parseXML(xml);
 
                     $(xml).find('templateAdded').each(function () {
-                        var message = $(this).find('message').text();
+                        var message = $(this).find('Mensaje').text();
                         Notificacion(message);
                     });
 

@@ -359,16 +359,16 @@ var ClassRepository = function ()
             {"Seccion":[{fieldType: "TEXT", requiredField: false}]},
             {"Serie":[{fieldType: "TEXT", requiredField: false}]}, 
             {"Subserie":[{fieldType: "TEXT", requiredField: false}]},
-            {"FechaApertura":[{fieldType: "DATE", requiredField: false}]},
-            {"FechaCierre":[{fieldType: "DATE", requiredField: false}]},
+            {"Fecha_Apertura":[{fieldType: "DATE", requiredField: false}]},
+            {"Fecha_Cierre":[{fieldType: "DATE", requiredField: false}]},
             {"Asunto":[{fieldType: "TEXT", requiredField: false}]},
-            {"NumeroExpediente":[{fieldType: "TEXT", requiredField: false}]},
+            {"Numero_Expediente":[{fieldType: "TEXT", requiredField: false}]},
             {"Administrativo":[{fieldType: "INT", requiredField: false}]},
             {"Legal":[{fieldType: "INT", requiredField: false}]},
             {"Fiscal":[{fieldType: "INT", requiredField: false}]},
-            {"ArchivoTramite":[{fieldType: "INT", requiredField: false}]},
-            {"ArchivoConcentracion":[{fieldType: "INT", requiredField: false}]},
-            {"ArchivoDesconcentracion":[{fieldType: "INT", requiredField: false}]},
+            {"Archivo_Tramite":[{fieldType: "INT", requiredField: false}]},
+            {"Archivo_Concentracion":[{fieldType: "INT", requiredField: false}]},
+            {"Archivo_Desconcentracion":[{fieldType: "INT", requiredField: false}]},
             {"Fundamento_Legal":[{fieldType: "TEXT", requiredField: false}]},
             {"Eliminacion":[{fieldType: "INT", requiredField: false}]},
             {"Concentracion":[{fieldType: "INT", requiredField: false}]},
@@ -377,7 +377,7 @@ var ClassRepository = function ()
             {"Reservada":[{fieldType: "INT", requiredField: false}]},
             {"Confidencial":[{fieldType: "INT", requiredField: false}]},
             {"Parcialmente_Reservada":[{fieldType: "INT", requiredField: false}]},
-            {"UnidadAdministrativa":[{fieldType: "TEXT", requiredField: false}]}
+            {"Unidad_Administrativa":[{fieldType: "TEXT", requiredField: false}]}
             
         ];
         return defaultFields;

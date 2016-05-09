@@ -229,8 +229,10 @@ class Expedient {
      */
     private function addTemplate($userData){
         $instanceName = $userData['dataBaseName'];
+        $idEnterprise = filter_input(INPUT_POST, "idEnterprise");
         $enterpriseKey = filter_input(INPUT_POST, "enterpriseKey");
         $repositoryName = filter_input(INPUT_POST, "repositoryName");
+        $idDirectory = filter_input(INPUT_POST, "idDirectory");
         $templateName = filter_input(INPUT_POST, "templateName");
         $RoutFile = dirname(dirname(getcwd()));
         $directoryPath = filter_input(INPUT_POST, "directoryKeyPath");
@@ -238,38 +240,43 @@ class Expedient {
         $IdParentDirectory = basename($PathFinal);
         $templateAssociatedPath = "$RoutFile/Configuracion/Templates/$instanceName/$enterpriseKey/$repositoryName/$templateName"."_associated.xml";
         $objectDataTemplate = filter_input(INPUT_POST, "objectDataTemplate");
-        $columns = array();
-        $values = array();
         
         $xmlPathDestination = "$RoutFile/Estructuras/$instanceName/$repositoryName$PathFinal";
 
         if(!($xml = simplexml_load_string($objectDataTemplate)))
                 return XML::XMLReponse ("Error", 0, "<p>No fue posible cargar el XML, es posible que no se haya formado correctamente</p>");
         
-        $insert = $this->buildQueryStringInsert($xml, $repositoryName);
+        $insert = $this->buildQueryStringInsert($xml, $repositoryName, $idDirectory, $idEnterprise);
+
         $idExpedient = $this->db->ConsultaInsertReturnId($instanceName, $insert);
         if((int)$idExpedient > 0){
             $xml->saveXML($xmlPathDestination."Plantilla.xml");
-            return XML::XMLReponse("templateAdded", 1, "Cartula Almacenanda");
+            return XML::XMLReponse("templateAdded", 1, "Carátula Almacenanda");
         }
         else
             return XML::XMLReponse ("Error", 0, "<p><b>Error</b> al almacenar la plantilla</p>".$idExpedient);        
     }
     
-    private function buildQueryStringInsert(SimpleXMLElement $xml, $repositoryName){
-        $insert = "INSERT INTO $repositoryName (";
+    private function buildQueryStringInsert(SimpleXMLElement $xml, $repositoryName, $idDirectory, $idEmpresa){
+        $userName       = $_SESSION['userName'];
+        $insert         = "INSERT INTO $repositoryName (";
+        $fullText       = "";
+        $fechaIngreso   = date("Y-m-d");
+
         foreach ($xml->field as $value){
             $columns["$value->columnName"] = $value->columnName;
             $fieldType = $value->fieldType;
             $value = DataBase::FieldFormat($value->fieldValue, $fieldType);
             $values[] = $value;
+            $fullText.="$value ";
         }
         
-        $insert.= implode(", ",array_keys($columns)) . ") VALUES (";
-        $insert.= implode(", ", $values) . " )";
+        $insert.= implode(", ",array_keys($columns)) . ", idDirectory, idEmpresa, FechaIngreso, UsuarioPublicador) VALUES (";
+        $insert.= implode(", ", $values) . ", $idDirectory, $idEmpresa, '$fechaIngreso', '$userName')";
         
         return $insert;
     }
+    
 
 }
 

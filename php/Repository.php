@@ -377,6 +377,11 @@ class Repository {
         if(($ResultDropRepTrash = $DB->ConsultaQuery($DataBaseName, $DropRepTrash))!=1)
                 return "<p><b>Error</b> al eliminar trash del repositorio <b>$RepositoryName</b></p><br>Detalles:<br><br>$ResultDropRepTrash";
         
+        $DropAuto = "DROP TABLE IF EXISTS auto_$RepositoryName";
+        
+        if(($resultDropAuto = $DB->ConsultaQuery($DataBaseName, $DropAuto)) != 1)
+                return "<p><b>Error</b> al eliminar control autoincremental de expedientes</p><br>Detalles:<br><br>$resultDropAuto";
+        
         $DeletingOfGlobal = "";
         
         if($DeleteForEnterprise ==0)

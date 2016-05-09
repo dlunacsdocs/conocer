@@ -351,10 +351,10 @@ var FieldsAssociator = function () {
                         {fieldName: "Seccion", columnName: "seccion", fieldTag: "Sección", isRepository: true},
                         {fieldName: "Serie", columnName: "serie", fieldTag: "Serie", isRepository: true},
                         {fieldName: "Subserie", columnName: "subserie", fieldTag: "Subserie", isRepository: true},                        
-                        {fieldName: "FechaApertura", columnName: "FechaApertura", fieldTag: "Fecha Apertura", isRepository: true, editable: true},
-                        {fieldName: "FechaCierre", columnName: "FechaCierre", fieldTag: "Fecha Cierre Expediente", isRepository: true, editable: true},
+                        {fieldName: "Fecha_Apertura", columnName: "Fecha_Apertura", fieldTag: "Fecha Apertura", isRepository: true, editable: true},
+                        {fieldName: "Fecha_Cierre", columnName: "Fecha_Cierre", fieldTag: "Fecha Cierre Expediente", isRepository: true, editable: true},
                         {fieldName: "Asunto", columnName: "Asunto", fieldTag: "Asunto", isRepository: true, editable: true},
-                        {fieldName: "NumeroExpediente", columnName: "NumeroExpediente", fieldTag: "Número de Expediente"}
+                        {fieldName: "Numero_Expediente", columnName: "Numero_Expediente", fieldTag: "Número de Expediente"}
                     ]
                 },
                 {
@@ -370,22 +370,22 @@ var FieldsAssociator = function () {
                         {fieldName: "Administrativo", columnName: "Administrativo", fieldTag: "Administrativo"},
                         {fieldName: "Legal", columnName: "Legal", fieldTag: "Legal"},
                         {fieldName: "Fiscal", columnName: "Fiscal", fieldTag: "Fiscal"},
-                        {fieldName: "ArchivoTramite", columnName: "ArchivoTramite", fieldTag: "Archivo en Trámite"},
-                        {fieldName: "ArchivoConcentracion", columnName: "ArchivoConcentracion", fieldTag: "Archivo Concentración"},
-                        {fieldName: "ArchivoDesconcentracion", columnName: "ArchivoDesconcentracion", fieldTag: "Archivo Desconcentracion"},
-                        {fieldName: "FundamentoLegal", columnName: "idLegalFoundation", fieldTag: "Fundamento Legal", tableRelation: "LegalFoundation", catalogType:true},
+                        {fieldName: "Archivo_Tramite", columnName: "Archivo_Tramite", fieldTag: "Archivo en Trámite"},
+                        {fieldName: "Archivo_Concentracion", columnName: "Archivo_Concentracion", fieldTag: "Archivo Concentración"},
+                        {fieldName: "Archivo_Desconcentracion", columnName: "Archivo_Desconcentracion", fieldTag: "Archivo Desconcentracion"},
+                        {fieldName: "Fundamento_Legal", columnName: "Fundamento_Legal", fieldTag: "Fundamento Legal", tableRelation: "LegalFoundation", catalogType:true},
                         {fieldName: "Eliminacion", columnName: "Eliminacion", fieldTag: "Eliminacion"},
                         {fieldName: "Concentracion", columnName: "Concentracion", fieldTag: "Concentración"},
                         {fieldName: "Muestreo", columnName: "Muestreo", fieldTag: "Muestreo"},
                         {fieldName: "Publica", columnName: "Publica", fieldTag: "Pública"},
                         {fieldName: "Reservada", columnName: "reservada", fieldTag: "Reservada"},
                         {fieldName: "Confidencial", columnName: "Confidencial", fieldTag: "Confidencial"},
-                        {fieldName: "ParcialmenteReservada", columnName: "ParcialmenteReservada", fieldTag: "Pacialmente Reservada"}
+                        {fieldName: "Parcialmente_Reservada", columnName: "Parcialmente_Reservada", fieldTag: "Pacialmente Reservada"}
                     ]
                 },
                 {
                     "AdministrativeUnit": [
-                        {fieldName: "Unidad_Administrativa", columnName: "UnidadAdministrativa", fieldTag: "Unidad Administrativa",tableRelation:"LegalFoundation", catalogType:true}
+                        {fieldName: "Unidad_Administrativa", columnName: "Unidad_Administrativa", fieldTag: "Unidad Administrativa",tableRelation:"LegalFoundation", catalogType:true}
                     ]
                 }
             ];
