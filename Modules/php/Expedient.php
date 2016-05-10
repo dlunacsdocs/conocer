@@ -234,6 +234,8 @@ class Expedient {
         $repositoryName = filter_input(INPUT_POST, "repositoryName");
         $idDirectory = filter_input(INPUT_POST, "idDirectory");
         $templateName = filter_input(INPUT_POST, "templateName");
+        $catalogKey = filter_input(INPUT_POST, "catalogKey");
+        $frontPageName = filter_input(INPUT_POST, "frontPageName");
         $RoutFile = dirname(dirname(getcwd()));
         $directoryPath = filter_input(INPUT_POST, "directoryKeyPath");
         $PathFinal = dirname($directoryPath)."/";
@@ -246,7 +248,7 @@ class Expedient {
         if(!($xml = simplexml_load_string($objectDataTemplate)))
                 return XML::XMLReponse ("Error", 0, "<p>No fue posible cargar el XML, es posible que no se haya formado correctamente</p>");
         
-        $insert = $this->buildQueryStringInsert($xml, $repositoryName, $idDirectory, $idEnterprise);
+        $insert = $this->buildQueryStringInsert($xml, $repositoryName, $idDirectory, $idEnterprise, $catalogKey, $frontPageName, $xmlPathDestination."Caratula.xml");
 
         $idExpedient = $this->db->ConsultaInsertReturnId($instanceName, $insert);
         if((int)$idExpedient > 0){
@@ -257,22 +259,22 @@ class Expedient {
             return XML::XMLReponse ("Error", 0, "<p><b>Error</b> al almacenar la plantilla</p>".$idExpedient);        
     }
     
-    private function buildQueryStringInsert(SimpleXMLElement $xml, $repositoryName, $idDirectory, $idEmpresa){
+    private function buildQueryStringInsert(SimpleXMLElement $xml, $repositoryName, $idDirectory, $idEmpresa, $catalogKey, $frontPageName, $filePath){
         $userName       = $_SESSION['userName'];
         $insert         = "INSERT INTO $repositoryName (";
         $fullText       = "";
         $fechaIngreso   = date("Y-m-d");
-
+        $filename       = "Carátula $frontPageName";
         foreach ($xml->field as $value){
             $columns["$value->columnName"] = $value->columnName;
             $fieldType = $value->fieldType;
+            $fullText.="$value ";
             $value = DataBase::FieldFormat($value->fieldValue, $fieldType);
             $values[] = $value;
-            $fullText.="$value ";
         }
         
-        $insert.= implode(", ",array_keys($columns)) . ", idDirectory, idEmpresa, FechaIngreso, UsuarioPublicador) VALUES (";
-        $insert.= implode(", ", $values) . ", $idDirectory, $idEmpresa, '$fechaIngreso', '$userName')";
+        $insert.= implode(", ",array_keys($columns)) . ", idDirectory, idEmpresa, FechaIngreso, NombreArchivo, UsuarioPublicador, RutaArchivo, Full) VALUES (";
+        $insert.= implode(", ", $values) . ", $idDirectory, $idEmpresa, '$fechaIngreso', '$filename ' , '$userName', '$filePath',  '$fullText')";
         
         return $insert;
     }

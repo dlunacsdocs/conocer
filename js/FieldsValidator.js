@@ -418,6 +418,8 @@ ClassFieldsValidator.prototype.CheckFieldsLength = function(object)
             console.log("El tipo de campo es indefinido contiene el valor "+$(object).val());
             return 0;
         }
+        else
+            DataType = String(DataType).toLowerCase();
                 
         switch(DataType)
         {

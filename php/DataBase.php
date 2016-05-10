@@ -815,10 +815,13 @@ class DataBase {
                     . "AlarmaPrimaria DATETIME,"
                     . "AlarmaTransfSec DATETIME,"
                     . "CSDocs_Observaciones TEXT,";
+            
             $tabla_temporal_repositorio = "CREATE TABLE IF NOT EXISTS temp_rep_$nombre_tabla "
                     . "(IdRepositorio INT NOT NULL, "
                     . "IdDirectory INT NOT NULL,"
                     . "IdEmpresa INT NOT NULL,"
+                    . "IdUsuario INT,"
+                    . "NombreUsuario TEXT,  "
                     . "AlarmaPrimaria DATETIME,"
                     . "AlarmaTransfSec DATETIME,"
                     . "CSDocs_Observaciones TEXT,";

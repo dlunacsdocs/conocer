@@ -907,13 +907,10 @@ var ExpedientClass = function () {
 
         return null;
     };
-    var expedient = {
-        addExpedientInterface: function(){
-            
-        }
-    };
+
     var frontPage = {
         upload: function(){
+            var status = 0;
             var activeNode = $('#contentTree').dynatree('getTree').getActiveNode();
             var idDirectory = frontPage.addFrontPageDirectory();
             var objectDataTemplate = _getBuildObjectDataTemplate(activeNode);
@@ -932,7 +929,8 @@ var ExpedientClass = function () {
                     repositoryName: repositoryName,
                     idDirectory: idDirectory,
                     directoryKeyPath: activeNode.getKeyPath(),
-                    catalogKey: activeNode.catalogKey,
+                    catalogKey: activeNode.getParent().data.catalogkey,
+                    frontPageName: frontPageName,
                     templateName: templateName + ".xml",
                     objectDataTemplate: objectDataTemplate,
                     path: activeNode.data.path
@@ -946,6 +944,7 @@ var ExpedientClass = function () {
                     $(xml).find('templateAdded').each(function () {
                         var message = $(this).find('Mensaje').text();
                         Notificacion(message);
+                        status = 1;
                     });
 
                     $(xml).find("Error").each(function ()
@@ -959,6 +958,8 @@ var ExpedientClass = function () {
                     errorMessage(textStatus + "<br>" + errorThrown);
                 }
             });
+            
+            return status;
         },       
             /**
         * @description Agrega el directorio del expediente.
@@ -990,6 +991,27 @@ var ExpedientClass = function () {
            var idDirectory = tree.addNewDirectory(node);
 
            return idDirectory;
-       }
+       },
+       addRow: function(){
+           var data =
+            [
+                NombreArchivo,
+                FechaIngreso,
+                TipoArchivo,
+                Detalle,
+                '<img src="img/acuse.png" title="vista previa de "'+NombreArchivo+'" onclick="Preview(\''+TipoArchivo+'\', \'0\' ,\''+IdRepositorio+'\', \'Content\')">',
+                '<img src="img/metadata.png" title="vista previa de '+NombreArchivo+'" onclick="GetDetalle(\'Content\', \'0\', \''+IdRepositorio+'\')">',
+                Ruta,
+                '<center><input type="checkbox" id="'+IdRepositorio+'"  class="checkbox_detail"></center>'
+            ];
+
+            /* Se inserta la Fila y su Id */
+            $('#table_DetailResult tr').removeClass('selected');
+            var ai = TableContentDT.row.add(data);         
+            var n = TableContentdT.fnSettings().aoData[ ai[0] ].nTr;
+            n.setAttribute('id',IdRepositorio);
+            n.setAttribute('class','selected');
+            TableContentDT.draw();
+           }
     };
 };
