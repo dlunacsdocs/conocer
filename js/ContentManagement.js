@@ -202,7 +202,7 @@ var ContentMnagement = function () {
 
     var _initContentInterface = function () {
         var contentArbol = new ContentArbol();
-        
+        var upload = new Upload();
         $('#content_management').dialog(WindowContentManagement, {close: function () {
                 $(this).remove();
             }, resize: function (event, ui) {
@@ -283,8 +283,8 @@ var ContentMnagement = function () {
         });
 
         $('.CMEditFile').unbind('click').on('click', FileDedit);
-
-        $('.CMUploadFile').unbind('click').on('click', CM_CargarArchivo); /* ContentManagemenet.js */
+      
+        $('.CMUploadFile').unbind('click').on('click', upload.file.openUploadInterface); /* ContentManagemenet.js */
 
         $('.CMNewDirectory').unbind('click').click(function () {
             if ($('#contentTree').is(":empty"))

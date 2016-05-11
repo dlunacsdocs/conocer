@@ -135,6 +135,8 @@ class Tree {
         $isLegajo = filter_input(INPUT_POST, "isLegajo");
         $isExpedient = filter_input(INPUT_POST, "isExpedient");
         $isFrontPage = filter_input(INPUT_POST, "isFrontPage");
+        $idSerie = filter_input(INPUT_POST, "parentSerie");
+        $templateName = filter_input(INPUT_POST, "templateName");
         $PathFinal = dirname($Path)."/";
         $IdParentDirectory = basename($PathFinal);
         
@@ -144,8 +146,18 @@ class Tree {
             $isFrontPage = 0;
         if(!is_numeric($isFrontPage))
             $isFrontPage = 0;
+        if(!(int)$idSerie > 0)
+            $idSerie = 0;
         
-        $ultimo_id = $this->addNewDirectory($DataBaseName, $NombreRepositorio, $NameDirectory, $IdParentDirectory, $PathFinal, $catalogKey, $isLegajo, $isExpedient, $isFrontPage);    
+        $autoincremenet = 0;
+        if((int)$idSerie > 0 && (int)$isFrontPage > 0){
+            $autoincremenet = $this->getExpedientAutoincrement($DataBaseName, $NombreRepositorio, $idSerie);
+            if(!(int) $autoincremenet > 0)
+                return XML::XMLReponse ("Error", 0, "<p>No fue posible obtener el valor autoincremental del expediente.</p>$autoincremenet");
+            $NameDirectory = $NameDirectory.$autoincremenet;
+        }
+        
+        $ultimo_id = $this->addNewDirectory($DataBaseName, $NombreRepositorio, $NameDirectory, $IdParentDirectory, $PathFinal, $catalogKey,$isLegajo, $isExpedient, $isFrontPage, $autoincremenet, $templateName);    
            
         if(is_numeric($ultimo_id))
             $PathFinal.=$ultimo_id;
@@ -163,6 +175,8 @@ class Tree {
         $NuevoDir=$doc->createElement("NewDirectory");
         $IdNewDir=$doc->createElement("IdNewDir",$ultimo_id);
         $NuevoDir->appendChild($IdNewDir);
+        $autoincremenetXml = $doc->createElement("autoincrement", $autoincremenet);
+        $NuevoDir->appendChild($autoincremenetXml);
         $root->appendChild($NuevoDir);
         header ("Content-Type:text/xml");
         echo $doc->saveXML();
@@ -171,17 +185,33 @@ class Tree {
         
     }
     
-    function addNewDirectory($dataBaseMame, $repositoryName, $dirname, $idParent, $path, $catalogKey = null, $isLegajo = null, $isExpedient = 0, $isFrontPage = 0){
-        
+    function addNewDirectory($dataBaseMame, $repositoryName, $dirname, $idParent, $path, $catalogKey = null, $isLegajo = null, $isExpedient = 0, $isFrontPage = 0, $autoincrement = 0, $templateName = ""){
         $DB = new DataBase();
-        
-        $Insert = "INSERT INTO dir_$repositoryName(parent_id,title, path, catalogKey, isLegajo, isExpedient, isFrontPage) VALUES "
-                . "($idParent,'$dirname','$path', '$catalogKey', $isLegajo, $isExpedient, $isFrontPage)";            
+
+        $Insert = "INSERT INTO dir_$repositoryName(parent_id,title, path, catalogKey, isLegajo, isExpedient, isFrontPage, autoincrement, templateName) VALUES "
+                . "($idParent,'$dirname','$path', '$catalogKey', $isLegajo, $isExpedient, $isFrontPage, $autoincrement, '$templateName')";            
         
         if(!(($resultInsert = $DB->ConsultaInsertReturnId($dataBaseMame, $Insert))>0))
-                return $resultInsert;
+                return "<p><b>Error</b> al agregar el directorio</p><br>".$resultInsert. "<br>".$Insert;
         
         return (int)$resultInsert;    
+        
+    }
+    
+    private function getExpedientAutoincrement($instanceName, $repositoryName, $idDirectory){
+        $db = new DataBase();
+        $update = "UPDATE dir_$repositoryName SET autoincrement = autoincrement + 1 WHERE IdDirectory = $idDirectory";
+        if(($resUpdate = $db->ConsultaQuery($instanceName, $update)) != 1)
+                return $resUpdate;
+        $select = "SELECT autoincrement FROM dir_$repositoryName WHERE IdDirectory = $idDirectory";
+        $resSelect = $db->ConsultaSelect($instanceName, $select);
+        if($resSelect['Estado'] != 1)
+            return $resSelect['Estado'];
+        if(isset($resSelect['ArrayDatos'][0]['autoincrement']))
+            return $resSelect['ArrayDatos'][0]['autoincrement'];
+        else
+            return 0;
+        
         
     }
     

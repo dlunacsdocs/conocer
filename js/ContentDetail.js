@@ -2,7 +2,7 @@
  * Operaciones sobre el repositorio de archivos (Borrado, Edición, etc)
  */
 
-/* global TableContentdT, EnvironmentData, TableEnginedT, Hdetalle, Wdetalle, GlobalDatePicker, WindowConfirmacion, LanguajeDataTable, DownloadTabledT */
+/* global TableContentdT, EnvironmentData, TableEnginedT, Hdetalle, Wdetalle, GlobalDatePicker, WindowConfirmacion, LanguajeDataTable, DownloadTabledT, BootstrapDialog, TemplateDesigner */
 
 TableContentDT = '';
 TableContentdT = '';
@@ -165,7 +165,6 @@ function GetDetalle(Source, IdGlobal, IdFile)
    {
         var catalogManager = new ClassCatalogAdministrator();
         var xml = catalogManager.GetCatalogRecordsInXml(repositoryName, NombreCatalogo,'List');
-//        alert("List"+xml);
         var ArrayStruct=new Array();var cont=0;
         $(xmlStruct).find("Campo").each(function()
         {               
@@ -557,29 +556,92 @@ function SetSearchResult(IdRepository,xml)
 
     } );
 }
-
-
-
-
-
-
-/*-----------------------------------------------------------------------------*
- *                          Carga manual de archivo
- ------------------------------------------------------------------------------*/
-        
-        
-        
-        
-        
-                
+/**
+ * @description Objeto para la carga de documentos.
+ * @returns {Upload}
+ */   
+ var Upload = function(){
+    this.file = {
+        openUploadInterface: function(){
+            var activeNode = $('#contentTree').dynatree('getActiveNode');
+            if (activeNode === null)
+               return Advertencia("No fue posible obtener el nodo activo");
+            var content = $('<div>');
+            var enterpriseKey = $('#CM_select_empresas option:selected').attr('value');
+            var repositoryName = $('#CM_select_repositorios option:selected').attr('repositoryname');
+            var IdRepositorio = $('#CM_select_repositorios option:selected').attr('idrepository');
+            var xml = SetTableStructura(repositoryName,"CM_TableMetadatasCarga",0);/* XML con la estructura de la tabla */
+            var Catalogos = getCatalogs(IdRepositorio, repositoryName);
+           
+            var Forms = $('#CM_TableMetadatasCarga :text');
+            var FieldsValidator = new ClassFieldsValidator();   
+            FieldsValidator.InspectCharacters(Forms);
+            
+            BootstrapDialog.show({
+                title: '<i class = "fa fa-upload fa-lg"></i> Cargar documento',
+                size: BootstrapDialog.SIZE_WIDE,
+                closeByBackdrop: false,
+                closeByKeyboard: true,
+                message: content,
+                buttons: [{
+                        icon: 'fa fa-upload fa-lg',
+                        label: 'Cargar',
+                        cssClass: "btn-primary",
+                        hotkey: 13,
+                        action: function (dialogRef) {
+                            var button = this;
+                            button.spin();
+                            if(UploadMetadatas(IdRepositorio,xml,Catalogos))
+                                dialogRef.close();
+                            else{
+                                button.stopSpin();
+                                dialogRef.setClosable(false);
+                                dialogRef.enableButtons(false);
+                            }
+                        }
+                    },
+                    {
+                        label: 'Cerrar',
+                        action: function (dialogRef) {
+                            dialogRef.close();
+                        }
+                    }
+                ],
+                onshown: function (dialogRef) {
+                    var expedient = new ExpedientClass();
+                    var parentFrontPage = expedient.frontPage.getParentFrontPage(activeNode);
+                    var templateXml = getTemplate(enterpriseKey, repositoryName, parentFrontPage.data.templateName + ".xml");
+                   var templateObject = buildObjectOfTemplate(templateXml);
+                    console.log("templateObject");
+                    console.log(templateObject);
+                    content.append(templateObject);
+                }
+            });
+        }
+    };        
+    
+    var getTemplate = function (enterpriseKey, repositoryName, templateName) {
+        return TemplateDesigner.getTemplate(enterpriseKey, repositoryName, templateName);
+    };
+    
+    /**
+     * @description Devuelve un objeto HTML construido a través del XML de la plantilla seleccionada.
+     * @param {type} templateXml
+     * @returns {Number|$|object}
+     */
+    var buildObjectOfTemplate = function(templateXml){
+        return TemplateDesigner.buildContentOfTemplate(templateXml, 0, 1);
+    };
+};       
+ 
 /*******************************************************************************
  *  Sube un Archivo en un directorio seleccionado llenando sus datos de forma manual
  * @returns {undefined}
  */
 function CM_CargarArchivo()
 {
-    var repositoryName=$('#CM_select_repositorios option:selected').html();
-    var IdRepositorio=$('#CM_select_repositorios').val();
+    var repositoryName=$('#CM_select_repositorios option:selected').attr('repositoryname');
+    var IdRepositorio=$('#CM_select_repositorios option:selected').attr('idrepository');
     
     $('#CM_Carga').remove();
     var content = $('<div>', {id: 'CM_Carga', class: "detalle_archivo"});
@@ -604,7 +666,8 @@ function CM_CargarArchivo()
    
    /*****************************************************************************
    * 
-   * @param {type} IdRepositorio
+   * @param {String} IdRepositorio Id del repositorio
+   * @param {String} repositoryName Nombre del repositorio
    * @returns {undefined}Recupera de la BD los catálogos asociados a un repositorio 
    */
   function getCatalogs(IdRepositorio, repositoryName)

@@ -782,6 +782,7 @@ class DataBase {
                     . "templatePath TEXT DEFAULT NULL,"
                     . "isLegajo INT NOT NULL DEFAULT 0,"
                     . "autoincrement INT DEFAULT 0,"
+                    . "templateName TEXT,"
                     . "PRIMARY KEY (`IdDirectory`)"
                     . ") ENGINE=InnoDB AUTO_INCREMENT=1 DEFAULT CHARSET=utf8";
 
@@ -802,6 +803,7 @@ class DataBase {
                     . "templatePath TEXT DEFAULT NULL,"
                     . "isLegajo INT NOT NULL DEFAULT 0,"
                     . "autoincrement INT DEFAULT 0,"
+                    . "templateName TEXT,"
                     . "PRIMARY KEY (`IdDirectory`)"
                     . ") ENGINE=InnoDB AUTO_INCREMENT=1 DEFAULT CHARSET=utf8";
 

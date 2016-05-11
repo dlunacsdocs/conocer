@@ -14,13 +14,14 @@
  * limitations under the License.
  */
 
-/* global BootstrapDialog, TemplateDesigner */
+/* global BootstrapDialog, TemplateDesigner, TableContentDT, IdRepositorio, TableContentdT */
 
 var ExpedientClass = function () {
     var self = this;
     var templateName = null;
     var idEnterprise = null;
     var enterpriseKey = null;
+    var idRepository = null;
     var repositoryName = null;
     var idDocDisposition = 0;
     var catalogKey = null;
@@ -77,11 +78,7 @@ var ExpedientClass = function () {
         var formGroup = $('<div>', {class: "form-group"});
         var templateForm = $('<select>', {class: "form-control"});
 
-        formGroup.append(
-                $('<label>').append('Plantilla')
-                )
-                .append(templateForm);
-        
+        formGroup.append($('<label>').append('Plantilla')).append(templateForm);
         content.append(formGroup);
         
         formGroup = $('<div>', {class: "form-group"});
@@ -130,7 +127,8 @@ var ExpedientClass = function () {
                 $(templates).find('template').each(function () {
                     var idRepository = $(this).find('idRepository').text();
                     var repositoryName = $(this).find('repositoryName').text();
-                    var enterpriseKey = $(this).find('enterpriseKey').text();
+                    var idEnterprise = $(this).find('idEnterprise').text();
+                    var enterpriseKey = $(this).find('enterpriseKey').text();                    
 
                     $(this).find('templateList').each(function () {
                         $(this).find('templateName').each(function () {
@@ -180,7 +178,7 @@ var ExpedientClass = function () {
              return null;
          }
          
-        return activeNode.data.title + n + "/1";
+        return activeNode.data.title + n + "/";
     };
 
     /**
@@ -195,8 +193,9 @@ var ExpedientClass = function () {
             return Advertencia("Debe seleccionar un template");
 
         var templateObject = _getTemplate($(templateSelected));
-        idEnterprise = $(templateSelected).attr('idrepository');
+        idEnterprise = $('#CM_select_empresas option:selected').attr('id');
         enterpriseKey = $(templateSelected).attr('enterprisekey');
+        idRepository = $(templateSelected).attr('idrepository');
         repositoryName = $(templateSelected).attr('repositoryName');
         templateName = $(templateSelected).attr('templatename');
         
@@ -907,34 +906,58 @@ var ExpedientClass = function () {
 
         return null;
     };
+    
+    /**
+     * @description Obtiene la serie padre del nodo activo el cual contiene el valor autoincremental.
+     * @param {type} activeNode
+     * @returns {ExpedientClass.frontPage.getParentSerie.node|Window}
+     */
+    this.getParentSerie = function(activeNode){
+        var parent = [activeNode];            
+        for(var cont = 0; cont < parent.length; cont++){
+            var node = parent[cont];
+            if(String(node.data.catalogType).toLowerCase() === 'serie')
+                return node;
+            else{
+                if(node.getParent() !== null)
+                    parent.push(node.getParent());
+            }
+        }
+        return null;
+    };
 
-    var frontPage = {
+    this.frontPage = {
         upload: function(){
             var status = 0;
             var activeNode = $('#contentTree').dynatree('getTree').getActiveNode();
-            var idDirectory = frontPage.addFrontPageDirectory();
+            var newDirectory = frontPage.addFrontPageDirectory();
+            var idDirectory = newDirectory.id;
+            var autoincrement = newDirectory.autoincrement;
             var objectDataTemplate = _getBuildObjectDataTemplate(activeNode);
             console.log("objectDataTemplate");
             console.log(objectDataTemplate);
+            var data = {
+                option: "addTemplate",
+                idEnterprise: idEnterprise,
+                idRepository: idRepository,
+                enterpriseKey: enterpriseKey,
+                repositoryName: repositoryName,
+                idDirectory: idDirectory,
+                directoryKeyPath: activeNode.getKeyPath(),
+                catalogKey: activeNode.getParent().data.catalogkey,
+                frontPageName: frontPageName,
+                templateName: templateName + ".xml",
+                objectDataTemplate: objectDataTemplate,
+                path: activeNode.data.path
+            };
+                
             $.ajax({
                 async: false,
                 cache: false,
                 dataType: "html",
                 type: 'POST',
                 url: "Modules/php/Expedient.php",
-                data: {
-                    option: "addTemplate",
-                    idEnterprise: idEnterprise,
-                    enterpriseKey: enterpriseKey,
-                    repositoryName: repositoryName,
-                    idDirectory: idDirectory,
-                    directoryKeyPath: activeNode.getKeyPath(),
-                    catalogKey: activeNode.getParent().data.catalogkey,
-                    frontPageName: frontPageName,
-                    templateName: templateName + ".xml",
-                    objectDataTemplate: objectDataTemplate,
-                    path: activeNode.data.path
-                },
+                data: data,
                 success: function (xml) {
                     if ($.parseXML(xml) === null)
                         return errorMessage(error);
@@ -945,6 +968,7 @@ var ExpedientClass = function () {
                         var message = $(this).find('Mensaje').text();
                         Notificacion(message);
                         status = 1;
+                        frontPage.addRow(data, xml);
                     });
 
                     $(xml).find("Error").each(function ()
@@ -959,7 +983,7 @@ var ExpedientClass = function () {
                 }
             });
             
-            return status;
+            return newDirectory;
         },       
             /**
         * @description Agrega el directorio del expediente.
@@ -969,6 +993,7 @@ var ExpedientClass = function () {
            var activeNode = $('#contentTree').dynatree('getActiveNode');
            if (activeNode === null)
                return Advertencia("No fue posible obtener el nodo activo");
+           var parentSerie = self.getParentSerie(activeNode);
            var path = getPath(activeNode);
            var tree = new ContentArbol();
            var node = activeNode.addChild({
@@ -976,42 +1001,79 @@ var ExpedientClass = function () {
                                title: frontPageName, 
                                path: path,
                                isLegajo: 0,
+                               templateName: templateName,
                                directoryKeyPath: activeNode.getKeyPath(),
                                idParent: activeNode.data.key,
                                catalogKey: activeNode.data.catalogkey,
                                parentCatalogKey: activeNode.data.catalogKey,
                                idDocDisposition: 0,
                                catalogType: null,
+                               parentSerie: parentSerie.data.key,
                                isExpedient: 0,
                                isFrontPage: 1,
                                autoincrement: 0
                            });
            node.data.unselectable = true;
 
-           var idDirectory = tree.addNewDirectory(node);
+           var newDirectory = tree.addNewDirectory(node);
 
-           return idDirectory;
-       },
-       addRow: function(){
-           var data =
-            [
-                NombreArchivo,
-                FechaIngreso,
-                TipoArchivo,
-                Detalle,
-                '<img src="img/acuse.png" title="vista previa de "'+NombreArchivo+'" onclick="Preview(\''+TipoArchivo+'\', \'0\' ,\''+IdRepositorio+'\', \'Content\')">',
-                '<img src="img/metadata.png" title="vista previa de '+NombreArchivo+'" onclick="GetDetalle(\'Content\', \'0\', \''+IdRepositorio+'\')">',
-                Ruta,
-                '<center><input type="checkbox" id="'+IdRepositorio+'"  class="checkbox_detail"></center>'
-            ];
-
-            /* Se inserta la Fila y su Id */
-            $('#table_DetailResult tr').removeClass('selected');
-            var ai = TableContentDT.row.add(data);         
-            var n = TableContentdT.fnSettings().aoData[ ai[0] ].nTr;
-            n.setAttribute('id',IdRepositorio);
-            n.setAttribute('class','selected');
-            TableContentDT.draw();
+           if(parseInt(newDirectory.autoincrement) > 0){
+                node.data.title = node.data.title + newDirectory.autoincrement;
+                node.render();
            }
+
+           return newDirectory;
+       },
+       addRow: function(templateObject, xmlResponse){
+           var fileName = "Carátula "+templateObject.frontPageName;
+           var idExpedient = $(xmlResponse).find('idExpedient').text();
+           var full = $(xmlResponse).find('full').text();
+            var data =[
+                 fileName,
+                 frontPage.getCurrentDate(),
+                 "",
+                 full,  
+                 '<img src="img/acuse.png" title="vista previa de "'+fileName+'" onclick="Preview(\''+""+'\', \'0\' ,\''+idExpedient+'\', \'Content\')">',
+                 '<img src="img/metadata.png" title="vista previa de '+fileName+'" onclick="GetDetalle(\'Content\', \'0\', \''+idExpedient+'\')">',
+                 $(xmlResponse).find('path').text(),
+                 '<center><input type="checkbox" id="'+idExpedient+'"  class="checkbox_detail"></center>'
+             ];
+
+             /* Se inserta la Fila y su Id */
+             $('#table_DetailResult tr').removeClass('selected');
+             var ai = TableContentDT.row.add(data);         
+             var n = TableContentdT.fnSettings().aoData[ ai[0] ].nTr;
+             n.setAttribute('id',idExpedient);
+             n.setAttribute('class','selected');
+             TableContentDT.draw();
+        },
+        getCurrentDate: function(){
+            var today = new Date();
+            var dd = today.getDate();
+            var mm = today.getMonth()+1; //January is 0!
+            var yyyy = today.getFullYear();
+            
+            if(dd < 10)
+                dd = '0' + dd;
+            if(mm < 10)
+                mm = '0' + mm;
+            
+            return yyyy + "/" + mm + '/' + dd;
+        },
+        getParentFrontPage: function(activeNode){
+            var parent = [activeNode];            
+            for(var cont = 0; cont < parent.length; cont++){
+                var node = parent[cont];
+                console.log("Analizando");
+                console.log(node);
+                if(parseInt(node.data.isFrontPage) === 1)
+                    return node;
+                else{
+                    if(node.getParent() !== null)
+                        parent.push(node.getParent());
+                }
+            }
+            return null;
+        }
     };
 };

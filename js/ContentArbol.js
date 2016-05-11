@@ -19,8 +19,8 @@ var ContentArbol = function () {
         if (activeNode === null)
             return Advertencia("No fue posible obtener el nodo activo");
 
-        if (parseInt(activeNode.data.isFrontPage) !== 1 || parseInt(activeNode.data.isLegajo) !== 1)
-            return Advertencia("Solo puede agregar un legajo sobre una serie u otro legajo");
+        if (!(parseInt(activeNode.data.isFrontPage) === 1 || parseInt(activeNode.data.isLegajo) === 1))
+            return Advertencia("Solo puede agregar un legajo sobre un expediente u otro legajo");
 
         var form = $('<input>', {type: "text", class: "form-control"});
 
@@ -60,10 +60,12 @@ var ContentArbol = function () {
                             idParent: activeNode.data.key,
                             catalogKey: activeNode.data.catalogkey,
                             parentCatalogKey: activeNode.data.catalogKey,
-                            catalogType: null
+                            catalogType: null,
+                            isExpedient: 0,
+                            isFrontPage: 0
                         });
-
-                        if (parseInt(self.addNewDirectory(node)) > 0)
+                        var newDirectory = self.addNewDirectory(node);
+                        if (parseInt(newDirectory.id) > 0)
                             dialogRef.close();
                         else {
                             button.stopSpin();
@@ -87,7 +89,7 @@ var ContentArbol = function () {
     };
 
     this.addNewDirectory = function (node) {
-        var newId = 0;
+        var result = {};
         var pathNode = node.getKeyPath();
         var NameDirectory = node.data.title;
         node.data.unselectable = true;
@@ -113,7 +115,9 @@ var ContentArbol = function () {
                 isLegajo: node.data.isLegajo,
                 isExpedient: node.data.isExpedient,
                 isFrontPage: node.data.isFrontPage,
-                autoincrement: node.data.autoincrement
+                autoincrement: node.data.autoincrement,
+                parentSerie: node.data.parentSerie,
+                templateName: node.data.templateName
             },
             success: function (xml) {
 
@@ -126,9 +130,10 @@ var ContentArbol = function () {
                 $(xml).find("NewDirectory").each(function (){
                     var $NewDirectory = $(this);
                     var id = $NewDirectory.find("IdNewDir").text();
-
+                    var autoincrement = $NewDirectory.find('autoincrement').text();
                     node.data.key = id;
-                    newId = id;
+                    result.id = id;
+                    result.autoincrement = autoincrement;
                 });
 
                 $(xml).find("Error").each(function ()
@@ -145,7 +150,7 @@ var ContentArbol = function () {
             }
         });
 
-        return newId;
+        return result;
     };
     
     this.ConfirmDeleteDir = function(node){
@@ -385,6 +390,7 @@ var _buildTree = function (tree) {
         var idDocDisposition = $Directory.find('idDocDisposition').text();
         var docDispositionName = $Directory.find('Name').text();
         var autoincrement = $Directory.find('autoincrement').text();
+        var templateName = $Directory.find('templateName').text();
 
         if (String(catalogkey).length === 0)
             catalogkey = null;
@@ -411,7 +417,8 @@ var _buildTree = function (tree) {
             isLegajo: isLegajo,           
             isExpedient: isExpedient,
             isFrontPage: isFrontPage,
-            autoincrement: autoincrement
+            autoincrement: autoincrement,
+            templateName: templateName
         };
 
         if (cont === 0)

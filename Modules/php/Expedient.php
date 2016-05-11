@@ -31,7 +31,6 @@ require_once dirname($RoutFile) . '/php/Session.php';
 class Expedient {
 
     private $db;
-
     public function __construct() {
         $this->db = new DataBase();
     }
@@ -56,6 +55,8 @@ class Expedient {
                 case "getTemplateAssociated": $this->getTemplateAssociated($userData);
                     break;
                 case 'addTemplate': $this->addTemplate($userData);
+                    break;
+                case "getAutoincrement": $this->getAutoincrement($userData);
                     break;
             }
         }
@@ -249,14 +250,29 @@ class Expedient {
                 return XML::XMLReponse ("Error", 0, "<p>No fue posible cargar el XML, es posible que no se haya formado correctamente</p>");
         
         $insert = $this->buildQueryStringInsert($xml, $repositoryName, $idDirectory, $idEnterprise, $catalogKey, $frontPageName, $xmlPathDestination."Caratula.xml");
-
-        $idExpedient = $this->db->ConsultaInsertReturnId($instanceName, $insert);
-        if((int)$idExpedient > 0){
-            $xml->saveXML($xmlPathDestination."Plantilla.xml");
-            return XML::XMLReponse("templateAdded", 1, "Carátula Almacenanda");
-        }
-        else
-            return XML::XMLReponse ("Error", 0, "<p><b>Error</b> al almacenar la plantilla</p>".$idExpedient);        
+        $idExpedient = $this->db->ConsultaInsertReturnId($instanceName, $insert['insert']);
+        if(!(int)$idExpedient > 0)
+            return XML::XMLReponse ("Error", 0, "<p><b>Error</b> al almacenar la plantilla</p>".$idExpedient);
+        
+        $xml->saveXML($xmlPathDestination."Plantilla.xml");
+        
+        $doc  = new DOMDocument('1.0','utf-8');
+        libxml_use_internal_errors(true);
+        $doc->formatOutput = true;
+        $root = $doc->createElement("templateAdded");
+        $doc->appendChild($root); 
+        $Estado=$doc->createElement("Estado",1);
+        $root->appendChild($Estado);
+        $Mensaje=$doc->createElement("Mensaje","Carátula Almacenanda");
+        $root->appendChild($Mensaje);
+        $pathXml = $doc->createElement("path", $xmlPathDestination."Plantilla.xml");
+        $root->appendChild($pathXml);
+        $idFileXml = $doc->createElement("idExpedient", $idExpedient);
+        $root->appendChild($idFileXml);
+        $fullXml = $doc->createElement("full", $insert['full']);
+        $root->appendChild($fullXml);
+        header ("Content-Type:text/xml");
+        echo $doc->saveXML();
     }
     
     private function buildQueryStringInsert(SimpleXMLElement $xml, $repositoryName, $idDirectory, $idEmpresa, $catalogKey, $frontPageName, $filePath){
@@ -268,18 +284,20 @@ class Expedient {
         foreach ($xml->field as $value){
             $columns["$value->columnName"] = $value->columnName;
             $fieldType = $value->fieldType;
-            $fullText.="$value ";
+            $fullText.="$value->fieldValue ";
             $value = DataBase::FieldFormat($value->fieldValue, $fieldType);
             $values[] = $value;
         }
         
         $insert.= implode(", ",array_keys($columns)) . ", idDirectory, idEmpresa, FechaIngreso, NombreArchivo, UsuarioPublicador, RutaArchivo, Full) VALUES (";
         $insert.= implode(", ", $values) . ", $idDirectory, $idEmpresa, '$fechaIngreso', '$filename ' , '$userName', '$filePath',  '$fullText')";
-        
-        return $insert;
+        $result = array("insert" => $insert, "full" => $fullText);
+        return $result;
     }
     
-
+    public function getAutoincrement($idSerie){
+        
+    }
 }
 
 $expedient = new Expedient();
