@@ -394,6 +394,8 @@ var TemplateDesigner = function () {
             
             formsDiv.append(wrapperConfiguration);
             
+            if(openFromContent === 1)
+                setFormatToField(form);
             if(updateMode === 1){
                 _buildPophoverOfForm(form, updateMode);
             }
@@ -403,6 +405,11 @@ var TemplateDesigner = function () {
         _hidePopoverClickOutside(formsDiv);
         
         return content;
+    };
+    
+    var setFormatToField = function(form){
+        if(String($(form).attr('fieldType')).toLowerCase() === 'date')
+            $(form).datepicker(GlobalDatePicker);
     };
     
     var _hidePopoverClickOutside = function(formsDiv){

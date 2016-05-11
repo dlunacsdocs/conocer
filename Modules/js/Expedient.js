@@ -354,7 +354,7 @@ var ExpedientClass = function () {
      * @returns {undefined}
      */
     var _setDataToTemplate = function(templatedata, templateassociated){
-        console.log("templateData");
+        console.log("setting data to template");
         console.log(templatedata);
         var activeNode = $('#contentTree').dynatree('getTree').getActiveNode();
         templateData = templatedata;
@@ -363,13 +363,25 @@ var ExpedientClass = function () {
         var systemFields = fieldsAssociator.getSystemFields();
         
         $(templateassociated).find('field').each(function(){
-            var fieldName = $(this).find('system').find('fieldName').text();
-            var columnName = $(this).find('system').find('columnName').text();
-            var fieldNameUser = $(this).find('userField').find('fieldName').text();
+            _setDataToForm(activeNode, templateData, systemFields, $(this));
+        });
+        
+    };
+    /**
+     * @description Ingresa el dato en el form de la plantilla seleccionada
+     * @param {type} activeNode
+     * @param {type} templatedata
+     * @param {type} systemFields
+     * @param {type} field
+     * @returns {undefined}
+     */
+    var _setDataToForm = function(activeNode, templatedata, systemFields, field){
+        var fieldName = $(field).find('system').find('fieldName').text();
+            var columnName = $(field).find('system').find('columnName').text();
+            var fieldNameUser = $(field).find('userField').find('fieldName').text();
             var idForm = '#templateForm_'+fieldNameUser;
             var fieldValue = $(templatedata).find(columnName).text();
             var tName = _getTableName(systemFields, columnName);
-            console.log("setting data to template");
             console.log("fieldName: "+ fieldNameUser + " columnName: " + columnName + " fieldValue: " + fieldValue + " idForm: " + idForm + " tName: "+tName);
                             
             if($(idForm).length > 0){
@@ -381,13 +393,13 @@ var ExpedientClass = function () {
                     $(idForm).val(_getCatalogType(activeNode, "serie")).attr('tName', tName);
                 else if(String(fieldNameUser).toLowerCase() === 'subserie')
                     $(idForm).val(_getSubCatalogType(activeNode, "serie")).attr('tName', tName);
+                else if(String(fieldNameUser).toLowerCase() === 'fecha_apertura')
+                    $(idForm).val(_getCurrentDate()).attr('tName', tName);
                 else
                     $(idForm).val(fieldValue).attr('tName', tName);
             }
             else
                 console.log("No existe "+idForm);
-        });
-        
     };
     
     var _getTableName = function(systemFields, columnname){
@@ -440,6 +452,27 @@ var ExpedientClass = function () {
         return xml;
     };
     
+    var _getCurrentDate = function(){
+        var today = new Date();
+        var dd = today.getDate();
+        var mm = today.getMonth()+1; //January is 0!
+        var yyyy = today.getFullYear();
+
+        if(dd < 10)
+            dd = '0' + dd;
+        if(mm < 10)
+            mm = '0' + mm;
+
+        return yyyy + "/" + mm + '/' + dd;
+    }
+    
+    /**
+     * @description Retorna la clave del area sin el path de sus antecesores (serie, Section, fondo)
+     * @param {type} node
+     * @returns {unresolved}
+     * @param {type} node
+     * @returns {unresolved}
+     */
     var _getKeyErased = function(node){
         return String(node.data.key).replace(node.data.parentCatalogKey + ".", "");
     };
@@ -1030,7 +1063,7 @@ var ExpedientClass = function () {
            var full = $(xmlResponse).find('full').text();
             var data =[
                  fileName,
-                 frontPage.getCurrentDate(),
+                 _getCurrentDate(),
                  "",
                  full,  
                  '<img src="img/acuse.png" title="vista previa de "'+fileName+'" onclick="Preview(\''+""+'\', \'0\' ,\''+idExpedient+'\', \'Content\')">',
@@ -1046,20 +1079,7 @@ var ExpedientClass = function () {
              n.setAttribute('id',idExpedient);
              n.setAttribute('class','selected');
              TableContentDT.draw();
-        },
-        getCurrentDate: function(){
-            var today = new Date();
-            var dd = today.getDate();
-            var mm = today.getMonth()+1; //January is 0!
-            var yyyy = today.getFullYear();
-            
-            if(dd < 10)
-                dd = '0' + dd;
-            if(mm < 10)
-                mm = '0' + mm;
-            
-            return yyyy + "/" + mm + '/' + dd;
-        },
+        },        
         getParentFrontPage: function(activeNode){
             var parent = [activeNode];            
             for(var cont = 0; cont < parent.length; cont++){
