@@ -239,7 +239,7 @@ var ExpedientClass = function () {
                     action: function (dialogRef) {
                         dialogRef.enableButtons(false);
                         dialogRef.setClosable(false);
-                        if (frontPage.upload())
+                        if (self.frontPage.upload())
                             dialogRef.close();
                         else {
                             dialogRef.enableButtons(true);
@@ -463,8 +463,8 @@ var ExpedientClass = function () {
         if(mm < 10)
             mm = '0' + mm;
 
-        return yyyy + "/" + mm + '/' + dd;
-    }
+        return yyyy + "-" + mm + '-' + dd;
+    };
     
     /**
      * @description Retorna la clave del area sin el path de sus antecesores (serie, Section, fondo)
@@ -963,7 +963,7 @@ var ExpedientClass = function () {
         upload: function(){
             var status = 0;
             var activeNode = $('#contentTree').dynatree('getTree').getActiveNode();
-            var newDirectory = frontPage.addFrontPageDirectory();
+            var newDirectory = self.frontPage.addFrontPageDirectory();
             var idDirectory = newDirectory.id;
             var autoincrement = newDirectory.autoincrement;
             var objectDataTemplate = _getBuildObjectDataTemplate(activeNode);
@@ -993,15 +993,14 @@ var ExpedientClass = function () {
                 data: data,
                 success: function (xml) {
                     if ($.parseXML(xml) === null)
-                        return errorMessage(error);
+                        return errorMessage(xml);
                     else
                         xml = $.parseXML(xml);
 
                     $(xml).find('templateAdded').each(function () {
                         var message = $(this).find('Mensaje').text();
                         Notificacion(message);
-                        status = 1;
-                        frontPage.addRow(data, xml);
+                        self.frontPage.addRow(data, xml);
                     });
 
                     $(xml).find("Error").each(function ()
@@ -1094,6 +1093,43 @@ var ExpedientClass = function () {
                 }
             }
             return null;
+        },
+        getFrontPageData: function(enterpriseKey, repositoryName, directoryKeyPath, templateName){
+            var frontPageData = null;
+            $.ajax({
+                async: false,
+                cache: false,
+                dataType: "html",
+                type: 'POST',
+                url: "Modules/php/Expedient.php",
+                data: {
+                    option: "getFrontPageData",
+                    enterpriseKey: enterpriseKey,
+                    repositoryName: repositoryName,
+                    directoryKeyPath: directoryKeyPath,
+                    templateName: templateName
+                },
+                success: function (xml) {
+                    if ($.parseXML(xml) === null)
+                        return errorMessage(xml);
+                    else
+                        xml = $.parseXML(xml);
+
+                    if($(xml).find('template').length > 0)
+                        frontPageData = xml;
+
+                    $(xml).find("Error").each(function ()
+                    {
+                        var mensaje = $(this).find("Mensaje").text();
+                        errorMessage(mensaje);
+                    });
+
+                },
+                error: function (jqXHR, textStatus, errorThrown) {
+                    errorMessage(textStatus + "<br>" + errorThrown);
+                }
+            });
+            return frontPageData;
         }
     };
 };

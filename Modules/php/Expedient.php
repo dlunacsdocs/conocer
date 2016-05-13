@@ -58,6 +58,8 @@ class Expedient {
                     break;
                 case "getAutoincrement": $this->getAutoincrement($userData);
                     break;
+                case 'getFrontPageData': $this->getFrontPageData($userData);
+                    break;
             }
         }
     }
@@ -244,7 +246,7 @@ class Expedient {
         $templateAssociatedPath = "$RoutFile/Configuracion/Templates/$instanceName/$enterpriseKey/$repositoryName/$templateName"."_associated.xml";
         $objectDataTemplate = filter_input(INPUT_POST, "objectDataTemplate");
         
-        $xmlPathDestination = "$RoutFile/Estructuras/$instanceName/$repositoryName$PathFinal";
+        $xmlPathDestination = "$RoutFile/Estructuras/$instanceName/$repositoryName$directoryPath/";
 
         if(!($xml = simplexml_load_string($objectDataTemplate)))
                 return XML::XMLReponse ("Error", 0, "<p>No fue posible cargar el XML, es posible que no se haya formado correctamente</p>");
@@ -253,9 +255,9 @@ class Expedient {
         $idExpedient = $this->db->ConsultaInsertReturnId($instanceName, $insert['insert']);
         if(!(int)$idExpedient > 0)
             return XML::XMLReponse ("Error", 0, "<p><b>Error</b> al almacenar la plantilla</p>".$idExpedient);
-        
-        $xml->saveXML($xmlPathDestination."Plantilla.xml");
-        
+        $templateXmlPath = $xmlPathDestination.$idDirectory."/Plantilla.xml";
+        $xml->saveXML($templateXmlPath);
+
         $doc  = new DOMDocument('1.0','utf-8');
         libxml_use_internal_errors(true);
         $doc->formatOutput = true;
@@ -297,6 +299,20 @@ class Expedient {
     
     public function getAutoincrement($idSerie){
         
+    }
+    
+    private function getFrontPageData($userData){
+        $instanceName = $userData['dataBaseName'];
+        $enterpriseKey = filter_input(INPUT_POST,"enterpriseKey");
+        $repositoryName = filter_input(INPUT_POST, "repositoryName");
+        $directoryPath = filter_input(INPUT_POST, "directoryKeyPath");
+        $RoutFile = dirname(dirname(getcwd()));
+        $xmlPathDestination = "$RoutFile/Estructuras/$instanceName/$repositoryName$directoryPath"."/Plantilla.xml";
+        if(!file_exists($xmlPathDestination))
+            return XML::XMLReponse ("Error", 0, "<p><b>Error</b> No se localiza la ruta de la plantilla</p>".$xmlPathDestination);
+        
+        $xml = simplexml_load_file($xmlPathDestination);
+        echo $xml->saveXML();
     }
 }
 

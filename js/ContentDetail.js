@@ -22,7 +22,7 @@ $(document).ready(function()
 function GetDetalle(Source, IdGlobal, IdFile)
 {    
     var xml=0;
-
+   
     var DocumentEnvironment = new ClassDocumentEnvironment(Source, IdGlobal, IdFile);
     DocumentEnvironment.GetProperties();
     console.log(DocumentEnvironment);
@@ -561,6 +561,8 @@ function SetSearchResult(IdRepository,xml)
  * @returns {Upload}
  */   
  var Upload = function(){
+     var self = this;
+     var expedient = new ExpedientClass();
     this.file = {
         openUploadInterface: function(){
             var activeNode = $('#contentTree').dynatree('getActiveNode');
@@ -572,15 +574,11 @@ function SetSearchResult(IdRepository,xml)
             var IdRepositorio = $('#CM_select_repositorios option:selected').attr('idrepository');
             var xml = SetTableStructura(repositoryName,"CM_TableMetadatasCarga",0);/* XML con la estructura de la tabla */
             var Catalogos = getCatalogs(IdRepositorio, repositoryName);
-           
-            var Forms = $('#CM_TableMetadatasCarga :text');
-            var FieldsValidator = new ClassFieldsValidator();   
-            FieldsValidator.InspectCharacters(Forms);
             
             BootstrapDialog.show({
                 title: '<i class = "fa fa-upload fa-lg"></i> Cargar documento',
                 size: BootstrapDialog.SIZE_WIDE,
-                closeByBackdrop: false,
+                closeByBackdrop: true,
                 closeByKeyboard: true,
                 message: content,
                 buttons: [{
@@ -591,12 +589,14 @@ function SetSearchResult(IdRepository,xml)
                         action: function (dialogRef) {
                             var button = this;
                             button.spin();
-                            if(UploadMetadatas(IdRepositorio,xml,Catalogos))
+                            dialogRef.setClosable(false);
+                            dialogRef.enableButtons(false);
+                            if(UploadMetadatas(content,IdRepositorio,xml,Catalogos))
                                 dialogRef.close();
                             else{
                                 button.stopSpin();
-                                dialogRef.setClosable(false);
-                                dialogRef.enableButtons(false);
+                                dialogRef.setClosable(true);
+                                dialogRef.enableButtons(true);
                             }
                         }
                     },
@@ -608,17 +608,43 @@ function SetSearchResult(IdRepository,xml)
                     }
                 ],
                 onshown: function (dialogRef) {
-                    var expedient = new ExpedientClass();
-                    var parentFrontPage = expedient.frontPage.getParentFrontPage(activeNode);
+                    var parentFrontPage = getParentFrontPage(activeNode);
                     var templateXml = getTemplate(enterpriseKey, repositoryName, parentFrontPage.data.templateName + ".xml");
-                   var templateObject = buildObjectOfTemplate(templateXml);
-                    console.log("templateObject");
-                    console.log(templateObject);
+                    var templateObject = buildObjectOfTemplate(templateXml);
+                    setBrowserFile(content);
                     content.append(templateObject);
+                    var frontPageData = expedient.frontPage.getFrontPageData(enterpriseKey, repositoryName, parentFrontPage.getKeyPath(), parentFrontPage.data.templateName + ".xml");
+                    console.log("frontPageData");
+                    console.log(frontPageData);
+                    self.file.setDataToTemplate(frontPageData);
+                    var FieldsValidator = new ClassFieldsValidator();   
+                    FieldsValidator.InspectCharacters(content.find('input'));
                 }
             });
+        },
+        setDataToTemplate: function(templateData){
+            $(templateData).find('field').each(function() {
+                var fieldValue = $.trim($(this).find('fieldValue').text());
+                var fieldName = $.trim($(this).find('fieldName').text());
+                var fieldType = $.trim($(this).find('fieldType').text());
+                var fieldLength = $.trim($(this).find('fieldLength').text());
+                var columnName = $.trim($(this).find('columnName').text());
+                var idField = "#templateForm_" + fieldName;
+                if($(idField).length > 0)
+                    $(idField).val(fieldValue);
+                else
+                    console.log("No se encontro el formulario " +  idField);
+            });            
         }
-    };        
+    };    
+    
+    var getParentFrontPage = function(activeNode){
+        return expedient.frontPage.getParentFrontPage(activeNode);
+    };
+    
+    var setBrowserFile = function(content){
+        content.append('<tr><td><input type="file" id="CM_InputFileCarga" enctype="multipart/form-data"></td><td></td></tr>');
+    };
     
     var getTemplate = function (enterpriseKey, repositoryName, templateName) {
         return TemplateDesigner.getTemplate(enterpriseKey, repositoryName, templateName);
@@ -797,13 +823,13 @@ function CM_CargarArchivo()
         var catalogManager = new ClassCatalogAdministrator();
         var xml = catalogManager.GetCatalogRecordsInXml(repositoryName ,NombreCatalogo,'ListSearch');        
         var ArrayStruct = new Array();var cont=0;
-        var thead='<thead><tr>';
-        $(xmlStruct).find("Campo").each(function()
-        {               
-            var $Campo=$(this);
-            var tipo=$Campo.find("tipo").text();
-            if(tipo.length>0){return;}   /* Tipo del List */    
-            var name=$Campo.find("name").text();
+        var thead = '<thead><tr>';
+        
+        $(xmlStruct).find("Campo").each(function(){               
+            var tipo = $(this).find("tipo").text();
+            if(tipo.length > 0)
+                return;   /* Tipo del List */    
+            var name = $(this).find("name").text();
             ArrayStruct[cont]=name;
             cont++;
             thead+='<th>'+name+'</th>';
@@ -868,11 +894,9 @@ function CM_CargarArchivo()
        });      
    }
   
-   function _CollectNewMetadatas(xml, Catalogs)
-   {
-        $('#CM_Carga').append('<div class="Loading" id = "CMUpload"><img src="../img/loadinfologin.gif"></div>');
-        
-        var Forms = $('#CM_TableMetadatasCarga :text');
+   function _CollectNewMetadatas(content, xml, Catalogs)
+   {        
+        var Forms = $(content).find('input:text');
         var FieldsValidator = new ClassFieldsValidator();   
         FieldsValidator.ValidateFields(Forms);
         
@@ -908,8 +932,7 @@ function CM_CargarArchivo()
             var CatalogName = Catalogs[cont];
             var id = $('#Catalogo_'+Catalogs[cont]).val();  /* Se toman los valores de cada catalogo */
             
-            if(!(id>0))
-            {               
+            if(!(id>0)){               
                 FieldsValidator.AddClassRequiredActive($('#Catalogo_'+Catalogs[cont]));
                 FlagCamposDetalle=1;                                
             }
@@ -931,7 +954,7 @@ function CM_CargarArchivo()
            var type=$Campo.find("type").text();
            var long=$Campo.find("long").text();
            var required=$Campo.find("required").text();           
-           var id='_'+name;
+           var id='templateForm_'+name;
            var value=$('#'+id).val();                                            
            var XML='<MetaData>\n\
                         <name>'+name+'</name>\n\
@@ -948,13 +971,12 @@ function CM_CargarArchivo()
        
        XMLResponse+=CatalogosXml;
        XMLResponse+='</MetaDatas>';                     /* Fin del XML */
-                                                
-       var xml_usuario=document.getElementById("CM_InputFileCarga");
+
+       var xml_usuario = document.getElementById("CM_InputFileCarga");
        var archivo = xml_usuario.files;        
        var data = new FormData();
-       
-       if(archivo.length===0)
-       {
+
+       if(archivo.length === 0){
            FieldsValidator.AddClassRequiredActive($('#CM_InputFileCarga'));
            return 0;
        }
@@ -964,8 +986,7 @@ function CM_CargarArchivo()
        if(FlagCamposDetalle)
            return 0;            
 
-      for(i=0; i<archivo.length; i++)
-      {
+        for(i=0; i<archivo.length; i++){
             data.append('archivo',archivo[i]);
             data.append('opcion','UploadMetadatas');
             data.append('IdUsr',EnvironmentData.IdUsuario);
@@ -981,79 +1002,75 @@ function CM_CargarArchivo()
             data.append('Path',Path);
             data.append('NombreRepositorio',NombreRepositorio);
             data.append('NombreArchivo',NombreArchivo);
-      }
-      
+        }
+        
       return data;
    }
   
-/*------------------------------------------------------------------------------
- * 
+/**
+ * @description Funcion que carga los metadatos.
+ * @param {object} content Contenedor del dialog con la estructura de la plantilla.
+ * @param {type} IdRepositorio
  * @param {type} xml
  * @param {type} Catalogos
- * @returns {undefined}
- * 
- * Descripción: Función que construye el XML que transporta los datos al servidor para
- * carga el nuevo documento.
- ------------------------------------------------------------------------------*/
-
-   function UploadMetadatas(IdRepositorio,xml, Catalogos)
+ * @returns {Number}
+ */
+   function UploadMetadatas(content,IdRepositorio,xml, Catalogos)
    {
-       var data = _CollectNewMetadatas(xml, Catalogos);
+       var status = 0;
+       var data = _CollectNewMetadatas(content, xml, Catalogos);
 
        if(data ===0 || data===undefined || data ==='0')  
-       {
-           $('#CMUpload').remove();
            return 0;
-       }
-
-      $.ajax({
-      async:false, 
-      cache:false,
-      processData: false,
-      contentType: false,
-      dataType:"html", 
-      type: 'POST',   
-      url: "php/ContentManagement.php",
-      data: data, 
-      success:  function(xml)
-      {
-        $('#CMUpload').remove();
-        if($.parseXML( xml )===null){errorMessage(xml);return 0;}else{ xml=$.parseXML( xml );}
-        
-        if($(xml).find("SetMetadatas").length>0)
-            AddNewRow(IdRepositorio, xml);
-
-              
-        $(xml).find("Error").each(function()
+       
+        $.ajax({
+        async:false, 
+        cache:false,
+        processData: false,
+        contentType: false,
+        dataType:"html", 
+        type: 'POST',   
+        url: "php/ContentManagement.php",
+        data: data, 
+        success:  function(xml)
         {
-            var mensaje = $(this).find("Mensaje").text();
-            errorMessage(mensaje);
-        });       
-        
-      },
-      beforeSend:function(){},
-      error: function(jqXHR, textStatus, errorThrown){$('#CMUpload').remove();errorMessage(textStatus +"<br>"+ errorThrown);}
-    });
+            if($.parseXML( xml )===null)
+                return errorMessage(xml);
+            else
+                xml=$.parseXML( xml );
+
+            if($(xml).find("SetMetadatas").length>0){
+                AddNewRow(IdRepositorio, xml);
+                status = 1;
+            }
+
+            $(xml).find("Error").each(function(){
+                var mensaje = $(this).find("Mensaje").text();
+                errorMessage(mensaje);
+            });       
+
+        },
+        beforeSend:function(){},
+        error: function(jqXHR, textStatus, errorThrown){errorMessage(textStatus +"<br>"+ errorThrown);}
+      });
+      
+      return status;
    }
 
-function AddNewRow(IdRepository, xml)
-{
-    $(xml).find("SetMetadatas").each(function()
-    {                                                        
-        var $SetMetadatas = $(this);
-        var mensaje = $SetMetadatas.find("Mensaje").text();
-        var IdFile = $SetMetadatas.find('IdRepositorio').text();
-        var NombreArchivo = $SetMetadatas.find("NombreArchivo").text();
-        var FechaIngreso = $SetMetadatas.find("FechaIngreso").text();
-        var TipoArchivo = $SetMetadatas.find("TipoArchivo").text();
-        var Detalle = $SetMetadatas.find("Full").text();
-        var IdRepositorio = $SetMetadatas.find("IdRepositorio").text();
-        var Ruta = $SetMetadatas.find("RutaArchivo").text();
+function AddNewRow(IdRepository, xml){
+    $(xml).find("SetMetadatas").each(function(){                                                        
+        var mensaje = $(this).find("Mensaje").text();
+        var IdFile = $(this).find('IdRepositorio').text();
+        var NombreArchivo = $(this).find("NombreArchivo").text();
+        var FechaIngreso = $(this).find("FechaIngreso").text();
+        var TipoArchivo = $(this).find("TipoArchivo").text();
+        var Detalle = $(this).find("Full").text();
+        var IdRepositorio = $(this).find("IdRepositorio").text();
+        var Ruta = $(this).find("RutaArchivo").text();
 
         Notificacion(mensaje);
 
-        var data =
-        [
+        var data =[
             NombreArchivo,
             FechaIngreso,
             TipoArchivo,
@@ -1072,14 +1089,12 @@ function AddNewRow(IdRepository, xml)
         n.setAttribute('class','selected');
         TableContentDT.draw();
 
-        $('#CM_Carga').dialog('destroy');
     });
     
     var downloads = new Downloads();
     
     /* Se recoge el estado del CheckBox para agregarlo a la lista de descarga */
-    $('#table_DetailResult tbody tr input').click(function()
-    {
+    $('#table_DetailResult tbody tr input').click(function(){
         var check= $(this).is(':checked');
         var IdCheck = $(this).attr('id');
         
@@ -1097,8 +1112,7 @@ function AddNewRow(IdRepository, xml)
  * @returns {undefined}
  * Recupera el contenido de cada catálogo seleccionando el repositorio
  ------------------------------------------------------------------------------*/  
-function getCatalogOptions(IdRepositorio,SelectCatalogos)
-{   
+function getCatalogOptions(IdRepositorio,SelectCatalogos){   
 
    $.ajax({
       async:false, 

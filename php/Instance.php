@@ -62,12 +62,12 @@ class Instance {
         
         if(($enterpriseStructure = $DB->createEnterpriseDefaultConfiguration($instanceName))!=1){
             $this->removeInstanceFromCSDocs($idInstance, $instanceName, 0, $userName, 1);
-            return XML::XMLReponse("Error", 0, $enterpriseStructure);
+            return XML::XMLReponse("Error", 0, "EnterpriseStructure:::".$enterpriseStructure);
         }
         
         if(($userStructure = $DB->createUsersDefaultConfiguration($instanceName))!=1){
             $this->removeInstanceFromCSDocs($idInstance, $instanceName, 0, $userName, 1);
-            return XML::XMLReponse("Error", 0, $userStructure);
+            return XML::XMLReponse("Error", 0, "UserStructure::".$userStructure);
         }
            
         if(($result = $DB->createUsersControl($instanceName))!=1){

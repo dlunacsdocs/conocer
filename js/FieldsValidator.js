@@ -389,7 +389,8 @@ var ClassFieldsValidator = function()
 
 ClassFieldsValidator.prototype.ValidateFields = function(Object)
 {
-//    console.log(Object);
+    console.log("");
+    console.log(Object);
     var self = this;
     var Flag = 1;
     var FinalFlag = 1;
