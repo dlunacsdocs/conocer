@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-/* global BootstrapDialog, LanguajeDataTable */
+/* global BootstrapDialog, LanguajeDataTable, GlobalDatePicker */
 
 var TemplateDesigner = function () {
     var self = this;
@@ -129,9 +129,9 @@ var TemplateDesigner = function () {
 
                             var ai = templatesTD.row.add(data).draw();
                             var n = templatesTd.fnSettings().aoData[ ai[0] ].nTr;
+                            n.setAttribute('id', idRepository);                        
                         });
                         
-        //                    n.setAttribute('id', idRepository);                        
                     });
                 });
                 
@@ -156,9 +156,10 @@ var TemplateDesigner = function () {
                     var tr = templatesTd.$('tr.selected');
                     var position = templatesTd.fnGetPosition($(tr)[0]);
                     var enterprisekey = templatesTd.fnGetData(position)[0];
+                    var idRepository = $(tr).attr('id');
                     var repositoryname = templatesTd.fnGetData(position)[1];
                     var templatename = templatesTd.fnGetData(position)[2];
-                    self.openTemplate(1,enterprisekey, repositoryname, templatename);
+                    self.openTemplate(1,enterprisekey, idRepository, repositoryname, templatename);
                 });
     };
     
@@ -212,7 +213,7 @@ var TemplateDesigner = function () {
         return templates;
     };
     
-    this.openTemplate = function(updateMode,enterprisekey, repositoryname, templatename){
+    this.openTemplate = function(updateMode,enterprisekey, idRepository, repositoryname, templatename){
         enterpriseKey = enterprisekey;
         repositoryName = repositoryname;
         templateName = templatename;
@@ -278,7 +279,7 @@ var TemplateDesigner = function () {
             onshown: function (dialogRef) {
                 $('#templateDesigneNameForm').val(templateName);
                 var formHorizontal = $(templateContent).find('.form-horizontal')[0];
-                _setBottomPanelData($(formHorizontal), 1);
+                _setBottomPanelData(idRepository, $(formHorizontal), 1);
                 _removeRemainingFields();
             }
         });
@@ -980,7 +981,7 @@ var TemplateDesigner = function () {
                 }
             ],
             onshown: function (dialogRef) {                
-                _setBottomPanelData(formsDiv, 0);
+                _setBottomPanelData(idRepository,formsDiv, 0);
             }
         });
 
@@ -1034,18 +1035,20 @@ var TemplateDesigner = function () {
 
 /**
  * @description Insertado los campos en el select del panel inferior
+ * @param {Integer} idRepository 
  * @param {boolean} updateMode Modo edición
  * @param {type} formsDiv
  * @returns {undefined}
  */
-    var _setBottomPanelData  = function(formsDiv, updateMode){
+    var _setBottomPanelData  = function(idRepository, formsDiv, updateMode){
         var bottomPanelSelectWidth = $('#bottomPanelSelectWidth');
         var buttonPanelSelectButtonAdd = $('#buttonPanelSelectButtonAdd');
         var bottomPanelFieldSelect = $('#bottomPanelFieldSelect');
         var bottomPanelFieldType = $('#bottomPanelFieldType');
         var bottomPanelFormTag = $('#bottomPanelFormTag');
         var forms = GeStructure(repositoryName);
-        
+        var catalogs = _getCatalogs(idRepository);
+
         bottomPanelSelectWidth.append('<option width = "1">1</option>\n\
                                                 <option width = "2">2</option>\n\
                                                 <option width = "3">3</option>\n\
@@ -1087,6 +1090,11 @@ var TemplateDesigner = function () {
                         Advertencia("Ingrese una etiqueta para el campo.");
                 });
         
+    };
+    
+    var _getCatalogs = function(idRepository){
+        var catalogClass = new ClassCatalogAdministrator();
+        return catalogClass.getCatalogsByEnterprise(idRepository);
     };
 
     var _getColumnsClass = function (width) {

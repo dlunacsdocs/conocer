@@ -48,9 +48,19 @@ class Catalog {
                 case 'AddNewRecord':$this->AddNewRecord($userData); break;
                 case 'AddNewColumn': $this->AddNewColumn($userData); break;
                 case 'buildNewCatalog': $this->buildNewCatalog($userData); break;
+                case 'getCatalogsByEnterprise': $this->getCatalogsByEnterprise($userData); break;
             }
         }
     }  
+    
+    public function getCatalogsByEnterprise($userData){
+        $instanceName = $userData['dataBaseName'];
+        $idRepository = filter_input(INPUT_POST, "idRepository");
+        $catalogs = $this->getArrayCatalogsNames($instanceName, $idRepository);
+        if(!is_array($catalogs))
+            return XML::XMLReponse ("Error", 0, "<p><b>Error</b> al obtener el listado de nombres de catalogos.</p><br>$catalogs");
+        XML::XmlArrayResponse("Catalogs", "Catalog", $catalogs);
+    }
     
     /***************************************************************************
      * Construye un nuevo catálogo a través de la interfaz de usuario.         *

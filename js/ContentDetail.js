@@ -714,40 +714,6 @@ var Upload = function () {
     };
 };
 
-/*******************************************************************************
- *  Sube un Archivo en un directorio seleccionado llenando sus datos de forma manual
- * @returns {undefined}
- */
-function CM_CargarArchivo()
-{
-    var repositoryName = $('#CM_select_repositorios option:selected').attr('repositoryname');
-    var IdRepositorio = $('#CM_select_repositorios option:selected').attr('idrepository');
-
-    $('#CM_Carga').remove();
-    var content = $('<div>', {id: 'CM_Carga', class: "detalle_archivo"});
-    $('body').append(content);
-    $('#CM_Carga').append('<center><img src="img/Archivos_converted.png" title="Caerga de Archivo"></center>');
-    $('#CM_Carga').append('<table id="CM_TableMetadatasCarga"><thead><tr><th>Nombre del Campo</th><th>Valor</th></tr></thead></table>');
-    $('#CM_TableMetadatasCarga').append('<tr><td><input type="file" id="CM_InputFileCarga" enctype="multipart/form-data"></td><td></td></tr>');
-
-
-    var xml = SetTableStructura(repositoryName, "CM_TableMetadatasCarga", 0);/* XML con la estructura de la tabla */
-    var Catalogos = new Array();
-
-    Catalogos = getCatalogs(IdRepositorio, repositoryName);
-
-    var Forms = $('#CM_TableMetadatasCarga :text');
-    var FieldsValidator = new ClassFieldsValidator();
-    FieldsValidator.InspectCharacters(Forms);
-
-    $("#CM_Carga").dialog({width: 600, height: 600, modal: true, minWidth: 600, minHeight: 600, resizable: true, buttons: {}, title: "Carga de un Archivo"});
-    $("#CM_Carga").dialog({buttons: {"Aceptar": function () {
-                UploadMetadatas(IdRepositorio, xml, Catalogos);/*$(this).dialog('close');*/
-            }, "Cancelar": function () {
-                $(this).dialog('close');
-            }}});
-}
-
 /*****************************************************************************
  * 
  * @param {String} IdRepositorio Id del repositorio

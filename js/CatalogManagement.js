@@ -1405,3 +1405,36 @@ ClassCatalogAdministrator.prototype.getCatalogos = function (IdRepositorio, Sele
         }
     });
 };
+
+ClassCatalogAdministrator.prototype.getCatalogsByEnterprise = function (idRepository){
+    var catalogs = null;
+    $.ajax({
+        async: false,
+        cache: false,
+        dataType: "html",
+        type: 'POST',
+        url: "php/Catalog.php",
+        data: {opcion: "getCatalogsByEnterprise", "idRepository": idRepository},
+        success: function (xml) {
+            if ($.parseXML(xml) === null) {
+                return errorMessage(xml);
+            } else
+                xml = $.parseXML(xml);
+            
+            if($(xml).find('Catalogs').length > 0)
+                catalogs = xml;
+
+            $(xml).find("Error").each(function (){
+                var $Instancias = $(this);
+                var estado = $Instancias.find("Estado").text();
+                var mensaje = $Instancias.find("Mensaje").text();
+                errorMessage(mensaje);
+            });
+        },
+        beforeSend: function () {},
+        error: function (objXMLHttpRequest) {
+            errorMessage(objXMLHttpRequest);
+        }
+    });
+    return catalogs;
+};
