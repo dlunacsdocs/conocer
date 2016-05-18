@@ -32,6 +32,7 @@ var FieldsAssociator = function () {
     var objectAssociated = [];   /*Array que contiene la estructura de campos a asociar */
     var templateName;
     var enterpriseKey;
+    var idRepository = 0;
     var repositoryName;
 
     this.setActionToLink = function () {
@@ -231,6 +232,7 @@ var FieldsAssociator = function () {
 
         templateName = $(templateselect).attr("templatename");
         enterpriseKey = $(templateselect).attr("enterprisekey");
+        idRepository = $(templateselect).attr("idrepository");
         repositoryName = $(templateselect).attr("repositoryname");
         
         var content = $('<div>');
@@ -295,7 +297,7 @@ var FieldsAssociator = function () {
                 console.log(systemFields);
                 var fieldsDissasociated = _getFieldsDissasociated(repositoryName);
                 console.log(fieldsDissasociated);
-
+                var catalogs = _getCatalogs(idRepository);
                 for (var i = 0; i < systemFields.length; i++) {
                     var obj = systemFields[i];
                     for (var key in obj) {
@@ -320,6 +322,13 @@ var FieldsAssociator = function () {
                         
                     }
                 }
+                
+                var repositoryOption = $('<option>', {
+                    tableName: repositoryName,
+                    isRepositoryField: true
+                }).append('Campo del repositorio');
+                
+                systemFieldsSelect.append(repositoryOption);
 
                 $(fieldsDissasociated).find("Campo").each(function () {
                     var $Campo = $(this);
@@ -329,13 +338,40 @@ var FieldsAssociator = function () {
                     var length = $Campo.find("long").text();
                     var required = $Campo.find("required").text();
 
-                    var option = $('<option>', {fieldType: type, fieldName: name, fieldLength: length, required: required}).append(name);
+                    var option = $('<option>', {
+                        fieldType: type, 
+                        fieldName: name, 
+                        fieldLength: length, 
+                        required: required
+                    }).append(name);
+                    disassociatedFieldsSelect.append(option);
+                });
+                
+                /* Se integran los catalogos a los campos no asociados*/
+                $(catalogs).each(function(){
+                    var idCatalog = $(this).find('IdCatalogo').text();
+                    var fieldName = $(this).find('NombreCatalogo').text();
+                    var fieldType = "INT";
+                    var fieldLength = "";
+                    var option = $('<option>', {
+                        "fieldName": fieldName, 
+                        "fieldType": fieldType, 
+                        "fieldLength": fieldLength, 
+                        isCatalog: true, 
+                        idCatalog: idCatalog, 
+                        required: true
+                    }).append(fieldName);
                     disassociatedFieldsSelect.append(option);
                 });
             }
         });
         
         return 1;
+    };
+    
+    var _getCatalogs = function(idRepository){
+        var catalogClass = new ClassCatalogAdministrator();
+        return catalogClass.getCatalogsByEnterprise(idRepository);
     };
 
     /**
@@ -421,28 +457,37 @@ var FieldsAssociator = function () {
         systemFieldsSelect = $(systemFieldsSelect).find('option:selected')[0];
         disassociatedFieldsSelect = $(disassociatedFieldsSelect).find('option:selected')[0];
         
-        var systemField =  
-                {
+        var systemField =  {
                     columnName: $(systemFieldsSelect).attr('columnName'), 
                     fieldTag: $(systemFieldsSelect).attr('fieldTag'),
                     tableName: $(systemFieldsSelect).attr('tableName')
                 };
                             
-        var userField = 
-                {
+        var userField = {
                     fieldType: $(disassociatedFieldsSelect).attr('fieldType'), 
                     fieldName: $(disassociatedFieldsSelect).attr('fieldName'), 
                     fieldLength: $(disassociatedFieldsSelect).attr('fieldLength'), 
                     required: $(disassociatedFieldsSelect).attr('required')
                 };
+                
+        if(String($(systemFieldsSelect).attr('isrepositoryfield')) === "true"){
+            var isCatalog = $(disassociatedFieldsSelect).attr('iscatalog');
+            if(String(isCatalog) === "true"){
+                systemField.columnName = userField.fieldName;
+                systemField.tableName  = userField.fieldName;
+                systemField.fieldTag   = userField.fieldName;
+            }
+        }
+        else
+            $(systemFieldsSelect).remove();
+        
+        $(disassociatedFieldsSelect).remove();
         
         var fields = {"system": systemField, userField: userField};
+        
         console.log("_associate");
         console.log(fields);
         objectAssociated.push(fields);
-        
-        $(systemFieldsSelect).remove();
-        $(disassociatedFieldsSelect).remove();
         
         var systemFieldsSize = $(systemFieldsSelect).find('option[]').length;
         var userFieldsSize = $(disassociatedFieldsSelect).length;

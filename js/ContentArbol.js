@@ -384,7 +384,7 @@ var _buildTree = function (tree) {
         var catalogkey = $Directory.find("catalogKey").text();
         var parentCatalogKey = $Directory.find("parentCatalogKey").text();
         var type = $Directory.find("catalogType").text();
-        var isLegajo = false;
+        var isLegajo = $Directory.find("isLegajo").text();
         var isExpedient = $Directory.find('isExpedient').text();
         var isFrontPage = $Directory.find('isFrontPage').text();
         var idDocDisposition = $Directory.find('idDocDisposition').text();
@@ -397,9 +397,6 @@ var _buildTree = function (tree) {
         
         if(String(parentCatalogKey).length === 0)
             parentCatalogKey = null;
-        
-        if(parseInt(id) > 1 && catalogkey === null)
-            isLegajo = true;
 
         if(String(type)!== 'fondo' && String(type) !== 'serie' && String(type) !== 'section')
             type = null;

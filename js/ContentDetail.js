@@ -613,6 +613,9 @@ function SetSearchResult(IdRepository, xml)
 var Upload = function () {
     var self = this;
     var expedient = new ExpedientClass();
+    var TableCatalogdT = null;
+    var TableCatalogDT = null;
+    
     this.file = {
         openUploadInterface: function () {
             var activeNode = $('#contentTree').dynatree('getActiveNode');
@@ -622,6 +625,7 @@ var Upload = function () {
 
             if (!parseInt(activeNode.data.isLegajo) > 0)
                 return Advertencia("Solo puede ingresar un documento dentro de un legajo.");
+            
             var content = $('<div>');
             var enterpriseKey = $('#CM_select_empresas option:selected').attr('value');
             var repositoryName = $('#CM_select_repositorios option:selected').attr('repositoryname');
@@ -684,8 +688,16 @@ var Upload = function () {
                 var fieldLength = $.trim($(this).find('fieldLength').text());
                 var columnName = $.trim($(this).find('columnName').text());
                 var idField = "#templateForm_" + fieldName;
-                if ($(idField).length > 0)
+                var isCatalog = $.trim($(this).find('isCatalog').text());
+                var catalogOption = 0;
+                
+                if ($(idField).length > 0){
                     $(idField).val(fieldValue);
+                    if(String(isCatalog) === "true"){
+                        catalogOption = $.trim($(this).find('catalogOption').text());
+                        $(idField).attr("catalogOption", catalogOption);
+                    }
+                }
                 else
                     console.log("No se encontro el formulario " + idField);
             });
@@ -712,6 +724,149 @@ var Upload = function () {
     var buildObjectOfTemplate = function (templateXml) {
         return TemplateDesigner.buildContentOfTemplate(templateXml, 0, 1);
     };
+    
+    this.openCatalogInterface = function(catalogName, form){
+        var repositoryName = $('#CM_select_repositorios option:selected').attr('repositoryname');
+        var content = $('<div>');
+        BootstrapDialog.show({
+            title: '<i class="fa fa-folder-open fa-lg"></i> Catálogo ' + catalogName,
+            size: BootstrapDialog.SIZE_WIDE,
+            type: BootstrapDialog.TYPE_PRIMARY,
+            message: content,
+            closable: true,
+            closeByBackdrop: false,
+            closeByKeyboard: true,
+            buttons: [
+                {
+                    icon: 'fa fa-plus-circle fa-lg',
+                    label: 'Seleccionar',
+                    cssClass: "btn-primary",
+                    hotkey: 13,
+                    action: function (dialogRef) {
+                        var button = this;
+                        dialogRef.enableButtons(false);
+                        dialogRef.setClosable(false);
+                        if (selectOptionOfCatalog(catalogName, form))
+                            dialogRef.close();
+                        else {
+                            dialogRef.setClosable(true);
+                            dialogRef.enableButtons(true);
+                        }
+                    }
+                },
+                {
+                    label: 'Cerrar',
+                    action: function (dialogRef) {
+                        dialogRef.close();
+                    }
+                }
+            ],
+            onshow: function (dialogRef) {
+                
+            },
+            onshown: function (dialogRef) {
+        var catalogData = getCatalogData(repositoryName, catalogName);
+                buildCatalogTable(content,repositoryName, catalogName, catalogData, form);
+            }
+        });
+        
+        
+    };
+    
+    var getCatalogData = function(repositoryName, catalogName){
+        var catalogManager = new ClassCatalogAdministrator();
+        var catalogData = catalogManager.GetCatalogRecordsInXml(repositoryName, catalogName, '');
+        
+        return catalogData;
+    };
+    
+    /**
+     * @description Se ingresa al formulario la opcion seleccionada del catalogo.
+     * @param {type} catalogName
+     * @param {type} form
+     * @returns {undefined}
+     */
+    var selectOptionOfCatalog = function(catalogName, form){
+        var catalogOption = $('#' + catalogName + "_catalogTable tr.selected").attr('id');
+        if(!$('#' + catalogName + "_catalogTable tr.selected").length > 0)
+            return 0;
+        
+        $('#' + catalogName + "_catalogTable tr.selected").each(function (){
+            var position = TableCatalogdT.fnGetPosition(this); // getting the clicked row position
+            var data = TableCatalogDT.row( position ).data();
+            $(form).val(data.join(", "));
+            $(form).attr("catalogOption", catalogOption);
+        });
+        return 1;
+    };
+
+    var buildCatalogTable = function(content,repositoryName, catalogName, catalogData, form){
+        var ArrayStruct = new Array();
+        var cont = 0;
+        var thead = '<thead><tr>';
+        var xmlStruct = GeStructure(repositoryName + "_" +catalogName);
+        var table = $('<table>', {
+            class: "table table-striped table-bordered table-hover table-condensed display hover",
+            id: catalogName + "_catalogTable"
+        });
+        
+        $(xmlStruct).find("Campo").each(function () {
+            var tipo = $(this).find("tipo").text();
+            if (tipo.length > 0)
+                return;   /* Tipo del List */
+            var name = $(this).find("name").text();
+            ArrayStruct[cont] = name;
+            cont++;
+            thead += '<th>' + name + '</th>';
+        });
+        
+        thead += "</tr></thead>";
+        table.append(thead);
+        content.append(table);
+        
+        TableCatalogdT = table.dataTable({
+            'bPaginate': false, 'bInfo': false, bFilter: false, "bSort": false, "autoWidth": false, "oLanguage": LanguajeDataTable,
+            "dom": 'lfTrtip',
+            "oTableTools": {
+                "aButtons": [{
+                    "sExtends": "collection",
+                    "sButtonText": '<i class="fa fa-floppy-o fa-lg"></i>',
+                    "aButtons": ["copy", "csv", "xls", "pdf"]
+                }]
+            },
+            "sSwfPath": "../apis/DataTables/extensions/TableTools/swf/copy_csv_xls_pdf.swf"
+        });
+        
+        TableCatalogDT = new $.fn.dataTable.Api('#' + catalogName + "_catalogTable");
+
+        addRecordsToCatalogTable(catalogData, catalogName, ArrayStruct, TableCatalogdT, TableCatalogDT);
+
+        $('#' + catalogName + '_catalogTable tbody').on('click', 'tr', function () {
+            TableCatalogDT.$('tr.selected').removeClass('selected');
+            $(this).addClass('selected');
+        });
+    };
+    
+    var addRecordsToCatalogTable = function(catalogData, catalogName, ArrayStruct, TableCatalogdT, TableCatalogDT){
+        /* El Array Struct Contiene la estructura del catálogo y a partir de ella se recorre el XML que contiene
+         * su información (Del catálogo) */
+        $(catalogData).find("CatalogRecord").each(function (){
+            var $Campo = $(this);
+            var IdRecord = $Campo.find('Id' + catalogName).text();
+            var data = [];  /* Guarda la fila que será insertada */
+            /* Recorrer los datos que contiene cada fila del catálogo */
+            for (var cont = 0; cont < ArrayStruct.length; cont++){
+                var field = ArrayStruct[cont];
+                var value = $Campo.find(field).text();
+                data[data.length] = value;
+            }
+
+            var ai = TableCatalogDT.row.add(data).draw();
+            var n = TableCatalogdT.fnSettings().aoData[ ai[0] ].nTr;
+            n.setAttribute('id', IdRecord);
+        });
+    };
+   
 };
 
 /*****************************************************************************
@@ -926,8 +1081,8 @@ function SetValuesToListSearch(xmlStruct, repositoryName, NombreCatalogo)
     });
 }
 
-function _CollectNewMetadatas(content, xml, Catalogs)
-{
+function _CollectNewMetadatas(content, xml, Catalogs){
+    console.log("CollectNewMetadatas");
     var Forms = $(content).find('input:text');
     var FieldsValidator = new ClassFieldsValidator();
     FieldsValidator.ValidateFields(Forms);
@@ -961,24 +1116,29 @@ function _CollectNewMetadatas(content, xml, Catalogs)
     var CatalogosXml = '';
 
     /*--------------- Se recoge el valor de los catálogos -----------------*/
-
-    for (var cont = 0; cont < Catalogs.length; cont++)
-    {
-        var CatalogName = Catalogs[cont];
-        var id = $('#Catalogo_' + Catalogs[cont]).val();  /* Se toman los valores de cada catalogo */
-
-        if (!(id > 0)) {
-            FieldsValidator.AddClassRequiredActive($('#Catalogo_' + Catalogs[cont]));
-            FlagCamposDetalle = 1;
+    $(Forms).each(function(){
+        if(String($(this).attr('iscatalog')) !== "true"){
+            
         }
-        else
-            FieldsValidator.RemoveClassRequiredActive($('#Catalogo_' + Catalogs[cont]));
+        else{
+            var CatalogName = $(this).attr('fieldName');
+            if(CatalogName === undefined)
+                return;
+            var id = $('#templateForm_' + CatalogName).attr('catalogoption');  /* Se toman los valores de cada catalogo */
 
-        var TextoSelectCatalogo = $('#Catalogo_' + Catalogs[cont] + ' option:selected').html();
+            if (!(id > 0)) {
+                FieldsValidator.AddClassRequiredActive($('#templateForm_' + CatalogName));
+                FlagCamposDetalle = 1;
+            }
+            else
+                FieldsValidator.RemoveClassRequiredActive($('#templateForm_' + CatalogName));
 
-        CatalogosXml += '<Catalogo><name>' + CatalogName + '</name><value>' + id + '</value><type>INT</type><TextoSelect>' + TextoSelectCatalogo + '</TextoSelect></Catalogo>';
-    }
+            var TextoSelectCatalogo = $('#templateForm_' + CatalogName).val();
 
+            CatalogosXml += '<Catalogo><name>' + CatalogName + '</name><value>' + id + '</value><type>INT</type><TextoSelect>' + TextoSelectCatalogo + '</TextoSelect></Catalogo>';
+        }
+    });
+       
     /* Valores de Cada Campos de Texto */
 
     var XMLResponse = "<MetaDatas version='1.0' encoding='UTF-8'>";
@@ -1057,7 +1217,7 @@ function UploadMetadatas(content, IdRepositorio, xml, Catalogos)
 
     if (data === 0 || data === undefined || data === '0')
         return 0;
-
+   
     $.ajax({
         async: false,
         cache: false,

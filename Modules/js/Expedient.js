@@ -423,7 +423,7 @@ var ExpedientClass = function () {
     var _getBuildObjectDataTemplate = function(activeNode){
         var xml = "<template version='1.0' encoding='UTF-8' templateName = '"+templateName+"' enterpriseKey = '" + enterpriseKey + "' repositoryName = '" + repositoryName + "'>";
         
-        $(templateAssociated).find('field').each(function(){
+        $(templateAssociated).find('field').each(function(){           
             var fieldName = $(this).find('system').find('fieldName').text();
             var columnName = $(this).find('system').find('columnName').text();
             var fieldNameUser = $(this).find('userField').find('fieldName').text();
@@ -432,6 +432,7 @@ var ExpedientClass = function () {
             var tableName = $(idForm).attr('tName');
             var fieldType = $(idForm).attr('fieldtype');
             var fieldlength = $(idForm).attr('fieldlength');
+            var isCatalog = $(idForm).attr('iscatalog');
             console.log("fieldName: "+ fieldNameUser + " columnName: " + columnName + " fieldValue: " + fieldValue + "idForm: " + idForm);
             if($(idForm).length > 0 ){
                 xml+= "<field>";
@@ -440,7 +441,8 @@ var ExpedientClass = function () {
                             <fieldName> " + fieldNameUser + "</fieldName>\n\
                             <tableName> " + tableName + "</tableName>\n\
                             <fieldType>" + fieldType + "</fieldType>\n\
-                            <fieldLength>" + fieldlength + "</fieldLength>";
+                            <fieldLength>" + fieldlength + "</fieldLength>\n\
+                            <isCatalog>" + isCatalog + "</isCatalog>";
                 xml += "</field>";
             }
             else
@@ -969,6 +971,7 @@ var ExpedientClass = function () {
             var objectDataTemplate = _getBuildObjectDataTemplate(activeNode);
             console.log("objectDataTemplate");
             console.log(objectDataTemplate);
+
             var data = {
                 option: "addTemplate",
                 idEnterprise: idEnterprise,

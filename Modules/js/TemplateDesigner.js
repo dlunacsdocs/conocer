@@ -18,6 +18,7 @@
 
 var TemplateDesigner = function () {
     var self = this;
+    var idRepository = 0;
     var repositoryName = null;
     var enterpriseKey = null;
     var templateName = null;  
@@ -156,10 +157,10 @@ var TemplateDesigner = function () {
                     var tr = templatesTd.$('tr.selected');
                     var position = templatesTd.fnGetPosition($(tr)[0]);
                     var enterprisekey = templatesTd.fnGetData(position)[0];
-                    var idRepository = $(tr).attr('id');
+                    var idrepository = $(tr).attr('id');
                     var repositoryname = templatesTd.fnGetData(position)[1];
                     var templatename = templatesTd.fnGetData(position)[2];
-                    self.openTemplate(1,enterprisekey, idRepository, repositoryname, templatename);
+                    self.openTemplate(1,enterprisekey, idrepository, repositoryname, templatename);
                 });
     };
     
@@ -213,7 +214,8 @@ var TemplateDesigner = function () {
         return templates;
     };
     
-    this.openTemplate = function(updateMode,enterprisekey, idRepository, repositoryname, templatename){
+    this.openTemplate = function(updateMode,enterprisekey, idrepository, repositoryname, templatename){
+        idRepository = idrepository;
         enterpriseKey = enterprisekey;
         repositoryName = repositoryname;
         templateName = templatename;
@@ -297,7 +299,7 @@ var TemplateDesigner = function () {
      */
     this.buildContentOfTemplate = function(templateXml, updateMode, openFromContent){
         console.log("buildContentOfTemplate");
-//        console.log(templateXml);
+        console.log(templateXml);
         
         if(typeof templateXml !== 'object')
             return 0;
@@ -343,7 +345,6 @@ var TemplateDesigner = function () {
         var formWrapper = $('<div>', {class: "row"}).append(formsDiv);
         content.append(formWrapper);
 
-        
         if(openFromContent !== 1)
             _insertBottomPanel(content);
                 
@@ -353,10 +354,9 @@ var TemplateDesigner = function () {
             dependenceDataDiv.append(textareaDependenceData);
             textareaDependenceData.append(dependeceData);
         }
-            
-        
         
         $(templateXml).find('field').each(function(){
+            console.log($(this));
             var wrapperConfigurationTxt = $(this).find('wrapperConfiguration').text();
             var labelConfigurationTxt = $(this).find('labelConfiguration').text();
             var inputConfigrationTxt = $(this).find('inputConfiguration').text();
@@ -367,6 +367,9 @@ var TemplateDesigner = function () {
             var fieldLength = $(this).find('fieldLength').text();
             var widthSize = $(this).find('widthSize').text();
             var formWidth = $(this).find('formWidth').text();
+            var isCatalog = $(this).find('isCatalog').text();
+            var catalogOption = $(this).find('catalogOption').text();
+            console.log("idCatalogOption: " + catalogOption);
             var systemTypeWrapper = null;
             
             if(fieldName === "CSDocs_barcode")
@@ -385,7 +388,10 @@ var TemplateDesigner = function () {
                                     fieldType: fieldType,
                                     fieldLength: fieldLength,
                                     id: "templateForm_" + fieldName,
-                                    colConfiguration: inputConfigrationTxt});
+                                    colConfiguration: inputConfigrationTxt,
+                                    isCatalog: isCatalog,
+                                    catalogOption: catalogOption
+                                });
             
             fieldDiv.append(form);
             wrapperConfiguration.append(labelConfiguration)
@@ -395,8 +401,13 @@ var TemplateDesigner = function () {
             
             formsDiv.append(wrapperConfiguration);
             
-            if(openFromContent === 1)
+            if(openFromContent === 1){
                 setFormatToField(form);
+                if(String(isCatalog) === "true")
+                    $(form).click(function(){
+                        _openCatalogInterface(fieldName, form);
+                    });
+            }
             if(updateMode === 1){
                 _buildPophoverOfForm(form, updateMode);
             }
@@ -412,6 +423,12 @@ var TemplateDesigner = function () {
         if(String($(form).attr('fieldType')).toLowerCase() === 'date')
             $(form).datepicker(GlobalDatePicker);
     };
+    
+    var _openCatalogInterface = function(catalogName, form){
+        var upload = new Upload();
+        upload.openCatalogInterface(catalogName, form);
+    };
+    
     
     var _hidePopoverClickOutside = function(formsDiv){
         $('body').unbind('click').on('click', function (e) {
@@ -915,11 +932,12 @@ var TemplateDesigner = function () {
     /**
      * @description Construye la interfaz príncipal del diseñador de plantillas.
      * @param {type} enterprisekey
-     * @param {type} idRepository
+     * @param {type} idrepository
      * @param {type} repositoryname
      * @returns {Number}
      */
-    var _newTemplateInterface = function (enterprisekey, idRepository, repositoryname) {
+    var _newTemplateInterface = function (enterprisekey, idrepository, repositoryname) {
+        idRepository = idrepository;
         repositoryName = repositoryname;
         enterpriseKey = enterprisekey;
         
@@ -1055,7 +1073,7 @@ var TemplateDesigner = function () {
                                                 <option width = "4">4</option>\n\
                                                 <option width = "5">5</option>\n\
                                                 <option width = "6">6</option>');
-                                                                
+                /* Campos disponibles para agregar dentro de la plantilla */                                                
                 $(forms).find("Campo").each(function (index) {
                     var fieldName = $(this).find("name").text();
                     var fieldType = $(this).find("type").text();
@@ -1069,6 +1087,16 @@ var TemplateDesigner = function () {
                         bottomPanelFieldType.val(fieldType);
                     }
                     
+                    bottomPanelFieldSelect.append(option);
+                });
+                
+                $(catalogs).each(function(){
+                    var idCatalog = $(this).find('IdCatalogo').text();
+                    var fieldName = $(this).find('NombreCatalogo').text();
+                    var fieldType = "TEXT";
+                    var requiredField = "true";
+                    var fieldLength = "";
+                    var option = $('<option>', {"fieldName": fieldName, "fieldType": fieldType, "fieldLength": fieldLength, isCatalog: true, idCatalog: idCatalog}).append(fieldName);
                     bottomPanelFieldSelect.append(option);
                 });
                                 
@@ -1245,7 +1273,8 @@ var TemplateDesigner = function () {
         var width = widthSelect.find('option:selected').attr('width');
         var fieldType = fieldsSelect.find('option:selected').attr('fieldType');
         var fieldLength = fieldsSelect.find('option:selected').attr('fieldLength');
-        var bottomPanelFieldType = $('#bottomPanelFieldType');      
+        var bottomPanelFieldType = $('#bottomPanelFieldType');
+        var isCatalog = fieldsSelect.find('option:selected').attr('iscatalog');
         
         width = parseInt(width) * 2;
 
@@ -1275,7 +1304,8 @@ var TemplateDesigner = function () {
                     formWidth: formWidth,
                     id: "templateForm_"+fieldName,
                     colConfiguration: colStringDivForm,
-                    isSystemType: false
+                    isSystemType: false,
+                    isCatalog: isCatalog
                 });
                 
         var formGroup = $('<div>', {
@@ -1393,6 +1423,7 @@ var TemplateDesigner = function () {
                     var ai = templatesTD.row.add(data).draw();
                     var n = templatesTd.fnSettings().aoData[ ai[0] ].nTr;
                     n.setAttribute('class', "selected");
+                    n.setAttribute('id', idRepository);
                     _setActionToViewTemplateIcon();
                 }
             });
@@ -1486,9 +1517,13 @@ var TemplateDesigner = function () {
             }
             else
                 systemType = false;
-                        
-            console.log(field);
+//            console.log(field);
             var fieldName = $(field).attr('fieldName');
+            var isCatalog = $(field).attr('iscatalog');
+            if(isCatalog !== undefined)
+                isCatalog = "<isCatalog>true</isCatalog>";
+            else
+                isCatalog = "<isCatalog>false</isCatalog>";
 
             if(fieldName !== undefined)
                 xml += '\
@@ -1503,6 +1538,7 @@ var TemplateDesigner = function () {
                     <labelConfiguration>' + labelConfiguration + '</labelConfiguration>\n\
                     <inputConfiguration> ' + inputConfiguration + '</inputConfiguration>\n\
                     <isSystemType>' + systemType + '</isSystemType>\n\
+                    ' + isCatalog + '\n\
                 </field>';            
         });
         

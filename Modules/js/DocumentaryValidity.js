@@ -230,7 +230,8 @@ var DocumentaryValidity = function(){
             var data = "";
             var onblur = "submit";
             
-            if(index === 9){
+            if(index === 14){
+                /* Boton para activar interfaz de fundamento legal */
                 $(tr).addClass('legalFoundationTr');
 //                
 //                type = "select";

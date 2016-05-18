@@ -256,6 +256,7 @@ class Expedient {
         if(!(int)$idExpedient > 0)
             return XML::XMLReponse ("Error", 0, "<p><b>Error</b> al almacenar la plantilla</p>".$idExpedient);
         $templateXmlPath = $xmlPathDestination.$idDirectory."/Plantilla.xml";
+        var_dump($xml);
         $xml->saveXML($templateXmlPath);
 
         $doc  = new DOMDocument('1.0','utf-8');
@@ -286,8 +287,14 @@ class Expedient {
         foreach ($xml->field as $value){
             $columns["$value->columnName"] = $value->columnName;
             $fieldType = $value->fieldType;
-            $fullText.="$value->fieldValue ";
-            $value = DataBase::FieldFormat($value->fieldValue, $fieldType);
+            $fieldValue = $value->fieldValue;
+            $fullText.="$fieldValue ";
+            $isCatalog = $value->isCatalog;
+            
+            if(strcasecmp($isCatalog, "true") == 0)
+                    $fieldValue = $value->catalogOption;
+            
+            $value = DataBase::FieldFormat($fieldValue, $fieldType);
             $values[] = $value;
         }
         

@@ -276,19 +276,12 @@ class Catalog {
         $Log->Write('10', $IdUser, $UserName, " '$CatalogName' que contiene la clave '$IdCatalog' su nuevo valor es '$NewValue'", $DataBaseName);
     }
     
-    private function GetCatalogRecordsInXml($userData)
-    {
-        
+    private function GetCatalogRecordsInXml($userData){
         $DataBaseName = $userData['dataBaseName'];
-        $IdUsuario = $userData['idUser'];
-//        $IdRepositorio=  filter_input(INPUT_POST, "IdRepositorio");
         $repositoryName = filter_input(INPUT_POST, "repositoryName");
-        $NombreCatalogo =  filter_input(INPUT_POST, "CatalogName");
-        $TipoCatalogo =  filter_input(INPUT_POST, "CatalogType");
-        $ListSearch='';
+        $catalogName =  filter_input(INPUT_POST, "CatalogName");
         
-//        if($TipoCatalogo=='ListSearch'){$ListSearch=' LIMIT 25';}
-        $catalogs = $this->getCatalogRecords($DataBaseName, $repositoryName, $NombreCatalogo);
+        $catalogs = $this->getCatalogRecords($DataBaseName, $repositoryName, $catalogName);
         
         if(!is_array($catalogs))
             return XML::XMLReponse ("Error", 0, $catalogs);
