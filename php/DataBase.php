@@ -344,7 +344,7 @@ class DataBase {
         
         if(($resultLegalFoundation = $this->ConsultaQuery($DataBaseName, $legalFoundation)) != 1)
                 return "<p><b>Error</b> al intentar crear Fundamento Legal</p> Detalles:<br> $resultLegalFoundation";
-        
+        //idLegalFoundation INT NOT NULL DEFAULT 0     (Removido)
         $documentaryValidity = "
             CREATE TABLE IF NOT EXISTS CSDocs_DocumentValidity(
             idDocValidity INT NOT NULL AUTO_INCREMENT,
@@ -361,7 +361,6 @@ class DataBase {
             Total INT(4) DEFAULT 0,
             AnosHistorico INT(3) NOT NULL DEFAULT 0,
             SolicitudInformacion INT NOT NULL DEFAULT 0,
-            idLegalFoundation INT NOT NULL DEFAULT 0,
             Eliminacion INT(3) DEFAULT 0,
             Concentracion INT(3) DEFAULT 0,
             Muestreo INT(3) DEFAULT 0,

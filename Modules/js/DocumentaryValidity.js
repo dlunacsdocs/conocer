@@ -93,7 +93,6 @@ var DocumentaryValidity = function(){
                 <th columnName = "Total">TOT</th>                   \n\
                 <th columnName = "AnosHistorico">AH</th>            \n\
                 <th columnName = "SolicitudInformacion">SI</th>     \n\
-                <th columnName = "idLegalFoundation">FL</th>        \n\
                 <th columnName = "Eliminacion">E</th>               \n\
                 <th columnName = "Concentracion">C</th>             \n\
                 <th columnName = "Muestreo">M</th>                  \n\
@@ -129,17 +128,17 @@ var DocumentaryValidity = function(){
                     _setTotal();
                 }
                                 
-                serieTableDT.$('.legalFoundationBtn').click(function(){
-                    _openLegalFoundationInterface($(serieTableDT.$('.legalFoundationBtn')).index($(this)));
-                });
-                
-                serieTableDT.$('td.legalFoundationTr').mouseover(function(){
-                    $(this).find('.btn').css({"display": ""});
-                });
-                
-                serieTableDT.$('td.legalFoundationTr').mouseout(function(){
-                    $(this).find('.btn').css({"display": "none"});
-                });
+//                serieTableDT.$('.legalFoundationBtn').click(function(){
+//                    _openLegalFoundationInterface($(serieTableDT.$('.legalFoundationBtn')).index($(this)));
+//                });
+//                
+//                serieTableDT.$('td.legalFoundationTr').mouseover(function(){
+//                    $(this).find('.btn').css({"display": ""});
+//                });
+//                
+//                serieTableDT.$('td.legalFoundationTr').mouseout(function(){
+//                    $(this).find('.btn').css({"display": "none"});
+//                });
             },
             onclose: function(dialogRef){
                 freeVariables();
@@ -230,18 +229,19 @@ var DocumentaryValidity = function(){
             var data = "";
             var onblur = "submit";
             
-            if(index === 14){
+//            if(index === 14){
                 /* Boton para activar interfaz de fundamento legal */
-                $(tr).addClass('legalFoundationTr');
+//                $(tr).addClass('legalFoundationTr');
 //                
 //                type = "select";
 //                data = {11:11,10:10,9:9, 8:8, 7:7, 6:6, 5:5, 4:4, 3:3, 2:2, 1:1, "":""};
 //                onblur = "submit";
-            }
+//            }
             
             /* No puede cambiarse la clave de la serie 
              * No puede editarse el total de expedientes*/
-            if(index > 1 && index !== 23 && index !== 11 && index !== 14)   
+//            if(index > 1 && index !== 23 && index !== 11 && index !== 14)  
+            if(index > 1 && index !== 22 && index !== 11)   
                 $(this).editable( '../Modules/php/DocumentaryValidity.php', {                  
                     tooltip   : 'Click para editar...',
                     name:"value",
@@ -425,7 +425,7 @@ var DocumentaryValidity = function(){
         var total = $(serie).find('Total').text();
         var anosHistorico = $(serie).find('AnosHistorico').text();
         var solicitudInformacion = $(serie).find('AnosInformacion').text();
-        var foundationKey = $(serie).find('FoundationKey').text();
+//        var foundationKey = $(serie).find('FoundationKey').text();
         var eliminacion = $(serie).find('Eliminacion').text();
         var concentracion = $(serie).find('Concentracion').text();
         var muestreo = $(serie).find('Muestreo').text();
@@ -436,10 +436,10 @@ var DocumentaryValidity = function(){
         var parcialmenteReservada = $(serie).find('ParcialmenteReservada').text();
         var totalExpedientes = $(serie).find('TotalExpedientes').text();
         
-        if(String(foundationKey).length === 0)
-            foundationKey = '<a class = "btn btn-default legalFoundationBtn" style = "display:none"><li class = "fa fa-eye fa-lg"></li></a>';
-        else
-            foundationKey = foundationKey +' <a class = "btn btn-default legalFoundationBtn" style = "display:none"><li class = "fa fa-eye fa-lg"></li></a>';
+//        if(String(foundationKey).length === 0)
+//            foundationKey = '<a class = "btn btn-default legalFoundationBtn" style = "display:none"><li class = "fa fa-eye fa-lg"></li></a>';
+//        else
+//            foundationKey = foundationKey +' <a class = "btn btn-default legalFoundationBtn" style = "display:none"><li class = "fa fa-eye fa-lg"></li></a>';
 
                 
         data = [
@@ -457,7 +457,7 @@ var DocumentaryValidity = function(){
             total,
             anosHistorico, 
             solicitudInformacion, 
-            foundationKey, 
+//            foundationKey, 
             eliminacion,
             concentracion, 
             muestreo, 

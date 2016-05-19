@@ -84,7 +84,7 @@ class Catalog {
             return XML::XMLReponse ("Error", 0, "El xml no se construyó correctamente.<br><br> $errorMessage");
 
         if(($result = $this->InsertCatalogIntoRepository($xml->CrearEstructuraCatalogo, $dataBaseName)) !=1)
-            return XML::XMLReponse ("Error", 0, "No pudo ser creado el repositorio");
+            return XML::XMLReponse ("Error", 0, "<p>No pudo ser creado el catalogo</p> $result");
         else
             XML::XMLReponse ("newCatalogBuilded", 1, "Catálogo construido correctamente");
         

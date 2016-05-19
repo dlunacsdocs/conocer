@@ -412,7 +412,7 @@ var FieldsAssociator = function () {
                         {fieldName: "Archivo_Tramite", columnName: "Archivo_Tramite", fieldTag: "Archivo en Trámite"},
                         {fieldName: "Archivo_Concentracion", columnName: "Archivo_Concentracion", fieldTag: "Archivo Concentración"},
                         {fieldName: "Archivo_Desconcentracion", columnName: "Archivo_Desconcentracion", fieldTag: "Archivo Desconcentracion"},
-                        {fieldName: "Fundamento_Legal", columnName: "Fundamento_Legal", fieldTag: "Fundamento Legal", tableRelation: "LegalFoundation", catalogType:true},
+//                        {fieldName: "Fundamento_Legal", columnName: "Fundamento_Legal", fieldTag: "Fundamento Legal", tableRelation: "LegalFoundation", catalogType:true},
                         {fieldName: "Eliminacion", columnName: "Eliminacion", fieldTag: "Eliminacion"},
                         {fieldName: "Concentracion", columnName: "Concentracion", fieldTag: "Concentración"},
                         {fieldName: "Muestreo", columnName: "Muestreo", fieldTag: "Muestreo"},

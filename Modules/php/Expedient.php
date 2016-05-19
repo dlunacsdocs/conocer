@@ -256,7 +256,7 @@ class Expedient {
         if(!(int)$idExpedient > 0)
             return XML::XMLReponse ("Error", 0, "<p><b>Error</b> al almacenar la plantilla</p>".$idExpedient);
         $templateXmlPath = $xmlPathDestination.$idDirectory."/Plantilla.xml";
-        var_dump($xml);
+     
         $xml->saveXML($templateXmlPath);
 
         $doc  = new DOMDocument('1.0','utf-8');

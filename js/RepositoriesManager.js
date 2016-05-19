@@ -372,7 +372,7 @@ var ClassRepository = function ()
             {"Archivo_Tramite":[{fieldType: "INT", requiredField: false}]},
             {"Archivo_Concentracion":[{fieldType: "INT", requiredField: false}]},
             {"Archivo_Desconcentracion":[{fieldType: "INT", requiredField: false}]},
-            {"Fundamento_Legal":[{fieldType: "TEXT", requiredField: false}]},
+//            {"Fundamento_Legal":[{fieldType: "TEXT", requiredField: false}]},
             {"Eliminacion":[{fieldType: "INT", requiredField: false}]},
             {"Concentracion":[{fieldType: "INT", requiredField: false}]},
             {"Muestreo":[{fieldType: "INT", requiredField: false}]},

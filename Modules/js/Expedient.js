@@ -433,6 +433,11 @@ var ExpedientClass = function () {
             var fieldType = $(idForm).attr('fieldtype');
             var fieldlength = $(idForm).attr('fieldlength');
             var isCatalog = $(idForm).attr('iscatalog');
+            var catalogOption = 0;
+            if(String(isCatalog) === "true")
+                catalogOption = $(idForm).attr('catalogoption');
+//            console.log("catalogOption");
+//            console.log(catalogOption);
             console.log("fieldName: "+ fieldNameUser + " columnName: " + columnName + " fieldValue: " + fieldValue + "idForm: " + idForm);
             if($(idForm).length > 0 ){
                 xml+= "<field>";
@@ -442,7 +447,8 @@ var ExpedientClass = function () {
                             <tableName> " + tableName + "</tableName>\n\
                             <fieldType>" + fieldType + "</fieldType>\n\
                             <fieldLength>" + fieldlength + "</fieldLength>\n\
-                            <isCatalog>" + isCatalog + "</isCatalog>";
+                            <isCatalog>" + isCatalog + "</isCatalog>\n\
+                            <catalogOption>" + catalogOption + "</catalogOption>";
                 xml += "</field>";
             }
             else
