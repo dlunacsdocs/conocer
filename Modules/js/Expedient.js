@@ -28,6 +28,7 @@ var ExpedientClass = function () {
     var templateData = null;
     var templateAssociated = null;
     var frontPageName = null;
+    var expedientNumber = null;
     /**
      * @description Inserta el link del menú expediente.
      * @returns {undefined}
@@ -395,6 +396,8 @@ var ExpedientClass = function () {
                     $(idForm).val(_getSubCatalogType(activeNode, "serie")).attr('tName', tName);
                 else if(String(fieldNameUser).toLowerCase() === 'fecha_apertura')
                     $(idForm).val(_getCurrentDate()).attr('tName', tName);
+                else if(String(fieldNameUser).toLowerCase() === 'numero_expediente')
+                    $(idForm).val(_getExpedientName()).attr('tName', tName);
                 else
                     $(idForm).val(fieldValue).attr('tName', tName);
             }
@@ -420,7 +423,7 @@ var ExpedientClass = function () {
                 }
     };
     
-    var _getBuildObjectDataTemplate = function(activeNode){
+    var _getBuildObjectDataTemplate = function(activeNode, expedientAutoincrement){
         var xml = "<template version='1.0' encoding='UTF-8' templateName = '"+templateName+"' enterpriseKey = '" + enterpriseKey + "' repositoryName = '" + repositoryName + "'>";
         
         $(templateAssociated).find('field').each(function(){           
@@ -440,8 +443,13 @@ var ExpedientClass = function () {
 //            console.log(catalogOption);
             console.log("fieldName: "+ fieldNameUser + " columnName: " + columnName + " fieldValue: " + fieldValue + "idForm: " + idForm);
             if($(idForm).length > 0 ){
+                var fieldValue = $(idForm).val();
+                
+                if(String(fieldNameUser).toLowerCase() === 'numero_expediente')
+                    setExpedientNumber($(idForm), expedientAutoincrement);
+                
                 xml+= "<field>";
-                    xml+= "<fieldValue>" + $(idForm).val() + "</fieldValue>\n\
+                    xml+= "<fieldValue>" + fieldValue + "</fieldValue>\n\
                             <columnName>" + columnName + "</columnName>\n\
                             <fieldName> " + fieldNameUser + "</fieldName>\n\
                             <tableName> " + tableName + "</tableName>\n\
@@ -458,6 +466,11 @@ var ExpedientClass = function () {
         xml += "</template>";
         
         return xml;
+    };
+    
+    var setExpedientNumber = function(form, autoincrement){
+        var expedientNumber = $(form).val() + autoincrement;
+        $(form).val(expedientNumber);
     };
     
     var _getCurrentDate = function(){
@@ -534,6 +547,7 @@ var ExpedientClass = function () {
         }
         return "";
     };
+    
     /**
      * @description Interface que muestra el catálogo de disposición documental para la selección de 
      *  una serie
@@ -973,8 +987,8 @@ var ExpedientClass = function () {
             var activeNode = $('#contentTree').dynatree('getTree').getActiveNode();
             var newDirectory = self.frontPage.addFrontPageDirectory();
             var idDirectory = newDirectory.id;
-            var autoincrement = newDirectory.autoincrement;
-            var objectDataTemplate = _getBuildObjectDataTemplate(activeNode);
+            var expedientAutoincrement = newDirectory.autoincrement;
+            var objectDataTemplate = _getBuildObjectDataTemplate(activeNode, expedientAutoincrement);
             console.log("objectDataTemplate");
             console.log(objectDataTemplate);
 
