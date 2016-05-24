@@ -514,17 +514,21 @@ var ExpedientClass = function () {
                 var parent = node.getParent();
                 if(catalogType === String(typeSearched).toLowerCase()){
                     if(parent !== null){
-                        return parent.data.docDispositionName;
+                        if(String(parent.data.catalogType).toLowerCase() === String(typeSearched).toLowerCase())
+                            parents.push(parent);
+                        else
+                            return node.data.docDispositionName;
                     }
-                    else
+                    else{
                         return node.data.docDispositionName;
+                    }
                 }
                 else
                     if(node.getParent() !== null)
                         parents.push(node.getParent());
             }   
         }
-        return "No existe";
+        return "";
     };
     
     var _getSubCatalogType = function(activeNode, typeSearched){

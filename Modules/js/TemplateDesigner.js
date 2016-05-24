@@ -373,7 +373,7 @@ var TemplateDesigner = function () {
             var systemTypeWrapper = null;
             
             if(fieldName === "CSDocs_barcode")
-                return systemTypeWrapper = _addBarcode(1, formsDiv, 3, '', "");
+                return systemTypeWrapper = _addBarcode(1, formsDiv, 3, '', "", openFromContent);
             
             var wrapperConfiguration = $('<div>', {class: "form-group templateFormWrapper "+wrapperConfigurationTxt, colConfiguration:wrapperConfigurationTxt});
             var labelConfiguration = $('<label>',{for:"templateForm_"+fieldName,
@@ -417,6 +417,10 @@ var TemplateDesigner = function () {
         _hidePopoverClickOutside(formsDiv);
         
         return content;
+    };
+    
+    var _setLogo = function(){
+        
     };
     
     var setFormatToField = function(form){
@@ -1183,7 +1187,7 @@ var TemplateDesigner = function () {
      * @param {boolean} updateMode Modo edición
      * @returns {object} divWrapper 
      */
-    var _addBarcode = function(updateMode, templateContent, widthSelect, fieldsSelect, bottomPanelFormTag){
+    var _addBarcode = function(updateMode, templateContent, widthSelect, fieldsSelect, bottomPanelFormTag, openFromContent){
         console.log("adding barcode");
         var width = widthSelect;
         if(typeof widthSelect === 'object')
@@ -1216,11 +1220,17 @@ var TemplateDesigner = function () {
         $(formGroup).css({"cursor": "pointer"});
         
         var label = $('<label>');
-        var divWrapper = $('<div>', {class: "templateField "+divWidth, 
+        var divWrapper = $('<div>', {
+                            class: "templateField "+divWidth, 
                             style: "text-align: center; font-size: 2vw;",
                             widthsize: width,
-                            formwidth: 12});
-        var barcode = $('<i>', {class: "fa fa-barcode fa-5x"});
+                            formwidth: 12,
+                            id: "templateForm_CSDocs_barcode"
+                        });
+                   
+        var barcode = "";
+        if(openFromContent !== 1)
+            barcode = $('<i>', {class: "fa fa-barcode fa-5x"});
         
         divWrapper.append(barcode);
         

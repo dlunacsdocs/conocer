@@ -691,6 +691,9 @@ var Upload = function () {
                 var isCatalog = $.trim($(this).find('isCatalog').text());
                 var catalogOption = 0;
                 
+                if(fieldName === "Numero_Expediente")
+                    setBarcode(fieldValue);
+                
                 if ($(idField).length > 0){
                     $(idField).val(fieldValue);
                     if(String(isCatalog) === "true"){
@@ -702,6 +705,11 @@ var Upload = function () {
                     console.log("No se encontro el formulario " + idField);
             });
         }
+    };
+    
+    var setBarcode = function(expedientNumber){
+        var barcode = $('<img>', {src: 'apis/php-barcode/barcode.php?text=' + expedientNumber + '&print=false&size=35'});
+        $('#templateForm_CSDocs_barcode').append(barcode);
     };
 
     var getParentFrontPage = function (activeNode) {
