@@ -57,6 +57,7 @@ var ArchivalClass = function () {
         _getExpedient();
         _getTemplateDesigner();
         _getFieldsAssociator();
+        _getExpedientTag();
     };
 
     /**
@@ -206,5 +207,22 @@ var ArchivalClass = function () {
 
         return status;
 
+    };
+     
+    var _getExpedientTag = function(){
+        console.log("Construyendo control de etiquetas de expediente.");       
+        var status = false;
+        $.ajaxSetup({async: false});
+        $.getScript("Modules/js/ExpedientTag.js")
+                .done(function (script, textStatus) {
+                    status = true;
+                    expedientTag = new ExpedientTag();
+                })
+                .fail(function (jqxhr, settings, exception) {
+                });
+
+        $.ajaxSetup({async: true});
+
+        return status;
     };
 };

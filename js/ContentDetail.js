@@ -735,7 +735,7 @@ var Upload = function () {
     
     this.openCatalogInterface = function(catalogName, form){
         var repositoryName = $('#CM_select_repositorios option:selected').attr('repositoryname');
-        var content = $('<div>');
+        var content = $('<div>', {style: "max-height: calc(100vh - 200px); overflow-y: auto;"});
         BootstrapDialog.show({
             title: '<i class="fa fa-folder-open fa-lg"></i> Catálogo ' + catalogName,
             size: BootstrapDialog.SIZE_WIDE,

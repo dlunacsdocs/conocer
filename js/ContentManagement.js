@@ -2,7 +2,7 @@
  * @description Script que crea la interfaz principal del content management.
  * @type type
  */
-/* global BotonesWindow, EnvironmentData, dHeight, dWidth, Enterprise, Repository */
+/* global BotonesWindow, EnvironmentData, dHeight, dWidth, Enterprise, Repository, Expedient, expedientTag */
 
 var WindowContentManagement = {width: dWidth, height: dHeight, title: "CSDocs", minWidth: 800, minHeight: 800, closeOnEscape: false};
 
@@ -197,6 +197,9 @@ var ContentMnagement = function () {
             Expedient.buildLink();
         else
             $('.expedientModuleLink').remove();
+ 
+        if(typeof expedientTag === 'object')
+            expedientTag.buildLink();
 
     };
 

@@ -234,16 +234,17 @@ class Expedient {
         $instanceName = $userData['dataBaseName'];
         $idEnterprise = filter_input(INPUT_POST, "idEnterprise");
         $enterpriseKey = filter_input(INPUT_POST, "enterpriseKey");
+        $idRepository = filter_input(INPUT_POST, "idRepository");
         $repositoryName = filter_input(INPUT_POST, "repositoryName");
         $idDirectory = filter_input(INPUT_POST, "idDirectory");
-        $templateName = filter_input(INPUT_POST, "templateName");
+//        $templateName = filter_input(INPUT_POST, "templateName");
         $catalogKey = filter_input(INPUT_POST, "catalogKey");
         $frontPageName = filter_input(INPUT_POST, "frontPageName");
         $RoutFile = dirname(dirname(getcwd()));
         $directoryPath = filter_input(INPUT_POST, "directoryKeyPath");
-        $PathFinal = dirname($directoryPath)."/";
-        $IdParentDirectory = basename($PathFinal);
-        $templateAssociatedPath = "$RoutFile/Configuracion/Templates/$instanceName/$enterpriseKey/$repositoryName/$templateName"."_associated.xml";
+//        $PathFinal = dirname($directoryPath)."/";
+//        $IdParentDirectory = basename($PathFinal);
+//        $templateAssociatedPath = "$RoutFile/Configuracion/Templates/$instanceName/$enterpriseKey/$repositoryName/$templateName"."_associated.xml";
         $objectDataTemplate = filter_input(INPUT_POST, "objectDataTemplate");
         
         $xmlPathDestination = "$RoutFile/Estructuras/$instanceName/$repositoryName$directoryPath/";
@@ -253,8 +254,15 @@ class Expedient {
         
         $insert = $this->buildQueryStringInsert($xml, $repositoryName, $idDirectory, $idEnterprise, $catalogKey, $frontPageName, $xmlPathDestination."Caratula.xml");
         $idExpedient = $this->db->ConsultaInsertReturnId($instanceName, $insert['insert']);
+        
         if(!(int)$idExpedient > 0)
             return XML::XMLReponse ("Error", 0, "<p><b>Error</b> al almacenar la plantilla</p>".$idExpedient);
+        
+        $insertIntoGlobal = $this->insertExpedientIntoGlobal($instanceName, $idExpedient, $idRepository, $enterpriseKey, $repositoryName);
+        
+        if(!(int)$insertIntoGlobal > 0)
+            return XML::XMLReponse ("Error", 0, $insertIntoGlobal);
+        
         $templateXmlPath = $xmlPathDestination.$idDirectory."/Plantilla.xml";
      
         $xml->saveXML($templateXmlPath);
@@ -281,9 +289,10 @@ class Expedient {
     private function buildQueryStringInsert(SimpleXMLElement $xml, $repositoryName, $idDirectory, $idEmpresa, $catalogKey, $frontPageName, $filePath){
         $userName       = $_SESSION['userName'];
         $insert         = "INSERT INTO $repositoryName (";
-        $fullText       = "";
         $fechaIngreso   = date("Y-m-d");
         $filename       = "Carátula $frontPageName";
+        $fullText       = "$fechaIngreso ";
+        
         foreach ($xml->field as $value){
             $columns["$value->columnName"] = $value->columnName;
             $fieldType = $value->fieldType;
@@ -299,13 +308,39 @@ class Expedient {
         }
         
         $insert.= implode(", ",array_keys($columns)) . ", idDirectory, idEmpresa, FechaIngreso, NombreArchivo, UsuarioPublicador, RutaArchivo, Full) VALUES (";
-        $insert.= implode(", ", $values) . ", $idDirectory, $idEmpresa, '$fechaIngreso', '$filename ' , '$userName', '$filePath',  '$fullText')";
+        $insert.= implode(", ", $values) . ", $idDirectory, $idEmpresa, '$fechaIngreso', CONCAT('$filename', (SELECT MAX( IdRepositorio ) + 1 FROM $repositoryName D)) , '$userName', '$filePath',  CONCAT('$filename', (SELECT MAX( IdRepositorio ) + 1 FROM $repositoryName D), ' $fullText'))";
         $result = array("insert" => $insert, "full" => $fullText);
+        
         return $result;
     }
-    
-    public function getAutoincrement($idSerie){
+    /**
+     * Metodo que ingresa el nuevo expediente al repositorio global, devuelve el id global, en caso
+     * contrario devuelve el error.
+     * @param type $instanceName
+     * @param type $idFile
+     * @param type $idRepository
+     * @param type $enterpriseKey
+     * @param type $repositoryName
+     * @return type Int|String 
+     */
+    private function insertExpedientIntoGlobal($instanceName, $idFile,$idRepository, $enterpriseKey, $repositoryName){
+        $insert = "INSERT INTO RepositorioGlobal 
+                (IdFile, IdEmpresa, IdRepositorio, NombreRepositorio, IdDirectory, NombreEmpresa, NombreArchivo, TipoArchivo, 
+                RutaArchivo, UsuarioPublicador, FechaIngreso, Full)  
+                SELECT rep.IdRepositorio, rep.IdEmpresa, repo.IdRepositorio, repo.NombreRepositorio, 
+                rep.IdDirectory, emp.ClaveEmpresa, rep.NombreArchivo, rep.TipoArchivo, 
+                rep.RutaArchivo, rep.UsuarioPublicador, rep.FechaIngreso, rep.Full 
+                FROM $repositoryName rep 
+                LEFT JOIN CSDocs_Empresas emp ON emp.ClaveEmpresa = '$enterpriseKey'
+                LEFT JOIN CSDocs_Repositorios repo ON repo.IdRepositorio = $idRepository
+                WHERE rep.IdRepositorio = $idFile";
         
+        $result = $this->db->ConsultaInsertReturnId($instanceName, $insert);
+        
+        if(!(int)$result > 0)
+            return "<p>Error al registrar en global el expediente.</p> $result <br> $insert";
+        else
+            return $result;
     }
     
     private function getFrontPageData($userData){

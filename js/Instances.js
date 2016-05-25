@@ -22,3 +22,4 @@ var administrativeUnit;
 var Expedient;
 var TemplateDesigner;
 var fieldsAssociator;
+var expedientTag;
