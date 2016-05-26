@@ -443,10 +443,10 @@ var ExpedientClass = function () {
 //            console.log(catalogOption);
             console.log("fieldName: "+ fieldNameUser + " columnName: " + columnName + " fieldValue: " + fieldValue + "idForm: " + idForm);
             if($(idForm).length > 0 ){
-                var fieldValue = $(idForm).val();
-                
                 if(String(fieldNameUser).toLowerCase() === 'numero_expediente')
                     setExpedientNumber($(idForm), expedientAutoincrement);
+                
+                var fieldValue = $(idForm).val();                                
                 
                 xml+= "<field>";
                     xml+= "<fieldValue>" + fieldValue + "</fieldValue>\n\
@@ -1157,6 +1157,22 @@ var ExpedientClass = function () {
                 }
             });
             return frontPageData;
+        },
+        getFrontPageNode: function(activeNode){
+            if(parseInt(activeNode.data.isFrontPage) === 1)
+                return activeNode;
+            
+            var parents = [activeNode];
+            for(var cont = 0; cont < parents.length; cont++){
+                var node = parents[cont];
+                if(parseInt(node.data.isFrontPage) === 1)
+                    return node;
+                var parent = node.getParent();
+                if(parent !== null)
+                    parents.push(parent);
+            }
+            
+            return null;
         }
     };
 };

@@ -923,3 +923,9 @@ span.archivalAdministrativeUnitIcon{
     display: inline-block;
     
 }
+
+@media print {
+  body * {
+    visibility: hidden;
+  }
+}

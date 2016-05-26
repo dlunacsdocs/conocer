@@ -256,7 +256,7 @@ class Expedient {
         $idExpedient = $this->db->ConsultaInsertReturnId($instanceName, $insert['insert']);
         
         if(!(int)$idExpedient > 0)
-            return XML::XMLReponse ("Error", 0, "<p><b>Error</b> al almacenar la plantilla</p>".$idExpedient);
+            return XML::XMLReponse ("Error", 0, "<p><b>Error</b> al almacenar la plantilla</p>".$idExpedient. " <br>".$insert['insert']);
         
         $insertIntoGlobal = $this->insertExpedientIntoGlobal($instanceName, $idExpedient, $idRepository, $enterpriseKey, $repositoryName);
         
@@ -308,7 +308,7 @@ class Expedient {
         }
         
         $insert.= implode(", ",array_keys($columns)) . ", idDirectory, idEmpresa, FechaIngreso, NombreArchivo, UsuarioPublicador, RutaArchivo, Full) VALUES (";
-        $insert.= implode(", ", $values) . ", $idDirectory, $idEmpresa, '$fechaIngreso', CONCAT('$filename', (SELECT MAX( IdRepositorio ) + 1 FROM $repositoryName D)) , '$userName', '$filePath',  CONCAT('$filename', (SELECT MAX( IdRepositorio ) + 1 FROM $repositoryName D), ' $fullText'))";
+        $insert.= implode(", ", $values) . ", $idDirectory, $idEmpresa, '$fechaIngreso', CONCAT('$filename', (SELECT autoincrement  FROM dir_$repositoryName D WHERE D.IdDirectory = $idDirectory)) , '$userName', '$filePath',  CONCAT('$filename', (SELECT autoincrement FROM dir_$repositoryName D WHERE D.IdDirectory = $idDirectory), ' $fullText'))";
         $result = array("insert" => $insert, "full" => $fullText);
         
         return $result;
