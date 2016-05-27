@@ -389,7 +389,7 @@ var FieldsAssociator = function () {
                         {fieldName: "Subserie", columnName: "subserie", fieldTag: "Subserie", isRepository: true},                        
                         {fieldName: "Fecha_Apertura", columnName: "Fecha_Apertura", fieldTag: "Fecha Apertura", isRepository: true, editable: true},
                         {fieldName: "Fecha_Cierre", columnName: "Fecha_Cierre", fieldTag: "Fecha Cierre Expediente", isRepository: true, editable: true},
-                        {fieldName: "Fecha_Reserva", columnName: "Fecha_Reserva", fieldTag: "Fecha de Reserva", isRepository: true, editable: true},
+                        {fieldName: "Fecha_Reserva", columnName: "Fecha_Reserva", fieldTag: "Fechas de Reserva", isRepository: true, editable: true},
                         {fieldName: "Anos_Reserva", columnName: "Anos_Reserva", fieldTag: "Años de Reserva", isRepository: true, editable: true},
                         {fieldName: "Funcionario_Reserva", columnName: "Funcionario_Reserva", fieldTag: "Funcionario que Reserva", isRepository: true, editable: true},
                         {fieldName: "Asunto", columnName: "Asunto", fieldTag: "Asunto", isRepository: true, editable: true},

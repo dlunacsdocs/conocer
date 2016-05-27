@@ -54,7 +54,7 @@ var ExpedientTag = function(){
     };        
     
     var openUserInterface = function(activeNode){
-        var content = $('<div>', {class: "row"});
+        var content = $('<div>', {class: "row", style: "max-height: calc(100vh - 200px); overflow-y: auto;"});
         BootstrapDialog.show({
             title: '<i class="fa fa-tag fa-lg"></i> Generando etiqueta',
             size: BootstrapDialog.SIZE_WIDE,
@@ -65,14 +65,15 @@ var ExpedientTag = function(){
             closeByKeyboard: true,
             buttons: [
                 {
-                    icon: 'fa fa-plus-circle fa-lg',
-                    label: 'Agregar',
+                    icon: 'fa fa-print fa-lg',
+                    label: 'Imprimir',
                     cssClass: "btn-primary",
                     hotkey: 13,
                     action: function (dialogRef) {
                         var button = this;
                         dialogRef.enableButtons(false);
                         dialogRef.setClosable(false);
+                        $(content).printArea();
                         /*if ()
                             dialogRef.close();
                         else {
@@ -129,9 +130,9 @@ var ExpedientTag = function(){
                         var fieldName = String(obj.field.fieldName);
                             
                         if(String(tagType) === "text")
-                            bodyForm.append("<p>"+fieldTag+"</p>");
+                            bodyForm.append("<div col-md-12><p>" + fieldTag + "</p></div>");
                         else{
-                            var form = getInlineForm(fieldName, fieldTag);                            
+                            var form = getInlineForm(obj.field);                            
                             bodyForm.append(form.formGroup); 
                             if(fieldName === 'Total_Legajos'){
 //                                $(form).removeClass().addClass('form-group col-md-6');
@@ -149,7 +150,7 @@ var ExpedientTag = function(){
     };
     
     var getCompanyLogo = function(){
-        var content = $('<div>').append('<img src = "../../img/Logos/Conocer.png" width = "100%" height = "50px">');
+        var content = $('<div class = "col-md-12">').append('<img src = "../../img/Logos/Conocer.png" width = "100%" height = "50px">');
         
         return content;
     };
@@ -160,33 +161,35 @@ var ExpedientTag = function(){
     
     var getExpedientTagFields = function(){
         return [
-            {field:{fieldName: "Seccion", label: "Seccion"}},
-            {field: {fieldName: "Serie", label:"Serie"}},
-            {field: {fieldName: "Numero_Expediente", label:"NUMERO DE EXPEDIENTE"}},
-            {field: {fieldName: "Fecha_Apertura", label: "FECHA DE APERTURA"}},
-            {field: {fieldName: "Fecha_Cierre", label: "FECHA DE CIERRE"}},
-            {field: {fieldName: "Descripcion", label: "DESCRIPCION"}},
-            {field: {fieldName: "Total_Legajos", label: "LEGAJOS"}},
-            {field: {fieldName: "Archivo_Tramite", label: "ARCHIVO TRAMITE"}},
-            {field: {fieldName: "Archivo_Concentracion", label: "ARCHIVO CONCENTRACION"}},
-            {field: {fieldName: "Fundamento_Legal", label: "FUNDAMENTO LEGAL"}},
-            {field: {fieldName: "Fechas_Reserva", label: "FECHAS DE RESERVA"}},
-            {field: {fieldName: "Funcionario_Reserva", label: "FUNCIONARIO DE RESERVA"}},
-            {field: {label: "NOMBRE Y FIRMA DEL FUNCIONARIO DE RESERVA", tagType: "text"}}
+            {field:{fieldName: "Seccion", label: "Seccion", columnSize: 12, labelSize: 3, formSize: 9}},
+            {field: {fieldName: "Serie", label:"Serie", columnSize: 12, labelSize: 3, formSize: 9}},
+            {field: {fieldName: "Numero_Expediente", label:"NUMERO DE EXPEDIENTE", columnSize: 12, labelSize: 4, formSize: 8}},
+            {field: {fieldName: "Fecha_Apertura", label: "FECHA DE APERTURA", columnSize: 12, labelSize: 5, formSize: 7}},
+            {field: {fieldName: "Fecha_Cierre", label: "FECHA DE CIERRE", columnSize: 12, labelSize: 5, formSize: 7}},
+            {field: {fieldName: "Descripcion", label: "DESCRIPCION", columnSize: 12, labelSize: 3, formSize: 9}},
+            {field: {fieldName: "Total_Legajos", label: "LEGAJOS", columnSize: 12, labelSize: 3, formSize: 5}},
+            {field: {fieldName: "Archivo_Tramite", label: "VIGENCIA DOCUMENTAL ARCHIVO TRAMITE", columnSize: 12, labelSize: 10, formSize: 2}},
+            {field: {fieldName: "Archivo_Concentracion", label: "VIGENCIA DOCUMENTAL ARCHIVO CONCENTRACION", columnSize: 12, labelSize: 10, formSize: 2}},
+            {field: {fieldName: "Fundamento_Legal", label: "FUNDAMENTO LEGAL", columnSize: 12, labelSize: 3, formSize: 9}},
+            {field: {fieldName: "Fecha_Reserva", label: "FECHAS DE RESERVA", columnSize: 6, labelSize: 4, formSize: 5}},
+            {field: {fieldName: "Anos_Reserva", label: "AÑOS DE RESERVA", columnSize: 6, labelSize: 6, formSize: 6}},
+            {field: {fieldName: "Funcionario_Reserva", label: "FUNCIONARIO DE RESERVA", columnSize: 12, labelSize: 5, formSize: 7}},
+            {field: {label: "NOMBRE Y FIRMA DEL FUNCIONARIO DE RESERVA", tagType: "text", columnSize: 12}}
         ];
     };
     
-    var getInlineForm = function(fieldName, fieldNameTag){
+    var getInlineForm = function(field){
+        console.log(field);
         var form = $('<input>', {
                     type: "text", 
                     class: "form-control input-sm",
-                    id: "expedientTag_"+fieldName
+                    id: "expedientTag_"+field.fieldName
                 });
-        var formGroup = $('<div>', {class: "form-group col-md-12"})
-                                .append($('<label>', {for: "expedientTag_"+fieldName,
-                                                      class: "control-label col-md-4"
-                                                      }).append(fieldNameTag))
-                                .append($('<div>', {class: "expedientTag col-md-8"
+        var formGroup = $('<div>', {class: "form-group col-md-"+field.columnSize})
+                                .append($('<label>', {for: "expedientTag_"+field.fieldName,
+                                                      class: "control-label col-md-"+field.labelSize
+                                                      }).append(field.label))
+                                .append($('<div>', {class: "expedientTag col-md-"+field.formSize
                                                     }).append(form));
         return {formGroup: formGroup, form: form};
     };
@@ -210,9 +213,12 @@ var ExpedientTag = function(){
     var setTemplateDataToExpedientTag = function(templateData, activeNode){
         $(templateData).find('field').each(function () {
                 var fieldValue = $.trim($(this).find('fieldValue').text());
-                var fieldName = $.trim($(this).find('fieldName').text());
+                var fieldName = String($.trim($(this).find('fieldName').text()));
                 var idField = "#expedientTag_" + fieldName;
                 
+                if(fieldName === 'Fundamento_Legal')
+                    fieldValue = fieldValue.slice(0, 80);
+                    
                 if ($(idField).length > 0)
                     $(idField).val(fieldValue);
                 else
