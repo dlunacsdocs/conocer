@@ -71,8 +71,8 @@ var ExpedientTag = function(){
                     hotkey: 13,
                     action: function (dialogRef) {
                         var button = this;
-                        dialogRef.enableButtons(false);
-                        dialogRef.setClosable(false);
+//                        dialogRef.enableButtons(false);
+//                        dialogRef.setClosable(false);
                         $(content).printArea();
                         /*if ()
                             dialogRef.close();
@@ -111,6 +111,7 @@ var ExpedientTag = function(){
     var generateTagTemplate = function(activeNode){
         var content = $('<div>', {style: "width: 521px; height: 408px; background-color: #ddff2; margin: 0px auto;"});
         var header = $('<div>', {class: "expedientTagHeader"});
+        var subheader = $('<div>', {class: "expedientTagSubHeader"});
         var bodyForm = $('<form>', {class: "form-horizontal"});
         var body = $('<div>');
         var footer = $('<div>');
@@ -119,7 +120,8 @@ var ExpedientTag = function(){
         var companyData = getCompanyData();
         header.append(companyLogo)
                 .append(companyData);
-        
+        setBarcodeWrapper(subheader);
+        setQRWrapper(subheader);
         var fields = getExpedientTagFields();
         
         for (var i = 0; i < fields.length; i++) {
@@ -130,19 +132,20 @@ var ExpedientTag = function(){
                         var fieldName = String(obj.field.fieldName);
                             
                         if(String(tagType) === "text")
-                            bodyForm.append("<div col-md-12><p>" + fieldTag + "</p></div>");
+                            bodyForm.append("<div class = 'col-md-12'><p>" + fieldTag + "</p></div>");
                         else{
                             var form = getInlineForm(obj.field);                            
                             bodyForm.append(form.formGroup); 
                             if(fieldName === 'Total_Legajos'){
 //                                $(form).removeClass().addClass('form-group col-md-6');
                                 setLegajosTotal(form.form, activeNode);
-                            }
+                            }                            
                         }
                     }
                 }
         body.append(bodyForm);
         content.append(header)
+                .append(subheader)
                 .append(body)
                 .append(footer);
         
@@ -157,6 +160,31 @@ var ExpedientTag = function(){
     
     var getCompanyData = function(){
         return "<center><p>CONSEJO NACIONAL DE NORMALIZACIÓN Y CERTIFICACIÓN DE COMPETENCIAS LABORALES ARCHIVO DE TRAMITE</p></center>";
+    };
+    
+    var setBarcodeWrapper = function(subheader){
+        var barcodeWrapper = $('<div>', {id: "barcodeWrapper"});
+        subheader.append(barcodeWrapper);
+        return barcodeWrapper;
+    };
+    
+    var setBarcode = function(expedientNumber){
+        var barcode = $('<img>', {src: 'apis/php-barcode/barcode.php?text=' + expedientNumber + '&print=false&size=35'});
+        $('#barcodeWrapper').append(barcode);
+    };
+    
+    var setQRWrapper = function(subheader){
+        var qrWrapper = $('<div>', {id: "qrWrapper"});
+        qrWrapper.css({"float": "right"});
+        subheader.append(qrWrapper);
+        return qrWrapper;
+    };
+    
+    var setQRCode = function(text){
+        $('#qrWrapper').qrcode({
+            text: text,
+            size: 70
+        });
     };
     
     var getExpedientTagFields = function(){
@@ -218,6 +246,11 @@ var ExpedientTag = function(){
                 
                 if(fieldName === 'Fundamento_Legal')
                     fieldValue = fieldValue.slice(0, 80);
+                
+                if(fieldName === 'Numero_Expediente'){
+                    setBarcode(fieldValue);
+                    setQRCode(fieldValue);
+                }
                     
                 if ($(idField).length > 0)
                     $(idField).val(fieldValue);
@@ -257,7 +290,9 @@ var ExpedientTag = function(){
     };
     
     var getFrontPageNode = function(activeNode){
-        return expedient.frontPage.getFrontPageNode(activeNode);
+        console.log(expedient);
+        var frontPageNode = expedient.frontPage.getFrontPageNode(activeNode);
+        return frontPageNode;
     };
     
     /**
