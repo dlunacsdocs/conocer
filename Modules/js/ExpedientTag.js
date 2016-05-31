@@ -99,6 +99,7 @@ var ExpedientTag = function(){
                content.append(tagTemplate);
                console.log(frontPageData);
                setTemplateDataToExpedientTag(frontPageData, activeNode);
+               setDimentionsToExpedientTag(content);
             }
         });
     };
@@ -120,8 +121,8 @@ var ExpedientTag = function(){
         var companyData = getCompanyData();
         header.append(companyLogo)
                 .append(companyData);
-        setBarcodeWrapper(subheader);
-        setQRWrapper(subheader);
+//        setBarcodeWrapper(bodyForm);
+        setQRWrapper(bodyForm);
         var fields = getExpedientTagFields();
         
         for (var i = 0; i < fields.length; i++) {
@@ -135,11 +136,12 @@ var ExpedientTag = function(){
                             bodyForm.append("<div class = 'col-md-12'><p>" + fieldTag + "</p></div>");
                         else{
                             var form = getInlineForm(obj.field);                            
-                            bodyForm.append(form.formGroup); 
                             if(fieldName === 'Total_Legajos'){
+                                        setBarcodeWrapper(bodyForm);
 //                                $(form).removeClass().addClass('form-group col-md-6');
                                 setLegajosTotal(form.form, activeNode);
-                            }                            
+                            }  
+                            bodyForm.append(form.formGroup); 
                         }
                     }
                 }
@@ -153,45 +155,49 @@ var ExpedientTag = function(){
     };
     
     var getCompanyLogo = function(){
-        var content = $('<div class = "col-md-12">').append('<img src = "../../img/Logos/Conocer.png" width = "100%" height = "50px">');
+        var content = $('<div class = "col-md-12">').append('<center><img src = "../../img/Logos/Conocer.png" width = "80%" height = "27px"></center>');
         
         return content;
     };
     
     var getCompanyData = function(){
-        return "<center><p>CONSEJO NACIONAL DE NORMALIZACIÓN Y CERTIFICACIÓN DE COMPETENCIAS LABORALES ARCHIVO DE TRAMITE</p></center>";
+        return "<center><p><b1>CONSEJO NACIONAL DE NORMALIZACIÓN Y CERTIFICACIÓN DE COMPETENCIAS LABORALES ARCHIVO DE TRAMITE</b1></p></center>";
     };
     
-    var setBarcodeWrapper = function(subheader){
+    var setBarcodeWrapper = function(body){
+        var codeDiv = $('<div>', {class: "form-group col-md-12", id: "barcodeDiv"});
+        codeDiv.css({"text-align":"center"});
         var barcodeWrapper = $('<div>', {id: "barcodeWrapper"});
-        subheader.append(barcodeWrapper);
-        return barcodeWrapper;
+        codeDiv.append(barcodeWrapper);
+        $(body).append(codeDiv);
+        return codeDiv;
     };
     
     var setBarcode = function(expedientNumber){
-        var barcode = $('<img>', {src: 'apis/php-barcode/barcode.php?text=' + expedientNumber + '&print=false&size=35'});
+        var barcode = $('<img>', {src: 'apis/php-barcode/barcode.php?text=' + expedientNumber + '&print=false&size=18'});
         $('#barcodeWrapper').append(barcode);
     };
     
     var setQRWrapper = function(subheader){
-        var qrWrapper = $('<div>', {id: "qrWrapper"});
+        var qrWrapper = $('<div>', {id: "qrWrapper", class: "col-md-4"});
         qrWrapper.css({"float": "right"});
         subheader.append(qrWrapper);
         return qrWrapper;
     };
     
-    var setQRCode = function(text){
+    var setQRCode = function(text, activeNode){
         $('#qrWrapper').qrcode({
-            text: text,
-            size: 70
+            text: activeNode.getKeyPath() + "/" + text,
+            size: 70,
+            render: "div"
         });
     };
     
     var getExpedientTagFields = function(){
         return [
-            {field:{fieldName: "Seccion", label: "Seccion", columnSize: 12, labelSize: 3, formSize: 9}},
-            {field: {fieldName: "Serie", label:"Serie", columnSize: 12, labelSize: 3, formSize: 9}},
-            {field: {fieldName: "Numero_Expediente", label:"NUMERO DE EXPEDIENTE", columnSize: 12, labelSize: 4, formSize: 8}},
+            {field:{fieldName: "Seccion", label: "Seccion", columnSize: 8, labelSize: 3, formSize: 9}},
+            {field: {fieldName: "Serie", label:"Serie", columnSize: 8, labelSize: 3, formSize: 9}},
+            {field: {fieldName: "Numero_Expediente", label:"NUMERO DE EXPEDIENTE", columnSize: 8, labelSize: 4, formSize: 8}},
             {field: {fieldName: "Fecha_Apertura", label: "FECHA DE APERTURA", columnSize: 12, labelSize: 5, formSize: 7}},
             {field: {fieldName: "Fecha_Cierre", label: "FECHA DE CIERRE", columnSize: 12, labelSize: 5, formSize: 7}},
             {field: {fieldName: "Descripcion", label: "DESCRIPCION", columnSize: 12, labelSize: 3, formSize: 9}},
@@ -202,7 +208,7 @@ var ExpedientTag = function(){
             {field: {fieldName: "Fecha_Reserva", label: "FECHAS DE RESERVA", columnSize: 6, labelSize: 4, formSize: 5}},
             {field: {fieldName: "Anos_Reserva", label: "AÑOS DE RESERVA", columnSize: 6, labelSize: 6, formSize: 6}},
             {field: {fieldName: "Funcionario_Reserva", label: "FUNCIONARIO DE RESERVA", columnSize: 12, labelSize: 5, formSize: 7}},
-            {field: {label: "NOMBRE Y FIRMA DEL FUNCIONARIO DE RESERVA", tagType: "text", columnSize: 12}}
+            {field: {label: "<br>NOMBRE Y FIRMA DEL FUNCIONARIO DE RESERVA", tagType: "text", columnSize: 12}}
         ];
     };
     
@@ -213,7 +219,7 @@ var ExpedientTag = function(){
                     class: "form-control input-sm",
                     id: "expedientTag_"+field.fieldName
                 });
-        var formGroup = $('<div>', {class: "form-group col-md-"+field.columnSize})
+        var formGroup = $('<div>', {class: "form-group col-md-"+field.columnSize, id: field.fieldName + "_divWrapper"})
                                 .append($('<label>', {for: "expedientTag_"+field.fieldName,
                                                       class: "control-label col-md-"+field.labelSize
                                                       }).append(field.label))
@@ -249,7 +255,7 @@ var ExpedientTag = function(){
                 
                 if(fieldName === 'Numero_Expediente'){
                     setBarcode(fieldValue);
-                    setQRCode(fieldValue);
+                    setQRCode(fieldValue, activeNode);
                 }
                     
                 if ($(idField).length > 0)
@@ -326,6 +332,22 @@ var ExpedientTag = function(){
         }
         
         return {number: 0, total: 0};
+    };
+    
+    /**
+     * @description Configura las dimensiones para impresion de etiqueta.
+     * @param {object} content Content (div) del modal que muestra la etiqueta.
+     * @returns {undefined}
+     */
+    var setDimentionsToExpedientTag = function(content){
+        $(content).find('.form-group').css({"margin-bottom": "1px"});
+        $(content).find('.input-sm').css({"height": "19px"});
+        $(content).find('input').each(function(){
+            console.log($(this));
+            $(this).css({"width": "50%", "font-size": "9px"});
+        });
+        
+        content.css({"font-size": "8px"});
     };
     
     var getIdRepository = function(){        
