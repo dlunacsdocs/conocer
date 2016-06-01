@@ -53,6 +53,37 @@ var ExpedientTag = function(){
         openUserInterface(activeNode);       
     };        
     
+//    function Popup(data) 
+//    {
+//        var mywindow = window.open('', 'my div', 'height=400,width=600');
+//        mywindow.document.write('<html><head><title>my div</title>');
+//        /*optional stylesheet*/ //mywindow.document.write('<link rel="stylesheet" href="main.css" type="text/css" />');
+//        mywindow.document.write('</head><body >');
+//        mywindow.document.write(data);
+//        mywindow.document.write('</body></html>');
+//
+//        mywindow.document.close(); // necessary for IE >= 10
+//        mywindow.focus(); // necessary for IE >= 10
+//
+//        mywindow.print();
+//        mywindow.close();
+//
+//        return true;
+//    }
+
+    function Popup(id) 
+    {
+        var html = "";
+        $('link').each(function() { // find all <link tags that have
+          if ($(this).attr('rel').indexOf('stylesheet') !=-1) { // rel="stylesheet"
+            html += '<link rel="stylesheet" href="'+$(this).attr("href")+'" />';
+          }
+        });
+        html += '<body onload="window.focus(); window.print()">'+$("#"+id).html()+'</body>';
+        var w = window.open("","print");
+        if (w) { w.document.write(html); w.document.close() }
+    }
+    
     var openUserInterface = function(activeNode){
         var content = $('<div>', {class: "row", style: "max-height: calc(100vh - 200px); overflow-y: auto;"});
         BootstrapDialog.show({
@@ -73,7 +104,21 @@ var ExpedientTag = function(){
                         var button = this;
 //                        dialogRef.enableButtons(false);
 //                        dialogRef.setClosable(false);
-                        $(content).printArea();
+//                        Popup("expedientTagDiv");
+    
+                        $("#expedientTagDiv").printThis({
+                            debug: true,               // show the iframe for debugging
+                            importCSS: true,            // import page CSS
+                            importStyle: true,         // import style tags
+                            printContainer: true,       // grab outer container as well as the contents of the selector
+//                            loadCSS: "path/to/my.css",  // path to additional css file - us an array [] for multiple
+                            pageTitle: "",              // add title to print page
+                            removeInline: false,        // remove all inline styles from print elements
+                            printDelay: 333,            // variable print delay; depending on complexity a higher value may be necessary
+                            header: null,               // prefix to html
+                            formValues: true            // preserve input/form values
+                        });
+//                        $('#expedientTagDiv').printArea();
                         /*if ()
                             dialogRef.close();
                         else {
@@ -110,7 +155,7 @@ var ExpedientTag = function(){
      * @returns {Object}
      */
     var generateTagTemplate = function(activeNode){
-        var content = $('<div>', {style: "width: 521px; height: 408px; background-color: #ddff2; margin: 0px auto;"});
+        var content = $('<div>', {id: "expedientTagDiv",class: "expedientTagDiv", style: "width: 521px; height: 408px; background-color: #ddff2; margin: 0px auto;"});
         var header = $('<div>', {class: "expedientTagHeader"});
         var subheader = $('<div>', {class: "expedientTagSubHeader"});
         var bodyForm = $('<form>', {class: "form-horizontal"});
@@ -133,7 +178,7 @@ var ExpedientTag = function(){
                         var fieldName = String(obj.field.fieldName);
                             
                         if(String(tagType) === "text")
-                            bodyForm.append("<div class = 'col-md-12'><p>" + fieldTag + "</p></div>");
+                            bodyForm.append("<div class = 'col-md-12 col-xs-12'><p>" + fieldTag + "</p></div>");
                         else{
                             var form = getInlineForm(obj.field);                            
                             if(fieldName === 'Total_Legajos'){
@@ -161,7 +206,7 @@ var ExpedientTag = function(){
     };
     
     var getCompanyData = function(){
-        return "<center><p><b1>CONSEJO NACIONAL DE NORMALIZACIÓN Y CERTIFICACIÓN DE COMPETENCIAS LABORALES ARCHIVO DE TRAMITE</b1></p></center>";
+        return "<br><center><p style='width:50%;'><b1>CONSEJO NACIONAL DE NORMALIZACIÓN Y CERTIFICACIÓN DE COMPETENCIAS LABORALES ARCHIVO DE TRAMITE</b1></p></center>";
     };
     
     var setBarcodeWrapper = function(body){
@@ -179,7 +224,7 @@ var ExpedientTag = function(){
     };
     
     var setQRWrapper = function(subheader){
-        var qrWrapper = $('<div>', {id: "qrWrapper", class: "col-md-4"});
+        var qrWrapper = $('<div>', {id: "qrWrapper", class: "col-md-4 col-xs-4"});
         qrWrapper.css({"float": "right"});
         subheader.append(qrWrapper);
         return qrWrapper;
@@ -189,7 +234,7 @@ var ExpedientTag = function(){
         $('#qrWrapper').qrcode({
             text: activeNode.getKeyPath() + "/" + text,
             size: 70,
-            render: "div"
+            render: "image"
         });
     };
     
@@ -202,8 +247,8 @@ var ExpedientTag = function(){
             {field: {fieldName: "Fecha_Cierre", label: "FECHA DE CIERRE", columnSize: 12, labelSize: 5, formSize: 7}},
             {field: {fieldName: "Descripcion", label: "DESCRIPCION", columnSize: 12, labelSize: 3, formSize: 9}},
             {field: {fieldName: "Total_Legajos", label: "LEGAJOS", columnSize: 12, labelSize: 3, formSize: 5}},
-            {field: {fieldName: "Archivo_Tramite", label: "VIGENCIA DOCUMENTAL ARCHIVO TRAMITE", columnSize: 12, labelSize: 10, formSize: 2}},
-            {field: {fieldName: "Archivo_Concentracion", label: "VIGENCIA DOCUMENTAL ARCHIVO CONCENTRACION", columnSize: 12, labelSize: 10, formSize: 2}},
+            {field: {fieldName: "Archivo_Tramite", label: "VIGENCIA DOCUMENTAL ARCHIVO TRAMITE", columnSize: 12, labelSize: 5, formSize: 3}},
+            {field: {fieldName: "Archivo_Concentracion", label: "VIGENCIA DOCUMENTAL ARCHIVO CONCENTRACION", columnSize: 12, labelSize: 6, formSize: 3}},
             {field: {fieldName: "Fundamento_Legal", label: "FUNDAMENTO LEGAL", columnSize: 12, labelSize: 3, formSize: 9}},
             {field: {fieldName: "Fecha_Reserva", label: "FECHAS DE RESERVA", columnSize: 6, labelSize: 4, formSize: 5}},
             {field: {fieldName: "Anos_Reserva", label: "AÑOS DE RESERVA", columnSize: 6, labelSize: 6, formSize: 6}},
@@ -217,13 +262,14 @@ var ExpedientTag = function(){
         var form = $('<input>', {
                     type: "text", 
                     class: "form-control input-sm",
-                    id: "expedientTag_"+field.fieldName
+                    id: "expedientTag_"+field.fieldName,
+                    name: "expedientTag_"+field.fieldName
                 });
-        var formGroup = $('<div>', {class: "form-group col-md-"+field.columnSize, id: field.fieldName + "_divWrapper"})
+        var formGroup = $('<div>', {class: "form-group col-md-"+field.columnSize + " col-xs-"+field.columnSize, id: field.fieldName + "_divWrapper"})
                                 .append($('<label>', {for: "expedientTag_"+field.fieldName,
-                                                      class: "control-label col-md-"+field.labelSize
+                                                      class: "control-label col-md-"+field.labelSize + " col-xs-"+field.labelSize
                                                       }).append(field.label))
-                                .append($('<div>', {class: "expedientTag col-md-"+field.formSize
+                                .append($('<div>', {class: "expedientTag col-md-"+field.formSize + " col-xs-"+field.formSize
                                                     }).append(form));
         return {formGroup: formGroup, form: form};
     };
@@ -341,10 +387,10 @@ var ExpedientTag = function(){
      */
     var setDimentionsToExpedientTag = function(content){
         $(content).find('.form-group').css({"margin-bottom": "1px"});
-        $(content).find('.input-sm').css({"height": "19px"});
+        $(content).find('.input-sm').css({"height": "18px"});
         $(content).find('input').each(function(){
             console.log($(this));
-            $(this).css({"width": "50%", "font-size": "9px"});
+            $(this).css({"width": "45%", "font-size": "9px", "border": "none"});
         });
         
         content.css({"font-size": "8px"});

@@ -14,7 +14,30 @@
     @media (min-width: @screen-lg-min) { ... }
 
 */
-
+@media print {
+  body * {
+    visibility: hidden;
+  }
+  .expedientTagDiv{
+      position: absolute;
+      top: 400px;
+      width: 30%;
+      height: 30%;
+      
+  }
+  
+  .expedientTagDiv .form-group{
+      margin-bottom: 1px;
+  }
+  .expedientTagDiv .input-sm{
+      height: 18px;
+  }
+  .expedientTagDiv .form-control{
+      width:45%;
+      font-size: 9px; 
+      border: none;
+  }
+}
 
 .no-close .ui-dialog-titlebar-close {display: none }
 
@@ -924,8 +947,4 @@ span.archivalAdministrativeUnitIcon{
     
 }
 
-@media print {
-  body * {
-    visibility: hidden;
-  }
-}
+
