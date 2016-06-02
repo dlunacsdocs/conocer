@@ -82,64 +82,72 @@ var TemplateDesigner = function () {
                 }
             ],
             onshown: function (dialogRef) {
-                templatesTd = table.dataTable({
-                    "sDom": 'Tfrtlip',
-                    "bInfo":false, "autoWidth" : false, "oLanguage":LanguajeDataTable,
-                    "tableTools": {
-                        "aButtons": [
-                            {"sExtends": "text", "sButtonText": '<i class="fa fa-trash fa-lg"></i> Eliminar', "fnClick": function () {
-                                    
-                            }},
-                            {
-                                "sExtends":    "collection",
-                                "sButtonText": '<i class="fa fa-floppy-o fa-lg"></i>',
-                                "aButtons":    [ "csv", "xls", "pdf", "copy" ]
-                            }                          
-                        ]
-                    }                              
-                });  
-
-                templatesTD = new $.fn.dataTable.Api('#templatesTable');
                 
-                templatesTd.find('tbody').on( 'click', 'tr', function () {
-                    templatesTd.$('tr.selected').removeClass('selected');
-                    $(this).addClass('selected');
-                });
-                                
-                var templates = self.getTemplates();
-                
-                $(templates).find('template').each(function(){
-                    var idRepository = $(this).find('idRepository').text();
-                    var repositoryName = $(this).find('repositoryName').text();
-                    var enterpriseKey = $(this).find('enterpriseKey').text();
-                    var icon = '';
-                    var data = [];
-                    var cont = 0;
-                    
-                    $(this).find('templateList').each(function(){
-                        $(this).find('templateName').each(function(){
-                            var templateName = $(this).text();
-                            templateName = templateName.replace(/\.[^/.]+$/, "");
-                            cont++;
-                            icon = '<a class = "btn btn-info viewTemplate" title = "visualizar plantilla"><li class = "fa fa-book fa-lg"></li></a>';
-                            
-                            if($.trim(String(templateName)).length === 0)
-                                return true;
-                            
-                            var data = [enterpriseKey, repositoryName, templateName, icon];
-
-                            var ai = templatesTD.row.add(data).draw();
-                            var n = templatesTd.fnSettings().aoData[ ai[0] ].nTr;
-                            n.setAttribute('id', idRepository);                        
-                        });
-                        
-                    });
-                });
-                
+                generateTemplatesTable(table);
                 _setActionToViewTemplateIcon();
             }
         });
         
+    };
+    
+    var generateTemplatesTable = function (table) {
+        templatesTd = table.dataTable({
+            "sDom": 'Tfrtlip',
+            "bInfo": false, "autoWidth": false, "oLanguage": LanguajeDataTable,
+            "tableTools": {
+                "aButtons": [
+                    {"sExtends": "text", "sButtonText": '<i class="fa fa-trash fa-lg"></i> Eliminar', "fnClick": function () {
+
+                        }},
+                    {
+                        "sExtends": "collection",
+                        "sButtonText": '<i class="fa fa-floppy-o fa-lg"></i>',
+                        "aButtons": ["csv", "xls", "pdf", "copy"]
+                    }
+                ]
+            }
+        });
+
+        templatesTD = new $.fn.dataTable.Api('#templatesTable');
+
+        templatesTd.find('tbody').on('click', 'tr', function () {
+            templatesTd.$('tr.selected').removeClass('selected');
+            $(this).addClass('selected');
+        });
+
+        var templates = self.getTemplates();
+
+        setDataToTemplatesTable(templates);
+    };
+    
+    var setDataToTemplatesTable = function(templates){
+        $(templates).find('template').each(function () {
+            var idRepository = $(this).find('idRepository').text();
+            var repositoryName = $(this).find('repositoryName').text();
+            var enterpriseKey = $(this).find('enterpriseKey').text();
+            var icon = '';
+            var data = [];
+            var cont = 0;
+
+            $(this).find('templateList').each(function () {
+                $(this).find('templateName').each(function () {
+                    var templateName = $(this).text();
+                    templateName = templateName.replace(/\.[^/.]+$/, "");
+                    cont++;
+                    icon = '<a class = "btn btn-info viewTemplate" title = "visualizar plantilla"><li class = "fa fa-book fa-lg"></li></a>';
+
+                    if ($.trim(String(templateName)).length === 0)
+                        return true;
+
+                    var data = [enterpriseKey, repositoryName, templateName, icon];
+
+                    var ai = templatesTD.row.add(data).draw();
+                    var n = templatesTd.fnSettings().aoData[ ai[0] ].nTr;
+                    n.setAttribute('id', idRepository);
+                });
+
+            });
+        });
     };
     
     /**

@@ -145,6 +145,8 @@ var ExpedientTag = function(){
                console.log(frontPageData);
                setTemplateDataToExpedientTag(frontPageData, activeNode);
                setDimentionsToExpedientTag(content);
+               resizeTextAreas(tagTemplate);
+
             }
         });
     };
@@ -155,7 +157,7 @@ var ExpedientTag = function(){
      * @returns {Object}
      */
     var generateTagTemplate = function(activeNode){
-        var content = $('<div>', {id: "expedientTagDiv",class: "expedientTagDiv", style: "width: 521px; height: 408px; background-color: #ddff2; margin: 0px auto;"});
+        var content = $('<div>', {id: "expedientTagDiv", class: "expedientTagDiv", style: "width: 521px; height: 408px; background-color: #ddff2; margin: 0px auto;"});
         var header = $('<div>', {class: "expedientTagHeader"});
         var subheader = $('<div>', {class: "expedientTagSubHeader"});
         var bodyForm = $('<form>', {class: "form-horizontal"});
@@ -186,7 +188,7 @@ var ExpedientTag = function(){
 //                                $(form).removeClass().addClass('form-group col-md-6');
                                 setLegajosTotal(form.form, activeNode);
                             }  
-                            bodyForm.append(form.formGroup); 
+                            bodyForm.append(form.formGroup);
                         }
                     }
                 }
@@ -197,6 +199,14 @@ var ExpedientTag = function(){
                 .append(footer);
         
         return content;
+    };
+    
+    var resizeTextAreas = function(content){
+        $(content).find('textarea').each(function(){
+            if(parseInt($(this)[0].scrollHeight) > 24)
+                $(this).height( $(this)[0].scrollHeight );
+//            console.log($(this)[0].scrollHeight);
+        });
     };
     
     var getCompanyLogo = function(){
@@ -210,7 +220,7 @@ var ExpedientTag = function(){
     };
     
     var setBarcodeWrapper = function(body){
-        var codeDiv = $('<div>', {class: "form-group col-md-12", id: "barcodeDiv"});
+        var codeDiv = $('<div>', {class: "form-group col-md-12 col-xs-12", id: "barcodeDiv"});
         codeDiv.css({"text-align":"center"});
         var barcodeWrapper = $('<div>', {id: "barcodeWrapper"});
         codeDiv.append(barcodeWrapper);
@@ -250,21 +260,23 @@ var ExpedientTag = function(){
             {field: {fieldName: "Archivo_Tramite", label: "VIGENCIA DOCUMENTAL ARCHIVO TRAMITE", columnSize: 12, labelSize: 5, formSize: 3}},
             {field: {fieldName: "Archivo_Concentracion", label: "VIGENCIA DOCUMENTAL ARCHIVO CONCENTRACION", columnSize: 12, labelSize: 6, formSize: 3}},
             {field: {fieldName: "Fundamento_Legal", label: "FUNDAMENTO LEGAL", columnSize: 12, labelSize: 3, formSize: 9}},
-            {field: {fieldName: "Fecha_Reserva", label: "FECHAS DE RESERVA", columnSize: 6, labelSize: 4, formSize: 5}},
-            {field: {fieldName: "Anos_Reserva", label: "AÑOS DE RESERVA", columnSize: 6, labelSize: 6, formSize: 6}},
+            {field: {fieldName: "Fecha_Reserva", label: "FECHAS DE RESERVA", columnSize: 6, labelSize: 6, formSize: 6}},
+            {field: {fieldName: "Anos_Reserva", label: "AÑOS DE RESERVA", columnSize: 6, labelSize: 9, formSize: 3}},
             {field: {fieldName: "Funcionario_Reserva", label: "FUNCIONARIO DE RESERVA", columnSize: 12, labelSize: 5, formSize: 7}},
             {field: {label: "<br>NOMBRE Y FIRMA DEL FUNCIONARIO DE RESERVA", tagType: "text", columnSize: 12}}
         ];
     };
-    
+
     var getInlineForm = function(field){
         console.log(field);
-        var form = $('<input>', {
-                    type: "text", 
+        var form = $('<textarea>', {
+//                    type: "text", 
                     class: "form-control input-sm",
                     id: "expedientTag_"+field.fieldName,
                     name: "expedientTag_"+field.fieldName
                 });
+                form.css({"font-size": "6pt", "border": "none"});
+
         var formGroup = $('<div>', {class: "form-group col-md-"+field.columnSize + " col-xs-"+field.columnSize, id: field.fieldName + "_divWrapper"})
                                 .append($('<label>', {for: "expedientTag_"+field.fieldName,
                                                       class: "control-label col-md-"+field.labelSize + " col-xs-"+field.labelSize
@@ -387,13 +399,13 @@ var ExpedientTag = function(){
      */
     var setDimentionsToExpedientTag = function(content){
         $(content).find('.form-group').css({"margin-bottom": "1px"});
-        $(content).find('.input-sm').css({"height": "18px"});
+        $(content).find('.input-sm').css({"height": "24px"});
         $(content).find('input').each(function(){
             console.log($(this));
             $(this).css({"width": "45%", "font-size": "9px", "border": "none"});
         });
         
-        content.css({"font-size": "8px"});
+        content.css({"font-size": "7px"});
     };
     
     var getIdRepository = function(){        
