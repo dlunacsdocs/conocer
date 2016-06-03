@@ -15,6 +15,7 @@ var Document = function(){
     var self = this;
     var expedient = new ExpedientClass();
     this.openDocument = function(Source, IdGlobal, IdFile){
+            console.log("Openning document");
             var activeNode = $('#contentTree').dynatree('getActiveNode');
 
             if (activeNode === null)
@@ -74,7 +75,7 @@ var Document = function(){
                     documentData = self.getDocumentData(DocumentEnvironment);
                     console.log("documentData--::");
                     console.log(documentData);
-                    setDataToDocument(documentData);
+                    setDataToDocument(documentData, activeNode);
                 }
             });            
     };
@@ -127,7 +128,7 @@ var Document = function(){
         return TemplateDesigner.buildContentOfTemplate(templateXml, 0, 1);
     };
     
-    var setDataToDocument = function(xml){
+    var setDataToDocument = function(xml, activeNode){
         $(xml).find("CampoRepositorio").each(function (){
             var $CampoRepositorio = $(this);
             var fieldName = $CampoRepositorio.find('Campo').text();
@@ -136,7 +137,12 @@ var Document = function(){
             var TipoCampo = $CampoRepositorio.find('TipoCampo').text();
             var required = $CampoRepositorio.find('required').text();
             var length = $CampoRepositorio.find("long").text();
-
+            
+            if(fieldName === "Numero_Expediente"){
+                setBarcode(fieldValue);
+                setExpedientBarcode(activeNode, fieldValue);
+            }
+                
             if($('#templateForm_' + fieldName).length > 0)
                 $('#templateForm_' + fieldName).val(fieldValue);            
         });
@@ -159,6 +165,20 @@ var Document = function(){
             
         });
 
+    };
+    
+    var setBarcode = function(expedientNumber){
+        var barcode = $('<img>', {src: 'apis/php-barcode/barcode.php?text=' + expedientNumber + '&print=false&size=35'});
+        $('#templateForm_CSDocs_barcode').append(barcode);
+    };
+    
+    var setExpedientBarcode = function(activeNode, expedientNumber){
+        console.log("Construyendo cdigo QR en plantilla------->>");
+        $('.qrWrapper').qrcode({
+            text: activeNode.getKeyPath() + "/" + expedientNumber,
+            size: 70,
+            render: "image"
+        });
     };
     
 };

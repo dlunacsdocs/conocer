@@ -182,7 +182,13 @@ var TemplateDesigner = function () {
     this.getTemplates = function(enterpriseKey, idRepository, repositoryName){
         return _getFilteredTemplates(enterpriseKey, idRepository, repositoryName);
     };
-    
+    /**
+     * @description Obtiene los templates filtrados por empresa y repositorio.
+     * @param {type} enterpriseKey
+     * @param {type} idRepository
+     * @param {type} repositoryName
+     * @returns {xml|XMLDocument}
+     */
     var _getFilteredTemplates = function(enterpriseKey, idRepository, repositoryName){
         var templates;        
         
@@ -222,6 +228,15 @@ var TemplateDesigner = function () {
         return templates;
     };
     
+    /**
+     * @description Interface que muestra el template seleccionado.
+     * @param {type} updateMode
+     * @param {type} enterprisekey
+     * @param {type} idrepository
+     * @param {type} repositoryname
+     * @param {type} templatename
+     * @returns {unresolved}
+     */
     this.openTemplate = function(updateMode,enterprisekey, idrepository, repositoryname, templatename){
         idRepository = idrepository;
         enterpriseKey = enterprisekey;
@@ -312,56 +327,78 @@ var TemplateDesigner = function () {
         if(typeof templateXml !== 'object')
             return 0;
         
-        var content = $('<div>');
+        var content = $('<div>');       
         
+        setTemplateHeader(updateMode, openFromContent, templateXml, content);                
+                        
+        setTemplateFields(updateMode, openFromContent,templateXml, content);
+        
+        if(openFromContent !== 1)
+            _insertBottomPanel(content);
+        
+        return content;
+    };
+    
+    /**
+     * @description Construye el header de la plantilla.
+     * @param {type} updateMode
+     * @param {type} templateXml
+     * @param {type} content
+     * @returns {undefined}
+     */
+    var setTemplateHeader = function(updateMode, openFromContent, templateXml, content){
         var textareaDependenceData;
         var dependeceData;
         var dependenceDataDiv;
-        
+        var dependenceDataWrapper =$('<div>').css({"margin": "0px auto", "width": "65%", "font-size": "1vw", "text-align": "center"});
+
         $(templateXml).find('header').each(function(){
             var header = $('<div>', {class: "row headerWrapper"});
             
-            dependenceDataDiv = $('<div>', {class: "dependeceData col-xs-6 col-md-6"}).css({"font-size": "2vw"});
-            var logoThumbnailDiv = $('<div>', {class: "logoWrapper col-xs-3 col-md-3"});
-            var qrThumbnailDiv = $('<div>', {class: 'qrWrapper col-xs-3 col-md-3'});
+            dependenceDataDiv = $('<div>', {class: "dependeceData col-xs-12 col-md-12"})
+                                    .append(dependenceDataWrapper);
+            var logoThumbnailDiv = $('<div>', {class: "logoWrapper col-xs-12 col-md-12"});
+            var codesDiv = $('<div>', {class: 'codesDiv col-xs-12 col-md-12'}).css({"padding-right": "15px"});    /* Seccin de Codigo QR */
+            var qrWrapper = $('<div>', {class: "form-group qrWrapper"}).css({"float": "right", "margin-right": "40px"});
             textareaDependenceData = $('<textarea>', {class: "form-control", id: "textareaDependenceData", placeHolder: "Datos de la dependecia"});
             dependeceData = $(this).find('dependeceData').text();
                         
-            var logoPath = $(this).find('logoPath').text();
-            
-            if(!$.trim(logoPath).length > 0 || logoPath === undefined)
-                logoPath = '<a href = "#" class = "thumbnail"><i class="fa fa-picture-o fa-5x icon-border" style = "font-size: 10vw;"></i></a>';
+            var logoPath = '<center><img src = "../../img/Logos/Conocer.png" width = "80%" height = "57px"></center>';
             
             logoThumbnailDiv.attr('pathLogo', logoPath).append(logoPath);
-            
-            var qrPath = $(this).find('qrPath').text();
-            
-            if(!$.trim(qrPath).length > 0 || qrPath === undefined)
-                qrPath = '<a href = "#" class = "thumbnail"><i class="fa fa-qrcode fa-5x icon-border" style = "font-size: 12vw;"></i></a>';
-            
-            qrThumbnailDiv.attr('qrPath', qrPath).append(qrPath);
-            
+                       
+            if(parseInt(openFromContent) !== 1)
+                qrWrapper.append('<a href = "#" class = "thumbnail"><i class="fa fa-qrcode fa-5x icon-border" style = "font-size: 7vw;"></i></a>');            
+
+            codesDiv.append(qrWrapper);
             header.append(logoThumbnailDiv);
             header.append(dependenceDataDiv);
-            header.append(qrThumbnailDiv);
+            header.append(codesDiv);
 
             content.append(header);
             
         });
         
+        if(updateMode === 0)
+            dependenceDataWrapper.append(dependeceData);
+        else{
+            dependenceDataWrapper.append(textareaDependenceData);
+            textareaDependenceData.append(dependeceData);
+        }
+    };
+    
+    /**
+     * @description Ingresa los formularios que conforman la plantilla.
+     * @param {Boolean} updateMode  Indica si la plantilla esta en modo edicion
+     * @param {Boolean} openFromContent Indica si la plantilla se esta construyendo desde el content (Interfaz principal)
+     * @param {object} templateXml  Configuracion de campos del template.
+     * @param {object} content  Cuerpo del template
+     * @returns {undefined}
+     */
+    var setTemplateFields = function(updateMode, openFromContent,templateXml, content){
         var formsDiv = $('<form>', {class: "form-horizontal"});
         var formWrapper = $('<div>', {class: "row"}).append(formsDiv);
         content.append(formWrapper);
-
-        if(openFromContent !== 1)
-            _insertBottomPanel(content);
-                
-        if(updateMode === 0)
-            dependenceDataDiv.append(dependeceData);
-        else{
-            dependenceDataDiv.append(textareaDependenceData);
-            textareaDependenceData.append(dependeceData);
-        }
         
         $(templateXml).find('field').each(function(){
             console.log($(this));
@@ -377,7 +414,7 @@ var TemplateDesigner = function () {
             var formWidth = $(this).find('formWidth').text();
             var isCatalog = $(this).find('isCatalog').text();
             var catalogOption = $(this).find('catalogOption').text();
-            console.log("idCatalogOption: " + catalogOption);
+
             var systemTypeWrapper = null;
             
             if(fieldName === "CSDocs_barcode")
@@ -422,13 +459,7 @@ var TemplateDesigner = function () {
             
         });
         
-        _hidePopoverClickOutside(formsDiv);
-        
-        return content;
-    };
-    
-    var _setLogo = function(){
-        
+        _hidePopoverClickOutside(formsDiv); 
     };
     
     var setFormatToField = function(form){
@@ -1238,7 +1269,7 @@ var TemplateDesigner = function () {
                    
         var barcode = "";
         if(openFromContent !== 1)
-            barcode = $('<i>', {class: "fa fa-barcode fa-5x"});
+            barcode = $('<i>', {class: "fa fa-barcode fa-5x"});            
         
         divWrapper.append(barcode);
         
