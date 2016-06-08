@@ -58,6 +58,7 @@ var ArchivalClass = function () {
         _getTemplateDesigner();
         _getFieldsAssociator();
         _getExpedientTag();
+       _getTopography();
     };
 
     /**
@@ -217,6 +218,26 @@ var ArchivalClass = function () {
                 .done(function (script, textStatus) {
                     status = true;
                     expedientTag = new ExpedientTag();
+                })
+                .fail(function (jqxhr, settings, exception) {
+                });
+
+        $.ajaxSetup({async: true});
+
+        return status;
+    };
+    
+        var _getTopography = function(){
+        console.log("Construyendo control de topografia.");       
+        var status = false;
+        $.ajaxSetup({async: false});
+        $.getScript("Modules/js/Topography.js")
+                .done(function (script, textStatus) {
+                    status = true;
+                    var templateDesigner = $('<li>', {class: "LinkTopography"}).append('<a href="#">Topografia</a>');
+                    $('#archivalMenuNavbar').append(templateDesigner);
+                    topografyClass = new Topography();
+                    topografyClass.setActionToLink();
                 })
                 .fail(function (jqxhr, settings, exception) {
                 });

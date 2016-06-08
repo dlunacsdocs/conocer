@@ -399,6 +399,24 @@ class DataBase {
                 return "<p><b>Error</b> al crear <b>Unidad Administrativa</b></p> Detalles:<br>$administrativeUnitResult";
         
         
+        $topography = "CREATE TABLE IF NOT EXISTS CSDocs_Topography(
+                idTopography INT AUTO_INCREMENT NOT NULL,
+                idParent INT NOT NULL DEFAULT 0,
+                name TEXT NOT NULL,
+                description TEXT,
+                PRIMARY KEY (idTopography))";
+        
+        if(($topographyResult = $this->ConsultaQuery($DataBaseName, $topography)) != 1)
+                return "<p><b>Error</b> al intentar crear la Topografia</p>";
+        
+        $topographyControl = "CREATE TABLE IF NOT EXISTS CSDocs_Topography_Control (
+                idTopography_Control INT AUTO_INCREMENT,
+                idTopography INT,
+                PRIMARY KEY (idTopography_Control))";
+        
+        if(!($topographyControlRes = $this->ConsultaQuery($DataBaseName, $topographyControl)))
+                return "<p><b>Error</b> al al crear el control de topografia</p>";
+        
         return 1;
     }
 

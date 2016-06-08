@@ -344,6 +344,7 @@ var TemplateDesigner = function () {
      * @param {type} updateMode
      * @param {type} templateXml
      * @param {type} content
+     * @param {boolean} openFromContent Indica si la plantilla se esta abriendo desde la interfaz principal
      * @returns {undefined}
      */
     var setTemplateHeader = function(updateMode, openFromContent, templateXml, content){
@@ -355,9 +356,9 @@ var TemplateDesigner = function () {
         $(templateXml).find('header').each(function(){
             var header = $('<div>', {class: "row headerWrapper"});
             
-            dependenceDataDiv = $('<div>', {class: "dependeceData col-xs-12 col-md-12"})
+            dependenceDataDiv = $('<div>', {class: "dependeceData col-xs-12 col-md-12", style: "margin: 10px;"})
                                     .append(dependenceDataWrapper);
-            var logoThumbnailDiv = $('<div>', {class: "logoWrapper col-xs-12 col-md-12"});
+            var logoThumbnailDiv = $('<div>', {class: "logoWrapper col-xs-12 col-md-12"}).css({"margin-top": "10px"});
             var codesDiv = $('<div>', {class: 'codesDiv col-xs-12 col-md-12'}).css({"padding-right": "15px"});    /* Seccin de Codigo QR */
             var qrWrapper = $('<div>', {class: "form-group qrWrapper"}).css({"float": "right", "margin-right": "40px"});
             textareaDependenceData = $('<textarea>', {class: "form-control", id: "textareaDependenceData", placeHolder: "Datos de la dependecia"});
@@ -1224,6 +1225,7 @@ var TemplateDesigner = function () {
      * @param {object} fieldsSelect Formulario con cada uno de los campos
      * @param {object} bottomPanelFormTag Formulario de etiqueta del campo
      * @param {boolean} updateMode Modo edición
+     * @param {boolean} openFromContent Indica si la plantilla se esta abriendo desde la interfaz principal.
      * @returns {object} divWrapper 
      */
     var _addBarcode = function(updateMode, templateContent, widthSelect, fieldsSelect, bottomPanelFormTag, openFromContent){
