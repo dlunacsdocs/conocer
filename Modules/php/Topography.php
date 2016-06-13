@@ -67,9 +67,15 @@ class Topography {
         $nameStructure = filter_input(INPUT_POST, "nameStructure");
         $descriptionStructure = filter_input(INPUT_POST, "descriptionStructure");
         $idParent = filter_input(INPUT_POST, "idParent");
+        $keyStructure = filter_input(INPUT_POST, "keyStructure");
+        $structureType = filter_input(INPUT_POST, "structureType");
+        
         if(strlen($nameStructure) > 0)
             $nameStructure = str_replace (" ", "_", $nameStructure);
-        $insert = "INSERT INTO CSDocs_Topography (idParent, name, description) VALUES ($idParent, '$nameStructure', '$descriptionStructure')";
+        
+        $insert = "INSERT INTO CSDocs_Topography (idParent, name, keyStructure, structureType,  description) 
+                VALUES ($idParent, '$nameStructure', '$keyStructure', '$structureType', '$descriptionStructure')";
+        
         $resultInsert = $this->db->ConsultaInsertReturnId($instanceName, $insert);
         if(!(int)$resultInsert > 0)
             return XML::XMLReponse ("Error", 0, "<p><b>Error</b> al intentar agregar la nueva seccion</p>");
@@ -77,9 +83,11 @@ class Topography {
         $doc  = new DOMDocument('1.0','utf-8');
         $doc->formatOutput = true;
         $root = $doc->createElement("newStructureAdded");
-        $root->appendChild("message", "Nueva seccion agregada.");
-        $root->appendChild("idStructure", $resultInsert);
-        $doc->appendChild($root);
+        $doc->appendChild($root); 
+        $messageXml = $doc->createElement("message", "Nueva seccion agregada.");
+        $root->appendChild($messageXml);
+        $newidStructure = $doc->createElement("idStructure", $resultInsert);
+        $root->appendChild($newidStructure);
         header ("Content-Type:text/xml");
         echo $doc->saveXML();
         
