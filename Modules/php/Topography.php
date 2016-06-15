@@ -49,6 +49,10 @@ class Topography {
                     break;
                 case'getTopographyStructure': $this->getTopographyStructure($userData);
                     break;
+                case "modifyStructure": $this->modifyStructure($userData);
+                    break;
+                case 'deleteStructure': $this->deleteStructure($userData);
+                    break;
             }
         }
     }
@@ -64,21 +68,21 @@ class Topography {
     }
     private function addNewSection($userData){
         $instanceName = $userData['dataBaseName'];
-        $nameStructure = filter_input(INPUT_POST, "nameStructure");
-        $descriptionStructure = filter_input(INPUT_POST, "descriptionStructure");
+        $nameStructure = filter_input(INPUT_POST, "name");
+        $descriptionStructure = filter_input(INPUT_POST, "description");
         $idParent = filter_input(INPUT_POST, "idParent");
-        $keyStructure = filter_input(INPUT_POST, "keyStructure");
+        $keyStructure = filter_input(INPUT_POST, "structureKey");
         $structureType = filter_input(INPUT_POST, "structureType");
         
         if(strlen($nameStructure) > 0)
             $nameStructure = str_replace (" ", "_", $nameStructure);
         
-        $insert = "INSERT INTO CSDocs_Topography (idParent, name, keyStructure, structureType,  description) 
+        $insert = "INSERT INTO CSDocs_Topography (idParent, name, structureKey, structureType,  description) 
                 VALUES ($idParent, '$nameStructure', '$keyStructure', '$structureType', '$descriptionStructure')";
         
         $resultInsert = $this->db->ConsultaInsertReturnId($instanceName, $insert);
         if(!(int)$resultInsert > 0)
-            return XML::XMLReponse ("Error", 0, "<p><b>Error</b> al intentar agregar la nueva seccion</p>");
+            return XML::XMLReponse ("Error", 0, "<p><b>Error</b> al intentar agregar la nueva seccion</p> $resultInsert");
         
         $doc  = new DOMDocument('1.0','utf-8');
         $doc->formatOutput = true;
@@ -91,6 +95,43 @@ class Topography {
         header ("Content-Type:text/xml");
         echo $doc->saveXML();
         
+    }
+    
+    private function modifyStructure($userData){
+        $instanceName = $userData['dataBaseName'];
+        $name = filter_input(INPUT_POST, "name");
+        $description = filter_input(INPUT_POST, "description");
+        $structureKey = filter_input(INPUT_POST, "structureKey");
+        $idStructure = filter_input(INPUT_POST, "idStructure");
+        
+        $update = "UPDATE CSDocs_Topography SET name = '$name', structureKey = '$structureKey', description = '$description' WHERE idTopography = $idStructure";
+        if(($result = $this->db->ConsultaQuery($instanceName, $update))!=1)
+                return XML::XMLReponse ("Error", 0, "No fue posible actualizar la informacion");
+        XML::XMLReponse("structureModified", 1, "Informacion actualizada.");
+    }
+    
+    private function deleteStructure($userData){
+        $instanceName = $userData['dataBaseName'];
+        $xmlString = filter_input(INPUT_POST, "xml");
+        if(!($xml = simplexml_load_string($xmlString))){
+            $errorOutput = "";
+            foreach(libxml_get_errors() as $error) {
+                $errorOutput.=$error->message."<br>";
+            }
+            return XML::XMLReponse ("Error", 0, "<p><b>Error</b> la estructura XML no se ha formado correctamente. No se logró eliminar el elemento. </p><br>Detalles:<br>$errorOutput");
+        }
+        $delete = "DELETE FROM CSDocs_Topography WHERE ";
+        
+        foreach ($xml->node as $node){
+            $delete.= "idTopography = $node OR ";
+        }
+        
+        $deleteString = trim($delete, "OR ");
+        
+        if(($result = $this->db->ConsultaQuery($instanceName, $deleteString)) != 1)
+                return XML::XMLReponse ("Error", 0, "<p><b>Error<b> al intentar eliminar el elemento</p>Detalles:<br>$result");
+        
+        XML::XMLReponse("structureRemoved", 1, "Estructura eliminada con éxito");
     }
 }
 

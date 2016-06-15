@@ -403,7 +403,7 @@ class DataBase {
                 idTopography INT AUTO_INCREMENT NOT NULL,
                 idParent INT NOT NULL DEFAULT 0,
                 name TEXT NOT NULL,
-                keyStructure TEXT NOT NULL,
+                structureKey TEXT NOT NULL,
                 description TEXT,
                 structureType TEXT NOT NULL,
                 PRIMARY KEY (idTopography))";
