@@ -53,6 +53,8 @@ class Topography {
                     break;
                 case 'deleteStructure': $this->deleteStructure($userData);
                     break;
+                case 'setUbicationToLegajo': $this->setUbicationToLegajo($userData);
+                    break;
             }
         }
     }
@@ -73,9 +75,6 @@ class Topography {
         $idParent = filter_input(INPUT_POST, "idParent");
         $keyStructure = filter_input(INPUT_POST, "structureKey");
         $structureType = filter_input(INPUT_POST, "structureType");
-        
-        if(strlen($nameStructure) > 0)
-            $nameStructure = str_replace (" ", "_", $nameStructure);
         
         $insert = "INSERT INTO CSDocs_Topography (idParent, name, structureKey, structureType,  description) 
                 VALUES ($idParent, '$nameStructure', '$keyStructure', '$structureType', '$descriptionStructure')";
@@ -132,6 +131,20 @@ class Topography {
                 return XML::XMLReponse ("Error", 0, "<p><b>Error<b> al intentar eliminar el elemento</p>Detalles:<br>$result");
         
         XML::XMLReponse("structureRemoved", 1, "Estructura eliminada con éxito");
+    }
+    
+    private function setUbicationToLegajo($userData){
+        $instanceName = $userData['dataBaseName'];
+        $idDirectory = filter_input(INPUT_POST, "idDirectory");
+        $repositoryName = filter_input(INPUT_POST, "repositoryName");
+        $idTopography = filter_input(INPUT_POST, "idTopography");
+        $structureType = filter_input(INPUT_POST, "structureType");
+        
+        $setTopography = "UPDATE dir_$repositoryName SET topography = $idTopography WHERE IdDirectory = $idDirectory";
+        if(($result = $this->db->ConsultaQuery($instanceName, $setTopography))!=1)
+                return XML::XMLReponse ("Error", 0, "<p><b>Error</b> al intentar asignar la topografia.");
+        
+        XML::XMLReponse("topographyAdded", 1, "Topografia asignada");
     }
 }
 

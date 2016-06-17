@@ -13,85 +13,162 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-/* global BootstrapDialog */
+/* global BootstrapDialog, DocumentEnvironment */
 
 var Topography = function(){
     this.setActionToLink = function(){
         $('.LinkTopography').click(openInterface);
     };
     
-    var openInterface = function(){
-                
-        var tabbable = $('<div>',{id:"documentaryDispositionNavTab"});
+    /**
+     * @description Se construye opcion dentro del panel principal para topografia.
+     * @returns {undefined}
+     */
+    this.buildContentTopographyLink = function(){
+        $('.expedientModuleLink .dropdown-menu').append('\n\
+                <li class = "contentTopographyLink"><a href="#"><i class="fa fa-plus-circle fa-lg"></i> Topografia </span> </a></li>\n\
+            ');
+
+        $('.contentTopographyLink').on('click',openTopographyFromContent);
+    };
+    
+    /**
+     * @description Consulta de topografia desde el content.
+     * @returns {undefined}
+     */
+    var openTopographyFromContent = function(){
+        var idRepository = $('#CM_select_repositorios option:selected').attr('idrepository');
+        var repositoryName = $('#CM_select_repositorios option:selected').attr('repositoryname');
+        var activeNode = $('#contentTree').dynatree('getActiveNode');
+        if (activeNode === null)
+            return Advertencia("No fue posible obtener el directorio activo");
+        if(parseInt(activeNode.data.isLegajo) !== 1)
+            return Advertencia("Solo puede ubicar Legajos");
+        if(repositoryName === undefined ||idRepository === undefined)
+            return Advertencia("Seleccione un repositorio");
         
-        var navTab = $('<ul>', {class:"nav nav-tabs"});
-        
-        var tramiteLi = $('<li>', {class:"active"}).append('<a href="#fondoTree" data-toggle="tab"> Tramite</a>');
-        var concentracionLi = $('<li>').append('<a href="#sectionTree" data-toggle="tab"> Concentracion</a>');
-        var historicoLi = $('<li>').append('<a href="#serieTree" data-toggle="tab"> Historico</a>');
-        
-        var tramiteDiv = $('<div>',{id:"fondoTree", class:"tab-pane active", style: "max-height: calc(100vh - 200px); overflow: auto;"});
-        var concentracionDiv = $('<div>',{id: "sectionTree", class:"tab-pane", style: "max-height: calc(100vh - 200px); overflow: auto;"});
-        var historicoDiv = $('<div>',{id: "serieTree", class:"tab-pane", style: "max-height: calc(100vh - 100px); overflow: auto;"});
-        
-        var tabContent = $('<div>', {class:"tab-content"});
-        
-        var navTabBar = $('<nav>',{class:"navbar navbar-default"});
-        var container = $('<div>',{ class: "container-fluid"});
-        var navHeader = $('<div>', {class: "navbar-header"});
-        
-        container.append(navHeader);
-        container.append('<div class = "btn-group-sm" role="group">\n\
-                            <button optionTitle = "Tramite" optionName = "tramite" class = "topographyButtonAdd btn btn-primary navbar-btn"><li class = "fa fa-plus fa-lg"></li></button>\n\
-                            <button optionTitle = "Tramite" optionName = "tramite" class = "topographyButtonEdit btn btn-warning navbar-btn"><span class = "glyphicon glyphicon-edit"></span></button>\n\
-                            <button optionTitle = "Tramite" optionName = "tramite" class = "topographyButtonRemove btn btn-danger navbar-btn"><span class = "glyphicon glyphicon-remove"></span></button>\n\
-                        </div>');        
-        navTabBar.append(container);
-        tramiteDiv.append(navTabBar);
-        
-        navTabBar = $('<nav>',{class:"navbar navbar-default"});
-        container = $('<div>',{ class: "container-fluid"});
-        navHeader = $('<div>', {class: "navbar-header"});
-        container.append(navHeader);
-        container.append('<div class = "btn-group-sm" role="group">\n\
-                            <button optionTitle = "Concentracion" optionName = "concentracion" class = "topographyButtonAdd btn btn-primary navbar-btn"><li class = "fa fa-plus fa-lg"></li></button>\n\
-                            <button optionTitle = "Concentracion" optionName = "concentracion" class = "topographyButtonEdit btn btn-warning navbar-btn"><span class = "glyphicon glyphicon-edit"></span></button>\n\
-                            <button optionTitle = "Tramite" optionName = "tramite" class = "topographyButtonRemove btn btn-danger navbar-btn"><span class = "glyphicon glyphicon-remove"></span></button>\n\
-                        </div>');              
-        navTabBar.append(container);
-        concentracionDiv.append(navTabBar);
-        
-        navTabBar = $('<nav>',{class:"navbar navbar-default"});
-        container = $('<div>',{ class: "container-fluid"});
-        navHeader = $('<div>', {class: "navbar-header"});
-        container.append(navHeader);
-        container.append('<div class = "btn-group-sm" role="group">\n\
-                            <button optionTitle = "Historico" optionName = "historico" class = "topographyButtonAdd btn btn-primary navbar-btn"><li class = "fa fa-plus fa-lg"></li></button>\n\
-                            <button optionTitle = "Historico" optionName = "historico" class = "topographyButtonEdit btn btn-warning navbar-btn"><span class = "glyphicon glyphicon-edit"></span></button>\n\
-                            <button optionTitle = "Tramite" optionName = "tramite" class = "topographyButtonRemove btn btn-danger navbar-btn"><span class = "glyphicon glyphicon-remove"></span></button>\n\
-                        </div>');        
-        navTabBar.append(container);
-        historicoDiv.append(navTabBar);
-        
-        tabContent.append(tramiteDiv);
-        tabContent.append(concentracionDiv);
-        tabContent.append(historicoDiv);
-        
-        navTab.append(tramiteLi);
-        navTab.append(concentracionLi);
-        navTab.append(historicoLi);
-        
-        tabbable.append(navTab);
-        tabbable.append(tabContent);
-        
-        var content = $('<div>');
         var tramiteTree = $('<div>', {id: "tramiteTree"});
         var concentracionTree = $('<div>', {id: "concentracionTree"});
         var historicoTree = $('<div>', {id: "historicoTree"});
-        tramiteDiv.append(tramiteTree);
-        concentracionDiv.append(concentracionTree);
-        content.append(tabbable);
-        historicoDiv.append(historicoTree);
+        var content = getTopographyObject(1, tramiteTree, concentracionTree, historicoTree);
+        BootstrapDialog.show({
+            title: 'Asignar Topografia',
+            message: content,
+            closable: true,
+            closeByBackdrop: false,
+            closeByKeyboard: true,
+            size: BootstrapDialog.SIZE_NORMAL,
+            type: BootstrapDialog.TYPE_PRIMARY,
+            buttons: [
+                {
+                    label: 'Cerrar',
+                    action: function (dialogRef) {
+                        dialogRef.close();
+                    }
+                },
+                {
+                    label: "Asignar",
+                    cssClass: "btn-primary",
+                    icon: "fa fa-archive fa-lg",
+                    action: function(dialogRef){
+                        var button = this;
+                        button.spin();
+                        dialogRef.enableButtons(false);
+                        dialogRef.setClosable(false);
+                        if(setUbicationToLegajo(activeNode,repositoryName))
+                            return dialogRef.close();
+                        button.stopSpin();
+                        dialogRef.enableButtons(true);
+                        dialogRef.setClosable(true);
+                    }
+                }
+            ],
+            onshown: function (dialogRef) {
+                buildStructure(tramiteTree, "Tramite", "Tramite");
+                buildStructure(concentracionTree, "Concentracion", "Concentracion", "Concentracion");
+                buildStructure(historicoTree, "Historico", "Historico");
+                var topographyStructure = getTopographyStructure();
+                addSectionsChildren(topographyStructure);
+            }
+        });
+    };
+    
+    /**
+     * @description Ubica un legajo en la topografia seleccionada.
+     * @param {type} activeNode
+     * @param {type} repositoryName
+     * @returns {Number}
+     */
+    var setUbicationToLegajo = function(activeNode, repositoryName){
+        var status = 0;
+        var optionName = getActiveTopographyName();
+        var topographyNode = null;
+        if($('#'+optionName+'Tree').length > 0)
+            topographyNode = $('#'+optionName+'Tree').dynatree('getTree').getActiveNode();
+        if(topographyNode === null)
+            return Advertencia("No fue posible obtener el nodo seleccionado de loa topografia.");
+        if(!parseInt(topographyNode.data.key) > 0)
+            return Advertencia("Debe seleccionar un destino para la topografia.");
+
+        $.ajax({
+            async: false,
+            cache: false,
+            dataType: "html",
+            type: 'POST',
+            url: "Modules/php/Topography.php",
+            data: {option: "setUbicationToLegajo",
+                    idDirectory: activeNode.data.key,
+                    repositoryName: repositoryName,
+                    structureType: topographyNode.data.structureType,
+                    idTopography: topographyNode.data.key
+            },
+            success: function (xml) {
+                if ($.parseXML(xml) === null)
+                    return errorMessage(xml);
+                else
+                    xml = $.parseXML(xml);
+
+                ($(xml).find('topographyAdded').each(function(){
+                    var message = $(this).find('Mensaje').text();
+                    Notificacion(message);
+                    status = 1;
+                }));
+                    
+                $(xml).find('Error').each(function ()
+                {
+                    var Mensaje = $(this).find('Mensaje').text();
+                    errorMessage(Mensaje);
+                });
+            },
+            beforeSend: function () {
+            },
+            error: function (objXMLHttpRequest) {
+                errorMessage(objXMLHttpRequest);
+            }
+        });
+        return status;
+    };
+    
+    /**
+     * @description Obtiene el nodo activo en el tab activo en la interfaz de la topografia.
+     * @returns {undefined}
+     */
+    var getActiveTopographyName = function(){
+        var activeTab = $('#topographyNavTab ul.nav-tabs li.active').attr('optionname');
+        return activeTab;
+    };
+    
+    /**
+     * @param {Boolean} openFromContent Si esta activa la bandera esta indica que se abre la interfaz desde
+     * el content.
+     * @description Se abre interfaz principal.
+     * @returns {undefined}
+     */
+    var openInterface = function(openFromContent){        
+        var tramiteTree = $('<div>', {id: "tramiteTree"});
+        var concentracionTree = $('<div>', {id: "concentracionTree"});
+        var historicoTree = $('<div>', {id: "historicoTree"});
+        var content = getTopographyObject(openFromContent, tramiteTree, concentracionTree, historicoTree);
         BootstrapDialog.show({
             title: 'Topografia',
             message: content,
@@ -130,6 +207,96 @@ var Topography = function(){
                });
             }
         });
+    };
+    
+    /**
+     * @description Devuelve un objeto con los elementos base para la construccion de la topografia.
+     * @param {type} openFromContent
+     * @param {type} tramiteTree
+     * @param {type} concentracionTree
+     * @param {type} historicoTree
+     * @returns {Topography.getTopographyObject.content|$}
+     */
+    var getTopographyObject = function(openFromContent, tramiteTree, concentracionTree, historicoTree){
+        var content = $('<div>');
+        var tabbable = $('<div>',{id:"topographyNavTab"});
+        
+        var navTab = $('<ul>', {class:"nav nav-tabs"});
+        
+        var tramiteLi = $('<li>', {optionName: "tramite", class:"active"}).append('<a href="#fondoTree" data-toggle="tab"> Tramite</a>');
+        var concentracionLi = $('<li>', {optionName: "concentracion"}).append('<a href="#sectionTree" data-toggle="tab"> Concentracion</a>');
+        var historicoLi = $('<li>',{optionName: "historico"}).append('<a href="#serieTree" data-toggle="tab"> Historico</a>');
+        
+        var tramiteDiv = $('<div>',{optionName: "tramite", class:"tab-pane active", style: "max-height: calc(100vh - 200px); overflow: auto;"});
+        var concentracionDiv = $('<div>',{optionName: "concentracion", class:"tab-pane", style: "max-height: calc(100vh - 200px); overflow: auto;"});
+        var historicoDiv = $('<div>',{optionName: "historico", class:"tab-pane", style: "max-height: calc(100vh - 100px); overflow: auto;"});
+        
+        var tabContent = $('<div>', {class:"tab-content"});
+        
+        if(openFromContent !== 1)
+            setTopographyOptionsPanel(tramiteDiv, concentracionDiv, historicoDiv);
+        
+        tabContent.append(tramiteDiv);
+        tabContent.append(concentracionDiv);
+        tabContent.append(historicoDiv);
+        
+        navTab.append(tramiteLi);
+        navTab.append(concentracionLi);
+        navTab.append(historicoLi);
+        
+        tabbable.append(navTab);
+        tabbable.append(tabContent);
+        
+        tramiteDiv.append(tramiteTree);
+        concentracionDiv.append(concentracionTree);
+        content.append(tabbable);
+        historicoDiv.append(historicoTree);
+        return content;
+    };
+    /**
+     * @description Inserta el panel de opciones de la topografia.
+     * @param {type} tramiteDiv
+     * @param {type} concentracionDiv
+     * @param {type} historicoDiv
+     * @returns {undefined}
+     */
+    var setTopographyOptionsPanel = function(tramiteDiv, concentracionDiv, historicoDiv){
+        var navTabBar = $('<nav>',{class:"navbar navbar-default"});
+        var container = $('<div>',{ class: "container-fluid"});
+        var navHeader = $('<div>', {class: "navbar-header"});
+        
+        container.append(navHeader);
+        container.append('<div class = "btn-group-sm" role="group">\n\
+                            <button optionTitle = "Tramite" optionName = "tramite" class = "topographyButtonAdd btn btn-primary navbar-btn"><li class = "fa fa-plus fa-lg"></li></button>\n\
+                            <button optionTitle = "Tramite" optionName = "tramite" class = "topographyButtonEdit btn btn-warning navbar-btn"><span class = "glyphicon glyphicon-edit"></span></button>\n\
+                            <button optionTitle = "Tramite" optionName = "tramite" class = "topographyButtonRemove btn btn-danger navbar-btn"><span class = "glyphicon glyphicon-remove"></span></button>\n\
+                        </div>');        
+        navTabBar.append(container);
+        tramiteDiv.append(navTabBar);
+        
+        navTabBar = $('<nav>',{class:"navbar navbar-default"});
+        container = $('<div>',{ class: "container-fluid"});
+        navHeader = $('<div>', {class: "navbar-header"});
+        container.append(navHeader);
+        container.append('<div class = "btn-group-sm" role="group">\n\
+                            <button optionTitle = "Concentracion" optionName = "concentracion" class = "topographyButtonAdd btn btn-primary navbar-btn"><li class = "fa fa-plus fa-lg"></li></button>\n\
+                            <button optionTitle = "Concentracion" optionName = "concentracion" class = "topographyButtonEdit btn btn-warning navbar-btn"><span class = "glyphicon glyphicon-edit"></span></button>\n\
+                            <button optionTitle = "Tramite" optionName = "tramite" class = "topographyButtonRemove btn btn-danger navbar-btn"><span class = "glyphicon glyphicon-remove"></span></button>\n\
+                        </div>');              
+        navTabBar.append(container);
+        concentracionDiv.append(navTabBar);
+        
+        navTabBar = $('<nav>',{class:"navbar navbar-default"});
+        container = $('<div>',{ class: "container-fluid"});
+        navHeader = $('<div>', {class: "navbar-header"});
+        container.append(navHeader);
+        container.append('<div class = "btn-group-sm" role="group">\n\
+                            <button optionTitle = "Historico" optionName = "historico" class = "topographyButtonAdd btn btn-primary navbar-btn"><li class = "fa fa-plus fa-lg"></li></button>\n\
+                            <button optionTitle = "Historico" optionName = "historico" class = "topographyButtonEdit btn btn-warning navbar-btn"><span class = "glyphicon glyphicon-edit"></span></button>\n\
+                            <button optionTitle = "Tramite" optionName = "tramite" class = "topographyButtonRemove btn btn-danger navbar-btn"><span class = "glyphicon glyphicon-remove"></span></button>\n\
+                        </div>');        
+        navTabBar.append(container);
+        historicoDiv.append(navTabBar);
     };
     
      /**
@@ -355,7 +522,7 @@ var Topography = function(){
         var activeNode = $('#'+structureName+'Tree').dynatree('getActiveNode');
         if(activeNode === null)
             return Advertencia("Debe seleccionar una seccion.");
-        if(parseInt(activeNode.data.idParent) === 0)
+        if(parseInt(activeNode.data.key) === 0)
             return 0;
         var content = $('<div>');
         var formGroup = $('<div>', {class: "form-group"});
