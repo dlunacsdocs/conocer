@@ -11,7 +11,7 @@
  *
  * @author daniel
  */
-
+$RoutFile = dirname(getcwd()); 
 class Fifo {
     public function __construct() {
         $this->CreateStack();
@@ -19,23 +19,22 @@ class Fifo {
     
     private function CreateStack()
     {
-        $fifo="/volume1/web/Fifo/Fifo.ini";
-        $FifoDirectory="/volume1/web/Fifo/";
+        $RoutFile = dirname(getcwd()); 
+        $fifo="$RoutFile/Fifo/Fifo.ini";
+        $FifoDirectory="$RoutFile/Fifo/";
+        
         if(!file_exists($FifoDirectory))
-        {
             mkdir($FifoDirectory, 0777);
-        }
         if(!file_exists($fifo))
-        {
             touch($fifo);
-        }                    
     }
     /*--------------------------------------------------------------------------
      * Inicializa un proceso. 
      --------------------------------------------------------------------------*/
     function StartProcess($KeyProcess)
     {
-        $FifoFile="/volume1/web/Fifo/Fifo.ini";     
+        $RoutFile = dirname(getcwd()); 
+        $FifoFile="$RoutFile/Fifo/Fifo.ini";     
         
         if(!file_exists($FifoFile)){echo "No existe el archivo Fifo"; return 0;}        
         
@@ -52,27 +51,27 @@ class Fifo {
         switch ($TypeProcess)
         {
             case "DeleteDirectory": 
-                $command="php /volume1/web/php/ServiceDeleteDirectory.php $KeyProcess ".dirname($Path)."/$KeyProcess.ini >>".dirname($Path)."/$KeyProcess.txt 2>>".dirname($Path)."/$KeyProcess.txt &";
+                $command="php $RoutFile/php/ServiceDeleteDirectory.php $KeyProcess ".dirname($Path)."/$KeyProcess.ini >>".dirname($Path)."/$KeyProcess.txt 2>>".dirname($Path)."/$KeyProcess.txt &";
                 system($command); 
                 return 1;
                 
             case "RestoreDirectories":
-                $command="php /volume1/web/php/Trash.php $KeyProcess ".dirname($Path)."/$KeyProcess.ini RestoreDir >>".dirname($Path)."/$KeyProcess.txt 2>>".dirname($Path)."/$KeyProcess.txt &";
+                $command="php $RoutFile/php/Trash.php $KeyProcess ".dirname($Path)."/$KeyProcess.ini RestoreDir >>".dirname($Path)."/$KeyProcess.txt 2>>".dirname($Path)."/$KeyProcess.txt &";
                 system($command); 
                 return 1;
                 
             case "RestoreFiles":
-                $command="php /volume1/web/php/Trash.php $KeyProcess ".dirname($Path)."/$KeyProcess.ini RestoreFiles >>".dirname($Path)."/$KeyProcess.txt 2>>".dirname($Path)."/$KeyProcess.txt &";
+                $command="php $RoutFile/php/Trash.php $KeyProcess ".dirname($Path)."/$KeyProcess.ini RestoreFiles >>".dirname($Path)."/$KeyProcess.txt 2>>".dirname($Path)."/$KeyProcess.txt &";
                 system($command); 
                 return 1;
                 
             case "DeleteDirectories":
-                $command="php /volume1/web/php/Trash.php $KeyProcess ".dirname($Path)."/$KeyProcess.ini DeleteDirectories >>".dirname($Path)."/$KeyProcess.txt 2>>".dirname($Path)."/$KeyProcess.txt &";
+                $command="php $RoutFile/php/Trash.php $KeyProcess ".dirname($Path)."/$KeyProcess.ini DeleteDirectories >>".dirname($Path)."/$KeyProcess.txt 2>>".dirname($Path)."/$KeyProcess.txt &";
                 system($command); 
                 return 1;
                 
             case "DeleteFiles":
-                $command="php /volume1/web/php/Trash.php $KeyProcess ".dirname($Path)."/$KeyProcess.ini DeleteFiles >>".dirname($Path)."/$KeyProcess.txt 2>>".dirname($Path)."/$KeyProcess.txt &";
+                $command="php $RoutFile/php/Trash.php $KeyProcess ".dirname($Path)."/$KeyProcess.ini DeleteFiles >>".dirname($Path)."/$KeyProcess.txt 2>>".dirname($Path)."/$KeyProcess.txt &";
                 system($command); 
                 return 1;
             default: return 0;
@@ -84,8 +83,9 @@ class Fifo {
      *-------------------------------------------------------------------------*/
     function AddToStack($ProcessName,$UserName, $Path)
     {
+        $RoutFile = dirname(getcwd()); 
         $KeyProcess=  $UserName.date("mdhis"); 
-        $fifo="/volume1/web/Fifo/Fifo.ini";
+        $fifo="$RoutFile/Fifo/Fifo.ini";
         
         if(!($config=  fopen($fifo, "a+"))){return 0;}
         fwrite($config, "[$KeyProcess]".PHP_EOL);
@@ -100,7 +100,8 @@ class Fifo {
     
     function DeleteProcess($KeyProcess)
     {        
-        $fifo="/volume1/web/Fifo/Fifo.ini";
+        $RoutFile = dirname(getcwd()); 
+        $fifo="$RoutFile/Fifo/Fifo.ini";
         if(!file_exists($fifo)){echo "No se encontró el archivo fifo."; return 0;}
         $Fifo=parse_ini_file ($fifo,true);
         unlink($fifo);

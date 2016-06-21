@@ -68,6 +68,7 @@ class Trash {
     
     private function DeleteDirectories()
     {
+        $RoutFile = dirname(getcwd()); 
         $XmlRestore = filter_input(INPUT_POST, 'XmlEmpty');
         $XML=new XML();
         $Fifo = new Fifo();
@@ -79,7 +80,7 @@ class Trash {
         $NombreUsuario=  filter_input(INPUT_POST, "nombre_usuario");                                        
         /* Se registra el proceso en Fifo y se crea el archivo con los elementos a borrar en 
          * RestoreTrash/DataBaseName/User/ */
-        $RutaFilesTrash="/volume1/web/Configuracion/EmptyTrash/$DataBaseName/$NombreUsuario";       
+        $RutaFilesTrash="$RoutFile/Configuracion/EmptyTrash/$DataBaseName/$NombreUsuario";       
         
         if(!file_exists($RutaFilesTrash)){if(!mkdir($RutaFilesTrash, 0777, true)){$XML->ResponseXML("Error", 0, "No se pudo crear el directorio <b>EmptyTrash</p>"); return 0;}}
         
@@ -161,9 +162,8 @@ class Trash {
     
     private function ServiceDeleteDirectories()
     {
-//        $XML=new XML();
+        $RoutFile = dirname(getcwd()); 
         $BD= new DataBase();
-//        $designer=new DesignerForms();
         $Fifo= new Fifo();
         
         $Parametros=$_SERVER['argv'];      
@@ -182,7 +182,7 @@ class Trash {
         $Directories = $Delete['Directories'];
         $NombreRepositorio = $Delete['DeleteDirectories']['NombreRepositorio'];
         $DataBaseName = $Delete['DeleteDirectories']['DataBaseName'];        
-        $PathEstructura="/volume1/web/Estructuras/".$DataBaseName."/$NombreRepositorio";
+        $PathEstructura="$RoutFile/Estructuras/".$DataBaseName."/$NombreRepositorio";
         $IdUsuario = $Delete['DeleteDirectories']['IdUsuario'];  
         $NombreUsuario = $Delete['DeleteDirectories']['NombreUsuario'];  
         $IdRepositorio=$Delete['DeleteDirectories']['IdRepositorio'];
@@ -556,6 +556,7 @@ class Trash {
     
     private function DeleteFiles()
     {
+        $RoutFile = dirname(getcwd()); 
         $XmlRestore = filter_input(INPUT_POST, 'XmlEmpty');
         $XML=new XML();
         $Fifo = new Fifo();
@@ -567,7 +568,7 @@ class Trash {
         $NombreUsuario=  filter_input(INPUT_POST, "nombre_usuario");                                        
         /* Se registra el proceso en Fifo y se crea el archivo con los elementos a borrar en 
          * RestoreTrash/DataBaseName/User/ */
-        $RutaFilesTrash="/volume1/web/Configuracion/EmptyTrash/$DataBaseName/$NombreUsuario";       
+        $RutaFilesTrash="$RoutFile/Configuracion/EmptyTrash/$DataBaseName/$NombreUsuario";       
         
         if(!file_exists($RutaFilesTrash)){if(!mkdir($RutaFilesTrash, 0777, true)){$XML->ResponseXML("Error", 0, "No se pudo crear el directorio <b>EmptyTrash</p>"); return 0;}}
         
@@ -645,6 +646,7 @@ class Trash {
         
     private function ServiceDeleteFiles()
     {
+        $RoutFile = dirname(getcwd()); 
         $BD= new DataBase();
         $Fifo= new Fifo();
         $Log = new Log();
@@ -667,7 +669,7 @@ class Trash {
         $DataBaseName = $Delete['DeleteFiles']['DataBaseName'];    
         $NombreUsuario = $Delete['DeleteFiles']['NombreUsuario'];  
         $IdUsuario = $Delete['DeleteFiles']['IdUsuario'];  
-//        $PathEstructura="/volume1/web/Estructuras/".$DataBaseName."/$NombreRepositorio";
+//        $PathEstructura="$RoutFile/Estructuras/".$DataBaseName."/$NombreRepositorio";
         $IdRepositorio=$Delete['DeleteFiles']['IdRepositorio'];
         
         if(!($FileAdvancing=  fopen($RouteFileAdvancing, "a+"))){  $FileAdvancing.PHP_EOL;  } else {
@@ -682,7 +684,7 @@ class Trash {
             $Fila = explode("###", $value);
             $IdFile = $Fila[0];
 //            $DividePath = explode("..", $Fila[1]);
-//            $RutaArchivo = "/volume1/web".$DividePath[1];
+//            $RutaArchivo = "$RoutFile".$DividePath[1];
             $RutaArchivo = $Fila[1];
             $pathinfo = pathinfo($RutaArchivo);
             $xml = $pathinfo['filename'].".xml";
@@ -874,9 +876,9 @@ class Trash {
     
     private function RestoreFiles()
     {
+        $RoutFile = dirname(getcwd()); 
         $XmlRestore = filter_input(INPUT_POST, 'XmlRestore');
         $XML=new XML();
-        $BD= new DataBase();
         $Fifo = new Fifo();
         
         $DataBaseName=  filter_input(INPUT_POST, "DataBaseName");
@@ -886,7 +888,7 @@ class Trash {
         $NombreUsuario=  filter_input(INPUT_POST, "nombre_usuario");                                        
         /* Se registra el proceso en Fifo y se crea el archivo con los elementos a borrar en 
          * RestoreTrash/DataBaseName/User/ */
-        $RutaFilesTrash="/volume1/web/Configuracion/RestoreTrash/$DataBaseName/$NombreUsuario";       
+        $RutaFilesTrash="$RoutFile/Configuracion/RestoreTrash/$DataBaseName/$NombreUsuario";       
         
         if(!file_exists($RutaFilesTrash)){if(!mkdir($RutaFilesTrash, 0777, true)){$XML->ResponseXML("Error", 0, "No se pudo crear el directorio <b>RestoreTrash</p>"); return 0;}}
         
@@ -1318,7 +1320,7 @@ class Trash {
     /* Función que prepara la configuración para la restauración de Directorios */
     private function RestoreDirectories()
     {
-
+        $RoutFile = dirname(getcwd()); 
         $XmlRestore = filter_input(INPUT_POST, 'XmlRestore');
         $XML=new XML();
         $Fifo = new Fifo();
@@ -1331,7 +1333,7 @@ class Trash {
         
         /* Se registra el proceso en Fifo y se crea el archivo con los elementos a borrar en 
          * RestoreTrash/DataBaseName/User/ */
-        $RutaDirTrash="/volume1/web/Configuracion/RestoreTrash/$DataBaseName/$NombreUsuario";       
+        $RutaDirTrash="$RoutFile/Configuracion/RestoreTrash/$DataBaseName/$NombreUsuario";       
         
         if(!file_exists($RutaDirTrash)){if(!mkdir($RutaDirTrash, 0777, true)){$XML->ResponseXML("Error", 0, "No se pudo crear el directorio <b>RestoreTrash</p>"); return 0;}}
         
