@@ -214,8 +214,7 @@ function GetDetalle(Source, IdGlobal, IdFile)
  * @param {object} DocumentEnvironment
  * @returns {Number}
  */
-function ConfirmDetailModify(documentContent, documentData, DocumentEnvironment)
-{
+function ConfirmDetailModify(documentContent, documentData, DocumentEnvironment){
     var idRepository = DocumentEnvironment.IdRepository;
 
     if (!parseInt(idRepository) > 0)
@@ -245,17 +244,12 @@ function ConfirmDetailModify(documentContent, documentData, DocumentEnvironment)
                         cssClass: "btn-warning",
                         hotkey: 13,
                         action: function (dialogRef) {
-//                            var button = this;
-//                            button.spin();
-//                            dialogRef.setClosable(false);
-//                            dialogRef.enableButtons(false);
-                            if (DetailModify(documentData, DocumentEnvironment))
-                                dialogRef.close();
-//                            else {
-//                                button.stopSpin();
-//                                dialogRef.setClosable(true);
-//                                dialogRef.enableButtons(true);
-//                            }
+                            var button = this;
+                            button.spin();
+                            dialogRef.setClosable(false);
+                            dialogRef.enableButtons(false);
+                            DetailModify(documentData, DocumentEnvironment);
+                            dialogRef.close();
                         }
                     },
                     {

@@ -1570,8 +1570,10 @@ var TemplateDesigner = function () {
                 systemType = false;
 //            console.log(field);
             var fieldName = $(field).attr('fieldName');
-            var isCatalog = $(field).attr('iscatalog');
-            if(isCatalog !== undefined)
+            var isCatalog = String($(field).attr('iscatalog'));
+            if(isCatalog === undefined)
+                isCatalog = "<isCatalog>false</isCatalog>";
+            else if(isCatalog === "true")
                 isCatalog = "<isCatalog>true</isCatalog>";
             else
                 isCatalog = "<isCatalog>false</isCatalog>";

@@ -1724,87 +1724,107 @@ class Trash {
     /*--------------------------------------------------------------------------
      *  Quita  un directorio y documentos de la papelera a su ruta contenedor original    
      */
-    private function MoveDirectoryToItsRepository($IdUsuario, $NombreUsuario, $KeyProcess,$ArrayStructureDefault,$ArrayStructureUser,$ArrayCatalogos,$Path,$RouteFileAdvancing,$DataBaseName, $IdRepositorio ,$NombreRepositorio, $title ,$IdDirectory,$IdParent,$TempDirectories)
-    {
-        $BD= new DataBase();           
-        $TempTree=array();
+    private function MoveDirectoryToItsRepository($IdUsuario, $NombreUsuario, $KeyProcess, $ArrayStructureDefault, $ArrayStructureUser, $ArrayCatalogos, $Path, $RouteFileAdvancing, $DataBaseName, $IdRepositorio, $NombreRepositorio, $title, $IdDirectory, $IdParent, $TempDirectories) {
+        $BD = new DataBase();
+        $TempTree = array();
         $Log = new Log();
-        
+
         /* Construcción de árbol de subdirectorios a restaurar */
-        
-        if(!isset($TempDirectories[$IdDirectory])){echo "El directorio \"$title\" no se encuentra registrado como directorio listo para restaurar."; return 0; }        
+
+        if (!isset($TempDirectories[$IdDirectory])) {
+            echo "El directorio \"$title\" no se encuentra registrado como directorio listo para restaurar.";
+            return 0;
+        }
         $TempTree[$IdDirectory] = $TempDirectories[$IdDirectory];
         unset($TempDirectories[$IdDirectory]);
 
-        foreach ($TempDirectories as $Fila => $valor)
-        {          
+        foreach ($TempDirectories as $Fila => $valor) {
             $TempIdParent = $TempDirectories["$Fila"]['parent_id'];
-            if(isset($TempTree["$TempIdParent"]))
-            {
+            if (isset($TempTree["$TempIdParent"])) {
                 $TempTree[$Fila] = $TempDirectories[$Fila];
                 unset($TempDirectories[$Fila]);
             }
-        }     
-        
-        if(!($FileAdvancing=  fopen($RouteFileAdvancing, "a+"))){  $FileAdvancing.PHP_EOL;  } else {
-            fwrite($FileAdvancing, "TotalDirectories=".count($TempTree).PHP_EOL);
-            fclose($FileAdvancing);
-            }
-        
-        if(!($FileAdvancing=  fopen(dirname($RouteFileAdvancing)."/Ok_$KeyProcess.ini", "a+"))){  $FileAdvancing.PHP_EOL;  } else {
-            fwrite($FileAdvancing, $IdDirectory."=$title".PHP_EOL);
+        }
+
+        if (!($FileAdvancing = fopen($RouteFileAdvancing, "a+"))) {
+            $FileAdvancing . PHP_EOL;
+        } else {
+            fwrite($FileAdvancing, "TotalDirectories=" . count($TempTree) . PHP_EOL);
             fclose($FileAdvancing);
         }
-            
-        
+
+        if (!($FileAdvancing = fopen(dirname($RouteFileAdvancing) . "/Ok_$KeyProcess.ini", "a+"))) {
+            $FileAdvancing . PHP_EOL;
+        } else {
+            fwrite($FileAdvancing, $IdDirectory . "=$title" . PHP_EOL);
+            fclose($FileAdvancing);
+        }
+
+
         unset($TempTree[$IdDirectory]);
-        
+
         /* Búsqueda de documentos por directorio y pegado de directorios a su ruta original */
         $CadenaConsulta = "SELECT *FROM temp_dir_$NombreRepositorio WHERE IdDirectory = $IdDirectory ";
-        foreach ($TempTree as $Key => $value)
-        {
-            $CadenaConsulta.= " OR IdDirectory = ".$TempTree[$Key]['IdDirectory'];
+        foreach ($TempTree as $Key => $value) {
+            $CadenaConsulta.= " OR IdDirectory = " . $TempTree[$Key]['IdDirectory'];
         }
-        
-        echo "$CadenaConsulta".PHP_EOL;
+
+        echo "$CadenaConsulta" . PHP_EOL;
         $ResultArrayDirectories = $BD->ConsultaSelect($DataBaseName, $CadenaConsulta);
 
-        if($ResultArrayDirectories['Estado']!=1){"Error al intentar obtener los datos del árbol de directorios desde la papelera de reciclaje. ".$ResultArrayDirectories['Estado']; return 0;}
-        
+        if ($ResultArrayDirectories['Estado'] != 1) {
+            "Error al intentar obtener los datos del árbol de directorios desde la papelera de reciclaje. " . $ResultArrayDirectories['Estado'];
+            return 0;
+        }
+
         $ArrayDirectories = $ResultArrayDirectories['ArrayDatos'];
-        
-        
-        $AuxProgress=0;
-        for($cont = 0; $cont < count($ArrayDirectories); $cont++)
-        {
-            echo dirname($RouteFileAdvancing).PHP_EOL;
-            if($this->CheckIfDirectoryWasRestored($Path, $ArrayDirectories[$cont]["IdDirectory"])){echo "El directorio \"".$ArrayDirectories[$cont]["title"]."\" ya había sido restaurado.".PHP_EOL; continue;}
-            
+
+
+        $AuxProgress = 0;
+        for ($cont = 0; $cont < count($ArrayDirectories); $cont++) {
+            echo dirname($RouteFileAdvancing) . PHP_EOL;
+            if ($this->CheckIfDirectoryWasRestored($Path, $ArrayDirectories[$cont]["IdDirectory"])) {
+                echo "El directorio \"" . $ArrayDirectories[$cont]["title"] . "\" ya había sido restaurado." . PHP_EOL;
+                continue;
+            }
+
             /* Registro del Progreso de restauración */
             $AuxProgress++;
-            if(!($FileAdvancing=  fopen($RouteFileAdvancing, "a+"))){  $FileAdvancing.PHP_EOL;  } else {
-                fwrite($FileAdvancing, "NumberDirectory=".$AuxProgress .PHP_EOL);
-                fwrite($FileAdvancing, "TitleDirectory=".$ArrayDirectories[$cont]["title"].PHP_EOL);
+            if (!($FileAdvancing = fopen($RouteFileAdvancing, "a+"))) {
+                $FileAdvancing . PHP_EOL;
+            } else {
+                fwrite($FileAdvancing, "NumberDirectory=" . $AuxProgress . PHP_EOL);
+                fwrite($FileAdvancing, "TitleDirectory=" . $ArrayDirectories[$cont]["title"] . PHP_EOL);
                 fclose($FileAdvancing);
             }
-            
-            $QueryInsertToRepository = "INSERT INTO dir_$NombreRepositorio (IdDirectory, parent_id, title, path) VALUES (".$ArrayDirectories[$cont]["IdDirectory"].",".$ArrayDirectories[$cont]["parent_id"].",'".$ArrayDirectories[$cont]["title"]."' , '".$ArrayDirectories[$cont]["path"]."')" ;            
-            $ResultInsert = $BD->ConsultaQuery($DataBaseName, $QueryInsertToRepository);
-            if($ResultInsert!=1){echo "Ocurrió un error al recuperar el directorio \"".$ArrayDirectories[$cont]["title"]."\"  al repositorio $NombreRepositorio. $ResultInsert".PHP_EOL; return 0;}
-            $this->GetFilesFromDirectory($ArrayStructureDefault, $ArrayStructureUser, $ArrayCatalogos, $DataBaseName, $IdRepositorio, $NombreRepositorio,  $ArrayDirectories[$cont]["IdDirectory"], $RouteFileAdvancing);
-            $DeleteFromTemp = "DELETE FROM temp_dir_$NombreRepositorio WHERE IdDirectory = ".$ArrayDirectories[$cont]["IdDirectory"];
-            $ResultDeleteFromTemp = $BD->ConsultaInsert($DataBaseName, $DeleteFromTemp);
-            if($ResultDeleteFromTemp!=1){echo "Error al quitar el directorio de la papelera \"".$ArrayDirectories[$cont]["title"]."\"".$ResultDeleteFromTemp.PHP_EOL; return 0;}
-                        
-            $this->RegisterDirectoryAsRestored($Path, $ArrayDirectories[$cont]["IdDirectory"], $ArrayDirectories[$cont]["title"]);                                                
+
+            $QueryInsertToRepository = "INSERT INTO dir_$NombreRepositorio (SELECT IdDirectory, 
+                parent_id, title, path, idDocDisposition, catalogKey, parentCatalogKey,
+                catalogType, isExpedient, isFrontPage, templatePath, isLegajo, autoincrement, 
+                templateName, Topography FROM temp_dir_$NombreRepositorio WHERE IdDirectory = $IdDirectory)";
+
+            if (($ResultInsert = $BD->ConsultaQuery($DataBaseName, $QueryInsertToRepository)) != 1) {
+                echo "Ocurrió un error al recuperar el directorio \"" . $ArrayDirectories[$cont]["title"] . "\"  al repositorio $NombreRepositorio. $ResultInsert" . PHP_EOL;
+                return 0;
+            }
+
+            $this->GetFilesFromDirectory($ArrayStructureDefault, $ArrayStructureUser, $ArrayCatalogos, $DataBaseName, $IdRepositorio, $NombreRepositorio, $ArrayDirectories[$cont]["IdDirectory"], $RouteFileAdvancing);
+            $DeleteFromTemp = "DELETE FROM temp_dir_$NombreRepositorio WHERE IdDirectory = " . $ArrayDirectories[$cont]["IdDirectory"];
+
+            if (($ResultDeleteFromTemp = $BD->ConsultaInsert($DataBaseName, $DeleteFromTemp)) != 1) {
+                echo "Error al quitar el directorio de la papelera \"" . $ArrayDirectories[$cont]["title"] . "\"" . $ResultDeleteFromTemp . PHP_EOL;
+                return 0;
+            }
+
+            $this->RegisterDirectoryAsRestored($Path, $ArrayDirectories[$cont]["IdDirectory"], $ArrayDirectories[$cont]["title"]);
             sleep(1);
         }
-                      
+
         $Log->Write("22", $IdUsuario, $NombreUsuario, $title, $DataBaseName);
-        
+
         return $TempDirectories;
     }
-    
+
     /*--------------------------------------------------------------------------------------------------------------------------------------
      * Descripción: 
      *          Registro de directorios restaurados.

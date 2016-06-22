@@ -787,46 +787,46 @@ class DataBase {
 
             /*             * ************************* TABLA DE DIRECTORIOS ****************** */
 //            echo "<br>";
-            $tabla_directorios = "CREATE TABLE IF NOT EXISTS dir_$nombre_tabla "
-                    . "(`IdDirectory` int(11) NOT NULL AUTO_INCREMENT,"
-                    . "`parent_id` int(10) UNSIGNED NOT NULL DEFAULT '0',"
-                    . "`title` varchar(255) NOT NULL,"
-                    . "`path` varchar(255) NOT NULL DEFAULT '',"
-                    . "idDocDisposition INT NOT NULL DEFAULT 0,"
-                    . "catalogKey VARCHAR(50) NOT NULL,"
-                    . "parentCatalogKey VARCHAR(50) NOT NULL,"
-                    . "catalogType VARCHAR(10) DEFAULT 0,"
-                    . "isExpedient INT DEFAULT 0,"
-                    . "isFrontPage INT DEFAULT 0,"
-                    . "templatePath TEXT DEFAULT NULL,"
-                    . "isLegajo INT NOT NULL DEFAULT 0,"
-                    . "autoincrement INT DEFAULT 0,"
-                    . "templateName TEXT,"
-                    . "Topography INT NOT NULL DEFAULT 0,"
-                    . "PRIMARY KEY (`IdDirectory`)"
-                    . ") ENGINE=InnoDB AUTO_INCREMENT=1 DEFAULT CHARSET=utf8";
+            $tabla_directorios = "CREATE TABLE IF NOT EXISTS dir_$nombre_tabla 
+                    (`IdDirectory` int(11) NOT NULL AUTO_INCREMENT,
+                    `parent_id` int(10) UNSIGNED NOT NULL DEFAULT '0',
+                    `title` varchar(255) NOT NULL,
+                    `path` varchar(255) NOT NULL DEFAULT '',
+                    idDocDisposition INT NOT NULL DEFAULT 0,
+                    catalogKey VARCHAR(50) NOT NULL,
+                    parentCatalogKey VARCHAR(50) NOT NULL,
+                    catalogType VARCHAR(10) DEFAULT 0,
+                    isExpedient INT DEFAULT 0,
+                    isFrontPage INT DEFAULT 0,
+                    templatePath TEXT DEFAULT NULL,
+                    isLegajo INT NOT NULL DEFAULT 0,
+                    autoincrement INT DEFAULT 0,
+                    templateName TEXT,
+                    Topography INT NOT NULL DEFAULT 0,
+                    PRIMARY KEY (`IdDirectory`)
+                    ) ENGINE=InnoDB AUTO_INCREMENT=1 DEFAULT CHARSET=utf8";
 
-            $tabla_temporal_directorio = "CREATE TABLE IF NOT EXISTS temp_dir_$nombre_tabla "
-                    . "(`IdDirectory` int(11) NOT NULL,"
-                    . "`parent_id` int(10) UNSIGNED NOT NULL,"
-                    . "`FlagFather` int(10) UNSIGNED NOT NULL," /* Es el directorio padre de todos los subdirectorios que se eliminaron */
-                    . "`title` varchar(255) NOT NULL,"
-                    . "`path` varchar(255) NOT NULL DEFAULT '',"
-                    . "`IdUsuario` INT NOT NULL,"
-                    . "NombreUsuario VARCHAR(50) NOT NULL,"
-                    . "idDocDisposition INT NOT NULL DEFAULT 0,"
-                    . "catalogKey VARCHAR(50) NOT NULL,"
-                    . "parentCatalogKey VARCHAR(50) NOT NULL,"
-                    . "catalogType VARCHAR(10) DEFAULT 0,"
-                    . "isExpedient INT DEFAULT 0,"
-                    . "isFrontPage INT DEFAULT 0,"
-                    . "templatePath TEXT DEFAULT NULL,"
-                    . "isLegajo INT NOT NULL DEFAULT 0,"
-                    . "autoincrement INT DEFAULT 0,"
-                    . "templateName TEXT,"
-                    . "Topography INT NOT NULL DEFAULT 0,"
-                    . "PRIMARY KEY (`IdDirectory`)"
-                    . ") ENGINE=InnoDB AUTO_INCREMENT=1 DEFAULT CHARSET=utf8";
+            $tabla_temporal_directorio = "CREATE TABLE IF NOT EXISTS temp_dir_$nombre_tabla 
+                    (`IdDirectory` int(11) NOT NULL,
+                    `parent_id` int(10) UNSIGNED NOT NULL,
+                    `title` varchar(255) NOT NULL,
+                    `path` varchar(255) NOT NULL DEFAULT '',
+                    idDocDisposition INT NOT NULL DEFAULT 0,
+                    catalogKey VARCHAR(50) NOT NULL,
+                    parentCatalogKey VARCHAR(50) NOT NULL,
+                    catalogType VARCHAR(10) DEFAULT 0,
+                    isExpedient INT DEFAULT 0,
+                    isFrontPage INT DEFAULT 0,
+                    templatePath TEXT DEFAULT NULL,
+                    isLegajo INT NOT NULL DEFAULT 0,
+                    autoincrement INT DEFAULT 0,
+                    templateName TEXT,
+                    Topography INT NOT NULL DEFAULT 0,
+                    `FlagFather` int(10) UNSIGNED NOT NULL, /* Es el directorio padre de todos los subdirectorios que se eliminaron */
+                    IdUsuario INT NOT NULL,
+                    NombreUsuario VARCHAR(50) NOT NULL,                 
+                    PRIMARY KEY (`IdDirectory`)
+                    ) ENGINE=InnoDB AUTO_INCREMENT=1 DEFAULT CHARSET=utf8";
 
 
             /*             * **************************Campos del Repositorio************************* */

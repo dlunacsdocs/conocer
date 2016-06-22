@@ -435,27 +435,26 @@ class ServiceDeleteDirectory {
      */
     private function MoveDirectoryToTrash($DataBaseName,$NombreRepositorio,$IdDirectory,$IdParent, $IdUsuario, $NombreUsuario, $FlagFather ,$title,$Path)
     {
-        $BD= new DataBase();
+        $BD = new DataBase();
                
-        $InsertToTrash='INSERT INTO temp_dir_'.$NombreRepositorio." (IdDirectory, parent_id, FlagFather, title, path, IdUsuario, NombreUsuario) VALUES ($IdDirectory, $IdParent, $FlagFather , '$title', '$Path', $IdUsuario, '$NombreUsuario')";
-        
-        $ResultadoInsert=$BD->ConsultaInsert($DataBaseName, $InsertToTrash);
-        
-        if($ResultadoInsert!=1){echo "Error al insertar en el directorio temporal. Consulta completa $InsertToTrash. MySQL: $ResultadoInsert".PHP_EOL; return 0;}
+        $InsertToTrash = "INSERT INTO temp_dir_$NombreRepositorio SELECT *, $FlagFather, $IdUsuario, '$NombreUsuario' FROM dir_$NombreRepositorio WHERE IdDirectory=$IdDirectory";
+
+        if(($ResultadoInsert = $BD->ConsultaInsert($DataBaseName, $InsertToTrash)) != 1){    
+            echo "Error al insertar en el directorio temporal. Consulta completa $InsertToTrash. MySQL: $ResultadoInsert".PHP_EOL; 
+            return 0;
+        }
         
         $Delete="DELETE FROM dir_$NombreRepositorio WHERE IdDirectory=$IdDirectory";
-        
-        $ResultadoDelete= $BD->ConsultaQuery($DataBaseName, $Delete);
-        
-        if($ResultadoDelete!=1)
-        {
+                
+        if(($ResultadoDelete= $BD->ConsultaQuery($DataBaseName, $Delete))!=1){
             echo "Ocurrió un error al eliminar el directorio. Consulta completa: $Delete. MySQL: $ResultadoDelete".PHP_EOL;
             
             /* Se elimina de la papelera */
             $DeleteFromTrash="DELETE FROM temp_dir_$NombreRepositorio WHERE IdDirectory = $IdDirectory";
-            $ResulDeleteFromTrash = $BD->ConsultaQuery($DataBaseName, $DeleteFromTrash);
             
-            if($ResulDeleteFromTrash!=1){echo "Error al eliminar de la papelera. Consulta completa $DeleteFromTrash. MySQL: $ResulDeleteFromTrash".PHP_EOL;}
+            if(($ResulDeleteFromTrash = $BD->ConsultaQuery($DataBaseName, $DeleteFromTrash))!=1){
+                echo "Error al eliminar de la papelera. Consulta completa $DeleteFromTrash. MySQL: $ResulDeleteFromTrash".PHP_EOL;
+            }
             return 0;
         }
         
