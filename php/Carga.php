@@ -24,19 +24,19 @@
 include_once 'XML.php';
 include_once 'DataBase.php';
 include_once 'DesignerForms.php';
+ini_set('display_errors', 1);
+ini_set('display_startup_errors', 1);
+error_reporting(E_ALL);
 class Carga {
     private $db;
     private $prefix;
-    private $structure;
     public function __construct() {
         $this->db = new DataBase();
         $this->prefix = "COL ";
-        $this->structure = $this->GetStructure();
     }
     public function start(){
         $conocerData = $this->getConocerDocuments();
         $columnNames = $this->getColumnNames($conocerData);
-        
         $this->buildDirectoriesStructure($columnNames, $conocerData);
     }
     
@@ -62,16 +62,17 @@ class Carga {
     }
     
     private function buildDirectoriesStructure($columnNames, $conocerData){
+        $routFile = dirname(getcwd());
         $prefix = $this->prefix;
         for($cont = 1; $cont < 10; $cont++){
             echo "<pre>";
             foreach ($conocerData[$cont] as $key => $value){
-//                echo "$key: $columnNames[$key] = $value || ";
+//                echo "<p>$key: $columnNames[$key] = $value || </p>";
             }
 
-            $fondo = $conocerData[$cont]["$prefix"."1"];            
-            $idFondo = $this->getIdDirectory($fondo, "$fondo.", "", 0, "fondo", "",$conocerData[$cont]);
+            $fondo = $conocerData[$cont]["$prefix"."1"];     
             echo "<p>fondo: $fondo</p>";
+            $idFondo = $this->getIdDirectory($fondo, "$fondo.", "", 1, "fondo", "/", $conocerData[$cont]);
             echo "idFondo: $idFondo";
             $subFondo = $conocerData[$cont]["$prefix"."2"];
             $idSubFondo = $this->getIdDirectory($subFondo, "$fondo.$subFondo/", "$fondo", $idFondo, "fondo", "/$idFondo/", $conocerData[$cont]);
@@ -102,8 +103,22 @@ class Carga {
             echo "<p>legajo: $legajo</p>";
             $idLegajo = $this->getIdDirectory(null, $legajo, $expediente,  $idExpedient, "0", $keyPath."$idExpedient/", $conocerData[$cont], 0, 1);
             echo "</p>idLegajo: $idLegajo</p>";
-            $frontPage = $this->buildFrontPage($conocerData);
-//            var_dump($frontPage);
+            $expedientPath = $routFile."/Estructuras/CONOCER/Repositorio/1".$keyPath.$idExpedient;
+            $frontPage = $this->buildFrontPage($conocerData[$cont], $expedientPath."/Plantilla.xml");
+            $expedientFullPath = "$expedientPath/Plantilla.xml";
+            echo "<p>Preparando caratula en $expedientFullPath</p>";
+            $idFrontPage = $this->insertDocument($conocerData, 0, "Carátula $expediente", "", $frontPage, $idExpedient, $expedientFullPath);
+            echo "<p>idFrontPage: $idFrontPage</p>"; 
+            $consecutivo = $conocerData[$cont]["$prefix"."7"];
+            $legajoPath = "Estructuras/CONOCER/Repositorio/1$keyPath$idExpedient/$idLegajo";
+            $fileNameWithExt = $consecutivo."_".$conocerData[$cont]["$prefix"."12"];
+            $fileNameExt = pathinfo($fileNameWithExt, PATHINFO_EXTENSION);
+//            $fileName = $consecutivo."_".$expediente.".".$fileNameExt;
+            $fileName = $this->getFileName($conocerData[$cont]);
+            $filePath = "$legajoPath/$fileName";
+            echo "<p>Preparando documento $fileName</p>";
+            $idDocument = $this->insertDocument($conocerData[$cont], 1, $fileName, "pdf", $frontPage, $idLegajo, $filePath);
+            echo "<p>idDocument: $idDocument</p>";
             echo "---------------------------------------------<br><br>";
         }
     }
@@ -159,7 +174,7 @@ class Carga {
         if(!(int)$res > 0)
             return $res;
         
-        $folderPath = "$routFile/Estructuras/CONOCER/Repositorio"."$path".$res;
+        $folderPath = "$routFile/Estructuras/CONOCER/Repositorio/1"."$path".$res;
         if(($mkdir = mkdir($folderPath, 0777, true)))
             echo "<p>se ha creado el path $folderPath</p>";
         else
@@ -178,144 +193,223 @@ class Carga {
         return 0;
     }
     
-    private function buildFrontPage($conocerData){
+    private function buildFrontPage($conocerData, $expedientPath){
         $prefix = $this->prefix;
         $routFile = dirname(getcwd());
+        $doc  = new DOMDocument('1.0','utf-8');
+        $doc->formatOutput = true;
+        $root = $doc->createElement("template");
+        $root->setAttribute("templateName", "Template");
+        $root->setAttribute("enterpriseKey", "CONOCER");
+        $root->setAttribute("repositoryName", "Repositorio");
 
-        <?xml version="1.0"?>
-            <template version="1.0" encoding="UTF-8" templateName="Template" enterpriseKey="CONOCER" repositoryName="Repositorio"><field><fieldValue>Secretaria de educaci&#xF3;n p&#xFA;blica</fieldValue>
-                            <columnName>fondo</columnName>
-                            <fieldName> Fondo</fieldName>
-                            <tableName> repository</tableName>
-                            <fieldType>TEXT</fieldType>
-                            <fieldLength/>
-                            <isCatalog>false</isCatalog>
-                            <catalogOption>0</catalogOption></field><field><fieldValue>Promoci&#xF3;n y desarrollo</fieldValue>
-                            <columnName>seccion</columnName>
-                            <fieldName> Seccion</fieldName>
-                            <tableName> repository</tableName>
-                            <fieldType>TEXT</fieldType>
-                            <fieldLength/>
-                            <isCatalog>false</isCatalog>
-                            <catalogOption>0</catalogOption></field><field><fieldValue>Comit&#xE9;s t&#xE9;cnicos en materia de est&#xE1;ndares de competencia</fieldValue>
-                            <columnName>serie</columnName>
-                            <fieldName> Serie</fieldName>
-                            <tableName> repository</tableName>
-                            <fieldType>TEXT</fieldType>
-                            <fieldLength/>
-                            <isCatalog>false</isCatalog>
-                            <catalogOption>0</catalogOption></field><field><fieldValue/>
-                            <columnName>subserie</columnName>
-                            <fieldName> Subserie</fieldName>
-                            <tableName> repository</tableName>
-                            <fieldType>TEXT</fieldType>
-                            <fieldLength/>
-                            <isCatalog>false</isCatalog>
-                            <catalogOption>0</catalogOption></field><field><fieldValue>2016-06-08</fieldValue>
-                            <columnName>Fecha_Apertura</columnName>
-                            <fieldName> Fecha_Apertura</fieldName>
-                            <tableName> repository</tableName>
-                            <fieldType>DATE</fieldType>
-                            <fieldLength/>
-                            <isCatalog>false</isCatalog>
-                            <catalogOption>0</catalogOption></field><field><fieldValue/>
-                            <columnName>Fecha_Cierre</columnName>
-                            <fieldName> Fecha_Cierre</fieldName>
-                            <tableName> repository</tableName>
-                            <fieldType>DATE</fieldType>
-                            <fieldLength/>
-                            <isCatalog>false</isCatalog>
-                            <catalogOption>0</catalogOption></field><field><fieldValue/>
-                            <columnName>Fecha_Reserva</columnName>
-                            <fieldName> Fecha_Reserva</fieldName>
-                            <tableName> repository</tableName>
-                            <fieldType>DATE</fieldType>
-                            <fieldLength/>
-                            <isCatalog>false</isCatalog>
-                            <catalogOption>0</catalogOption></field><field><fieldValue/>
-                            <columnName>Anos_Reserva</columnName>
-                            <fieldName> Anos_Reserva</fieldName>
-                            <tableName> repository</tableName>
-                            <fieldType>INT</fieldType>
-                            <fieldLength/>
-                            <isCatalog>false</isCatalog>
-                            <catalogOption>0</catalogOption></field><field><fieldValue/>
-                            <columnName>Funcionario_Reserva</columnName>
-                            <fieldName> Funcionario_Reserva</fieldName>
-                            <tableName> repository</tableName>
-                            <fieldType>TEXT</fieldType>
-                            <fieldLength/>
-                            <isCatalog>false</isCatalog>
-                            <catalogOption>0</catalogOption></field><field><fieldValue/>
-                            <columnName>Asunto</columnName>
-                            <fieldName> Asunto</fieldName>
-                            <tableName> repository</tableName>
-                            <fieldType>TEXT</fieldType>
-                            <fieldLength/>
-                            <isCatalog>false</isCatalog>
-                            <catalogOption>0</catalogOption></field><field><fieldValue>SEP.L9T/6NF/5/2016/3</fieldValue>
-                            <columnName>Numero_Expediente</columnName>
-                            <fieldName> Numero_Expediente</fieldName>
-                            <tableName> repository</tableName>
-                            <fieldType>TEXT</fieldType>
-                            <fieldLength/>
-                            <isCatalog>false</isCatalog>
-                            <catalogOption>0</catalogOption></field><field><fieldValue>1</fieldValue>
-                            <columnName>ArchivoTramite</columnName>
-                            <fieldName> ArchivoTramite</fieldName>
-                            <tableName> DocumentValidity</tableName>
-                            <fieldType>INT</fieldType>
-                            <fieldLength/>
-                            <isCatalog>false</isCatalog>
-                            <catalogOption>0</catalogOption></field><field><fieldValue>0</fieldValue>
-                            <columnName>ArchivoConcentracion</columnName>
-                            <fieldName> ArchivoConcentracion</fieldName>
-                            <tableName> DocumentValidity</tableName>
-                            <fieldType>INT</fieldType>
-                            <fieldLength/>
-                            <isCatalog>false</isCatalog>
-                            <catalogOption>0</catalogOption></field><field><fieldValue>0</fieldValue>
-                            <columnName>Confidencial</columnName>
-                            <fieldName> Confidencial</fieldName>
-                            <tableName> DocumentValidity</tableName>
-                            <fieldType>INT</fieldType>
-                            <fieldLength/>
-                            <isCatalog>false</isCatalog>
-                            <catalogOption>0</catalogOption></field><field><fieldValue>Art. 6, En la interpretaci&#xF3;n de esta Ley y de su Reglamento, as&#xED; como de las normas de car&#xE1;cter general a las que se refiere el art. 61, se deber&#xE1; favorecer el principio de m&#xE1;xima publicidad y disponibilidad de la informaci&#xF3;n en posesi&#xF3;n de los sujetos obligados.</fieldValue>
-                            <columnName>Fundamento_Legal</columnName>
-                            <fieldName> Fundamento_Legal</fieldName>
-                            <tableName> undefined</tableName>
-                            <fieldType>TEXT</fieldType>
-                            <fieldLength/>
-                            <isCatalog>true</isCatalog>
-                            <catalogOption>6</catalogOption></field></template>
-
+        $root->appendChild($this->createXmlChild($doc, $conocerData["$prefix"."13"], "Fondo", "Fondo", "repository", "TEXT", "", "false", 0));
+        $root->appendChild($this->createXmlChild($doc, $conocerData["$prefix"."14"], "Seccion", "Seccion", "repository", "TEXT", "", "false", 0));
+        $root->appendChild($this->createXmlChild($doc, $conocerData["$prefix"."16"], "Serie", "Serie", "repository", "TEXT", "", "false", 0));
+        $root->appendChild($this->createXmlChild($doc, $conocerData["$prefix"."18"], "Subserie", "Subserie", "repository", "TEXT", "", "false", 0));
+        $root->appendChild($this->createXmlChild($doc, $conocerData["$prefix"."36"], "Fecha_Apertura", "Fecha_Apertura", "repository", "DATE", "", "false", 0));
+        $root->appendChild($this->createXmlChild($doc, $conocerData["$prefix"."21"], "Fecha_Cierre", "Fecha_Cierre", "repository", "DATE", "", "false", 0));
+        $root->appendChild($this->createXmlChild($doc, $conocerData["$prefix"."23"], "Fecha_Reserva", "Fecha_Reserva", "repository", "DATE", "", "false", 0));
+        $root->appendChild($this->createXmlChild($doc, $conocerData["$prefix"."24"], "Anos_Reserva", "Anos_Reserva", "repository", "INT", "", "false", 0));
+        $root->appendChild($this->createXmlChild($doc, $conocerData["$prefix"."22"], "Funcionario_Reserva", "Funcionario_Reserva", "repository", "TEXT", "", "false", 0));
+        $root->appendChild($this->createXmlChild($doc, $conocerData["$prefix"."20"], "Asunto", "Asunto", "repository", "TEXT", "", "false", 0));
+        $root->appendChild($this->createXmlChild($doc, $conocerData["$prefix"."19"], "Numero_Expediente", "Numero_Expediente", "repository", "TEXT", "", "false", 0));
+        $root->appendChild($this->createXmlChild($doc, $conocerData["$prefix"."37"], "ArchivoTramite", "ArchivoTramite", "DocumentValidity", "INT", "", "false", 0));
+        $root->appendChild($this->createXmlChild($doc, $conocerData["$prefix"."40"], "Concentracion", "Concentracion", "DocumentValidity", "INT", "", "false", 0));
+        $root->appendChild($this->createXmlChild($doc, $conocerData["$prefix"."34"], "Confidencial", "Confidencial", "DocumentValidity", "INT", "", "false", 0));
+        $root->appendChild($this->createXmlChild($doc, "", "Fundamento_Legal", "Fundamento_Legal", "Repositorio_Fundamento_Legal", "INT", "", "true", 0));
+        $doc->appendChild($root);
+        
+//        foreach ($doc->getElementsByTagName("field") as $value){
+//            echo "------------------------------------------";
+//            foreach($value->childNodes as $field){
+//                echo "<p>$field->nodeName $field->nodeValue</p>";
+//            }
+//        }
+        $doc->save($expedientPath);
+        return $doc;
     }
     
-    private function GetStructure(){
-        $designer = new DesignerForms();
-        $TypeStructure = "Repositorio";
-        $DataBaseName = "CONOCER";
-        $fields = array();
-        $fullStructure = $designer->getArrayStructureFile($DataBaseName);
-   
-        if(!is_array($fullStructure))
-            return "Error  $fullStructure";
-
-        if(array_key_exists($TypeStructure,$fullStructure)){
-            $Estructura = $fullStructure["$TypeStructure"];
-            $ArrayEstructura = $designer->getPropertiesFromStructure($TypeStructure,$Estructura);
-            if(is_array($ArrayEstructura)){
-                for($cont = 0; $cont < count($ArrayEstructura['structure']); $cont++){
-                    $fields[$ArrayEstructura['structure'][$cont]['name']] = $ArrayEstructura['structure'][$cont]['name'];
-                } 
-                return $fields;
-            }
-            else
-                return $ArrayEstructura;
+    private function createXmlChild($doc, $fieldValue, $columnName, $fieldName,  $tableName,  $fieldType, $fieldLength, $isCatalog, $catalogOption){
+        $child = $doc->createElement("field");
+        $fieldValueXml  =     $doc->createElement("fieldValue", $fieldValue);
+        $columnNameXml  =     $doc->createElement("columnName",$columnName);
+        $fieldNameXml   =     $doc->createElement("fieldName", $fieldName);
+        $tableNameXml   =     $doc->createElement("tableName", $tableName);
+        $fieldTypeXml   =     $doc->createElement("fieldType", $fieldType);
+        $fieldLengthXml =     $doc->createElement("fieldLength", $fieldLength);
+        $isCatalogXml   =     $doc->createElement("isCatalog", $isCatalog);
+        $catalogOptionXml = $doc->createElement("catalogOption", $catalogOption);
+        $child->appendChild($fieldValueXml);
+        $child->appendChild($columnNameXml);
+        $child->appendChild($fieldNameXml);
+        $child->appendChild($tableNameXml);
+        $child->appendChild($fieldTypeXml);
+        $child->appendChild($fieldLengthXml);
+        $child->appendChild($isCatalogXml);
+        $child->appendChild($catalogOptionXml);
+        return $child;
+    }
+        
+    private function insertDocument(array $conocerData, $isDocument, $fileName, $fileType, DOMDocument $frontPage, $idDirectory, $filePath){
+        echo "<p>Insertando $fileName</p>";
+        $prefix = $this->prefix;
+        $idFile = $this->getDocument($fileName);
+        
+        if(is_numeric($idFile)){
+            if((int)$idFile > 0)
+                return $idFile;
         }
         else
-            return "<p>No existe el registro de estructura para <b>$TypeStructure</b>, o puede que no se haya creado correctamente</p>";
+            return "<p>Error: $idFile</p>";       
+        
+        $fechaIngreso   = date("Y-m-d");
+        $queryBuilded = $this->getQueryInsert($frontPage);
+        $full = $queryBuilded['full'];
+        $fields = "IdDirectory, IdEmpresa, TipoArchivo, RutaArchivo, UsuarioPublicador, 
+                FechaIngreso, NombreArchivo ".$queryBuilded['fields']. ", Full";
+        $values = "$idDirectory, 1, '$fileType', '$filePath', 'root', 
+                '$fechaIngreso', '$fileName'  ".$queryBuilded['values'].",  '$full'";
+        $insert = "INSERT INTO Repositorio 
+                ($fields) 
+                VALUES 
+                ($values)";        
+        echo "<p>$insert</p>";
+        $newIdFile = $this->db->ConsultaInsertReturnId("CONOCER", $insert);
+        
+        if(!(int)$newIdFile > 0)
+            return "<p><b>Error</b> al insertar a $fileName</p> $newIdFile <br>";
+        
+        $idGlobal = $this->insertToGlobal($frontPage, $newIdFile, $idDirectory, $fileName, $fileType, $filePath);
+        echo "<p>idGlobal: $idGlobal</p>";
+        
+        if($isDocument){    /* Cuando se va a insertar un documento */
+            $this->moveDocument($conocerData, $fileName, $filePath);
+        }
+        else{   /* Cuando se va a insertar una caratula */
+        }
+        
+        return $newIdFile;
+    }
+    
+    private function moveDocument($conocerData, $fileName, $filePath){
+        $prefix = $this->prefix;
+        $consecutivo = $conocerData["$prefix"."7"];
+        $disk = $conocerData["$prefix"."9"];
+        $originPath = $conocerData["$prefix"."10"];
+        $fileNameOnly = pathinfo($conocerData["$prefix"."12"], PATHINFO_FILENAME);
+        $originFullPathWithoutExt = "$disk$originPath/$fileNameOnly";
+        $originFullPathWithExt1 = "/volume1/Public/$originFullPathWithoutExt.pdf";
+        $originFullPathWithExt2 = "/volume1/Public/$originFullPathWithoutExt.PDF";
+        echo "<p>origen: $originFullPathWithExt1</p>";
+        echo "<p>Preparando para mover documento $fileName</p>";
+        echo "<p>destino: $filePath</p>";
+        if(!file_exists($originFullPathWithExt1)){
+            if(!file_exists($originFullPathWithExt2)){
+                echo "<p>No existe2 $originFullPathWithExt2</p>";
+                return 0;
+            }
+            else{
+                echo "<p>Moviendo2 documento $originFullPathWithExt2</p>";
+                echo "<p>Path destino : ".  dirname($filePath)."/".$consecutivo."_".  basename($originFullPathWithExt2)."</p>";
+                $filePath = dirname($filePath)."/".$consecutivo."_".  basename($originFullPathWithExt2);
+                copy($originFullPathWithExt2, "/volume1/web/".$filePath);
+            }
+        }
+        else{
+            echo "<p>Moviendo1 documento $originFullPathWithExt1</p>";
+            $filePath = dirname($filePath)."/$consecutivo"."_".  basename($originFullPathWithExt1);
+            copy($originFullPathWithExt1, "/volume1/web/".$filePath);
+        }
+    }
+    
+    private function getFileName($conocerData){
+        $prefix = $this->prefix;
+        $consecutivo = $conocerData["$prefix"."7"];
+        $disk = $conocerData["$prefix"."9"];
+        $originPath = $conocerData["$prefix"."10"];
+        $fileNameOnly = pathinfo($conocerData["$prefix"."12"], PATHINFO_FILENAME);
+        $originFullPathWithoutExt = "$disk$originPath/$fileNameOnly";
+        $originFullPathWithExt1 = "/volume1/Public/$originFullPathWithoutExt.pdf";
+        $originFullPathWithExt2 = "/volume1/Public/$originFullPathWithoutExt.PDF";
+        
+        if(!file_exists($originFullPathWithExt1)){
+            if(!file_exists($originFullPathWithExt2))
+                return null;
+            else
+                return $consecutivo."_".  basename($originFullPathWithExt2);
+        }
+        else
+            return $consecutivo."_".  basename($originFullPathWithExt1);
+    }
+    
+    private function insertToGlobal($frontPage, $idFile, $idDirectory, $fileName, $fileType, $filePath){
+        $queryBuilded = $this->buildQueryForGlobal($frontPage, $idFile, $idDirectory, $fileName, $fileType, $filePath);
+        echo "<p>".$queryBuilded['insert']."</p>";
+        $result = $this->db->ConsultaInsertReturnId("CONOCER", $queryBuilded['insert']);
+        return $result;
+    }    
+    
+    private function getDocument($fileName){
+        $select = "SELECT *FROM Repositorio WHERE  NombreArchivo = '$fileName'";
+        $result = $this->db->ConsultaSelect("CONOCER", $select);
+        if($result['Estado'] != 1)
+            return $result['Estado'];
+        if(count($result['ArrayDatos']) == 0)
+            return 0;
+        else
+            return $result['ArrayDatos'][0]['IdRepositorio'];
+    }
+    
+    private function getQueryInsert($frontPage){
+        $fechaIngreso   = date("Y-m-d");
+        $full = "root, $fechaIngreso, ";
+        $fields = "";
+        $values = "";
+        $fieldValue = "";
+        $fieldName = "";
+        $fieldType = "";
+        foreach ($frontPage->getElementsByTagName("field") as $value){
+//            echo "------------------------------------------";
+            foreach($value->childNodes as $field){
+//                echo "<p>$field->nodeName $field->nodeValue</p>";
+                
+//                echo "<p> $field->nodeName</p>";
+                if(strcasecmp($field->nodeName, "fieldValue")==0){
+                        $fieldValue = $field->nodeValue;
+                        $full.= " $field->nodeValue, ";
+//                        echo "<p>fieldValue: $fieldValue</p>";
+                }
+                else if(strcasecmp($field->nodeName, "columnName")==0){
+                    $fields.=", $field->nodeValue";
+                    $fieldName = $field->nodeValue;
+//                    echo "columnName $fieldName";
+                }
+                else if (strcasecmp($field->nodeName, "fieldType")==0){
+                    $fieldType = $field->nodeValue;
+//                    echo "<p>Obteniendo valor $fieldName:   $fieldType    $fieldValue</p>";
+                    $fieldValue = DataBase::FieldFormat($fieldValue, $fieldType);
+                    $values.=", $fieldValue";
+                }
+            }
+        }
+        
+        return array("fields" => $fields, "values" => $values, "full" => $full);
+    }   
+    
+    private function buildQueryForGlobal($frontPage, $idFile, $idDirectory, $fileName, $fileType, $filePath){
+        $repositoryQuery    = $this->getQueryInsert($frontPage);
+        $full               = $repositoryQuery['full'];
+        $fechaIngreso       = date("Y-m-d");
+        $fields = "IdFile, IdEmpresa, IdRepositorio, IdDirectory, NombreEmpresa,
+                NombreRepositorio, NombreArchivo, TipoArchivo, RutaArchivo, UsuarioPublicador,
+                FechaIngreso, Full";
+        $values = "$idFile, 1, 2, $idDirectory, 'CONOCER', 
+                'Repositorio', '$fileName', '$fileType', '$filePath', 'root',
+                 '$fechaIngreso', '$full'";
+        $insert = "INSERT INTO RepositorioGlobal ($fields) VALUES ($values)";
+        
+        return array("insert" => "$insert", "full" => $full);
     }
 }
 
