@@ -64,28 +64,29 @@ class Carga {
     private function buildDirectoriesStructure($columnNames, $conocerData){
         $routFile = dirname(getcwd());
         $prefix = $this->prefix;
-        for($cont = 1; $cont < 10; $cont++){
+        for($cont = 400; $cont < count($conocerData); $cont++){
             echo "<pre>";
-            foreach ($conocerData[$cont] as $key => $value){
+//            foreach ($conocerData[$cont] as $key => $value){
 //                echo "<p>$key: $columnNames[$key] = $value || </p>";
-            }
-
+//            }
+            echo "------------------ ITERACION $cont ----------------------";
+            $consecutivo = $conocerData[$cont]["COL 7"];
+//            echo "<p>consecutivo: $consecutivo</p>";
             $fondo = $conocerData[$cont]["$prefix"."1"];     
-            echo "<p>fondo: $fondo</p>";
             $idFondo = $this->getIdDirectory($fondo, "$fondo.", "", 1, "fondo", "/", $conocerData[$cont]);
-            echo "idFondo: $idFondo";
+        
             $subFondo = $conocerData[$cont]["$prefix"."2"];
             $idSubFondo = $this->getIdDirectory($subFondo, "$fondo.$subFondo/", "$fondo", $idFondo, "fondo", "/$idFondo/", $conocerData[$cont]);
-            echo "<p>subfondo: $subFondo</p>";
-            echo "<p>idSubFondo: $idSubFondo</p>";
+//            echo "<p>idSubFondo: $idSubFondo</p>";
             $seccion = $conocerData[$cont]["$prefix"."3"];
-            echo "secc: $seccion";
             $idSection = $this->getIdDirectory($subFondo.".".$seccion, $fondo.".".$subFondo."/".$seccion."/", "$fondo.$subFondo/", $idSubFondo, "section", "/$idFondo/$idSubFondo/", $conocerData[$cont]);
-            echo "</p>idSection: $idSection</p>";
+//            echo "</p>idSection: $idSection</p>";
             $serie = $conocerData[$cont]["$prefix"."4"];
-            echo "<p>serie: $serie</p>";
+            if(!strlen($serie) > 0){
+                echo "$fondo.$subFondo/$seccion/$serie";
+                continue;
+            }
             $idSerie = $this->getIdDirectory($subFondo.".".$seccion.".".$serie, $fondo.".".$subFondo."/".$seccion."/$serie/", $fondo.".".$subFondo."/".$seccion."/",  $idSection, "serie", "/$idFondo/$idSubFondo/$idSection/", $conocerData[$cont]);
-            echo "<p>idSerie: $idSerie</p>";     
             $subserie = $conocerData[$cont]["$prefix"."5"];
             $idSubserie = "";
             $keyPath = "/$idFondo/$idSubFondo/$idSection/$idSerie/";
@@ -95,28 +96,31 @@ class Carga {
                 echo "<p>idSubserie: $idSubserie</p>";
                 $keyPath.="$idSubserie/";
             }
-            echo "<p>path: $keyPath</p>";
-            $expediente = $conocerData[$cont]["$prefix"."19"];
+                 
+//            echo "<p>path: $keyPath</p>";
+            $expediente = $conocerData[$cont]["$prefix"."19"]."$consecutivo";
+            echo " $expediente ";
             $idExpedient = $this->getIdDirectory(null, $expediente, $fondo.".".$subFondo."/".$seccion."/$serie.$subserie/",  $idSerie, "0", $keyPath, $conocerData[$cont], 1, 0);
-            echo "<p>idExpediente: $idExpedient</p>";
+            
             $legajo = $conocerData[$cont]["$prefix"."8"];
             echo "<p>legajo: $legajo</p>";
             $idLegajo = $this->getIdDirectory(null, $legajo, $expediente,  $idExpedient, "0", $keyPath."$idExpedient/", $conocerData[$cont], 0, 1);
-            echo "</p>idLegajo: $idLegajo</p>";
+//            echo "</p>idLegajo: $idLegajo</p>";
+            echo "$fondo.$subFondo/$seccion/$serie.$subserie = ";
+            echo "$keyPath".$idExpedient."/".$idLegajo;
             $expedientPath = $routFile."/Estructuras/CONOCER/Repositorio/1".$keyPath.$idExpedient;
             $frontPage = $this->buildFrontPage($conocerData[$cont], $expedientPath."/Plantilla.xml");
             $expedientFullPath = "$expedientPath/Plantilla.xml";
-            echo "<p>Preparando caratula en $expedientFullPath</p>";
+            echo " carátula  $expedientFullPath";
             $idFrontPage = $this->insertDocument($conocerData, 0, "Carátula $expediente", "", $frontPage, $idExpedient, $expedientFullPath);
             echo "<p>idFrontPage: $idFrontPage</p>"; 
-            $consecutivo = $conocerData[$cont]["$prefix"."7"];
             $legajoPath = "Estructuras/CONOCER/Repositorio/1$keyPath$idExpedient/$idLegajo";
             $fileNameWithExt = $consecutivo."_".$conocerData[$cont]["$prefix"."12"];
             $fileNameExt = pathinfo($fileNameWithExt, PATHINFO_EXTENSION);
 //            $fileName = $consecutivo."_".$expediente.".".$fileNameExt;
             $fileName = $this->getFileName($conocerData[$cont]);
             $filePath = "$legajoPath/$fileName";
-            echo "<p>Preparando documento $fileName</p>";
+//            echo "<p>Preparando documento $fileName</p>";
             $idDocument = $this->insertDocument($conocerData[$cont], 1, $fileName, "pdf", $frontPage, $idLegajo, $filePath);
             echo "<p>idDocument: $idDocument</p>";
             echo "---------------------------------------------<br><br>";
@@ -175,11 +179,12 @@ class Carga {
             return $res;
         
         $folderPath = "$routFile/Estructuras/CONOCER/Repositorio/1"."$path".$res;
-        if(($mkdir = mkdir($folderPath, 0777, true)))
-            echo "<p>se ha creado el path $folderPath</p>";
-        else
-            echo "<p>Error al crear el path $folderPath. $mkdir</p>";
-        
+        if(!file_exists($folderPath)){
+            if(($mkdir = mkdir($folderPath, 0777, true)))
+                echo "<p>se ha creado el path $folderPath</p>";
+            else
+                echo "<p>Error al crear el path $folderPath. $mkdir</p>";
+        }
         return $res;
     }
     
@@ -226,6 +231,8 @@ class Carga {
 //                echo "<p>$field->nodeName $field->nodeValue</p>";
 //            }
 //        }
+        if(!file_exists(dirname($expedientPath)))
+            mkdir (dirname ($expedientPath));
         $doc->save($expedientPath);
         return $doc;
     }
@@ -252,7 +259,7 @@ class Carga {
     }
         
     private function insertDocument(array $conocerData, $isDocument, $fileName, $fileType, DOMDocument $frontPage, $idDirectory, $filePath){
-        echo "<p>Insertando $fileName</p>";
+//        echo "<p>Insertando $fileName</p>";
         $prefix = $this->prefix;
         $idFile = $this->getDocument($fileName);
         
@@ -274,7 +281,7 @@ class Carga {
                 ($fields) 
                 VALUES 
                 ($values)";        
-        echo "<p>$insert</p>";
+//        echo "<p>$insert</p>";
         $newIdFile = $this->db->ConsultaInsertReturnId("CONOCER", $insert);
         
         if(!(int)$newIdFile > 0)
@@ -298,12 +305,16 @@ class Carga {
         $disk = $conocerData["$prefix"."9"];
         $originPath = $conocerData["$prefix"."10"];
         $fileNameOnly = pathinfo($conocerData["$prefix"."12"], PATHINFO_FILENAME);
-        $originFullPathWithoutExt = "$disk$originPath/$fileNameOnly";
-        $originFullPathWithExt1 = "/volume1/Public/$originFullPathWithoutExt.pdf";
-        $originFullPathWithExt2 = "/volume1/Public/$originFullPathWithoutExt.PDF";
-        echo "<p>origen: $originFullPathWithExt1</p>";
-        echo "<p>Preparando para mover documento $fileName</p>";
-        echo "<p>destino: $filePath</p>";
+        $originFullPathWithoutExt = $disk."$originPath/$fileNameOnly";
+        $originFullPathWithExt1 = "/volume2/Public/$originFullPathWithoutExt.pdf";
+        $originFullPathWithExt2 = "/volume2/Public/$originFullPathWithoutExt.PDF";
+//        echo "<p>origen: $originFullPathWithExt1</p>";
+//        echo "<p>Preparando para mover documento $fileName</p>";
+//        echo "<p>destino: $filePath</p>";
+        
+        if(!file_exists("/volume1/web/".dirname($filePath)))
+            mkdir ("/volume1/web/".dirname($filePath), 0777, true);
+        
         if(!file_exists($originFullPathWithExt1)){
             if(!file_exists($originFullPathWithExt2)){
                 echo "<p>No existe2 $originFullPathWithExt2</p>";
@@ -311,15 +322,16 @@ class Carga {
             }
             else{
                 echo "<p>Moviendo2 documento $originFullPathWithExt2</p>";
-                echo "<p>Path destino : ".  dirname($filePath)."/".$consecutivo."_".  basename($originFullPathWithExt2)."</p>";
-                $filePath = dirname($filePath)."/".$consecutivo."_".  basename($originFullPathWithExt2);
-                copy($originFullPathWithExt2, "/volume1/web/".$filePath);
+                $filePath = "/volume1/web/".dirname($filePath)."/".$consecutivo."_".  basename($originFullPathWithExt2);
+                echo "<p>Path destino : ".  $filePath."</p>";
+                copy($originFullPathWithExt2, $filePath);
             }
         }
         else{
             echo "<p>Moviendo1 documento $originFullPathWithExt1</p>";
-            $filePath = dirname($filePath)."/$consecutivo"."_".  basename($originFullPathWithExt1);
-            copy($originFullPathWithExt1, "/volume1/web/".$filePath);
+            $filePath = "/volume1/web/".$filePath.dirname($filePath)."/$consecutivo"."_".  basename($originFullPathWithExt1);
+            echo "<p>Path destino : ".  $filePath."</p>";
+            copy($originFullPathWithExt1, $filePath);
         }
     }
     
@@ -330,8 +342,8 @@ class Carga {
         $originPath = $conocerData["$prefix"."10"];
         $fileNameOnly = pathinfo($conocerData["$prefix"."12"], PATHINFO_FILENAME);
         $originFullPathWithoutExt = "$disk$originPath/$fileNameOnly";
-        $originFullPathWithExt1 = "/volume1/Public/$originFullPathWithoutExt.pdf";
-        $originFullPathWithExt2 = "/volume1/Public/$originFullPathWithoutExt.PDF";
+        $originFullPathWithExt1 = "/volume2/Public/$originFullPathWithoutExt.pdf";
+        $originFullPathWithExt2 = "/volume2/Public/$originFullPathWithoutExt.PDF";
         
         if(!file_exists($originFullPathWithExt1)){
             if(!file_exists($originFullPathWithExt2))
@@ -345,7 +357,7 @@ class Carga {
     
     private function insertToGlobal($frontPage, $idFile, $idDirectory, $fileName, $fileType, $filePath){
         $queryBuilded = $this->buildQueryForGlobal($frontPage, $idFile, $idDirectory, $fileName, $fileType, $filePath);
-        echo "<p>".$queryBuilded['insert']."</p>";
+//        echo "<p>".$queryBuilded['insert']."</p>";
         $result = $this->db->ConsultaInsertReturnId("CONOCER", $queryBuilded['insert']);
         return $result;
     }    
