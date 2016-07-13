@@ -60,15 +60,20 @@ class Carga {
             return $data['Estado'];
         return $data['ArrayDatos'];
     }
-    
+    /*
+     * Fin de iteracion en 1481
+     * 5EC
+     */
     private function buildDirectoriesStructure($columnNames, $conocerData){
         $routFile = dirname(getcwd());
         $prefix = $this->prefix;
-        for($cont = 400; $cont < count($conocerData); $cont++){
+        for($cont = 1027; $cont < 1100; $cont++){
             echo "<pre>";
 //            foreach ($conocerData[$cont] as $key => $value){
 //                echo "<p>$key: $columnNames[$key] = $value || </p>";
 //            }
+            if(!isset($conocerData[$cont]))
+                die();
             echo "------------------ ITERACION $cont ----------------------";
             $consecutivo = $conocerData[$cont]["COL 7"];
 //            echo "<p>consecutivo: $consecutivo</p>";
@@ -98,8 +103,8 @@ class Carga {
             }
                  
 //            echo "<p>path: $keyPath</p>";
-            $expediente = $conocerData[$cont]["$prefix"."19"]."$consecutivo";
-            echo " $expediente ";
+            $expediente = $conocerData[$cont]["$prefix"."19"];
+            echo "Exp: $expediente ";
             $idExpedient = $this->getIdDirectory(null, $expediente, $fondo.".".$subFondo."/".$seccion."/$serie.$subserie/",  $idSerie, "0", $keyPath, $conocerData[$cont], 1, 0);
             
             $legajo = $conocerData[$cont]["$prefix"."8"];
@@ -112,7 +117,7 @@ class Carga {
             $frontPage = $this->buildFrontPage($conocerData[$cont], $expedientPath."/Plantilla.xml");
             $expedientFullPath = "$expedientPath/Plantilla.xml";
             echo " carátula  $expedientFullPath";
-            $idFrontPage = $this->insertDocument($conocerData, 0, "Carátula $expediente", "", $frontPage, $idExpedient, $expedientFullPath);
+            $idFrontPage = $this->insertDocument($conocerData, $expediente, 0, "Carátula $expediente", "", $frontPage, $idExpedient, $expedientFullPath);
             echo "<p>idFrontPage: $idFrontPage</p>"; 
             $legajoPath = "Estructuras/CONOCER/Repositorio/1$keyPath$idExpedient/$idLegajo";
             $fileNameWithExt = $consecutivo."_".$conocerData[$cont]["$prefix"."12"];
@@ -120,8 +125,8 @@ class Carga {
 //            $fileName = $consecutivo."_".$expediente.".".$fileNameExt;
             $fileName = $this->getFileName($conocerData[$cont]);
             $filePath = "$legajoPath/$fileName";
-//            echo "<p>Preparando documento $fileName</p>";
-            $idDocument = $this->insertDocument($conocerData[$cont], 1, $fileName, "pdf", $frontPage, $idLegajo, $filePath);
+            echo "<p>Preparando documento $fileName</p>";
+            $idDocument = $this->insertDocument($conocerData[$cont], $expediente, 1, $fileName, "pdf", $frontPage, $idLegajo, $filePath);
             echo "<p>idDocument: $idDocument</p>";
             echo "---------------------------------------------<br><br>";
         }
@@ -213,14 +218,14 @@ class Carga {
         $root->appendChild($this->createXmlChild($doc, $conocerData["$prefix"."16"], "Serie", "Serie", "repository", "TEXT", "", "false", 0));
         $root->appendChild($this->createXmlChild($doc, $conocerData["$prefix"."18"], "Subserie", "Subserie", "repository", "TEXT", "", "false", 0));
         $root->appendChild($this->createXmlChild($doc, $conocerData["$prefix"."36"], "Fecha_Apertura", "Fecha_Apertura", "repository", "DATE", "", "false", 0));
-        $root->appendChild($this->createXmlChild($doc, $conocerData["$prefix"."21"], "Fecha_Cierre", "Fecha_Cierre", "repository", "DATE", "", "false", 0));
+        $root->appendChild($this->createXmlChild($doc, $conocerData["$prefix"."38"], "Fecha_Cierre", "Fecha_Cierre", "repository", "DATE", "", "false", 0));
         $root->appendChild($this->createXmlChild($doc, $conocerData["$prefix"."23"], "Fecha_Reserva", "Fecha_Reserva", "repository", "DATE", "", "false", 0));
         $root->appendChild($this->createXmlChild($doc, $conocerData["$prefix"."24"], "Anos_Reserva", "Anos_Reserva", "repository", "INT", "", "false", 0));
         $root->appendChild($this->createXmlChild($doc, $conocerData["$prefix"."22"], "Funcionario_Reserva", "Funcionario_Reserva", "repository", "TEXT", "", "false", 0));
         $root->appendChild($this->createXmlChild($doc, $conocerData["$prefix"."20"], "Asunto", "Asunto", "repository", "TEXT", "", "false", 0));
         $root->appendChild($this->createXmlChild($doc, $conocerData["$prefix"."19"], "Numero_Expediente", "Numero_Expediente", "repository", "TEXT", "", "false", 0));
         $root->appendChild($this->createXmlChild($doc, $conocerData["$prefix"."37"], "ArchivoTramite", "ArchivoTramite", "DocumentValidity", "INT", "", "false", 0));
-        $root->appendChild($this->createXmlChild($doc, $conocerData["$prefix"."40"], "Concentracion", "Concentracion", "DocumentValidity", "INT", "", "false", 0));
+        $root->appendChild($this->createXmlChild($doc, $conocerData["$prefix"."40"], "Concentracion", "Concentracion", "DocumentValidity", "DATE", "", "false", 0));
         $root->appendChild($this->createXmlChild($doc, $conocerData["$prefix"."34"], "Confidencial", "Confidencial", "DocumentValidity", "INT", "", "false", 0));
         $root->appendChild($this->createXmlChild($doc, "", "Fundamento_Legal", "Fundamento_Legal", "Repositorio_Fundamento_Legal", "INT", "", "true", 0));
         $doc->appendChild($root);
@@ -258,17 +263,21 @@ class Carga {
         return $child;
     }
         
-    private function insertDocument(array $conocerData, $isDocument, $fileName, $fileType, DOMDocument $frontPage, $idDirectory, $filePath){
+    private function insertDocument(array $conocerData, $expedient, $isDocument, $fileName, $fileType, DOMDocument $frontPage, $idDirectory, $filePath){
 //        echo "<p>Insertando $fileName</p>";
         $prefix = $this->prefix;
-        $idFile = $this->getDocument($fileName);
+        $idFile = $this->getDocument($fileName, $expedient);
         
         if(is_numeric($idFile)){
-            if((int)$idFile > 0)
+            if((int)$idFile > 0){
+                echo "<p>Existe el documento o plantilla $fileName</p>";
                 return $idFile;
+            }
         }
-        else
-            return "<p>Error: $idFile</p>";       
+        else{
+             echo "<p>Error al buscar el documento $fileName: $idFile</p>";       
+             return 0;
+        }
         
         $fechaIngreso   = date("Y-m-d");
         $queryBuilded = $this->getQueryInsert($frontPage);
@@ -284,8 +293,10 @@ class Carga {
 //        echo "<p>$insert</p>";
         $newIdFile = $this->db->ConsultaInsertReturnId("CONOCER", $insert);
         
-        if(!(int)$newIdFile > 0)
-            return "<p><b>Error</b> al insertar a $fileName</p> $newIdFile <br>";
+        if(!(int)$newIdFile > 0){
+            echo "<p><b>Error</b> al insertar a $fileName</p> $newIdFile <br>";
+            return 0;
+        }
         
         $idGlobal = $this->insertToGlobal($frontPage, $newIdFile, $idDirectory, $fileName, $fileType, $filePath);
         echo "<p>idGlobal: $idGlobal</p>";
@@ -317,6 +328,7 @@ class Carga {
         
         if(!file_exists($originFullPathWithExt1)){
             if(!file_exists($originFullPathWithExt2)){
+                echo "<p>No existe $originFullPathWithExt1</p>";
                 echo "<p>No existe2 $originFullPathWithExt2</p>";
                 return 0;
             }
@@ -362,8 +374,8 @@ class Carga {
         return $result;
     }    
     
-    private function getDocument($fileName){
-        $select = "SELECT *FROM Repositorio WHERE  NombreArchivo = '$fileName'";
+    private function getDocument($fileName, $expedient){
+        $select = "SELECT *FROM Repositorio WHERE  NombreArchivo = '$fileName' AND Numero_Expediente = '$expedient'";
         $result = $this->db->ConsultaSelect("CONOCER", $select);
         if($result['Estado'] != 1)
             return $result['Estado'];
