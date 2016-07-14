@@ -455,7 +455,7 @@ var Topography = function(){
     var addNewSection = function(structureName, nameStructureForm, structureKeyForm, descriptionStructure){
         var activeNode = $('#'+structureName+'Tree').dynatree('getActiveNode');
         if(activeNode === null)
-            return ADvertencia("Debe seleccionar una seccion.");
+            return Advertencia("Debe seleccionar una seccion.");
         var status = 0;
         var nameStructure = String($.trim(nameStructureForm.val()));
         var description = String($.trim(descriptionStructure.val()));
