@@ -67,7 +67,7 @@ class Carga {
     private function buildDirectoriesStructure($columnNames, $conocerData){
         $routFile = dirname(getcwd());
         $prefix = $this->prefix;
-        for($cont = 1027; $cont < 1100; $cont++){
+        for($cont = 1187; $cont <= 1380; $cont++){
             echo "<pre>";
 //            foreach ($conocerData[$cont] as $key => $value){
 //                echo "<p>$key: $columnNames[$key] = $value || </p>";
@@ -131,7 +131,7 @@ class Carga {
             echo "---------------------------------------------<br><br>";
         }
     }
-    
+  
     private function getIdDirectory($catalogKey, $catalogKeyPath,$parentCatalogKeyPath, $idParent, $catalogType, $path,$conocerData, $isFrontPage = 0, $isLegajo = 0){
         $select = "SELECT *FROM dir_Repositorio WHERE title = '$catalogKeyPath'";
         
@@ -265,6 +265,14 @@ class Carga {
         
     private function insertDocument(array $conocerData, $expedient, $isDocument, $fileName, $fileType, DOMDocument $frontPage, $idDirectory, $filePath){
 //        echo "<p>Insertando $fileName</p>";
+        if($isDocument){    /* Cuando se va a insertar un documento */
+            if(!$this->moveDocument($conocerData, $fileName, $filePath)){
+                echo "<p>Ignorando carga de $fileName ......</p>";
+                return 0;
+            }
+        }
+        else{   /* Cuando se va a insertar una caratula */
+        }
         $prefix = $this->prefix;
         $idFile = $this->getDocument($fileName, $expedient);
         
@@ -299,13 +307,7 @@ class Carga {
         }
         
         $idGlobal = $this->insertToGlobal($frontPage, $newIdFile, $idDirectory, $fileName, $fileType, $filePath);
-        echo "<p>idGlobal: $idGlobal</p>";
-        
-        if($isDocument){    /* Cuando se va a insertar un documento */
-            $this->moveDocument($conocerData, $fileName, $filePath);
-        }
-        else{   /* Cuando se va a insertar una caratula */
-        }
+        echo "<p>idGlobal: $idGlobal</p>";                
         
         return $newIdFile;
     }
@@ -345,6 +347,7 @@ class Carga {
             echo "<p>Path destino : ".  $filePath."</p>";
             copy($originFullPathWithExt1, $filePath);
         }
+        return 1;
     }
     
     private function getFileName($conocerData){
