@@ -6,11 +6,9 @@ var AdministrativeUnit = function () {
      * @returns {undefined}
      */
     this.setActionToLink = function () {
-        $('.LinkAdministrativeUnit').click(function () {
-            buildConsole();
-        });
+        $('.LinkAdministrativeUnit').click(buildConsole);
     };
-
+    
     var buildConsole = function () {
         /* --- TAB UNIDAD ADMINISTRATIVA --- */
         var tabbable = $('<div>');
@@ -18,10 +16,10 @@ var AdministrativeUnit = function () {
         var navTab = $('<ul>', {class: "nav nav-tabs"});
 
         var adminUnitLi = $('<li>', {class: "active"}).append('<a href="#adminUnitDiv" data-toggle="tab"><span class = "archivalAdministrativeUnitIcon"></span> Unidad Administrativa</a>');
-        var serieLi = $('<li>').append('<a href="#adminUnitSerie" data-toggle="tab"><span class = "archivalSectionIcon"></span> Serie</a>');
+        var serieLi = $('<li>').append('<a href="#adminUnitSerie" data-toggle="tab"><span class = "archivalSerieIcon"></span> Serie</a>');
 
-        var adminUnitDiv = $('<div>', {class: "tab-pane active", id: "adminUnitDiv"});
-        var serieDiv = $('<div>', {class: "tab-pane", id: "adminUnitSerie"});
+        var adminUnitDiv = $('<div>', {class: "tab-pane active", id: "adminUnitDiv", style: "max-height: calc(100vh - 200px); overflow: auto;"});
+        var serieDiv = $('<div>', {class: "tab-pane", id: "adminUnitSerie", style: "max-height: calc(100vh - 200px); overflow: auto;"});
 
         var tabContent = $('<div>', {class: "tab-content"});
 
@@ -39,15 +37,16 @@ var AdministrativeUnit = function () {
 
         navTabBar.append(container);
 
-        content.append(navTabBar);
+        content.append(navTabBar)
+                .append('<center><li class = "fa fa-spinner fa-spin fa-lg"></li></center>');
 
         var adminUnit = $('<div>', {id: "adminUnitTree"});
-
+        
         content.append(adminUnit);
 
         adminUnitDiv.append(content);
 
-        /* --- TAB SERIE --- */
+        /* ---------------- TAB SERIE ------------------ */
 
         content = $('<div>');
         navTabBar = $('<nav>', {class: "navbar navbar-default"});
@@ -85,6 +84,7 @@ var AdministrativeUnit = function () {
             onshown: function (dialogRef) {
                 
                 adminUnit.dynatree({
+                    minExpandLevel: 2,
                     onActivate: function(node){
                         if (parseInt(node.data.key) === 0){
                             $('.editAdminUnit').addClass('disabled');
@@ -106,24 +106,21 @@ var AdministrativeUnit = function () {
                         key: 0,
                         isFolder: true,
                         expand: true,
-                        icon: "/img/archival/department.png"
+                        icon: "/img/archival/department.png",
+                        minExpandLevel: 2
+
                     });
                     child.activate(true);
-
-                    var treeStructure = tree.getTreeStructure();
+                    
+                    var treeStructure = adminUnitObject.getTreeStructure();
+                    
                     if (typeof treeStructure === 'object')
-                        tree.build(treeStructure);
+                        adminUnitObject.build(treeStructure);
                 }
 
-                $('.newAdminUnit').click(function () {
-                    tree.newAdminUnit();
-                });
-                $('.editAdminUnit').click(function () {
-                    tree.editAdminUnit();
-                });
-                $('.removeAdminUnit').click(function () {
-                    tree.removeAdminUnit();
-                });
+                $('.newAdminUnit').click(adminUnitObject.newAdminUnit);
+                $('.editAdminUnit').click(adminUnitObject.editAdminUnit);
+                $('.removeAdminUnit').click(adminUnitObject.removeAdminUnit);
 
                 $('.removeAdminUnitOfSerie').click(function () {
                     var activeNode = $('#adminUnitSerie').dynatree('getActiveNode');
@@ -150,7 +147,7 @@ var AdministrativeUnit = function () {
                     else
                     if (activeNode.data.type === 'adminUnit'){
                         if(activeNode.getChildren() === null)
-                            tree.mergeUserGroupAndAdminUnit(activeNode);
+                            adminUnitObject.mergeUserGroupAndAdminUnit(activeNode);
                     }
                     else if(activeNode.data.type === 'userGroup')
                         userGroup.showPermissions(activeNode);
@@ -199,7 +196,8 @@ var AdministrativeUnit = function () {
                 var series = serie.getSeriesStructure();
                 if (typeof serie === 'object')
                     serie.buildTree(series);
-
+                
+                adminUnitDiv.find('.fa-spinner').remove();
             },
             onclose: function (dialogRef) {
 
@@ -211,7 +209,7 @@ var AdministrativeUnit = function () {
      * @description Objeto que almacena los métodos relacionados con la estructura de Unidades Administrativas.
      * @type type
      */
-    var tree = {
+    var adminUnitObject = {
         getTreeStructure: function () {
 
             var structure = null;
@@ -301,7 +299,6 @@ var AdministrativeUnit = function () {
                         key: idAdminUnit,
                         description: description,
                         isFolder: true,
-                        expand: true,
                         icon: "/img/archival/department.png"
                     });
             });
@@ -365,7 +362,7 @@ var AdministrativeUnit = function () {
                                             button.spin();
                                             button.disable();
 
-                                            if (tree.modifyAdminUnit(activeNode))
+                                            if (adminUnitObject.modifyAdminUnit(activeNode))
                                                 dialogRef.close();
                                             
                                             dialogRef.setClosable(true);
@@ -460,7 +457,7 @@ var AdministrativeUnit = function () {
                             dialogRef.setClosable(false);
                             button.spin();
                             button.disable();
-                            if(tree.deleteAdminUnit())
+                            if(adminUnitObject.deleteAdminUnit())
                                 dialogRef.close();
                             
                             button.stopSpin();
@@ -586,7 +583,7 @@ var AdministrativeUnit = function () {
                             button.disable();
                             dialogRef.setClosable(false);
 
-                            if (tree.addNewAdminUnit(activeNode))
+                            if (adminUnitObject.addNewAdminUnit(activeNode))
                                 dialogRef.close();
 
                             dialogRef.setClosable(true);
@@ -759,34 +756,45 @@ var AdministrativeUnit = function () {
             return series;
         },
         buildTree: function (series) {
-            var serieRoot = $('#adminUnitSerie').dynatree('getTree').getNodeByKey('0');
+            var serieRoot = $('#adminUnitSerie').dynatree('getTree');
 
             if (typeof serieRoot !== 'object')
                 return errorMessage("No fué posible obtener la raíz de la estructura <b>Serie</b>");
 
             $(series).find('serie').each(function () {
-                var serie = $(this);
-                var idDocDisposition = $(serie).find('idDocumentaryDisposition').text();
-                var name = $(serie).find('Name').text();
-                var description = $(serie).find('Description').text();
-                var key = $(serie).find('NameKey').text();
-                var idAdminUnit_DocDisposition = $(serie).find('idAdminUnit_DocDisposition').text();
-                var idAdminUnit = $(serie).find('idAdminUnit').text();
-                var adminUnitName = $(serie).find('adminUnitName').text();
-                var idUserGroup = $(serie).find('idUserGroup').text();
-                var userGroupName = $(serie).find('userGroupName').text();
-
-                var serieChild = serieRoot.addChild({
-                    title: name,
-                    key: "serie_"+idDocDisposition,
-                    nameKey: key,
-                    description: description,
-                    isFolder: true,
-                    expand: true,
-                    icon: "/img/archival/serie.png",
-                    type: "serie"
-                });
-
+                var serie                       = $(this);
+                var idDocDisposition            = $(serie).find('idDocumentaryDisposition').text();
+                var name                        = $(serie).find('Name').text();
+                var description                 = $(serie).find('Description').text();
+                var key                         = $(serie).find('NameKey').text();
+                var parentKey                   = "serie_" + $(serie).find('ParentKey').text();
+                var nodeType                    = $(serie).find('NodeType').text();
+                var idAdminUnit_DocDisposition  = $(serie).find('idAdminUnit_DocDisposition').text();
+                var idAdminUnit                 = $(serie).find('idAdminUnit').text();
+                var adminUnitName               = $(serie).find('adminUnitName').text();
+                var idUserGroup                 = $(serie).find('idUserGroup').text();
+                var userGroupName               = $(serie).find('userGroupName').text();
+                var serieChild;        
+                var serieNode                   = {
+                                                    idDocDisposition: idDocDisposition,
+                                                    title: name,
+                                                    key: "serie_"+key,
+                                                    nameKey: key,
+                                                    parentKey: parentKey,
+                                                    nodeType: nodeType,
+                                                    description: description,
+                                                    isFolder: true,
+                                                    expand: true,
+                                                    icon: "/img/archival/serie.png",
+                                                    type: "serie"
+                                                };
+                var nodeSerieParent = serieRoot.getNodeByKey(parentKey);
+                
+                if(nodeSerieParent === null)
+                    serieChild = $('#adminUnitSerie').dynatree('getTree').getNodeByKey('0').addChild(serieNode);
+                else
+                    serieChild = nodeSerieParent.addChild(serieNode);
+                
                 if (parseInt(idAdminUnit) > 0) {
                     var adminUnitChild = serieChild.addChild({
                         title: adminUnitName,
@@ -812,35 +820,37 @@ var AdministrativeUnit = function () {
 
             });
         },
+        /**
+         * @description Construye la interfaz para unificar una serie con una unidad administrativa
+         * @returns {Number}
+         */
         mergeAdminUnitInterface: function () {
 
             var serieTree = $('#adminUnitSerie').dynatree('getActiveNode');
-            var idSerie = serieTree.data.key;
-            idSerie = String(idSerie).replace("serie_", "");
+            var idSerie = serieTree.data.idDocDisposition;
             
             if (!parseInt(idSerie) > 0)
                 return 0;
 
-            var content = $('<div>');
-
-            var formGroup = $('<div>', {class: "form-group"});
-            var adminUnitNameLabel = $('<label>', {}).append("Unidad Administrativa");
-            var adminUnitNameSelect = $('<select>', {class: "form-control", id: "adminUnitNameMerge"});
-
-            formGroup.append(adminUnitNameLabel);
-            formGroup.append(adminUnitNameSelect);
-
-            content.append(formGroup);
-
+            var adminUnitTreeWithoutSerie = $('<div>', {id: 'adminUnitTreeWithoutSerie'});
+            var content = $('<div>').append(adminUnitTreeWithoutSerie);
+            
             BootstrapDialog.show({
-                title: 'Unificar con Unidad Administrativa',
-                size: BootstrapDialog.SIZE_SMALL,
+                title: 'Unificar serie y Unidad Administrativa',
+                size: BootstrapDialog.SIZE_NORMAL,
                 message: content,
                 closeByBackdrop: true,
                 buttons: [
                     {
+                        label: "Cancelar",
+                        action: function(dialogRef){
+                            dialogRef.close();
+                        }
+                    },
+                    {
                         label: 'Unificar',
                         cssClass: "btn-primary",
+                        icon: 'fa fa-link fa-lg',
                         action: function (dialogRef) {
                             var button = this;
                             button.spin();
@@ -857,45 +867,70 @@ var AdministrativeUnit = function () {
                     }
                 ],
                 onshown: function (dialogRef) {
-                    var adminUnit = tree.getAdminUnitWithoutSerie();
-
-                    if (!typeof adminUnit === 'object')
-                        return 0;
-
-                    $(adminUnit).find('area').each(function () {
-                        var idAdminUnit = $(this).find('idAdminUnit').text();
-                        var name = $(this).find('Name').text();
-                        var description = $(this).find('Description').text();
-                        var idParent = $(this).find('idParent').text();
-                        var nameKey = $(this).find('NameKey').text();
-
-                        var option = $('<option>', {id: idAdminUnit, nameKey: nameKey, name: name}).append(name);
-                        adminUnitNameSelect.append(option);
-                    });
-
-                    if ($('#adminUnitNameMerge option').size() === 0)
-                        return Advertencia("<p>No existen <b>Unidades Administrativas</b></p>");
-
+                    var adminUnitsWithoutSerie = adminUnitObject.getAdminUnitWithoutSerie();
+                    serie.buildAdminUnitTreeWithoutSerie(adminUnitTreeWithoutSerie, adminUnitsWithoutSerie);
                 }
             });
         },
+        /**
+         * @description Construye el árbol con las unidades administrativas que no estan asociadas a un serie.
+         * @param {type} adminUnitTreeWithoutSerie
+         * @param {type} adminUnitsWithoutSerie
+         * @returns {undefined}
+         */
+        buildAdminUnitTreeWithoutSerie: function(adminUnitTreeWithoutSerie, adminUnitsWithoutSerie){
+            adminUnitTreeWithoutSerie.dynatree({
+                minExpandLevel: 2,
+                children: { 
+                    title: "Unidades Administrativas",
+                    key: 0,
+                    isFolder: true,
+                    icon: "/img/archival/department.png"
+                }
+            });
+            
+            $(adminUnitsWithoutSerie).find('area').each(function () {
+                var idAdminUnit = $(this).find('idAdminUnit').text();
+                var name        = $(this).find('Name').text();
+                var description = $(this).find('Description').text();
+                var idParent    = $(this).find('idParent').text();
+                var nameKey     = $(this).find('NameKey').text();
+
+                var parent = adminUnitTreeWithoutSerie.dynatree('getTree').getNodeByKey(idParent);
+                if (typeof parent === 'object')
+                    parent.addChild({
+                        title: name,
+                        key: idAdminUnit,
+                        description: description,
+                        nameKey: nameKey,
+                        isFolder: true,
+                        icon: "/img/archival/department.png",
+                        activate: true
+                    });
+            });
+        },
         mergeAdminUnitAndSerie: function () {
-            var status = 0;
-            var adminUnitNameSelect = $('#adminUnitNameMerge option:selected');
-            var idAdminUnit = parseInt(adminUnitNameSelect.attr('id'));
-            var name = adminUnitNameSelect.attr('name');
-            var nameKey = adminUnitNameSelect.attr('nameKey');
-
-            var activeNode = $('#adminUnitSerie').dynatree('getActiveNode');
-
+            var status = 0,
+                adminUnitActiveNode = $('#adminUnitTreeWithoutSerie').dynatree("getTree").getActiveNode(),
+                idAdminUnit,
+                name,
+//                nameKey,
+                activeNode = $('#adminUnitSerie').dynatree('getActiveNode');
+            
+            if(typeof adminUnitActiveNode !== "object")
+                return Advertencia("Debe seleccionar una Unidad Administrativa");
+            
             if (typeof activeNode !== 'object')
                 return errorMessage("<p>No fué posible obtener la serie activa</p>");
+            
+            idAdminUnit = adminUnitActiveNode.data.key;
+            name        = adminUnitActiveNode.data.title;
+//            nameKey     = adminUnitActiveNode.data.nameKey;
 
             if (!parseInt(idAdminUnit) > 0)
                 return Advertencia("<p>No fué posible obtener el identificador de la Unidad Administrativa</p>");
 
-            var idSerie = activeNode.data.key;
-            idSerie = String(idSerie).replace("serie_", "");
+            var idSerie = activeNode.data.idDocDisposition;
             
             if(!parseInt(idSerie) > 0)
                 return Advertencia("<p>No fué posible obtener el identificador de la Serie</p>");
@@ -921,7 +956,7 @@ var AdministrativeUnit = function () {
                         var child = activeNode.addChild({
                             title: name,
                             key: "adminUnit_"+idAdminUnit,
-                            nameKey: nameKey,
+//                            nameKey: nameKey,
                             isFolder: true,
                             expand: true,
                             icon: "/img/archival/department.png",
@@ -946,6 +981,11 @@ var AdministrativeUnit = function () {
 
             return status;
         },
+        /**
+         * @description Mensaje de confirmación para eliminar la relación entre una serie y una unidad administrativa
+         * @param {type} activeNodeSerie
+         * @returns {undefined}
+         */
         removeAdminUnitConfirmation: function (activeNodeSerie) {
             var parent = activeNodeSerie.getParent();
                      
@@ -986,12 +1026,16 @@ var AdministrativeUnit = function () {
                 }
             });
         },
+        /**
+         * @description Elimina la relación entre una serie y una unidad administrativa
+         * @param {type} activeNode
+         * @returns {Number}
+         */
         removeAdminUnit: function (activeNode) {
             var status = 1;
             
             var idAdminUnit = activeNode.data.key;
             idAdminUnit = String(idAdminUnit).replace ("adminUnit_", "");
-            
             
             $.ajax({
                 async: false,

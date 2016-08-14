@@ -153,7 +153,8 @@ class AdministrativeUnit {
         
         $select = "
             SELECT doc.idDocumentaryDisposition, doc.Name, doc.NameKey, 
-            doc.Description, au.idAdminUnit, au.Name, gu.IdGrupo, gu.Nombre
+            doc.Description, doc.ParentKey, doc.NodeType, 
+            au.idAdminUnit, au.Name, gu.IdGrupo, gu.Nombre
             FROM CSDocs_DocumentaryDisposition doc 
             LEFT JOIN CSDocs_AdministrativeUnit au ON doc.idDocumentaryDisposition = au.idSerie
             LEFT JOIN GruposUsuario gu ON au.idUserGroup = gu.IdGrupo
@@ -183,13 +184,17 @@ class AdministrativeUnit {
                 $bloque->appendChild($nameKey);
                 $description = $doc->createElement("Description",$row[3]);
                 $bloque->appendChild($description);
-                $idAdminUnit = $doc->createElement("idAdminUnit", $row[4]);
+                $parentKey = $doc->createElement("ParentKey", $row[4]);
+                $bloque->appendChild($parentKey);
+                $nodeType = $doc->createElement("NodeType", $row[5]);
+                $bloque->appendChild($nodeType);
+                $idAdminUnit = $doc->createElement("idAdminUnit", $row[6]);
                 $bloque->appendChild($idAdminUnit);
-                $adminUnitName = $doc->createElement("adminUnitName", $row[5]);
+                $adminUnitName = $doc->createElement("adminUnitName", $row[7]);
                 $bloque->appendChild($adminUnitName);
-                $idUserGroup = $doc->createElement("idUserGroup", $row[6]);
+                $idUserGroup = $doc->createElement("idUserGroup", $row[8]);
                 $bloque->appendChild($idUserGroup);
-                $userGroupName = $doc->createElement("userGroupName", $row[7]);
+                $userGroupName = $doc->createElement("userGroupName", $row[9]);
                 $bloque->appendChild($userGroupName);
                 
                 $root->appendChild($bloque);
