@@ -130,16 +130,20 @@ class AdministrativeUnit {
     
     private function mergeAdminUnitAndSerie($userData){
         $instanceName = $userData['dataBaseName'];
-        
-        $idAdminUnit = filter_input(INPUT_POST, "idAdminUnit");
+        $idsAdminUnit = filter_input(INPUT_POST, "idsAdminUnit");
         $idSerie = filter_input(INPUT_POST, "idSerie");
+        $idsAdminUnitArray = explode(",", $idsAdminUnit);
+        $insert_ = "INSERT INTO CSDocs_Serie_AdminUnit (idSerie, idAdminUnit) VALUES ";
+
+        foreach ($idsAdminUnitArray as $key => $value) {
+            $insert_.= "($idSerie, $value),";
+        }
         
-        $insert = "UPDATE CSDocs_AdministrativeUnit SET IdSerie = $idSerie WHERE idAdminUnit = $idAdminUnit
-                ";
+        $insert = trim($insert_, ",");
         
         if(($insertResult = $this->db->ConsultaQuery($instanceName, $insert)) != 1)
                 return XML::XMLReponse ("Error", 1, "<p><b>Error</b> al intentar realizar la fusión</p>Detalles:<br>$insertResult");
-    
+        
         XML::XMLReponse("doneMerge", 1, "Fusión realizada");
     }
     
@@ -158,7 +162,7 @@ class AdministrativeUnit {
             FROM CSDocs_DocumentaryDisposition doc 
             LEFT JOIN CSDocs_AdministrativeUnit au ON doc.idDocumentaryDisposition = au.idSerie
             LEFT JOIN GruposUsuario gu ON au.idUserGroup = gu.IdGrupo
-            WHERE doc.NodeType = 'serie'
+            ORDER BY doc.idDocumentaryDisposition
             ";
         
         $seriesArray = $this->db->ConsultaSelect($instanceName, $select, 0);
