@@ -279,7 +279,7 @@ class DataBase {
                 . "RutaArchivo TEXT NOT NULL,"
                 . "UsuarioPublicador VARCHAR(50) NOT NULL,"
                 . "FechaIngreso DATETIME NOT NULL,"
-                . "Full TEXT CHARACTER SET latin1 COLLATE latin1_fulltext_ci NOT NULL,"
+                . "Full TEXT NOT NULL,"
                 . "PRIMARY KEY (IdGlobal)"
                 . ")ENGINE = MYISAM DEFAULT CHARSET=utf8 COLLATE=utf8_spanish_ci";
 
@@ -793,8 +793,8 @@ class DataBase {
                     `title` varchar(255) NOT NULL,
                     `path` varchar(255) NOT NULL DEFAULT '',
                     idDocDisposition INT NOT NULL DEFAULT 0,
-                    catalogKey VARCHAR(50) NOT NULL,
-                    parentCatalogKey VARCHAR(50) NOT NULL,
+                    catalogKey VARCHAR(50) NOT NULL DEFAULT '',
+                    parentCatalogKey VARCHAR(50) NOT NULL DEFAULT '',
                     catalogType VARCHAR(10) DEFAULT 0,
                     isExpedient INT DEFAULT 0,
                     isFrontPage INT DEFAULT 0,
@@ -870,8 +870,8 @@ class DataBase {
                     $tabla_temporal_repositorio.=$estructura->getName() . " " . $estructura['type'] . "(" . $estructura['long'] . ") $required, ";
                 } else {
                     if (strcasecmp($estructura->getName(), "full") == 0) {
-                        $tabla_repositorio.= $estructura->getName() . " " . $estructura['type'] . " CHARACTER SET latin1 COLLATE latin1_fulltext_ci $required , ";
-                        $tabla_temporal_repositorio.= $estructura->getName() . " " . $estructura['type'] . " CHARACTER SET latin1 COLLATE latin1_fulltext_ci $required , ";
+                        $tabla_repositorio.= $estructura->getName() . " " . $estructura['type'] . "  $required , ";
+                        $tabla_temporal_repositorio.= $estructura->getName() . " " . $estructura['type'] . "  $required , ";
                     } else {
                         $tabla_repositorio.=$estructura->getName() . " " . $estructura['type'] . " $required , ";
                         $tabla_temporal_repositorio.=$estructura->getName() . " " . $estructura['type'] . " $required , ";
