@@ -84,7 +84,8 @@ var ExpedientClass = function () {
         
         formGroup = $('<div>', {class: "form-group"});
         var expedientNameForm = $('<input>', {class: "form-control", id: "frontPageName"});
-        formGroup.append('<label>Nombre</label>')
+        var expedientNameLabel = $('<label>');
+        formGroup.append(expedientNameLabel)
                 .append(expedientNameForm);
         
         content.append(formGroup);
@@ -109,7 +110,7 @@ var ExpedientClass = function () {
                         var button = this;
                         dialogRef.enableButtons(false);
                         dialogRef.setClosable(false);
-                        if (_associateTemplate(templateForm))
+                        if (_mergeFrontPageWithLegajo(templateForm))
                             dialogRef.close();
                         else {
                             dialogRef.setClosable(true);
@@ -150,8 +151,12 @@ var ExpedientClass = function () {
                 });
             },
             onshown: function (dialogRef) {
+                var date = new Date();
+                var year = date.getFullYear(); 
                 var expedientName = _getExpedientName();
-                expedientNameForm.val(expedientName);
+                frontPageName = expedientName;
+                expedientNameLabel.append(expedientName);
+                expedientNameForm.val(year);
             }
         });
     };
@@ -171,24 +176,27 @@ var ExpedientClass = function () {
      * @returns {String}
      */
     var _getExpedientName = function(){
-        var d = new Date();
-        var n = d.getFullYear(); 
         var activeNode = $('#contentTree').dynatree('getTree').getActiveNode();
         if(activeNode === null){
              Advertencia("Debe seleccionar una serie");
              return null;
          }
          
-        return activeNode.data.title + n + "/";
+        return activeNode.data.title;
     };
 
     /**
-     * @description Asocia una plantilla en un legajo.
+     * @description Asocia una caratula con el legajo
      * @param {Object} templateForm Select Form que contiene la plantilla seleccionada por el usuario.
      * @returns {undefined}
      */
-    var _associateTemplate = function (templateForm) {
-        frontPageName = $.trim($('#frontPageName').val());
+    var _mergeFrontPageWithLegajo = function (templateForm) {
+        var frontPageYear = $.trim($('#frontPageName').val());
+        
+        if(isNaN(frontPageYear) || frontPageYear.length === 0)
+            return Advertencia("Debe de ingresar un año para el expediente");
+        
+        frontPageName += frontPageYear + "/";
         var templateSelected = $(templateForm).find('option:selected')[0];
         if (typeof templateSelected !== 'object')
             return Advertencia("Debe seleccionar un template");
@@ -387,17 +395,17 @@ var ExpedientClass = function () {
                             
             if($(idForm).length > 0){
                 if(String(fieldNameUser).toLowerCase() === 'fondo')
-                    $(idForm).val(_getCatalogType(activeNode, "fondo")).attr('tName', tName);
+                    $(idForm).val(_getCatalogType(activeNode, "fondo")).attr('tName', tName).attr('disabled','disabled');
                 else if(String(fieldNameUser).toLowerCase() === 'seccion')
-                    $(idForm).val(_getCatalogType(activeNode, "section")).attr('tName', tName);
+                    $(idForm).val(_getCatalogType(activeNode, "section")).attr('tName', tName).attr('disabled','disabled');
                 else if(String(fieldNameUser).toLowerCase() === 'serie')
-                    $(idForm).val(_getCatalogType(activeNode, "serie")).attr('tName', tName);
+                    $(idForm).val(_getCatalogType(activeNode, "serie")).attr('tName', tName).attr('disabled','disabled');
                 else if(String(fieldNameUser).toLowerCase() === 'subserie')
-                    $(idForm).val(_getSubCatalogType(activeNode, "serie")).attr('tName', tName);
+                    $(idForm).val(_getSubCatalogType(activeNode, "serie")).attr('tName', tName).attr('disabled','disabled');
                 else if(String(fieldNameUser).toLowerCase() === 'fecha_apertura')
                     $(idForm).val(_getCurrentDate()).attr('tName', tName);
                 else if(String(fieldNameUser).toLowerCase() === 'numero_expediente')
-                    $(idForm).val(_getExpedientName()).attr('tName', tName);
+                    $(idForm).val(frontPageName).attr('tName', tName).attr('disabled','disabled');
                 else
                     $(idForm).val(fieldValue).attr('tName', tName);
             }
