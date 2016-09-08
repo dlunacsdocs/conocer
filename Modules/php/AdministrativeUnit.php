@@ -130,16 +130,20 @@ class AdministrativeUnit {
     
     private function mergeAdminUnitAndSerie($userData){
         $instanceName = $userData['dataBaseName'];
-        
-        $idAdminUnit = filter_input(INPUT_POST, "idAdminUnit");
+        $idsAdminUnit = filter_input(INPUT_POST, "idsAdminUnit");
         $idSerie = filter_input(INPUT_POST, "idSerie");
+        $idsAdminUnitArray = explode(",", $idsAdminUnit);
+        $insert_ = "INSERT INTO CSDocs_Serie_AdminUnit (idSerie, idAdminUnit) VALUES ";
+
+        foreach ($idsAdminUnitArray as $key => $value) {
+            $insert_.= "($idSerie, $value),";
+        }
         
-        $insert = "UPDATE CSDocs_AdministrativeUnit SET IdSerie = $idSerie WHERE idAdminUnit = $idAdminUnit
-                ";
+        $insert = trim($insert_, ",");
         
         if(($insertResult = $this->db->ConsultaQuery($instanceName, $insert)) != 1)
                 return XML::XMLReponse ("Error", 1, "<p><b>Error</b> al intentar realizar la fusión</p>Detalles:<br>$insertResult");
-    
+        
         XML::XMLReponse("doneMerge", 1, "Fusión realizada");
     }
     
@@ -153,11 +157,12 @@ class AdministrativeUnit {
         
         $select = "
             SELECT doc.idDocumentaryDisposition, doc.Name, doc.NameKey, 
-            doc.Description, au.idAdminUnit, au.Name, gu.IdGrupo, gu.Nombre
+            doc.Description, doc.ParentKey, doc.NodeType, 
+            au.idAdminUnit, au.Name, gu.IdGrupo, gu.Nombre
             FROM CSDocs_DocumentaryDisposition doc 
             LEFT JOIN CSDocs_AdministrativeUnit au ON doc.idDocumentaryDisposition = au.idSerie
             LEFT JOIN GruposUsuario gu ON au.idUserGroup = gu.IdGrupo
-            WHERE doc.NodeType = 'serie'
+            ORDER BY doc.idDocumentaryDisposition
             ";
         
         $seriesArray = $this->db->ConsultaSelect($instanceName, $select, 0);
@@ -183,13 +188,17 @@ class AdministrativeUnit {
                 $bloque->appendChild($nameKey);
                 $description = $doc->createElement("Description",$row[3]);
                 $bloque->appendChild($description);
-                $idAdminUnit = $doc->createElement("idAdminUnit", $row[4]);
+                $parentKey = $doc->createElement("ParentKey", $row[4]);
+                $bloque->appendChild($parentKey);
+                $nodeType = $doc->createElement("NodeType", $row[5]);
+                $bloque->appendChild($nodeType);
+                $idAdminUnit = $doc->createElement("idAdminUnit", $row[6]);
                 $bloque->appendChild($idAdminUnit);
-                $adminUnitName = $doc->createElement("adminUnitName", $row[5]);
+                $adminUnitName = $doc->createElement("adminUnitName", $row[7]);
                 $bloque->appendChild($adminUnitName);
-                $idUserGroup = $doc->createElement("idUserGroup", $row[6]);
+                $idUserGroup = $doc->createElement("idUserGroup", $row[8]);
                 $bloque->appendChild($idUserGroup);
-                $userGroupName = $doc->createElement("userGroupName", $row[7]);
+                $userGroupName = $doc->createElement("userGroupName", $row[9]);
                 $bloque->appendChild($userGroupName);
                 
                 $root->appendChild($bloque);
