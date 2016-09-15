@@ -35,12 +35,12 @@ class CoreConfigTables {
         $status = 0;
         $serverRoute = dirname(dirname(getcwd()));
         $coreFilePath = $serverRoute . "/Configuracion/coreResource/core.ini";
-       
+
         if (!file_exists(dirname($coreFilePath)))
             if (!mkdir(dirname($coreFilePath)))
                 return "No fue posible crear el directorio coreResource";
             
-        if(file_exists($coreFilePath))
+        if(!file_exists($coreFilePath))
             if (!($touch = touch($coreFilePath)))
                 return "No fue posible crear el archivo CoreConfig::core. $touch";
         

@@ -11,7 +11,6 @@ var AdministrativeUnit = function () {
     };
     
     var createCoreResource = function () {
-        console.log("createCoreResource--------------------------------");
         var status = 0;
         $.ajax({
             async: false,
@@ -28,7 +27,6 @@ var AdministrativeUnit = function () {
                     xml = $.parseXML(xml);
                 $(xml).find('success').each(function(){
                     status = 1;
-                    console.log(xml);
                 });
                 $(xml).find("Error").each(function (){
                     var mensaje = $(this).find("Mensaje").text();

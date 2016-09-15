@@ -58,9 +58,10 @@ class AdministrativeUnit {
                 PRIMARY KEY (idSerie_AdminUnit)
                 ) DEFAULT CHARSET = utf8";
         $exists = $this->coreConfigTables->createTable($instanceName, "CSDocs_Serie_AdminUnit", $query);
-        var_dump("********".$exists);
+    
         if($exists != 1)
             return XML::XMLReponse ("Error", 0, "No fue posible crear un recurso del core. CSDocs_Serie_AdminUnit. ".$exists);
+        
         return XML::XMLReponse("success", 1, "Recurso CSDocs_Serie_AdminUnit creado correctamente");
     }
     
