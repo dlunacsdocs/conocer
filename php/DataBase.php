@@ -398,16 +398,6 @@ class DataBase {
         if(($administrativeUnitResult = $this->ConsultaQuery($DataBaseName, $administrativeUnit)) != 1)
                 return "<p><b>Error</b> al crear <b>Unidad Administrativa</b></p> Detalles:<br>$administrativeUnitResult";
         
-        $serie_adminUnit = "CREATE TABLE IF NOT EXISTS CSDocs_Serie_AdminUnit(
-                idSerie_AdminUnit INT AUTO_INCREMENT,
-                idSerie INT,
-                idAdminUnit INT,
-                PRIMARY KEY (idSerie_AdminUnit)
-                ) DEFAULT CHARSET = utf8";
-        
-        if(($resultSerie_AdminUnit = $this->ConsultaQuery($DataBaseName, $serie_adminUnit)) != 1)
-                return "<p><b>Error</b> al crear <b>Serie_AdminUnit</b></p> Detalles: <br>".$resultSerie_AdminUnit;
-        
         $topography = "CREATE TABLE IF NOT EXISTS CSDocs_Topography(
                 idTopography INT AUTO_INCREMENT NOT NULL,
                 idParent INT NOT NULL DEFAULT 0,

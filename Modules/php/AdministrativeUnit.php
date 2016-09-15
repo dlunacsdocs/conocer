@@ -11,12 +11,13 @@ require_once dirname($RoutFile).'/php/DataBase.php';
 require_once dirname($RoutFile).'/php/XML.php';
 require_once dirname($RoutFile).'/php/Log.php';
 require_once dirname($RoutFile).'/php/Session.php';
-
+require_once dirname($RoutFile).'/php/CoreConfigTables.php';
 class AdministrativeUnit {
     private $db;
-    
+    private$coreConfigTables;
     public function __construct() {
         $this->db = new DataBase();
+        $this->coreConfigTables = new CoreConfigTables();
     }
     
     public function ajax(){
@@ -30,6 +31,7 @@ class AdministrativeUnit {
             $userData = Session::getSessionParameters();
             
             switch (filter_input(INPUT_POST, "option")){
+                case 'createCoreResource': $this->createCoreResource($userData); break;
                 case 'addNewAdminUnit': $this->addNewAdminUnit($userData); break;
                 case 'getAdministrativeUnitStructure': $this->getAdministrativeUnitStructure($userData); break;
                 case 'modifyAdminUnit': $this->modifyAdminUnit($userData); break;
@@ -42,6 +44,24 @@ class AdministrativeUnit {
                 case 'removeMergeUserGroupAndAdminUnit': $this->removeMergeUserGroupAndAdminUnit($userData); break;
             }
         }
+    }
+    
+    /**
+     * @description Crea la tabla de relacion entre unidades administrativas y series
+     */
+    public function createCoreResource($userData){
+        $instanceName = $userData['dataBaseName'];
+        $query = "CREATE TABLE IF NOT EXISTS CSDocs_Serie_AdminUnit(
+                idSerie_AdminUnit INT AUTO_INCREMENT,
+                idSerie INT,
+                idAdminUnit INT,
+                PRIMARY KEY (idSerie_AdminUnit)
+                ) DEFAULT CHARSET = utf8";
+        $exists = $this->coreConfigTables->createTable($instanceName, "CSDocs_Serie_AdminUnit", $query);
+        var_dump("********".$exists);
+        if($exists != 1)
+            return XML::XMLReponse ("Error", 0, "No fue posible crear un recurso del core. CSDocs_Serie_AdminUnit. ".$exists);
+        return XML::XMLReponse("success", 1, "Recurso CSDocs_Serie_AdminUnit creado correctamente");
     }
     
     private function getAdministrativeUnitStructure($userData){

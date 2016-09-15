@@ -6,7 +6,42 @@ var AdministrativeUnit = function () {
      * @returns {undefined}
      */
     this.setActionToLink = function () {
+        createCoreResource();
         $('.LinkAdministrativeUnit').click(buildConsole);
+    };
+    
+    var createCoreResource = function () {
+        console.log("createCoreResource--------------------------------");
+        var status = 0;
+        $.ajax({
+            async: false,
+            cache: false,
+            dataType: "html",
+            type: 'POST',
+            url: "Modules/php/AdministrativeUnit.php",
+            data: {option: "createCoreResource"},
+            success: function (xml)
+            {
+                if ($.parseXML(xml) === null)
+                    return errorMessage(xml);
+                else
+                    xml = $.parseXML(xml);
+                $(xml).find('success').each(function(){
+                    status = 1;
+                    console.log(xml);
+                });
+                $(xml).find("Error").each(function (){
+                    var mensaje = $(this).find("Mensaje").text();
+                    errorMessage(mensaje);
+                });
+            },
+            beforeSend: function () {
+            },
+            error: function (jqXHR, textStatus, errorThrown) {
+                errorMessage(textStatus + "<br>" + errorThrown);
+            }
+        });
+        return status;
     };
     
     var buildConsole = function () {
