@@ -55,6 +55,7 @@ class AdministrativeUnit {
                 idSerie_AdminUnit INT AUTO_INCREMENT,
                 idSerie INT,
                 idAdminUnit INT,
+                idUserGroup INT DEFAULT 0,
                 PRIMARY KEY (idSerie_AdminUnit)
                 ) DEFAULT CHARSET = utf8";
         $exists = $this->coreConfigTables->createTable($instanceName, "CSDocs_Serie_AdminUnit", $query);
@@ -178,12 +179,12 @@ class AdministrativeUnit {
         
         $select = "
             SELECT doc.idDocumentaryDisposition, doc.Name, doc.NameKey, 
-            doc.Description, doc.ParentKey, doc.NodeType, 
-            au.idAdminUnit, au.Name, gu.IdGrupo, gu.Nombre
+            doc.Description, doc.ParentKey, doc.NodeType, au.idAdminUnit, au.idParent, au.Name, gu.IdGrupo, gu.Nombre
             FROM CSDocs_DocumentaryDisposition doc 
-            LEFT JOIN CSDocs_AdministrativeUnit au ON doc.idDocumentaryDisposition = au.idSerie
-            LEFT JOIN GruposUsuario gu ON au.idUserGroup = gu.IdGrupo
-            ORDER BY doc.idDocumentaryDisposition
+            LEFT JOIN CSDocs_Serie_AdminUnit sau ON doc.idDocumentaryDisposition = sau.idSerie
+            LEFT JOIN CSDocs_AdministrativeUnit au ON au.idAdminUnit=sau.idAdminUnit
+            LEFT JOIN GruposUsuario gu ON sau.idUserGroup = gu.IdGrupo
+            ORDER BY doc.idDocumentaryDisposition, au.idAdminUnit
             ";
         
         $seriesArray = $this->db->ConsultaSelect($instanceName, $select, 0);
@@ -192,7 +193,7 @@ class AdministrativeUnit {
             return XML::XMLReponse ("Error", 0, $seriesArray['Estado']);
         
         $data = $seriesArray['ArrayDatos'];
-        
+
         $doc  = new DOMDocument('1.0','utf-8');
         $doc->formatOutput = true;
         $root = $doc->createElement("Serie");
@@ -215,11 +216,13 @@ class AdministrativeUnit {
                 $bloque->appendChild($nodeType);
                 $idAdminUnit = $doc->createElement("idAdminUnit", $row[6]);
                 $bloque->appendChild($idAdminUnit);
-                $adminUnitName = $doc->createElement("adminUnitName", $row[7]);
+                $idAdminUnitParent = $doc->createElement("idAdminUnitParent", $row[7]);
+                $bloque->appendChild($idAdminUnitParent);
+                $adminUnitName = $doc->createElement("adminUnitName", $row[8]);
                 $bloque->appendChild($adminUnitName);
-                $idUserGroup = $doc->createElement("idUserGroup", $row[8]);
+                $idUserGroup = $doc->createElement("idUserGroup", $row[9]);
                 $bloque->appendChild($idUserGroup);
-                $userGroupName = $doc->createElement("userGroupName", $row[9]);
+                $userGroupName = $doc->createElement("userGroupName", $row[10]);
                 $bloque->appendChild($userGroupName);
                 
                 $root->appendChild($bloque);
@@ -249,7 +252,7 @@ class AdministrativeUnit {
         $idUserGroup = filter_input(INPUT_POST, "idUserGroup");
         $idAdminUnit = filter_input(INPUT_POST, "idAdminUnit");
         
-        $update = "UPDATE CSDocs_AdministrativeUnit SET idUserGroup = $idUserGroup WHERE idAdminUnit = $idAdminUnit";
+        $update = "UPDATE CSDocs_Serie_AdminUnit SET idUserGroup = $idUserGroup WHERE idAdminUnit = $idAdminUnit";
         
         if(($updateResult = $this->db->ConsultaQuery($instanceName, $update)) != 1)
                 return XML::XMLReponse ("Error", 0, "<p><b>Error</b> al intentar crear la relación entre la Unidad Administrativa y el Grupo de Usuario Seleccionado</p>Detalles:<br><br>$updateResult");

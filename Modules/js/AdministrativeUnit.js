@@ -1,5 +1,38 @@
+/* 
+ * Copyright 2016 Daniel Luna.
+ * CSDocs
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *      http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
+
 /* global BootstrapDialog */
 
+/**
+ * @returns {AdministrativeUnit}
+ * 
+ * @description Script que crea la interfaz de Unidad Administrativa.
+ * La estructura de la interfaz de la pestaña Serie, se representa de la siguiente manera al construirse
+ *      Fondo
+ *          Subfondo
+ *              Sección
+ *                  Subsección
+ *                      Serie
+ *                          Subserie
+ *                              Unidad Administrativa
+ *                                  ..
+ *                                      ..
+ *                                          Grupo Usuario
+ */
 var AdministrativeUnit = function () {
     /**
      * @description Agrega la acción de respuesta al dar click sobre la opción de menú de "Unidad Administrativa".
@@ -788,9 +821,9 @@ var AdministrativeUnit = function () {
             return series;
         },
         buildTree: function (series) {
-            var serieRoot = $('#catalogDispTree').dynatree('getTree');
+            var serieTree = $('#catalogDispTree').dynatree('getTree');
 
-            if (typeof serieRoot !== 'object')
+            if (typeof serieTree !== 'object')
                 return errorMessage("No fué posible obtener la raíz de la estructura <b>Serie</b>");
 
             $(series).find('serie').each(function () {
@@ -798,56 +831,77 @@ var AdministrativeUnit = function () {
                 var idDocDisposition = $(catalogDispNode).find('idDocumentaryDisposition').text();
                 var name             = $(catalogDispNode).find('Name').text();
                 var description      = $(catalogDispNode).find('Description').text();
-                var key              = $(catalogDispNode).find('NameKey').text();
+                var nameKey          = $(catalogDispNode).find('NameKey').text();
                 var parentKey        = "serie_" + $(catalogDispNode).find('ParentKey').text();
                 var nodeType         = $(catalogDispNode).find('NodeType').text();
                 var idAdminUnit      = $(catalogDispNode).find('idAdminUnit').text();
+                var idAdminUnitParent = $(catalogDispNode).find('idAdminUnitParent').text();
                 var adminUnitName    = $(catalogDispNode).find('adminUnitName').text();
+                var adminUnitParentNode = null;
                 var idUserGroup      = $(catalogDispNode).find('idUserGroup').text();
                 var userGroupName    = $(catalogDispNode).find('userGroupName').text();
                 var icon             = serie.getDocDispositionIcon(nodeType);
-                var nodeSerieParent  = serieRoot.getNodeByKey(parentKey);
-                var serieChild;
+                var nodeSerieParent  = serieTree.getNodeByKey(parentKey);
+                var serieChild       = null;
+                var serieNodeKey     = "serie_"+nameKey;
+                var serieNodeTree    = serieTree.getNodeByKey(serieNodeKey);
+                var adminUnitChild   = null;
+                var userGroupChild   = null;
+                var userGroupKey     = "userGroup_"+idUserGroup;
+                var adminUnitKey     = idDocDisposition+"_"+idAdminUnit;
                 var serieNode        = {
                                             idDocDisposition: idDocDisposition,
                                             title: name,
-                                            key: "serie_"+key,
-                                            nameKey: key,
+                                            key: serieNodeKey,
+                                            nameKey: nameKey,
                                             parentKey: parentKey,
                                             nodeType: nodeType,
                                             description: description,
                                             isFolder: true,
                                             icon: icon,
                                             type: nodeType,
-                                            expand: true,
+                                            expand: true
                                         };
-                                                             
+                var adminUnitChildNode = {
+                                title: adminUnitName,
+                                key: adminUnitKey,
+                                isFolder: true,
+                                icon: "/img/archival/department.png",
+                                type: "adminUnit",
+                                idDocDisposition: idDocDisposition
+                            };
+                var userGroupChildNode = {
+                                title: userGroupName,
+                                key: userGroupKey,
+                                isFolder: true,
+                                icon: "/img/userGroup.png",
+                                type: "userGroup",
+                                idUserGroup: idUserGroup
+                            };
+
                 if(nodeSerieParent === null)
                     serieChild = $('#catalogDispTree').dynatree('getRoot').addChild(serieNode);
-                else
+                else if(serieNodeTree === null)
                     serieChild = nodeSerieParent.addChild(serieNode);
+                else
+                    serieChild = serieNodeTree;
                 
-                if (parseInt(idAdminUnit) > 0) {
-                    var adminUnitChild = serieChild.addChild({
-                        title: adminUnitName,
-                        key: "adminUnit_"+idAdminUnit,
-                        isFolder: true,
-                        icon: "/img/archival/department.png",
-                        type: "adminUnit"
-                    });
-                    
-                    if(parseInt(idUserGroup) > 0){
-                        var userGroupChild = adminUnitChild.addChild({
-                            title: userGroupName,
-//                            key: "userGroup_"+idUserGroup,
-                            isFolder: true,
-                            icon: "/img/userGroup.png",
-                            type: "userGroup",
-                            idUserGroup: idUserGroup
-                        });
-                    }
-                }
+                if (parseInt(idAdminUnit) > 0) 
+                    if (serieChild !== null){
+                        if(parseInt(idAdminUnitParent) > 0)
+                            adminUnitParentNode = serieTree.getNodeByKey(idDocDisposition+"_"+idAdminUnitParent);
 
+                        if (adminUnitParentNode === null)
+                            adminUnitChild = serieChild.addChild(adminUnitChildNode);
+                        else if(adminUnitParentNode.data.idDocDisposition === idDocDisposition)
+                                adminUnitChild = adminUnitParentNode.addChild(adminUnitChildNode);
+                    } 
+                
+                if(parseInt(idUserGroup) > 0)
+                    if(adminUnitChild !== null){
+                        if(serieTree.getNodeByKey(userGroupKey) === null)
+                            userGroupChild = adminUnitChild.addChild(userGroupChildNode);
+                    }
             });
         },
         getDocDispoChild: function(){
@@ -1012,17 +1066,17 @@ var AdministrativeUnit = function () {
                     if ($(xml).find("doneMerge").length > 0) {
                         status = 1;
 
-                        var child = activeNode.addChild({
-                            title: name,
-                            key: "adminUnit_"+idAdminUnit,
-//                            nameKey: nameKey,
-                            isFolder: true,
-                            expand: true,
-                            icon: "/img/archival/department.png",
-                            type: "adminUnit"
-                        });
+//                        var child = activeNode.addChild({
+//                            title: name,
+//                            key: "adminUnit_"+idAdminUnit,
+////                            nameKey: nameKey,
+//                            isFolder: true,
+//                            expand: true,
+//                            icon: "/img/archival/department.png",
+//                            type: "adminUnit"
+//                        });
 
-                        child.activate(true);
+//                        child.activate(true);
                     }
 
                     $(xml).find("Error").each(function ()
@@ -1226,6 +1280,24 @@ var AdministrativeUnit = function () {
             });
             
             return status;
+        },
+        /**
+         * @description Obtiene la serie a la que pertenece una unidad unidad administrativa seleccionada.
+         * @param {object} adminUnitNode Nodo activo de Unidad Administrativa.
+         * @returns {undefined}
+         */
+        getSerieOfAdminUnit: function(adminUnitNode){
+            var serieNode = null;
+            var parent = [adminUnitNode.getParent()];
+            for (var cont = 0; cont < parent.length; cont++){
+                var node = parent[cont];
+                if(String(node.data.nodeType) == "serie")
+                    serieNode = node;
+                else
+                    if(node.getParent() !== null)
+                        parent.push(node.getParent());
+            }
+            return serieNode;
         }
     };
 
@@ -1241,10 +1313,13 @@ var AdministrativeUnit = function () {
             var idAdminUnit = activeNode.data.key;
             idAdminUnit = String(idAdminUnit).replace("adminUnit_","");
             var groupName = $('#groupNameForm option:selected').attr('name');
-            
+            var serieNode = serie.getSerieOfAdminUnit(activeNode);
+            console.log(serieNode);
+            return;
             if(!parseInt(idAdminUnit) > 0)
                 return Advertencia("No pudo ser obtenido el identificador de la Unidad Administrativa Seleccionada");
             
+            return;
             $.ajax({
                 async: false,
                 cache: false,
