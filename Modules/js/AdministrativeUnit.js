@@ -197,7 +197,7 @@ var AdministrativeUnit = function () {
                         return 0;
 
                     if (activeNode.data.type === 'serie') {
-                        if (activeNode.getChildren() === null)
+//                        if (activeNode.getChildren() === null)
                             serie.mergeAdminUnitInterface();
                     }
                     else
@@ -992,6 +992,7 @@ var AdministrativeUnit = function () {
                     parent.addChild({
                         title: name,
                         key: idAdminUnit,
+                        idAdminUnit: idAdminUnit,
                         description: description,
                         nameKey: nameKey,
                         isFolder: true,
@@ -1037,9 +1038,8 @@ var AdministrativeUnit = function () {
             var adminUnitIds = serie.getAdminUnitNodesPath(activeNode, adminUnitActiveNode);
             activeNode.expand(true);
             if(adminUnitIds.length === 0)
-                return;
+                return 1;
             
-            console.log(adminUnitIds);
             $.ajax({
                 async: false,
                 cache: false,
@@ -1049,17 +1049,15 @@ var AdministrativeUnit = function () {
                 data: {option: "mergeAdminUnitAndSerie", idsAdminUnit: adminUnitIds.join(","), idSerie: idSerie},
                 success: function (xml) {
 
-                    if ($.parseXML(xml) === null) {
-                        errorMessage(xml);
-                        return 0;
-                    } else
+                    if ($.parseXML(xml) === null) 
+                        return errorMessage(xml);
+                    else
                         xml = $.parseXML(xml);
 
                     if ($(xml).find("doneMerge").length > 0)
                         status = 1;
 
-                    $(xml).find("Error").each(function ()
-                    {
+                    $(xml).find("Error").each(function (){
                         var mensaje = $(this).find("Mensaje").text();
                         errorMessage(mensaje);
                     });
@@ -1081,10 +1079,13 @@ var AdministrativeUnit = function () {
          */
         getAdminUnitNodesPath: function (dispCatalog, adminUnitActiveNode) {
             var ids = [];
+            var idDocDisposition = dispCatalog.data.idDocDisposition;
             var nodes = serie.getAdminUnitNodesParentPath(dispCatalog, adminUnitActiveNode);
             for (var cont = 0; cont < nodes.length; cont++) {
                 var node = nodes[cont];
-                var adminUnitNode = $('#catalogDispTree').dynatree('getTree').getNodeByKey(node.key);
+                console.log(dispCatalog.data.idDocDisposition);
+                console.log("Buscando: "+idDocDisposition+"_"+node.idAdminUnit);
+                var adminUnitNode = $('#catalogDispTree').dynatree('getTree').getNodeByKey(idDocDisposition+"_"+node.idAdminUnit);
 
                 if (adminUnitNode === null) {
                     dispCatalog = dispCatalog.addChild(node);
