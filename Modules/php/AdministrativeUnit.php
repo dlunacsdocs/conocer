@@ -42,6 +42,7 @@ class AdministrativeUnit {
                 case 'getAdminUnitWithoutSerie': $this->getAdminUnitWithoutSerie($userData); break;
                 case 'removeAdminUnit': $this->removeAdminUnit($userData); break;
                 case 'removeMergeUserGroupAndAdminUnit': $this->removeMergeUserGroupAndAdminUnit($userData); break;
+                case 'getUserGroups': $this->getUserGroups($userData); break;
             }
         }
     }
@@ -251,8 +252,9 @@ class AdministrativeUnit {
         
         $idUserGroup = filter_input(INPUT_POST, "idUserGroup");
         $idAdminUnit = filter_input(INPUT_POST, "idAdminUnit");
+        $idSerie     = filter_input(INPUT_POST, "idSerie");
         
-        $update = "UPDATE CSDocs_Serie_AdminUnit SET idUserGroup = $idUserGroup WHERE idAdminUnit = $idAdminUnit";
+        $update = "UPDATE CSDocs_Serie_AdminUnit SET idUserGroup = $idUserGroup WHERE idAdminUnit = $idAdminUnit AND idSerie = $idSerie";
         
         if(($updateResult = $this->db->ConsultaQuery($instanceName, $update)) != 1)
                 return XML::XMLReponse ("Error", 0, "<p><b>Error</b> al intentar crear la relación entre la Unidad Administrativa y el Grupo de Usuario Seleccionado</p>Detalles:<br><br>$updateResult");
@@ -279,12 +281,26 @@ class AdministrativeUnit {
         $idUserGroup = filter_input(INPUT_POST, "idUserGroup");
         $idAdminUnit = filter_input(INPUT_POST, "idAdminUnit");
         
-        $update = "UPDATE CSDocs_AdministrativeUnit SET idUserGroup = 0 WHERE idAdminUnit = $idAdminUnit";
+        $update = "UPDATE CSDocs_Serie_AdminUnit SET idUserGroup = 0 WHERE idAdminUnit = $idAdminUnit AND idUserGroup = $idUserGroup";
         
         if(($updateResult = $this->db->ConsultaQuery($instanceName, $update)) != 1)
                 return XML::XMLReponse ("Error", 0, "<p><b>Error</b> al intentar eliminar relación entre el Grupo de Usuario y la Unidad Administrativa</p>Detalles:<br>$updateResult");
     
         XML::XMLReponse("removed", 1, "Relación eliminada");
+    }
+    
+    private function getUserGroups($userData){
+        $instanceName = $userData['dataBaseName'];
+        $select       = "SELECT gu.* FROM GruposUsuario gu WHERE gu.IdGrupo 
+                         NOT IN ( SELECT sgu.idUserGroup FROM CSDocs_Serie_AdminUnit sgu 
+                         WHERE sgu.idUserGroup = gu.IdGrupo)";
+        
+        $res = $this->db->ConsultaSelect($instanceName, $select);
+        
+        if($res['Estado'] != 1)
+            return XML::XMLReponse ("Error", 0, "<b>Error</b> al obtener los grupos de usuario. ".$res['Estado']);
+        
+        return XML::XmlArrayResponse("userGroups", "userGroup", $res['ArrayDatos']);
     }
     
 }
