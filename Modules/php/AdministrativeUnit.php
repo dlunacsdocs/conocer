@@ -263,14 +263,17 @@ class AdministrativeUnit {
     }
     
     private function removeAdminUnit($userData){
-        $instanceName = $userData['dataBaseName'];
-        
-        $idAdminUnit = filter_input(INPUT_POST, "idAdminUnit");
-        
-        $update = "UPDATE CSDocs_AdministrativeUnit SET IdSerie = 0, idUserGroup = 0 WHERE idAdminUnit = $idAdminUnit";
-        
+        $instanceName = $userData['dataBaseName'];        
+        $idsAdminUnit = filter_input(INPUT_POST, "idsAdminUnit");
+        $idDocDisposition = filter_input(INPUT_POST, "idDocDisposition");
+        $idsAdminUnitArray = explode(",", $idsAdminUnit);
+        $update = "DELETE FROM CSDocs_Serie_AdminUnit WHERE idSerie = $idDocDisposition ";
+        foreach ($idsAdminUnitArray as $value){
+            $update.= " OR idAdminUnit = $value";
+        }
+
         if(($updateResult = $this->db->ConsultaQuery($instanceName, $update)) != 1)
-                return XML::XMLReponse ("dondeMerge", 1, "<p><b>Error</b> al intentar eliminar la relación entre la serie y la Unidad Administrativa</p>Detalles:<br>$updateResult");
+                return XML::XMLReponse ("Error", 1, "<p><b>Error</b> al intentar eliminar la relación entre la serie y la Unidad Administrativa</p>Detalles:<br>$updateResult");
     
         XML::XMLReponse("adminUnitRemoved", 1, "Relación eliminada con la Unidad Administrativa");
     }

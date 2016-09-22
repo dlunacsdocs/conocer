@@ -1190,33 +1190,28 @@ var AdministrativeUnit = function () {
          */
         removeAdminUnit: function (activeNode) {
             var status = 1;
-            
-            var idAdminUnit = activeNode.data.key;
-            idAdminUnit = String(idAdminUnit).replace ("adminUnit_", "");
-            
+            var idsAdminUnit      = serie.getAdminUnitChildren(activeNode);
+            var idDocDisposition = activeNode.data.idDocDisposition;
             $.ajax({
                 async: false,
                 cache: false,
                 dataType: "html",
                 type: 'POST',
                 url: "Modules/php/AdministrativeUnit.php",
-                data: {option: "removeAdminUnit", idAdminUnit: idAdminUnit},
+                data: {option: "removeAdminUnit", idsAdminUnit: idsAdminUnit.join(','), idDocDisposition:idDocDisposition},
                 success: function (xml) {
 
-                    if ($.parseXML(xml) === null) {
-                        errorMessage(xml);
-                        return 0;
-                    } else
+                    if ($.parseXML(xml) === null) 
+                        return errorMessage(xml);
+                    else
                         xml = $.parseXML(xml);
 
                     if ($(xml).find("adminUnitRemoved").length > 0) {
                         status = 1;
-
                         activeNode.remove();
                     }
 
-                    $(xml).find("Error").each(function ()
-                    {
+                    $(xml).find("Error").each(function (){
                         var mensaje = $(this).find("Mensaje").text();
                         errorMessage(mensaje);
                     });
@@ -1229,6 +1224,24 @@ var AdministrativeUnit = function () {
             });
             
             return status;
+        },
+        /**
+         * @description Obtiene una cadena de id's del path de la unidad administrativa activa separados por ','
+         * @param {type} adminUnitNode
+         * @returns {String}
+         */
+        getAdminUnitChildren: function(adminUnitNode){
+            var children = [adminUnitNode];
+            var ids = [];
+            for (var cont = 0; cont < children.length; cont++){
+                var node = children[cont];
+                if(parseInt(node.data.idAdminUnit) > 0){
+                    ids.push(node.data.idAdminUnit);
+                    if(node.getChildren() !== null)
+                        children = children.concat(node.getChildren());
+                }
+            }
+            return ids;
         },
         /**
          * @description Obtiene la serie a la que pertenece una unidad unidad administrativa seleccionada.
