@@ -51,7 +51,7 @@ class ContentManagement {
                 case 'UploadMetadatas':$this->UploadMetadatas(); break;
                 case 'getCatalogos':$this->getCatalogos();break;
                 case 'EngineSearch':$this->EngineSearch($userData);break;
-                case 'GetFiles':$this->GetFiles();break;
+                case 'GetFiles':$this->GetFiles($userData);break;
                 case 'FileEdit':$this->FileEdit($userData);break;
                 case 'GetDetalle':$this->GetDetalle($userData);break;
                 case 'DetailModify':$this->DetailModify($userData);break;
@@ -1436,18 +1436,17 @@ class ContentManagement {
      * 
      *  Devuelve el listado de archivos que se encuentran dentro de un directorio
      */
-    private function GetFiles()
+    private function GetFiles($userData)
     {
         $XML=new XML();
         $BD= new DataBase();
-        $DataBaseName=  filter_input(INPUT_POST, "DataBaseName");
-        $UserName = filter_input(INPUT_POST, "UserName");
-        $IdUser = filter_input(INPUT_POST, "IdUser");
-        $IdGroup = filter_input(INPUT_POST, "IdGroup");
+        $DataBaseName = $userData['dataBaseName'];
+        $IdGroup = $userData['idGroup'];
         $NombreRepositorio=  filter_input(INPUT_POST, "RepositoryName");
         $IdRepository = filter_input(INPUT_POST, "IdRepository");
         $IdDirectory=  filter_input(INPUT_POST, "IdDirectory");    
-        
+        $idDocDisposition = filter_input(INPUT_POST, "idDocDisposition");
+      
         $CheckPermission = "SELECT *FROM RepositoryControl WHERE IdGrupo = $IdGroup";
         $CheckPermissionResult = $BD->ConsultaSelect($DataBaseName, $CheckPermission);
 
@@ -1463,7 +1462,10 @@ class ContentManagement {
             return;
         }
         
-        $ConsultaBusqueda='SELECT IdRepositorio, TipoArchivo, FechaIngreso, NombreArchivo, Full, RutaArchivo FROM '.$NombreRepositorio.' WHERE IdDIrectory = '.$IdDirectory;
+        $ConsultaBusqueda = "SELECT IdRepositorio, TipoArchivo, FechaIngreso, NombreArchivo, Full, RutaArchivo 
+                FROM $NombreRepositorio INNER JOIN CSDocs_Serie_AdminUnit ON idSerie = $idDocDisposition 
+                WHERE IdDIrectory = $IdDirectory AND idAdminUnit > 0 AND idUserGroup = $IdGroup";
+        
         $Resultado=$BD->ConsultaSelect($DataBaseName, $ConsultaBusqueda);           
         $XML->ResponseXmlFromArray("Busqueda", "Resultado", $Resultado['ArrayDatos']);        
     }

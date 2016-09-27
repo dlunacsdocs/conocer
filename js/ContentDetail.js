@@ -383,28 +383,39 @@ function DetailModify(XmlDetalle, DocumentEnvironment){
  *  Al activar un directorio se obtiene la lista de archivos que se encuentran 
  *  en ese directorio.
  *
- * @param {type} IdDirectory
+ * @param {type} node
  * @returns {undefined}
  */
-function GetFiles(IdDirectory)
-{
+function GetFiles(node){
     var IdRepositorio = $('#CM_select_repositorios').val();
     var NombreRepositorio = $('#CM_select_repositorios option:selected').html();
     var Search = $('#form_engine').val();
     var arbol = $('#contentTree').dynatree("getTree");
+    var idDirectory = node.data.key;
+    var idDocDisposition = 0;;
+    var expedient = new ExpedientClass();
+    var serieNode = null;
+    
+    if(parseInt(node.data.isFrontPage) === 1 || parseInt(node.data.isLegajo) === 1)
+        serieNode = expedient.getParentSerie(node);
+    
+    if(serieNode !== null)
+        idDocDisposition = serieNode.data.idDocDisposition;
 
-    if ($.type(arbol) === 'object')
-        $("#contentTree").dynatree("disable");
+    if (!parseInt(idDirectory) > 0)
+        return Advertencia("No se ha recuperado un directory id para recuperar los documentos.");
+    if ($.type(arbol) !== 'object')
+        return Advertencia("No se pudo recuperar el objeto Tree");
     else
-        return;
-
+        $("#contentTree").dynatree("disable");
+    
     $.ajax({
         async: true,
         cache: false,
         dataType: "html",
         type: 'POST',
         url: "php/ContentManagement.php",
-        data: 'opcion=GetFiles&DataBaseName=' + EnvironmentData.DataBaseName + '&IdUser=' + EnvironmentData.IdUsuario + '&UserName=' + EnvironmentData.NombreUsuario + '&IdGroup=' + EnvironmentData.IdGrupo + '&IdRepository=' + IdRepositorio + '&RepositoryName=' + NombreRepositorio + '&Search=' + Search + "&IdDirectory=" + IdDirectory,
+        data: {opcion:"GetFiles", IdRepository: IdRepositorio, RepositoryName: NombreRepositorio, Search: Search, IdDirectory: idDirectory, idDocDisposition: idDocDisposition},
         success: function (xml) {
             if ($.parseXML(xml) === null) {
                 errorMessage(xml);

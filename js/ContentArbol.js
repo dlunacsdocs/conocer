@@ -450,8 +450,9 @@ function InitDynatree(child)
             minExpandLevel: 2,
             children: [child],
             onActivate: function(node) {
+                console.log(node);
+                GetFiles(node);
                 node.sortChildren(cmp, false);
-                GetFiles(node.data.key);                    
 //                if( event.shiftKey ){                   
 //                  editNode(node);                    
 //                  return false;
@@ -482,7 +483,7 @@ function InitDynatree(child)
     var node = $("#contentTree").dynatree("getActiveNode");
     if (node !== null) {
         node.sortChildren(cmp, false);
-        GetFiles(node.data.key);
+//        GetFiles(node);
     }
 
     return arbol;
