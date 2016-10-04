@@ -131,6 +131,7 @@ class Tree {
         $IdUsuario = $userData['idUser'];
         $Path = filter_input(INPUT_POST, "Path");   
         $RoutFile = dirname(getcwd());
+        $idDocDisposition = filter_input(INPUT_POST, "idDocDisposition");
         $catalogKey = filter_input(INPUT_POST, "catalogKey");
         $isLegajo = filter_input(INPUT_POST, "isLegajo");
         $isExpedient = filter_input(INPUT_POST, "isExpedient");
@@ -157,7 +158,7 @@ class Tree {
             $NameDirectory = $NameDirectory.$autoincremenet;
         }
         
-        $ultimo_id = $this->addNewDirectory($DataBaseName, $NombreRepositorio, $NameDirectory, $IdParentDirectory, $PathFinal, $catalogKey,$isLegajo, $isExpedient, $isFrontPage, $autoincremenet, $templateName);    
+        $ultimo_id = $this->addNewDirectory($DataBaseName, $NombreRepositorio, $NameDirectory, $IdParentDirectory, $PathFinal, $idDocDisposition, $catalogKey,$isLegajo, $isExpedient, $isFrontPage, $autoincremenet, $templateName);    
            
         if(is_numeric($ultimo_id))
             $PathFinal.=$ultimo_id;
@@ -185,11 +186,11 @@ class Tree {
         
     }
     
-    function addNewDirectory($dataBaseMame, $repositoryName, $dirname, $idParent, $path, $catalogKey = null, $isLegajo = null, $isExpedient = 0, $isFrontPage = 0, $autoincrement = 0, $templateName = ""){
+    function addNewDirectory($dataBaseMame, $repositoryName, $dirname, $idParent, $path, $idDocDisposition = null, $catalogKey = null, $isLegajo = null, $isExpedient = 0, $isFrontPage = 0, $autoincrement = 0, $templateName = ""){
         $DB = new DataBase();
 
-        $Insert = "INSERT INTO dir_$repositoryName(parent_id,title, path, catalogKey, isLegajo, isExpedient, isFrontPage, autoincrement, templateName) VALUES "
-                . "($idParent,'$dirname','$path', '$catalogKey', $isLegajo, $isExpedient, $isFrontPage, $autoincrement, '$templateName')";            
+        $Insert = "INSERT INTO dir_$repositoryName(parent_id,title, path, idDocDisposition, catalogKey, isLegajo, isExpedient, isFrontPage, autoincrement, templateName) VALUES "
+                . "($idParent,'$dirname','$path', $idDocDisposition, '$catalogKey', $isLegajo, $isExpedient, $isFrontPage, $autoincrement, '$templateName')";            
         
         if(!(($resultInsert = $DB->ConsultaInsertReturnId($dataBaseMame, $Insert))>0))
                 return "<p><b>Error</b> al agregar el directorio</p><br>".$resultInsert. "<br>".$Insert;

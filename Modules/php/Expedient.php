@@ -291,7 +291,7 @@ class Expedient {
         $insert         = "INSERT INTO $repositoryName (";
         $fechaIngreso   = date("Y-m-d");
         $filename       = "Carátula $frontPageName";
-        $fullText       = "$fechaIngreso ";
+        $fullText       = "$fechaIngreso $repositoryName $userName ";
         
         foreach ($xml->field as $value){
             $columns["$value->columnName"] = $value->columnName;

@@ -1073,21 +1073,17 @@ var ExpedientClass = function () {
                                idParent: activeNode.data.key,
                                catalogKey: activeNode.data.catalogkey,
                                parentCatalogKey: activeNode.data.catalogKey,
-                               idDocDisposition: 0,
+                               idDocDisposition: parentSerie.data.idDocDisposition,
                                catalogType: null,
                                parentSerie: parentSerie.data.key,
                                isExpedient: 0,
                                isFrontPage: 1,
                                autoincrement: 0
                            });
-           node.data.unselectable = true;
+                           
+//           node.data.unselectable = true;
 
-           var newDirectory = tree.addNewDirectory(node);
-
-           if(parseInt(newDirectory.autoincrement) > 0){
-                node.data.title = node.data.title + newDirectory.autoincrement;
-                node.render();
-           }
+           var newDirectory = tree.addNewDirectory(node);           
 
            return newDirectory;
        },

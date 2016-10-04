@@ -93,8 +93,6 @@ var ContentArbol = function () {
         var pathNode = node.getKeyPath();
         var NameDirectory = node.data.title;
         node.data.unselectable = true;
-        node.activate(true);
-        node.focus(true);
 
         $(".contentDetailTools").attr('disabled', 'disabled');
 
@@ -117,7 +115,8 @@ var ContentArbol = function () {
                 isFrontPage: node.data.isFrontPage,
                 autoincrement: node.data.autoincrement,
                 parentSerie: node.data.parentSerie,
-                templateName: node.data.templateName
+                templateName: node.data.templateName,
+                idDocDisposition: node.data.idDocDisposition
             },
             success: function (xml) {
 
@@ -134,6 +133,18 @@ var ContentArbol = function () {
                     node.data.key = id;
                     result.id = id;
                     result.autoincrement = autoincrement;
+                    console.log("autoincrement: "+autoincrement);
+                    
+                    if(parseInt(autoincrement) > 0){
+                        node.data.title = node.data.title + autoincrement;
+                        node.render();
+                        node.focus(true);
+                    }
+                    else{
+                        node.activate(true);
+                        node.focus(true);
+                    }
+                    
                 });
 
                 $(xml).find("Error").each(function ()
