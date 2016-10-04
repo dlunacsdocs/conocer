@@ -11,14 +11,16 @@ require_once dirname($RoutFile).'/php/DataBase.php';
 require_once dirname($RoutFile).'/php/XML.php';
 require_once dirname($RoutFile).'/php/Log.php';
 require_once dirname($RoutFile).'/php/Session.php';
+require_once dirname($RoutFile).'/php/CoreConfigTables.php';
 
 class DocumentaryDisposition {
     private $db;
-
+    private $coreConfigTables;
     public function __construct() {
         $this->db = new DataBase();
+        $this->coreConfigTables = new CoreConfigTables();
     }
-    
+
     public function ajax()
     {
         if(filter_input(INPUT_POST, "option")!=NULL and filter_input(INPUT_POST, "option")!=FALSE){
@@ -32,8 +34,29 @@ class DocumentaryDisposition {
             
             switch (filter_input(INPUT_POST, "option")){
                 case 'getSeries': $this->getSeries($userData); break;
+                case 'createCoreResource': $this->createCoreResource($userData);
             }
         }
+    }
+    
+    /**
+     * Inserta el id del Catlogo de disp doc al cual pertenece una caratula en la tabla de directorios.
+     */
+    public function createCoreResource($userData){
+        $instanceName = $userData['dataBaseName'];
+        $setInFrontPage = "UPDATE dir_Repositorio dir INNER JOIN dir_Repositorio subdir ON dir.parent_id = subdir.IdDirectory 
+                    SET dir.idDocDisposition = subdir.IdDocDisposition WHERE dir.isFrontPage=1";
+        
+        if ($this->coreConfigTables->createTable($instanceName, "setDocDispotionIntoDir_Repositorio_FrontPage", $setInFrontPage) != 1)
+            return XML::XMLReponse ("Error", 0, "<b>Error</b> al crear el recurso setDocDispotionIntoDir_Repositorio_FrontPage");
+        
+        $setInLegajo = "UPDATE dir_Repositorio dir INNER JOIN dir_Repositorio subdir ON dir.parent_id = subdir.IdDirectory 
+                    SET dir.idDocDisposition = subdir.IdDocDisposition WHERE dir.isLegajo=1";
+        
+        if ($this->coreConfigTables->createTable($instanceName, "setDocDispotionIntoDir_Repositorio_Legajos", $setInLegajo) != 1)
+            return XML::XMLReponse ("Error", 0, "<p><b>Error</b> al crear el recurso setDocDispotionIntoDir_Repositorio_Legajos");
+        
+        XML::XMLReponse("coreResourceCreated", 1, "CoreResource creado.");
     }
     
     private function getSeries($userData){

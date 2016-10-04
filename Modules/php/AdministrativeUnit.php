@@ -14,7 +14,7 @@ require_once dirname($RoutFile).'/php/Session.php';
 require_once dirname($RoutFile).'/php/CoreConfigTables.php';
 class AdministrativeUnit {
     private $db;
-    private$coreConfigTables;
+    private $coreConfigTables;
     public function __construct() {
         $this->db = new DataBase();
         $this->coreConfigTables = new CoreConfigTables();

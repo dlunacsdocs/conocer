@@ -7,13 +7,45 @@ var DocumentaryDispositionClass = function(){
     var docDispoCatalogDialog = undefined;
     
     this.setActionToLinkDocumentaryDispositionMenu = function(){
-    
         $('.LinkDocumentaryDisposition').click(function(){
             if(validateSystemPermission(0, 'c5866e93cab1776890fe343c9e7063fb', 0))
                 _buildDocumentaryDispositionConsole();
             else
                 Advertencia("No dispone de permisos para abrir la interfaz del Catálogo de Disposición Documental ");
         });    
+        
+        createCoreResource();
+    };
+    
+    /**
+     * @description Peticion para crear o actualizar nuevos elementos del sistema.
+     * @returns {undefined}
+     */
+    var createCoreResource = function(){
+        $.ajax({
+        async: false, 
+        cache: false,
+        dataType: "html", 
+        type: 'POST',   
+        url: "Modules/php/DocumentaryDisposition.php",
+        data: {option: "createCoreResource"},
+        success:  function(xml)
+        {           
+            if($.parseXML( xml )===null)
+                return errorMessage(xml); 
+            else 
+                xml=$.parseXML( xml );
+     
+            $(xml).find("Error").each(function()
+            {
+                var mensaje=$(this).find("Mensaje").text();
+                errorMessage(mensaje);
+            });                 
+
+        },
+        beforeSend:function(){},
+        error: function(jqXHR, textStatus, errorThrown){errorMessage(textStatus +"<br>"+ errorThrown);}
+        });       
     };
     
     /*

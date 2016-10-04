@@ -72,7 +72,7 @@ class CoreConfigTables {
         if(isset($iniFile[$tableName]))
             $status = "Ya existe el recurso $tableName";
         else{
-            fwrite ($fopen, "$tableName=1");
+            fwrite ($fopen, "$tableName=1".PHP_EOL);
             $status = 1;
         }
         

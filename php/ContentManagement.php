@@ -1483,7 +1483,13 @@ class ContentManagement {
         $IdUsuario = $userData['idUser'];
         $IdGroup = $userData['idGroup'];
         
-        $ConsultaBusqueda = 'SELECT * FROM RepositorioGlobal rg INNER JOIN RepositoryControl rc ON rg.IdRepositorio = rc.IdRepositorio WHERE MATCH (rg.Full) AGAINST (\''.$Search.'\' IN BOOLEAN MODE) AND rc.IdGrupo = '.$IdGroup;
+        $ConsultaBusqueda = "
+            SELECT * FROM RepositorioGlobal rg 
+            INNER JOIN RepositoryControl rc ON rg.IdRepositorio = rc.IdRepositorio 
+            INNER JOIN RepositoryControl rc ON rg.IdRepositorio = rc.IdRepositorio 
+            INNER JOIN dir_Repositorio dir ON rg.IdDirectory = dir.IdDirectory 
+            INNER JOIN CSDocs_Serie_AdminUnit sau ON sau.idSerie = dir.idDocDisposition 
+            WHERE MATCH (rg.Full) AGAINST (\''.$Search.'\' IN BOOLEAN MODE) AND  rc.IdGrupo = $IdGroup AND sau.idUserGroup = $IdGroup AND sau.idAdminUnit > 0";
 
         $Resultado = $this->db->ConsultaSelect($DataBaseName, $ConsultaBusqueda);        
 
