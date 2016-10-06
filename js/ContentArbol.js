@@ -60,11 +60,14 @@ var ContentArbol = function () {
                             idParent: activeNode.data.key,
                             catalogKey: activeNode.data.catalogkey,
                             parentCatalogKey: activeNode.data.catalogKey,
+                            idDocDisposition: activeNode.data.idDocDisposition,
                             catalogType: null,
                             isExpedient: 0,
                             isFrontPage: 0
                         });
+
                         var newDirectory = self.addNewDirectory(node);
+                        
                         if (parseInt(newDirectory.id) > 0)
                             dialogRef.close();
                         else {
