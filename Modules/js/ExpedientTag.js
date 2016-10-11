@@ -50,41 +50,14 @@ var ExpedientTag = function(){
         idRepository = getIdRepository();
         repositoryName = getRepositoryName();
         enterpriseKey = getEnterpriseKey();
-        openUserInterface(activeNode);       
+        openTagInterface(activeNode);       
     };        
     
-//    function Popup(data) 
-//    {
-//        var mywindow = window.open('', 'my div', 'height=400,width=600');
-//        mywindow.document.write('<html><head><title>my div</title>');
-//        /*optional stylesheet*/ //mywindow.document.write('<link rel="stylesheet" href="main.css" type="text/css" />');
-//        mywindow.document.write('</head><body >');
-//        mywindow.document.write(data);
-//        mywindow.document.write('</body></html>');
-//
-//        mywindow.document.close(); // necessary for IE >= 10
-//        mywindow.focus(); // necessary for IE >= 10
-//
-//        mywindow.print();
-//        mywindow.close();
-//
-//        return true;
-//    }
-
-    function Popup(id) 
-    {
-        var html = "";
-        $('link').each(function() { // find all <link tags that have
-          if ($(this).attr('rel').indexOf('stylesheet') !=-1) { // rel="stylesheet"
-            html += '<link rel="stylesheet" href="'+$(this).attr("href")+'" />';
-          }
-        });
-        html += '<body onload="window.focus(); window.print()">'+$("#"+id).html()+'</body>';
-        var w = window.open("","print");
-        if (w) { w.document.write(html); w.document.close() }
-    }
     
-    var openUserInterface = function(activeNode){
+    var openTagInterface = function(activeNode){
+        if(!validateSystemPermission(0, '8217bb4e7fa0541e0f5e04fea764ab91', 0))
+        return Advertencia("No tiene permiso de realizar esta acción");
+    
         var content = $('<div>', {class: "row", style: "max-height: calc(100vh - 200px); overflow-y: auto;"});
         BootstrapDialog.show({
             title: '<i class="fa fa-tag fa-lg"></i> Generando etiqueta',
@@ -102,9 +75,6 @@ var ExpedientTag = function(){
                     hotkey: 13,
                     action: function (dialogRef) {
                         var button = this;
-//                        dialogRef.enableButtons(false);
-//                        dialogRef.setClosable(false);
-//                        Popup("expedientTagDiv");
     
                         $("#expedientTagDiv").printThis({
                             debug: true,               // show the iframe for debugging
@@ -118,14 +88,6 @@ var ExpedientTag = function(){
                             header: null,               // prefix to html
                             formValues: true            // preserve input/form values
                         });
-//                        $('#expedientTagDiv').printArea();
-                        /*if ()
-                            dialogRef.close();
-                        else {
-                            dialogRef.setClosable(true);
-                            dialogRef.enableButtons(true);
-                            
-                        }*/
                     }
                 },
                 {

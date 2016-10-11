@@ -494,7 +494,7 @@ class DataBase {
         
         $insertArchival = "
             INSERT INTO SystemMenu (IdMenu, IdParent, Nombre, Type) VALUES 
-            (2000, 0, 'Archivística', 0), 
+            (2000, 0, 'Archivística', 0),
                 (2100, 2000, 'C. Disposición Documental', 0),
                     (2101, 2100, 'Consulta', 0),
                     (2200, 2100, 'Fondo', 0), 
@@ -545,7 +545,9 @@ class DataBase {
                 (3300, 2000, 'Imprimir', 0),
                     (3301, 3300, 'Etiqueta', 0),
                     (3302, 3300, 'Expediente', 0),
-                    (3303, 3300, 'Caja', 0)
+                    (3303, 3300, 'Caja', 0),
+                (3400, 2000, 'Expedientes', 0),
+                    (3401, 3400, 'Nuevo Expediente', 0)
         ";
 
         if(($resultArchival = $this->ConsultaQuery($DataBaseName, "$insertArchival")) != 1){

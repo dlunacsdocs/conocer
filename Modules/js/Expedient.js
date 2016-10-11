@@ -48,13 +48,16 @@ var ExpedientClass = function () {
             return Advertencia("Debe seleccionar un directorio");
 
         var activeNode = $('#contentTree').dynatree('getTree').getActiveNode();
-
+        
+        if(!validateSystemPermission(0, '7fcc48d22804dbbe9b66b607d51389d4', 0))
+            return Advertencia("No tiene permiso de realizar esta acción");
+        
         if (typeof activeNode !== 'object')
             return Advertencia("Debe seleccionar un directorio");
 
         if (parseInt(activeNode.data.isExpedient) === 1)
             return Advertencia("Ya existe un expediente.");
-
+        
         if (String(activeNode.data.catalogType) === 'serie')
             _templateSelectionInterface(activeNode);
         else if(parseInt(activeNode.data.key) === 1)
