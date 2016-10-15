@@ -60,10 +60,30 @@ class Expedient {
                     break;
                 case 'getFrontPageData': $this->getFrontPageData($userData);
                     break;
+                case "checkAuthorization": $this->checkAuthorization($userData);
+                    break;
             }
         }
     }
-
+    
+    private function checkAuthorization($userData){
+        $instanceName = $userData['dataBaseName'];
+        $idGroup = $userData['idGroup'];
+        $idDocDisposition = filter_input(INPUT_POST, "idDocDisposition");
+        $authorized = 0;
+        $select = "SELECT sau.* FROM CSDocs_Serie_AdminUnit sau WHERE sau.idUserGroup = $idGroup
+                AND sau.idSerie = $idDocDisposition AND sau.idAdminUnit > 0";
+        $res = $this->db->ConsultaSelect($instanceName, $select);
+        
+        if($res['Estado'] != 1)
+            return XML::XMLReponse ("Error", 0, "<b>Error</b> al comprobar autorizacion de permisos sobre expediente. <br>".$res);
+        
+        if(count($res['ArrayDatos']) > 0)
+            $authorized = 1;
+        
+        return XML::XMLReponse("authorized", $authorized, "");
+    }
+    
     /**
      * @description Inserta el path de claves del catálogo de disposición documental en la 
      * tabla de directorios.

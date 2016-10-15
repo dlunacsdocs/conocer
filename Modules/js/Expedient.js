@@ -49,6 +49,23 @@ var ExpedientClass = function () {
 
         var activeNode = $('#contentTree').dynatree('getTree').getActiveNode();
         
+        if(doValidations(activeNode) !== 1)
+            return 0;
+        
+        if (String(activeNode.data.catalogType) === 'serie')   /* Agrega una caratula */
+            _templateSelectionInterface(activeNode);
+        
+        else if(parseInt(activeNode.data.key) === 1)   /* Agrega un expediente */
+            _openDocumentaryDispositionInterface();
+        
+    };
+    
+    /**
+     * @description Realiza una serie de validaciones antes de intentar agregar un expediente o caratula.
+     * @param {type} activeNode
+     * @returns {unresolved}
+     */
+    var doValidations = function(activeNode){
         if(!validateSystemPermission(0, '7fcc48d22804dbbe9b66b607d51389d4', 0))
             return Advertencia("No tiene permiso de realizar esta acción");
         
@@ -57,11 +74,50 @@ var ExpedientClass = function () {
 
         if (parseInt(activeNode.data.isExpedient) === 1)
             return Advertencia("Ya existe un expediente.");
+       return 1;
+    };
+    
+    /**
+     * @description Comprueba si el usuario tiene permiso de agregar un expediente en la serie seleccionada con relacion a su U.A y Grupo.
+     * @param {object} activeNode Directorio seleccionado (activo).
+     * @returns {undefined}
+     */
+    var checkAuthorization = function(activeNode){
+        var status = 0;
+        var idDocDisposition = 0;
         
-        if (String(activeNode.data.catalogType) === 'serie')
-            _templateSelectionInterface(activeNode);
-        else if(parseInt(activeNode.data.key) === 1)
-            _openDocumentaryDispositionInterface();
+        if(parseInt(activeNode.data.idDocDisposition) > 0)
+            idDocDisposition = activeNode.data.idDocDisposition;
+        
+        $.ajax({
+            async: false,
+            cache: false,
+            dataType: "html",
+            type: 'POST',
+            url: "Modules/php/Expedient.php",
+            data: {
+                option: "checkAuthorization", idDocDisposition: idDocDisposition
+            },
+            success: function (xml) {
+                if ($.parseXML(xml) === null)
+                    return errorMessage(error);
+                else
+                    xml = $.parseXML(xml);
+                
+                $(xml).find('authorized').each(function(){
+                    status = $(this).find('Estado').text();
+                });
+                
+                $(xml).find("Error").each(function (){
+                    var mensaje = $(this).find("Mensaje").text();
+                    errorMessage(mensaje);
+                });
+            },
+            error: function (jqXHR, textStatus, errorThrown) {
+                errorMessage(textStatus + "<br>" + errorThrown);
+            }
+        });
+        return status;
     };
 
     /**
@@ -76,7 +132,10 @@ var ExpedientClass = function () {
         var enterpriseKey = $('#CM_select_empresas option:selected').attr('value');
         catalogKey = activeNode.data.catalogkey;
         idDocDisposition = activeNode.data.idDocDisposition;
-//        console.log("catalogKey: "+catalogKey + " idDocDisposition: " + idDocDisposition);
+        
+        if(!checkAuthorization(activeNode) !== 1)
+                return Advertencia("No tiene permiso para agregar una carátula");;
+
         var templates = TemplateDesigner.getTemplates(enterpriseKey, idRepository, repositoryName);
 
         var formGroup = $('<div>', {class: "form-group"});
@@ -641,9 +700,7 @@ var ExpedientClass = function () {
 
                 var catalogDisposition = new DocumentaryDispositionClass();
                 var catalogDisposition = catalogDisposition.getDocDispositionCatalogStructure();
-
 //                console.log(catalogDisposition);
-
                 $(catalogDisposition).find('node').each(function () {
                     var idDocDisp = $(this).find('idDocumentaryDisposition').text();
                     var name = $(this).find('Name').text();
@@ -688,11 +745,10 @@ var ExpedientClass = function () {
     };
 
     var addNewExpedient = function (activeNode) {
-//        var path = getPath(activeNode);
-//        var path = _getStructureDispositionCatalog(activeNode);
+        if(!checkAuthorization(activeNode))
+            return Advertencia("No tiene permiso para agregar un Expediente");
+        
         var path = _getDocDispoKeyPath(activeNode);
-//        console.log("Result Path:");
-//        console.log(path);
         var status = createPathOfDispositionCatalog(path);
         return status;
     };
