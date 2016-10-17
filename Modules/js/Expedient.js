@@ -73,7 +73,8 @@ var ExpedientClass = function () {
             return Advertencia("Debe seleccionar un directorio");
 
         if (parseInt(activeNode.data.isExpedient) === 1)
-            return Advertencia("Ya existe un expediente.");
+            return Advertencia("No puede agregar un expediente sobre un expediente.");
+        
        return 1;
     };
     
@@ -745,7 +746,8 @@ var ExpedientClass = function () {
     };
 
     var addNewExpedient = function (activeNode) {
-        if(!checkAuthorization(activeNode))
+        var authorized = checkAuthorization(activeNode);
+        if(parseInt(authorized) !== 1)
             return Advertencia("No tiene permiso para agregar un Expediente");
         
         var path = _getDocDispoKeyPath(activeNode);

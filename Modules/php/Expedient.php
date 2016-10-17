@@ -73,6 +73,10 @@ class Expedient {
         $authorized = 0;
         $select = "SELECT sau.* FROM CSDocs_Serie_AdminUnit sau WHERE sau.idUserGroup = $idGroup
                 AND sau.idSerie = $idDocDisposition AND sau.idAdminUnit > 0";
+        
+        if((int)$idGroup == 1)   /* Grupo administrador */
+            return XML::XMLReponse("authorized", 1, "");
+        
         $res = $this->db->ConsultaSelect($instanceName, $select);
         
         if($res['Estado'] != 1)
