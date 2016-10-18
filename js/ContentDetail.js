@@ -61,6 +61,14 @@ var Document = function(){
                         }
                     },
                     {
+                        label: "Imprimir",
+                        icon: "fa fa-print fa-lg",
+                        cssClass: "btn-primary",
+                        action: function(dialogRef){
+                            printDocument(content);
+                        }
+                    },
+                    {
                         label: 'Cerrar',
                         action: function (dialogRef) {
                             dialogRef.close();
@@ -181,6 +189,21 @@ var Document = function(){
         });
     };
     
+    var printDocument = function(content){
+        console.log("Generando vista de impresión");
+        $(content).printThis({
+            debug: true,               // show the iframe for debugging
+            importCSS: true,            // import page CSS
+            importStyle: true,         // import style tags
+            printContainer: true,       // grab outer container as well as the contents of the selector
+//                            loadCSS: "path/to/my.css",  // path to additional css file - us an array [] for multiple
+            pageTitle: "",              // add title to print page
+            removeInline: false,        // remove all inline styles from print elements
+            printDelay: 333,            // variable print delay; depending on complexity a higher value may be necessary
+            header: null,               // prefix to html
+            formValues: true            // preserve input/form values
+        });
+    }
 };
 
 /********************************************************************************

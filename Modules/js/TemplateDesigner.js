@@ -422,22 +422,26 @@ var TemplateDesigner = function () {
                 return systemTypeWrapper = _addBarcode(1, formsDiv, 3, '', "", openFromContent);
             
             var wrapperConfiguration = $('<div>', {class: "form-group templateFormWrapper "+wrapperConfigurationTxt, colConfiguration:wrapperConfigurationTxt});
-            var labelConfiguration = $('<label>',{for:"templateForm_"+fieldName,
-                                        class: "control-label "+labelConfigurationTxt,
-                                        colConfiguration: labelConfigurationTxt}).append(fieldNameTag);
+            var labelConfiguration   = $('<label>',{
+                                            for:"templateForm_"+fieldName,
+                                            class: "control-label "+labelConfigurationTxt,
+                                            colConfiguration: labelConfigurationTxt
+                                        }).append(fieldNameTag);
             var fieldDiv = $('<div>', {class: "templateField "+inputConfigrationTxt});
-            var form = $('<input>', {class: "form-control", 
-                                    fieldName: fieldName,
-                                    fieldNameTag: fieldNameTag,
-                                    widthSize: widthSize,   /* Tamaño del select */
-                                    formWidth: formWidth,   /* Tamaño en columnas */
-                                    fieldType: fieldType,
-                                    fieldLength: fieldLength,
-                                    id: "templateForm_" + fieldName,
-                                    colConfiguration: inputConfigrationTxt,
-                                    isCatalog: isCatalog,
-                                    catalogOption: catalogOption
-                                });
+            var form    = $('<input>', {
+                                class: "form-control", 
+                                fieldName: fieldName,
+                                fieldNameTag: fieldNameTag,
+                                widthSize: widthSize,   /* Tamaño del select */
+                                formWidth: formWidth,   /* Tamaño en columnas */
+                                fieldType: fieldType,
+                                fieldLength: fieldLength,
+                                id: "templateForm_" + fieldName,
+                                colConfiguration: inputConfigrationTxt,
+                                isCatalog: isCatalog,
+                                catalogOption: catalogOption,
+                                name: fieldName
+                            });
             
             fieldDiv.append(form);
             wrapperConfiguration.append(labelConfiguration)
