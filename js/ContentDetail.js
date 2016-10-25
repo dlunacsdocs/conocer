@@ -2,7 +2,7 @@
  * Operaciones sobre el repositorio de archivos (Borrado, Edición, etc)
  */
 
-/* global TableContentdT, EnvironmentData, TableEnginedT, Hdetalle, Wdetalle, GlobalDatePicker, WindowConfirmacion, LanguajeDataTable, DownloadTabledT, BootstrapDialog, TemplateDesigner */
+/* global TableContentdT, EnvironmentData, TableEnginedT, Hdetalle, Wdetalle, GlobalDatePicker, WindowConfirmacion, LanguajeDataTable, DownloadTabledT, BootstrapDialog, TemplateDesigner, TableContentDT */
 
 TableContentDT = '';
 TableContentdT = '';
@@ -65,7 +65,7 @@ var Document = function(){
                         icon: "fa fa-print fa-lg",
                         cssClass: "btn-primary",
                         action: function(dialogRef){
-                            printDocument(content);
+                            printDocument(content, IdRepositorio);
                         }
                     },
                     {
@@ -189,7 +189,9 @@ var Document = function(){
         });
     };
     
-    var printDocument = function(content){
+    var printDocument = function(content, idRepository){
+        if(!validateSystemPermission(idRepository, '6fab6e3aa34248ec1e34a4aeedecddc8', 1))
+            return Advertencia("No tiene permiso de realizar esta acción");
         console.log("Generando vista de impresión");
         $(content).printThis({
             debug: true,               // show the iframe for debugging
@@ -203,7 +205,7 @@ var Document = function(){
             header: null,               // prefix to html
             formValues: true            // preserve input/form values
         });
-    }
+    };
 };
 
 /********************************************************************************
@@ -229,6 +231,17 @@ function GetDetalle(Source, IdGlobal, IdFile)
     var document = new Document();
     document.openDocument(Source, IdGlobal, IdFile);
     
+}
+
+function getIdFile(source){
+    var idFile = 0;
+    switch (source){
+        case "Content":
+            idFile = TableContentDT.$('tr.selected').attr('id');
+            break;
+    }
+    
+    return idFile;
 }
 /**
  * @description Metodo que modifica los metadatos del documento o expediente seleccionado.

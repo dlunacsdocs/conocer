@@ -27,6 +27,7 @@ var ExpedientTag = function(){
     var repositoryName = null;
     var enterpriseKey = null;
     var expedient = new ExpedientClass();
+    var documentEnvironment = null;
     this.buildLink = function(){
         $('.expedientModuleLink .dropdown-menu').append('\
                 <li class = "expedientTag"><a href="#"><i class="fa fa-tag fa-lg"></i> Etiqueta </span> </a></li>\n\
@@ -36,6 +37,7 @@ var ExpedientTag = function(){
     };
     
     this.generateTag = function(){
+        
         if ($('#contentTree').is(':empty'))
             return Advertencia("Debe seleccionar un expediente");
 
@@ -47,15 +49,25 @@ var ExpedientTag = function(){
         if(!(parseInt(activeNode.data.isFrontPage) === 1 || parseInt(activeNode.data.isLegajo) === 1))
             return Advertencia("Debe seleccionar un expediente o un legajo.");
         
+        setDocumentEnvironment("Content", 0);
+
+        if(typeof documentEnvironment !== "object")
+            return Advertencia("No se pudo recuperar la variable documentEnvironment");
+        
         idRepository = getIdRepository();
         repositoryName = getRepositoryName();
         enterpriseKey = getEnterpriseKey();
         openTagInterface(activeNode);       
-    };        
+    };      
     
+    var setDocumentEnvironment = function(source, idGlobal){
+        var idFile = getIdFile(source);
+        documentEnvironment = new ClassDocumentEnvironment(source, idGlobal, idFile);
+        documentEnvironment.GetProperties();
+    };
     
     var openTagInterface = function(activeNode){
-        if(!validateSystemPermission(0, '8217bb4e7fa0541e0f5e04fea764ab91', 0))
+        if(!validateSystemPermission(idRepository, '8217bb4e7fa0541e0f5e04fea764ab91', 1))
         return Advertencia("No tiene permiso de realizar esta acción");
     
         var content = $('<div>', {class: "row", style: "max-height: calc(100vh - 200px); overflow-y: auto;"});
@@ -371,15 +383,15 @@ var ExpedientTag = function(){
     };
     
     var getIdRepository = function(){        
-        return $('#CM_select_repositorios option:selected').attr('idrepository');
+        return documentEnvironment.IdRepository;
     };
     
     var getRepositoryName = function(){
-        return $('#CM_select_repositorios option:selected').attr('repositoryname');
+        return documentEnvironment.RepositoryName;
     };
     
     var getEnterpriseKey = function(){
-        return  $('#CM_select_empresas option:selected').attr('value');
+        return documentEnvironment.EnterpriseKey;
     };
       
 };
