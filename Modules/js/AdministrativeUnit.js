@@ -1455,8 +1455,8 @@ var AdministrativeUnit = function () {
             if(!parseInt(idUserGroup) > 0)
                 return Advertencia("No fue posible recuperar el identificador del grupo de usuario seleccionado.");
             
-            var UsersGroups = new ClassUsersGroups();
-            UsersGroups.showPermissionsPanel(idUserGroup, userGroupName);
+            var userGroups = new ClassPermissions();
+            userGroups.showPermissionsPanel(idUserGroup, userGroupName);
         }
     };
 

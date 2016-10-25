@@ -7,8 +7,7 @@
 /* global EnvironmentData, BotonesWindow, OptionDataTable, Repository, Tree, LanguajeDataTable, BootstrapDialog */
 
 /* Clase invocada desde el script Usuarios.js */
-var ClassUsersGroups = function ()
-{
+var ClassUsersGroups = function (){
     var self = this;
     var IdGrupo = undefined;
     var NombreGrupo = undefined;
@@ -20,17 +19,12 @@ var ClassUsersGroups = function ()
     var TableGroupMembersdT;
     var TableGroupMembersDT;
 
-    this.ShowsGroupsUsers = function ()
-    {
-        var self = this;
-
+    this.ShowsGroupsUsers = function (){
         var Buttons = {};
         $('#div_consola_users').dialog('option', 'buttons', Buttons);
 
         $('#WS_Users').empty();
         $('#WS_Users').append('<table id="TableUsersGroups" class="table table-striped table-bordered table-hover table-condensed"><thead><tr><th>Nombre</th><th>Descripción</th></tr></thead><tbdoy></tbody></table>');
-
-        var permissions = new ClassPermissions();
 
         TableGroupsdT = $('#TableUsersGroups').dataTable({"sDom": 'lfTrtip',
             "bInfo": false, "autoWidth": false, "oLanguage": LanguajeDataTable,
@@ -49,6 +43,7 @@ var ClassUsersGroups = function ()
                             _Members();
                         }},
                     {"sExtends": "text", "sButtonText": '<i class="fa fa-cogs"></i> Permisos', "fnClick": function () {
+                            var permissions = new ClassPermissions();
                             permissions.showPermissionsPanel(IdGrupo, NombreGrupo);
                         }},
                     {
