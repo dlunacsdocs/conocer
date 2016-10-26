@@ -84,9 +84,9 @@ var Topography = function(){
                 }
             ],
             onshown: function (dialogRef) {
-                buildStructure(tramiteTree, "Tramite", "Tramite");
-                buildStructure(concentracionTree, "Concentracion", "Concentracion", "Concentracion");
-                buildStructure(historicoTree, "Historico", "Historico");
+                buildStructure(tramiteTree, "Tramite", "Trámite");
+                buildStructure(concentracionTree, "Concentracion", "Concentracion", "Concentración");
+                buildStructure(historicoTree, "Historico", "Histórico");
                 var topographyStructure = getTopographyStructure();
                 addSectionsChildren(topographyStructure);
             }
@@ -186,9 +186,9 @@ var Topography = function(){
                 }
             ],
             onshown: function (dialogRef) {
-                buildStructure(tramiteTree, "Tramite", "Tramite");
-                buildStructure(concentracionTree, "Concentracion", "Concentracion", "Concentracion");
-                buildStructure(historicoTree, "Historico", "Historico");
+                buildStructure(tramiteTree, "Tramite", "Trámite");
+                buildStructure(concentracionTree, "Concentracion", "Concentracion", "Concentración");
+                buildStructure(historicoTree, "Historico", "Histórico");
                 var topographyStructure = getTopographyStructure();
                 console.log("topographyStructure::");
                 console.log(topographyStructure);
@@ -218,18 +218,18 @@ var Topography = function(){
      * @returns {Topography.getTopographyObject.content|$}
      */
     var getTopographyObject = function(openFromContent, tramiteTree, concentracionTree, historicoTree){
-        var content = $('<div>');
-        var tabbable = $('<div>',{id:"topographyNavTab"});
+        var content             = $('<div>');
+        var tabbable            = $('<div>',{id:"topographyNavTab"});
         
-        var navTab = $('<ul>', {class:"nav nav-tabs"});
+        var navTab              = $('<ul>', {class:"nav nav-tabs"});
         
-        var tramiteLi = $('<li>', {optionName: "tramite", class:"active"}).append('<a href="#fondoTree" data-toggle="tab"> Tramite</a>');
-        var concentracionLi = $('<li>', {optionName: "concentracion"}).append('<a href="#sectionTree" data-toggle="tab"> Concentracion</a>');
-        var historicoLi = $('<li>',{optionName: "historico"}).append('<a href="#serieTree" data-toggle="tab"> Historico</a>');
+        var tramiteLi           = $('<li>', {optionName: "tramite", class:"active"}).append('<a href="#tabTramite" data-toggle="tab"> Trámite</a>');
+        var concentracionLi     = $('<li>', {optionName: "concentracion"}).append('<a href="#tabConcentracion" data-toggle="tab"> Concentración</a>');
+        var historicoLi         = $('<li>',{optionName: "historico"}).append('<a href="#tabHistorico" data-toggle="tab"> Histórico</a>');
         
-        var tramiteDiv = $('<div>',{optionName: "tramite", class:"tab-pane active", style: "max-height: calc(100vh - 200px); overflow: auto;"});
-        var concentracionDiv = $('<div>',{optionName: "concentracion", class:"tab-pane", style: "max-height: calc(100vh - 200px); overflow: auto;"});
-        var historicoDiv = $('<div>',{optionName: "historico", class:"tab-pane", style: "max-height: calc(100vh - 100px); overflow: auto;"});
+        var tramiteDiv          = $('<div>',{id:"tabTramite", optionName: "tramite", class:"tab-pane active", style: "max-height: calc(100vh - 200px); overflow: auto;"});
+        var concentracionDiv    = $('<div>',{id:"tabConcentracion", optionName: "concentracion", class:"tab-pane", style: "max-height: calc(100vh - 200px); overflow: auto;"});
+        var historicoDiv        = $('<div>',{id:"tabHistorico", optionName: "historico", class:"tab-pane", style: "max-height: calc(100vh - 100px); overflow: auto;"});
         
         var tabContent = $('<div>', {class:"tab-content"});
         
@@ -347,7 +347,8 @@ var Topography = function(){
                     idParent: structureTree.data.key,
                     description: keyDescription,
                     structureKey: structureKey,
-                    structureType: structureType
+                    structureType: structureType,
+                    activate: true
                 });
             else
                 console.log("No se obtuve el arbol de " + '#'+structureType+"Tree");
