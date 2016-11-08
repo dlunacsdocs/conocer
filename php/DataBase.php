@@ -542,12 +542,13 @@ class DataBase {
                     (3203, 3200, 'Desenlazar Serie y U. A.', 0),
                     (3204, 3200, 'Unificar U. A. y Grupo de Usuario', 0),
                     (3205, 3200, 'Desenlazar U.A. y Grupo de Usuario', 0),
-                (3300, 2000, 'Imprimir', 1),
+                (3300, 15, 'Imprimir', 1),
                     (3301, 3300, 'Etiqueta', 1),
                     (3302, 3300, 'Expediente', 1),
                     (3303, 3300, 'Caja', 1),
-                (3400, 2000, 'Expedientes', 0),
-                    (3401, 3400, 'Nuevo Expediente', 0)
+                (3400, 15, 'Expedientes', 1),
+                    (3401, 3400, 'Consulta General de Expedientes', 1),
+                    (3402, 3400, 'Nuevo Expediente', 1)
         ";
 
         if(($resultArchival = $this->ConsultaQuery($DataBaseName, "$insertArchival")) != 1){

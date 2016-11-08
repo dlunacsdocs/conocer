@@ -1436,38 +1436,33 @@ class ContentManagement {
      * 
      *  Devuelve el listado de archivos que se encuentran dentro de un directorio
      */
-    private function GetFiles($userData)
-    {
-        $XML=new XML();
-        $BD= new DataBase();
-        $DataBaseName = $userData['dataBaseName'];
-        $IdGroup = $userData['idGroup'];
-        $NombreRepositorio=  filter_input(INPUT_POST, "RepositoryName");
-        $IdRepository = filter_input(INPUT_POST, "IdRepository");
-        $IdDirectory=  filter_input(INPUT_POST, "IdDirectory");    
-        $idDocDisposition = filter_input(INPUT_POST, "idDocDisposition");
-      
-        $CheckPermission = "SELECT *FROM RepositoryControl WHERE IdGrupo = $IdGroup";
-        $CheckPermissionResult = $BD->ConsultaSelect($DataBaseName, $CheckPermission);
-
+    private function GetFiles($userData){
+        $BD                     = new DataBase();
+        $DataBaseName           = $userData['dataBaseName'];
+        $IdGroup                = $userData['idGroup'];
+        $NombreRepositorio      = filter_input(INPUT_POST, "RepositoryName");
+        $idRepository           = filter_input(INPUT_POST, "IdRepository");
+        $IdDirectory            = filter_input(INPUT_POST, "IdDirectory");    
+        $idDocDisposition       = filter_input(INPUT_POST, "idDocDisposition");
+        $ConsultaBusqueda       = "";        
+        $CheckPermission        = "SELECT *FROM RepositoryControl WHERE IdGrupo = $IdGroup";
+        $CheckPermissionResult  = $BD->ConsultaSelect($DataBaseName, $CheckPermission);
+        
         if($CheckPermissionResult['Estado']!=1)
-        {
-            XML::XMLReponse("Error", 0, "<p><b>Error</b> al comprobar permisos de consulta sobre el repositorio</p><br>Detalles:<br><br>".$CheckPermissionResult['Estado']);
-            return 0;
-        }
+            return XML::XMLReponse("Error", 0, "<p><b>Error</b> al comprobar permisos de consulta sobre el repositorio</p><br>Detalles:<br><br>".$CheckPermissionResult['Estado']);
         
         if(!(count($CheckPermissionResult['ArrayDatos'])>0))
-        {
-            $XML->ResponseXmlFromArray("Busqueda", "Resultado", 0); 
-            return;
-        }
+            return XML::XmlArrayResponse("Busqueda", "Resultado", 0);  
         
-        $ConsultaBusqueda = "SELECT IdRepositorio, TipoArchivo, FechaIngreso, NombreArchivo, Full, RutaArchivo 
+        if (isset($_SESSION['permissions'][md5($idRepository)]['7fcc48d22804dbbe9b66b607d51389d4']))
+            $ConsultaBusqueda = "SELECT IdRepositorio, TipoArchivo, FechaIngreso, NombreArchivo, Full, RutaArchivo FROM $NombreRepositorio WHERE IdDIrectory = $IdDirectory";
+        else
+            $ConsultaBusqueda = "SELECT IdRepositorio, TipoArchivo, FechaIngreso, NombreArchivo, Full, RutaArchivo 
                 FROM $NombreRepositorio INNER JOIN CSDocs_Serie_AdminUnit ON idSerie = $idDocDisposition 
                 WHERE IdDIrectory = $IdDirectory AND idAdminUnit > 0 AND idUserGroup = $IdGroup";
         
-        $Resultado=$BD->ConsultaSelect($DataBaseName, $ConsultaBusqueda);           
-        $XML->ResponseXmlFromArray("Busqueda", "Resultado", $Resultado['ArrayDatos']);        
+        $Resultado = $BD->ConsultaSelect($DataBaseName, $ConsultaBusqueda);           
+        XML::XmlArrayResponse("Busqueda", "Resultado", $Resultado['ArrayDatos']);        
     }
     
     

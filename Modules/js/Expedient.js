@@ -51,12 +51,13 @@ var ExpedientClass = function () {
         
         if(doValidations(activeNode) !== 1)
             return 0;
-        
+                
         if (String(activeNode.data.catalogType) === 'serie')   /* Agrega una caratula */
-            _templateSelectionInterface(activeNode);
-        
+            _templateSelectionInterface(activeNode);        
         else if(parseInt(activeNode.data.key) === 1)   /* Agrega un expediente */
             _openDocumentaryDispositionInterface();
+        else
+            return 0;
         
     };
     
@@ -66,7 +67,9 @@ var ExpedientClass = function () {
      * @returns {unresolved}
      */
     var doValidations = function(activeNode){
-        if(!validateSystemPermission(0, '7fcc48d22804dbbe9b66b607d51389d4', 0))
+        setEnvironmentData();
+        console.log("idRepository: "+idRepository);
+        if(!validateSystemPermission(idRepository, '91d0dbfd38d950cb716c4dd26c5da08a', 1))
             return Advertencia("No tiene permiso de realizar esta acción");
         
         if (typeof activeNode !== 'object')
@@ -76,6 +79,12 @@ var ExpedientClass = function () {
             return Advertencia("No puede agregar un expediente sobre un expediente.");
         
        return 1;
+    };
+    
+    var setEnvironmentData = function(){
+        idRepository = $('#CM_select_repositorios option:selected').attr('idRepository');
+        repositoryName = $('#CM_select_repositorios option:selected').attr('repositoryname');
+        enterpriseKey = $('#CM_select_empresas option:selected').attr('value');
     };
     
     /**
