@@ -548,7 +548,14 @@ class DataBase {
                     (3303, 3300, 'Caja', 1),
                 (3400, 15, 'Expedientes', 1),
                     (3401, 3400, 'Consulta General de Expedientes', 1),
-                    (3402, 3400, 'Nuevo Expediente', 1)
+                    (3402, 3400, 'Nuevo Expediente', 1),
+                (3500, 2000, 'Topografía', 0),
+                    (3501, 3500, 'Nuevo', 0),
+                    (3502, 3500, 'Editar', 0),
+                    (3503, 3500, 'Eliminar', 0),
+                    (3504, 3500, 'Acceder a Trámite', 0),
+                    (3505, 3500, 'Acceder a Concentración', 0),
+                    (3506, 3500, 'Acceder a Histórico', 0)
         ";
 
         if(($resultArchival = $this->ConsultaQuery($DataBaseName, "$insertArchival")) != 1){

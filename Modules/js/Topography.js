@@ -40,17 +40,32 @@ var Topography = function(){
         var idRepository = $('#CM_select_repositorios option:selected').attr('idrepository');
         var repositoryName = $('#CM_select_repositorios option:selected').attr('repositoryname');
         var activeNode = $('#contentTree').dynatree('getActiveNode');
+        
         if (activeNode === null)
             return Advertencia("No fue posible obtener el directorio activo");
+        
         if(parseInt(activeNode.data.isLegajo) !== 1)
             return Advertencia("Solo puede ubicar Legajos");
+        
         if(repositoryName === undefined ||idRepository === undefined)
             return Advertencia("Seleccione un repositorio");
         
         var tramiteTree = $('<div>', {id: "tramiteTree"});
         var concentracionTree = $('<div>', {id: "concentracionTree"});
         var historicoTree = $('<div>', {id: "historicoTree"});
+        
+        if(!validateSystemPermission(0, '73231e53eeef362c814c8522f5257286', 0))
+            tramiteTree = null;
+        
+        if(!validateSystemPermission(0, '2a3d6d6cc4b5e77238c1fc1bb6cdd681', 0))
+            concentracionTree = null;
+        
+        if(!validateSystemPermission(0, 'e0126439e08ddfbdf4faa952dc910590', 0))
+            historicoTree = null;
+        console.log("openTopographyFromContent");
+        console.log(tramiteTree+" "+concentracionTree+" "+historicoTree);
         var content = getTopographyObject(1, tramiteTree, concentracionTree, historicoTree);
+        
         BootstrapDialog.show({
             title: 'Asignar Topografia',
             message: content,
@@ -168,6 +183,17 @@ var Topography = function(){
         var tramiteTree = $('<div>', {id: "tramiteTree"});
         var concentracionTree = $('<div>', {id: "concentracionTree"});
         var historicoTree = $('<div>', {id: "historicoTree"});
+        if(!validateSystemPermission(0, '73231e53eeef362c814c8522f5257286', 0))
+            tramiteTree = null;
+        
+        if(!validateSystemPermission(0, '2a3d6d6cc4b5e77238c1fc1bb6cdd681', 0))
+            concentracionTree = null;
+        
+        if(!validateSystemPermission(0, 'e0126439e08ddfbdf4faa952dc910590', 0))
+            historicoTree = null;
+        console.log("openTopographyFromContent");
+        console.log(tramiteTree+" "+concentracionTree+" "+historicoTree);
+        
         var content = getTopographyObject(openFromContent, tramiteTree, concentracionTree, historicoTree);
         BootstrapDialog.show({
             title: 'Topografia',
@@ -247,10 +273,17 @@ var Topography = function(){
         tabbable.append(navTab);
         tabbable.append(tabContent);
         
-        tramiteDiv.append(tramiteTree);
-        concentracionDiv.append(concentracionTree);
+        if(tramiteTree !== null)
+            tramiteDiv.append(tramiteTree);
+        
+        if(concentracionTree !== null)
+            concentracionDiv.append(concentracionTree);
+        
+        if(historicoTree !== null)
+            historicoDiv.append(historicoTree);
+        
         content.append(tabbable);
-        historicoDiv.append(historicoTree);
+        
         return content;
     };
     /**
@@ -339,7 +372,13 @@ var Topography = function(){
             var structureKey = $(this).find('structureKey').text();
 
             var idTree = "#"+String(structureType).toLowerCase()+"Tree";
-            var structureTree = $(idTree).dynatree('getTree').getNodeByKey(idParent);
+            var structureTree = $(idTree).dynatree('getTree');
+            
+            if(!$(idTree).length > 0)
+                return true;
+            else
+                structureTree = structureTree.getNodeByKey(idParent);
+                
             if(structureTree !== null)
                 structureTree.addChild({
                     title: structureName,
@@ -392,6 +431,9 @@ var Topography = function(){
     };
         
     var newStructureInterface = function(structureName, optionTitle){
+        if(!validateSystemPermission(0, 'd494020ff8ec181ef98ed97ac3f25453', 0))
+            return Advertencia("No tiene permiso de realizar esta acción");
+        
         var content = $('<div>');
         var formGroup = $('<div>', {class: "form-group"});
         var nameStructureForm = $('<input>', {type: "text", class: "form-control"});
@@ -520,6 +562,9 @@ var Topography = function(){
     };
     
     var editSection = function(structureName){
+        if(!validateSystemPermission(0, 'd2350a54d774001d6078e326b4488878', 0))
+            return Advertencia("No tiene permiso de realizar esta acción");
+        
         var activeNode = $('#'+structureName+'Tree').dynatree('getActiveNode');
         if(activeNode === null)
             return Advertencia("Debe seleccionar una seccion.");
@@ -637,6 +682,9 @@ var Topography = function(){
     };
     
     var deleteStructureInterface = function(structureName){
+        if(!validateSystemPermission(0, '87f7ee4fdb57bdfd52179947211b7ebb', 0))
+            return Advertencia("No tiene permiso de realizar esta acción");
+        
         var activeNode = $('#'+structureName+'Tree').dynatree('getActiveNode');
         if(activeNode === null)
             return Advertencia("Debe seleccionar una seccion.");
