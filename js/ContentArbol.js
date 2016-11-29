@@ -464,7 +464,6 @@ function InitDynatree(child)
             minExpandLevel: 2,
             children: [child],
             onActivate: function(node) {
-                console.log(node);
                 GetFiles(node);
                 node.sortChildren(cmp, false);
 //                if( event.shiftKey ){                   

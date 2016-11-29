@@ -547,7 +547,7 @@ class DataBase {
                     (3302, 3300, 'Expediente', 1),
                     (3303, 3300, 'Caja', 1),
                 (3400, 15, 'Expedientes', 1),
-                    (3401, 3400, 'Consulta General de Expedientes', 1),
+                    (3401, 3400, 'Acceso Consulta de Expedientes', 1),
                     (3402, 3400, 'Nuevo Expediente', 1),
                 (3500, 2000, 'Topografía', 0),
                     (3501, 3500, 'Nuevo', 0),
