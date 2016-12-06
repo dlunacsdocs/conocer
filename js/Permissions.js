@@ -428,7 +428,7 @@ var ClassPermissions = function ()
             
                     if(node !== null){
                         var idParent = node.data.idParent;
-                        if (!node.bSelected && parseInt(idParent) > 0)
+                        if (!node.bSelected && (node.getChildren() === null) > 0)
                             node.toggleSelect();
                     }
                 });

@@ -556,6 +556,8 @@ class DataBase {
                     (3504, 3500, 'Acceder a Trámite', 0),
                     (3505, 3500, 'Acceder a Concentración', 0),
                     (3506, 3500, 'Acceder a Histórico', 0)
+                (3600, 2000, 'Expedientes', 0),
+                    (3601, 3600, 'Acceso a búsqueda global', 0)
         ";
 
         if(($resultArchival = $this->ConsultaQuery($DataBaseName, "$insertArchival")) != 1){
