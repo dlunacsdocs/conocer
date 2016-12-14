@@ -24,3 +24,4 @@ var TemplateDesigner;
 var fieldsAssociator;
 var expedientTag;
 var topografyClass;
+var TransferClass;

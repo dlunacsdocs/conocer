@@ -59,6 +59,7 @@ var ArchivalClass = function () {
         _getFieldsAssociator();
         _getExpedientTag();
        _getTopography();
+       _transfer();
     };
 
     /**
@@ -238,6 +239,26 @@ var ArchivalClass = function () {
                     $('#archivalMenuNavbar').append(templateDesigner);
                     topografyClass = new Topography();
                     topografyClass.setActionToLink();
+                })
+                .fail(function (jqxhr, settings, exception) {
+                });
+
+        $.ajaxSetup({async: true});
+
+        return status;
+    };
+    
+    var _transfer = function(){
+        console.log("Construyendo control de Transferencia.");       
+        var status = false;
+        $.ajaxSetup({async: false});
+        $.getScript("Modules/js/Transfer.js")
+                .done(function (script, textStatus) {
+                    status = true;
+//                    var templateDesigner = $('<li>', {class: "transferModuleLink"}).append('<a href="#">Transferencia</a>');
+//                    $('#archivalMenuNavbar').append(templateDesigner);
+                    TransferClass = new Transfer();
+//                    TransferClass.init();
                 })
                 .fail(function (jqxhr, settings, exception) {
                 });
