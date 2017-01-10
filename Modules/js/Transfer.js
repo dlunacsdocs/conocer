@@ -52,7 +52,7 @@ var Transfer = function () {
                 buildTemplate(content);
             }
         });
-    }
+    };
 
     /**
      * 
