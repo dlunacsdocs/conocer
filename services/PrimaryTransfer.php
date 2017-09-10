@@ -22,9 +22,30 @@
  * Description of PrimaryTransfer
  *
  * @author Daniel Luna dluna@cs-docs.com
+ 
+ 
+ GRANT ALL PRIVILEGES ON *.* TO 'root'@'%' IDENTIFIED BY 'password' WITH GRANT OPTION;
+ FLUSH PRIVILEGES;
+ 
+  SET GLOBAL event_scheduler = ON;
+
+  CREATE EVENT event_name
+  ON SCHEDULE
+    EVERY 1 DAY
+    STARTS (TIMESTAMP(CURRENT_DATE) + INTERVAL 1 DAY + INTERVAL 1 HOUR)
+  DO 
+ 
+ 
+  DROP EVENT [IF EXISTS] event_name
  * 
  * 
- * 
+SELECT rep.idRepositorio,  dir.IdDirectory, dir.title, rep.FechaIngreso, now(), dv.idDocDisposition, dd.Name, dd.NameKey, dv.ArchivoTramite, dd.NodeType FROM Repositorio rep INNER JOIN dir_Repositorio dir ON rep.idDirectory = dir.IdDirectory
+INNER JOIN CSDocs_DocumentValidity dv ON dv.idDocDisposition = dir.idDocDisposition
+LEFT JOIN CSDocs_DocumentaryDisposition dd ON dd.idDocumentaryDisposition = dv.idDocDisposition
+WHERE NOW() > DATE_ADD(rep.FechaIngreso, INTERVAL dv.ArchivoTramite MONTH) AND dd.NodeType = "serie"
+
+Obtiene todos los documentos que a partir de su fecha de ingreso se calcula a traves de los años en trámite de la serie sí ya se encuentra dentro de ese periodo o no.
+
  */
 require_once __DIR__ . '/Service.php';
 
