@@ -18,37 +18,73 @@ $(document).ready(function()
  * @returns {undefined}
  */
 function EngineSearch()
-{    
+{
     var Search = $.trim($('#form_engine').val());
-    
-    if(!(Search.length > 0))
+    var subquery = "";
+    var repositoryName = null;
+    var idRepository = 0;
+
+    if((Search.length > 0))
+        Search = "'"+Search+"'";
+
+    if($('#advanceSearch').is(":checked")){
+        $('.advance-serarch-word-container').each(function(){
+            var searchType = $(this).attr("searchType");
+            console.log(searchType);
+            if(String(searchType) == "logic") {
+                if (String($(this).attr("position")) === "begin")
+                    Search += " '" + $(this).attr("type") + $(this).attr("word") + "'";
+                else
+                    Search += " '" + $(this).attr("word") + $(this).attr("type") + "'";
+            }
+            else if(String(searchType) == "date"){
+                var dateOperator = $(this).attr("dateOperator");
+                var fieldName =  $(this).attr("fieldName");
+                var startDate = $(this).attr("startDate");
+                var endDate = $(this).attr("endDate");
+                repositoryName = $(this).attr("repositoryName");
+                idRepository = $(this).attr("idRepository");
+                subquery+= fieldName + " " + dateOperator + " " + ((String(dateOperator) == "between") ? ("'"+startDate+"'" + " and " + "'"+endDate+"'") : (String(startDate).length > 0) ? "'"+startDate+"'" : "'"+endDate+"'")+"||";
+            }
+        });
+    }
+
+    console.log("buscando");
+    console.log(subquery);
+    console.log(Search);
+
+    if(Search.length == 0 & subquery.length == 0)
         return;
-    
+
     Loading();
-    
+
     $.ajax({
-      async:true, 
-      cache:false,
-      dataType:"html", 
-      type: 'POST',   
-      url: "php/ContentManagement.php",
-      data: {opcion: "EngineSearch",Search: Search},
-      success:  function(xml){
-          $('#Loading').dialog('close');
-             if($.parseXML( xml )===null){errorMessage(xml);return 0;}else xml=$.parseXML( xml );
-            $(xml).find("Error").each(function()
-            {
+        async:true,
+        cache:false,
+        dataType:"html",
+        type: 'POST',
+        url: "php/ContentManagement.php",
+        data: {opcion: "EngineSearch",Search: Search, subquery: subquery, idRepository:idRepository, repositoryName: repositoryName},
+        success:  function(xml){
+            $('#Loading').dialog('close');
+            if($.parseXML( xml )===null)
+                return errorMessage(xml);
+            else
+                xml=$.parseXML( xml );
+
+            $(xml).find("Error").each(function(){
                 var $Instancias=$(this);
                 var estado=$Instancias.find("Estado").text();
                 var mensaje=$Instancias.find("Mensaje").text();
-                errorMessage(mensaje);
-                return;
+                return errorMessage(mensaje);
             });
             SetSearchEngineResult(xml);  /* Se envian los dato para mostrarse en la Tabla de resultados */
-            
-      },
-      beforeSend:function(){},
-      error:function(objXMLHttpRequest){errorMessage(objXMLHttpRequest);}
+
+        },
+        error:function(objXMLHttpRequest){
+            $('#Loading').dialog('close');
+            errorMessage(objXMLHttpRequest);
+        }
     });
 }
 

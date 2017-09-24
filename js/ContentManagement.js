@@ -159,33 +159,38 @@ var ContentMnagement = function () {
                 <span class="icon-bar"></span>');
         
         navbarHeader.append(buttonCollapsed);
-        navbarHeader.append('<a class="navbar-brand" href="#"><i class="fa fa-search fa-lg"></i></a>');
+        // navbarHeader.append('<a class="navbar-brand" href="#"><i class="fa fa-search fa-lg"></i></a>');
         containerFuild.append(navbarHeader);
-        
+
         divCollapsed.append('<ul class="nav navbar-nav navbar-right">\n\
                                         <li id="userPage">\n\
-                                            <a href="#@userpage"><i class="icon-user"></i> <input type = "checkbox"> Expediente</a>\n\
+                                            <a href="#"><i class="icon-user"></i> <input type = "checkbox" id="advanceSearch"> Búsqueda avanzada</a>\n\
                                         </li>\n\
                                     </ul>\n\
                                     <form class="navbar-form">\n\
                                         <div class="form-group" style="display:inline;">\n\
                                             <div class="input-group" style="display:table;">\n\
-                                                <span class="input-group-addon" style="width:1%;"><span class="glyphicon glyphicon-search"></span></span>\n\
                                                 <input class="form-control" id = "form_engine" placeholder="Realizar búsqueda" autocomplete="off" autofocus="autofocus" type="text">\n\
+                                                <span class="input-group-addon" id="button-search" style="width:1%; cursor: pointer;"><span class="glyphicon glyphicon-search"></span></span>\n\
                                             </div>\n\
                                         </div>\n\
-                                    </form>');       
+                                    </form>');
 
         containerFuild.append(divCollapsed);
 
         nav.append(containerFuild);
-        
-        
+
+
         var engineTab = $('<div>', {id: "tabs-2", class: "tab-pane"}).append(nav);
+        engineTab.append('\
+            <div id="advanceSearchContainer" class="col-xs-12 col-sm-12 col-md-12 col-lg-12"  style="display:none">\n\
+                <div id="controlsAdvanceSearchContainer">\n\
+                </div>\n\
+            </div>\n\
+        ');
         engineTab.append('<div class="contentDetailEngine col-xs-12 col-sm-12 col-md-12 col-lg-12"></div>');
 
         contentTabDiv.append(engineTab);
-
         content.append(tabs);
         content.append(contentTabDiv);
 
@@ -210,6 +215,7 @@ var ContentMnagement = function () {
 
     var _initContentInterface = function () {
         var contentArbol = new ContentArbol();
+        var advancedSearch = new AdvancedSearch();
         var upload = new Upload();
         $('#content_management').dialog(WindowContentManagement, {close: function () {
                 $(this).remove();
@@ -253,10 +259,14 @@ var ContentMnagement = function () {
         });
 
         $('#form_engine').unbind('keydown').keydown(function (event) {
-            if (event.which === 13)
+
+            if (event.which === 13) {
+                event.preventDefault();
                 EngineSearch();
+            }
         });
 
+        $('#button-search').on("click", EngineSearch);
 
         $('.CMModifyDirectory').unbind('click').click(function () {
             var node = $("#contentTree").dynatree("getActiveNode");
@@ -311,6 +321,12 @@ var ContentMnagement = function () {
                 $(this).collapse('hide');
             }
         });
+
+        $('#advanceSearch').unbind("click").on("click", function () {
+            ($(this).is(':checked')) ?  advancedSearch.show() : advancedSearch.hide();
+        });
+
+        advancedSearch.init();
 
     };
 

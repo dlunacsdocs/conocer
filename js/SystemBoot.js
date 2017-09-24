@@ -3,7 +3,7 @@
 /* global EnvironmentData */
 
 $(document).ready(function() {
-    
+
     $('#pageLoading').one('transitionend webkitTransitionEnd oTransitionEnd otransitionend MSTransitionEnd', function(){alert('fin alerta');});
     
 //-----------------------------------------------------------------------------------

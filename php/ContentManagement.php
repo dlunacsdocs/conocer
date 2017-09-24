@@ -1464,38 +1464,63 @@ class ContentManagement {
         $Resultado = $BD->ConsultaSelect($DataBaseName, $ConsultaBusqueda);           
         XML::XmlArrayResponse("Busqueda", "Resultado", $Resultado['ArrayDatos']);        
     }
-    
-    
+
+
     /***************************************************************************
      *  Motor de Búsqueda
-     * 
+     *
+        $ConsultaBusqueda = "
+        SELECT * FROM RepositorioGlobal rg
+        INNER JOIN RepositoryControl rc ON rg.IdRepositorio = rc.IdRepositorio
+        INNER JOIN dir_Repositorio dir ON rg.IdDirectory = dir.IdDirectory
+        INNER JOIN CSDocs_Serie_AdminUnit sau ON sau.idSerie = dir.idDocDisposition
+        WHERE MATCH (rg.Full) AGAINST ($Search IN BOOLEAN MODE) AND  rc.IdGrupo = $IdGroup AND sau.idUserGroup = $IdGroup AND sau.idAdminUnit > 0";
      */
-    private function EngineSearch($userData)
-    {          
+    private function EngineSearch($userData){
         $Search = filter_input(INPUT_POST, "Search");
+        $subqueryString = filter_input(INPUT_POST, "subquery");
         $DataBaseName = $userData['dataBaseName'];
         $NombreUsuario = $userData['userName'];
         $IdUsuario = $userData['idUser'];
         $IdGroup = $userData['idGroup'];
-        
-        $ConsultaBusqueda = "
-            SELECT * FROM RepositorioGlobal rg 
-            INNER JOIN RepositoryControl rc ON rg.IdRepositorio = rc.IdRepositorio 
-            INNER JOIN dir_Repositorio dir ON rg.IdDirectory = dir.IdDirectory 
-            INNER JOIN CSDocs_Serie_AdminUnit sau ON sau.idSerie = dir.idDocDisposition 
-            WHERE MATCH (rg.Full) AGAINST ('$Search' IN BOOLEAN MODE) AND  rc.IdGrupo = $IdGroup AND sau.idUserGroup = $IdGroup AND sau.idAdminUnit > 0";
+        $repositoryName = filter_input(INPUT_POST, "repositoryName");
+        $idRepository = filter_input(INPUT_POST, "idRepository");
 
-        $Resultado = $this->db->ConsultaSelect($DataBaseName, $ConsultaBusqueda);        
+        $repositoryName = ($repositoryName != null) ? " INNER JOIN $repositoryName rep ON rg.idRepositorio = rep.IdRepositorio " : " ";
+        $MATCH = (strlen($Search) > 0) ? " MATCH (rg.Full) AGAINST ($Search IN BOOLEAN MODE) AND " : " ";
+        $subquery = $this->getSubquerySearch($subqueryString);
 
-        if($Resultado['Estado']!= 1)
-            return XML::XMLReponse("Error", 0, $Resultado['Estado']); 
+        $ConsultaBusqueda = "SELECT * FROM RepositorioGlobal rg $repositoryName
+              INNER JOIN RepositoryControl rc ON rg.IdRepositorio = rc.IdRepositorio
+              INNER JOIN dir_Repositorio dir ON rg.IdDirectory = dir.IdDirectory
+              INNER JOIN CSDocs_Serie_AdminUnit sau ON sau.idSerie = dir.idDocDisposition
+              WHERE $MATCH $subquery rc.IdGrupo = $IdGroup AND sau.idUserGroup = $IdGroup AND sau.idAdminUnit > 0";
 
-        Log::WriteEvent("28", $IdUsuario, $NombreUsuario , " $Search", $DataBaseName);
-        
-        XML::XmlArrayResponse("Busqueda", "Resultado", $Resultado['ArrayDatos']);                           
-        
+        $Resultado = $this->db->ConsultaSelect($DataBaseName, $ConsultaBusqueda);
+
+        if ($Resultado['Estado'] != 1)
+            return XML::XMLReponse("Error", 0, $Resultado['Estado']);
+
+        Log::WriteEvent("28", $IdUsuario, $NombreUsuario, " $Search", $DataBaseName);
+
+        XML::XmlArrayResponse("Busqueda", "Resultado", $Resultado['ArrayDatos']);
     }
-    
+
+    private function getSubquerySearch($subqueryString){
+        $subquery = " ";
+        $subqueryCollection = explode("||", $subqueryString);
+
+        if(!count($subqueryCollection) > 0)
+            return " ";
+
+        foreach ($subqueryCollection as $sub){
+            if(strlen($sub) > 0){
+                $subquery .= " ". $sub." AND ";
+            }
+        }
+
+        return $subquery;
+    }
  
     
     /***************************************************************************
