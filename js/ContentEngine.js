@@ -119,6 +119,12 @@ var cont=1;
         var IdRepositorio = $Resultado.find("IdRepositorio").text();
         var IdEmpresa = $Resultado.find("IdEmpresa").text();
         var IdGlobal = $Resultado.find("IdGlobal").text();
+        var idDirectory = $Resultado.find("IdDirectory").text();
+        var templateName = $Resultado.find("templateName").text();
+        var idRepository = $Resultado.find("idRepository").text();
+        var enterpriseKey = $Resultado.find("ClaveEmpresa").text();
+        var repositoryName = $Resultado.find("NombreRepositorio").text();
+        console.log(idRepository);
 //        RutaArchivo=location.host+'/'+RutaArchivo;
         Full = Full.slice(0,200);
 
@@ -133,7 +139,7 @@ var cont=1;
             /*[4]*/TipoArchivo,
             /*[5]*/Full, 
             /*[6]*/'<img src="img/acuse.png" title="vista previa de "'+NombreArchivo+'" onclick="Preview(\''+TipoArchivo+'\', \''+IdGlobal+'\', \''+ IdFile +'\' , \'Content\')">',
-            /*[7]*/'<img src="img/metadata.png" title="Metadatos de '+NombreArchivo+'" onclick="GetDetalle(\'Content\', \''+IdGlobal+'\', \''+IdFile+'\')">',                       
+            /*[7]*/'<img src="img/metadata.png" title="Metadatos de '+NombreArchivo+'" onclick="GetDetalle(\'Content\', \''+IdGlobal+'\', \''+IdFile+'\', \'' + idRepository +'\' , \'' + repositoryName + '\' , \'' + enterpriseKey + '\',  \'' + idDirectory + '\' , \'' + templateName + '\')">',
             /*[8]*/RutaArchivo,
             /*[9]*/IdFile,
             /*[10]*/IdEmpresa,

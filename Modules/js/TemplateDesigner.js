@@ -815,6 +815,9 @@ var TemplateDesigner = function () {
      * @returns {xml} Plantilla.
      */
     this.getTemplate = function(enterpriseKey, repositoryName, templateName){
+        console.log("solicitando template: "+ templateName);
+        console.log(repositoryName);
+        console.log(enterpriseKey);
         var templateStructure = null;
         $.ajax({
             async: false,

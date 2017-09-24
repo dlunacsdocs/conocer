@@ -421,6 +421,7 @@ class Repository {
     }
 
     function getRepositoriesByEnterprise($userData) {
+        $DB = new DataBase();
         $DataBaseName = $userData['dataBaseName'];
         $IdGroup = $userData['idGroup'];
         $idUser = $userData['idUser'];
@@ -431,7 +432,7 @@ class Repository {
             . "INNER JOIN CSDocs_Empresas em on re.ClaveEmpresa=em.ClaveEmpresa "
             . "WHERE rc.IdGrupo = $IdGroup";
 
-        $res = $this->database->ConsultaSelect($DataBaseName, $query);
+        $res = $DB->ConsultaSelect($DataBaseName, $query);
 
         if ($res['Estado'] != 1)
             return XML::XMLReponse("Error", 0, "<p><b>Error</b> al obtener los repositorios por empresa. " . $res['Estado'] . "</p>");

@@ -57,7 +57,9 @@ class ContentManagement {
                 case 'DetailModify':$this->DetailModify($userData);break;
                 case 'CopyFile':$this->CopyFile($userData); break;
                 case 'CutFile':$this->CutFile($userData); break;
-                case 'DeleteFile':$this->DeleteFile($userData); break;                                                  
+                case 'DeleteFile':$this->DeleteFile($userData); break;
+                case 'getDirectoryParents':$this->getDirectoryParents($userData); break;
+
             }
         }
     }
@@ -1490,8 +1492,9 @@ class ContentManagement {
         $MATCH = (strlen($Search) > 0) ? " MATCH (rg.Full) AGAINST ($Search IN BOOLEAN MODE) AND " : " ";
         $subquery = $this->getSubquerySearch($subqueryString);
 
-        $ConsultaBusqueda = "SELECT * FROM RepositorioGlobal rg $repositoryName
+        $ConsultaBusqueda = "SELECT csdocsrep.*, csdocsrep.IdRepositorio as idRepository, dir.*, rc.*, sau.*, rg.* FROM RepositorioGlobal rg $repositoryName
               INNER JOIN RepositoryControl rc ON rg.IdRepositorio = rc.IdRepositorio
+              INNER JOIN CSDocs_Repositorios csdocsrep ON csdocsrep.IdRepositorio = rc.IdRepositorio
               INNER JOIN dir_Repositorio dir ON rg.IdDirectory = dir.IdDirectory
               INNER JOIN CSDocs_Serie_AdminUnit sau ON sau.idSerie = dir.idDocDisposition
               WHERE $MATCH $subquery rc.IdGrupo = $IdGroup AND sau.idUserGroup = $IdGroup AND sau.idAdminUnit > 0";
@@ -1899,6 +1902,34 @@ class ContentManagement {
         $finalPath = $path."/".$name . $increment . '.' . $extension;
         
         return $finalPath;
+    }
+
+    public function getDirectoryParents($userData){
+        $idDirectory = filter_input(INPUT_POST, "idDirectory");
+        $dataBaseName = $userData['dataBaseName'];
+        $userName = $userData['userName'];
+        $idUser = $userData['idUser'];
+        $idGroup = $userData['idGroup'];
+
+        $query = "SELECT T2.*
+                FROM (
+                    SELECT
+                        @r AS _id,
+                        (SELECT @r := parent_id FROM dir_Repositorio WHERE IdDirectory = _id) AS parent_id,
+                        @l := @l + 1 AS lvl
+                    FROM
+                        (SELECT @r := $idDirectory, @l := 0) vars,
+                        dir_Repositorio m
+                    WHERE @r <> 0) T1
+                JOIN dir_Repositorio T2
+                ON T1._id = T2.IdDirectory";
+
+        $res = $this->db->ConsultaSelect($dataBaseName, $query);
+
+        if($res['Estado']!=1)
+            return XML::XMLReponse("Error", 0, "<p><b>Error</b> al obtener los directorios padre. </p><br>Detalles:<br><br>".$res['Estado']);
+
+        echo json_encode($res["ArrayDatos"], true);
     }
         
 }

@@ -12,25 +12,28 @@ TableContentdT = '';
 var Document = function(){
     var self = this;
     var expedient = new ExpedientClass();
-    this.openDocument = function(Source, IdGlobal, IdFile){
-            console.log("Openning document");
-            var activeNode = $('#contentTree').dynatree('getActiveNode');
+    this.openDocument = function(Source, IdGlobal, IdFile, idRepository, repositoryName, enterpriseKey, idDirectory, templateName){
+        console.log("Openning document");
+        console.log(idDirectory);
+        var activeNode = (parseInt(idDirectory) > 0) ?  null : $('#contentTree').dynatree('getActiveNode');
 
-            if (activeNode === null)
-                return Advertencia("No fue posible obtener el nodo activo");
+        if (activeNode === null && idDirectory == undefined)
+            return Advertencia("No fue posible obtener el nodo activo");
+        console.log(activeNode);
+        var DocumentEnvironment = new ClassDocumentEnvironment(Source, IdGlobal, IdFile);
+        DocumentEnvironment.GetProperties();
 
-            var DocumentEnvironment = new ClassDocumentEnvironment(Source, IdGlobal, IdFile);
-            DocumentEnvironment.GetProperties();
-            console.log(DocumentEnvironment);
-            if (!DocumentEnvironment.IdFile > 0) {
+        console.log(DocumentEnvironment);
+
+        if (!DocumentEnvironment.IdFile > 0) {
                 Advertencia("No selecciono un documento.");
                 return 0;
             }
                         
             var content = $('<div>');
-            var enterpriseKey = $('#CM_select_empresas option:selected').attr('value');
-            var repositoryName = $('#CM_select_repositorios option:selected').attr('repositoryname');
-            var IdRepositorio = $('#CM_select_repositorios option:selected').attr('idrepository');
+            enterpriseKey = (enterpriseKey != undefined) ? enterpriseKey : $('#CM_select_empresas option:selected').attr('value');
+            repositoryName = (repositoryName != undefined) ? repositoryName : $('#CM_select_repositorios option:selected').attr('repositoryname');
+            var IdRepositorio = (idRepository != undefined) ? idRepository : $('#CM_select_repositorios option:selected').attr('idrepository');
             var documentData = null;
             
             BootstrapDialog.show({
@@ -75,16 +78,64 @@ var Document = function(){
                 ],
                 onshown: function (dialogRef) {
                     var parentFrontPage = getParentFrontPage(activeNode);
-                    var templateXml = getTemplate(enterpriseKey, repositoryName, parentFrontPage.data.templateName + ".xml");
+                    var templatename = self.getTemplateName(parentFrontPage, idDirectory, templateName);
+                    var templateXml = getTemplate(enterpriseKey, repositoryName, templatename);
                     var templateObject = buildObjectOfTemplate(templateXml);
                     content.append(templateObject);
                     documentData = self.getDocumentData(DocumentEnvironment);
                     console.log("documentData--::");
                     console.log(documentData);
-                    setDataToDocument(documentData, activeNode);
+                    setDataToDocument(documentData);
                 }
             });            
     };
+
+    this.getTemplateName = function(parentFrontPage, idDirectory, templateName){
+        console.log(parentFrontPage);
+        console.log(templateName);
+        if(parentFrontPage != null)
+            return parentFrontPage.data.templateName + ".xml";
+
+        if(templateName != null && String(templateName).length > 0)
+            return templateName + ".xml"
+
+        return getTemplateFromDirectory(idDirectory);
+    }
+
+    var getTemplateFromDirectory = function(idDirectory){
+        var parents = self.getDirectoryParents(idDirectory);
+        var templateName = null;
+
+        $(parents).each(function(){
+            if(parseInt(this.isFrontPage) == 1){
+                templateName = this.templateName;
+                return 0;
+            }
+        });
+
+        return templateName+".xml";
+    }
+
+    this.getDirectoryParents = function(idDirectory){
+        var directories = null;
+        console.log("getTemplateNameFromDirectory");
+        $.ajax({
+            async: false,
+            cache: false,
+            dataType: "json",
+            type: 'POST',
+            url: "php/ContentManagement.php",
+            data: {opcion: "getDirectoryParents", idDirectory: idDirectory},
+            success: function (response){
+                directories = response;
+            },
+            error: function (objXMLHttpRequest) {
+                errorMessage(objXMLHttpRequest);
+                console.log(objXMLHttpRequest);
+            }
+        });
+        return directories;
+    }
         
     this.getDocumentData = function(DocumentEnvironment){
         var documentData = null;
@@ -120,7 +171,7 @@ var Document = function(){
     };
     
     var getParentFrontPage = function (activeNode) {
-        return expedient.frontPage.getParentFrontPage(activeNode);
+        return ((activeNode != null) ? expedient.frontPage.getParentFrontPage(activeNode) : null);
     };
     var getTemplate = function (enterpriseKey, repositoryName, templateName) {
         return TemplateDesigner.getTemplate(enterpriseKey, repositoryName, templateName);
@@ -134,7 +185,7 @@ var Document = function(){
         return TemplateDesigner.buildContentOfTemplate(templateXml, 0, 1);
     };
     
-    var setDataToDocument = function(xml, activeNode){
+    var setDataToDocument = function(xml){
         $(xml).find("CampoRepositorio").each(function (){
             var $CampoRepositorio = $(this);
             var fieldName = $CampoRepositorio.find('Campo').text();
@@ -146,7 +197,7 @@ var Document = function(){
             
             if(fieldName === "Numero_Expediente"){
                 setBarcode(fieldValue);
-                setExpedientBarcode(activeNode, fieldValue);
+                setExpedientBarcode(fieldValue);
             }
                 
             if($('#templateForm_' + fieldName).length > 0)
@@ -178,10 +229,10 @@ var Document = function(){
         $('#templateForm_CSDocs_barcode').append(barcode);
     };
     
-    var setExpedientBarcode = function(activeNode, expedientNumber){
+    var setExpedientBarcode = function(expedientNumber){
         console.log("Construyendo cdigo QR en plantilla------->>");
         $('.qrWrapper').qrcode({
-            text: activeNode.getKeyPath() + "/" + expedientNumber,
+            text: expedientNumber,
             size: 70,
             render: "image"
         });
@@ -214,20 +265,18 @@ var Document = function(){
  * @param {type} IdFile
  * @returns {Number}
  */
-function GetDetalle(Source, IdGlobal, IdFile)
+function GetDetalle(Source, IdGlobal, IdFile, idRepository, repositoryName, enterpriseKey, idDirectory, templateName)
 {
-    var xml = 0;   
-    
     var DocumentEnvironment = new ClassDocumentEnvironment(Source, IdGlobal, IdFile);
     DocumentEnvironment.GetProperties();
-    console.log(DocumentEnvironment);
+
     if (!DocumentEnvironment.IdFile > 0) {
         Advertencia("No selecciono un documento.");
         return 0;
     }
     
     var document = new Document();
-    document.openDocument(Source, IdGlobal, IdFile);
+    document.openDocument(Source, IdGlobal, IdFile, idRepository, repositoryName, enterpriseKey, idDirectory, templateName);
     
 }
 
