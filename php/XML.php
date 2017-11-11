@@ -317,7 +317,7 @@ class XML {
     }
     
 /* Retorna los errores que ocurren durante la validación de un XML */
-    private function display_xml_error($error)
+    public function display_xml_error($error)
     {
         $return  = $error->line . "\n";
         $return .= str_repeat('-', $error->column) . "^\n";
