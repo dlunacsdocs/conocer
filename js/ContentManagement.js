@@ -208,9 +208,6 @@ var ContentMnagement = function () {
         
         if(typeof topografyClass === 'object')
             topografyClass.buildContentTopographyLink();
-        
-        if(typeof TransferClass === 'object')
-            TransferClass.buildLinkInContentInterface();
     };
 
     var _initContentInterface = function () {

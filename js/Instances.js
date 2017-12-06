@@ -25,3 +25,4 @@ var fieldsAssociator;
 var expedientTag;
 var topografyClass;
 var TransferClass;
+var TransferPermissionsClass;

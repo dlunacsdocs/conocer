@@ -33,11 +33,15 @@ var ArchivalClass = function () {
         var fundamentoLegal = $('<li>', {class: "here LinkLegalFoundation"}).append('<a href = "#">Fundamento Legal</a>');
         var dispDoc = $('<li>', {class: "LinkDocumentaryDisposition"}).append('<a href="#">Cat. de Dispos. Documental</a>');
         var administrativeUnit = $('<li>', {class: "LinkAdministrativeUnit"}).append('<a href="#">Unidad Administrativa</a>');
+        var transfer = $('<li>', {class: "LinkTransfer"}).append('<a href="#">Transferencia</a>');
+        var transferPermissions = $('<li>', {class: "LinkTransferPermissions"}).append('<a href="#">Permisos de transferencia</a>');
 
         var sublist = $('<ul>', {class: "sublist", id: "archivalMenuNavbar"}).append(dispDoc);
         sublist.append(vigenciDocLi);
         sublist.append(fundamentoLegal);
         sublist.append(administrativeUnit);
+        sublist.append(transfer);
+        sublist.append(transferPermissions);
 
         var a = $('<a>', {href: "#Disposición Documental"}).append("Archivística");
 
@@ -58,8 +62,9 @@ var ArchivalClass = function () {
         _getTemplateDesigner();
         _getFieldsAssociator();
         _getExpedientTag();
-       _getTopography();
-       _transfer();
+        _getTopography();
+        _transfer();
+        _transferPermissions();
     };
 
     /**
@@ -258,7 +263,27 @@ var ArchivalClass = function () {
 //                    var templateDesigner = $('<li>', {class: "transferModuleLink"}).append('<a href="#">Transferencia</a>');
 //                    $('#archivalMenuNavbar').append(templateDesigner);
                     TransferClass = new Transfer();
-//                    TransferClass.init();
+                   TransferClass.setActionToLink();
+                })
+                .fail(function (jqxhr, settings, exception) {
+                });
+
+        $.ajaxSetup({async: true});
+
+        return status;
+    };
+
+    var _transferPermissions = function(){
+        console.log("Construyendo Permisos de Transferencia.");
+        var status = false;
+        $.ajaxSetup({async: false});
+        $.getScript("Modules/js/TransferPermissions.js")
+                .done(function (script, textStatus) {
+                    status = true;
+//                    var templateDesigner = $('<li>', {class: "transferModuleLink"}).append('<a href="#">Transferencia</a>');
+//                    $('#archivalMenuNavbar').append(templateDesigner);
+                    TransferPermissionsClass = new TransferPermissions();
+                    TransferPermissionsClass.setActionToLink();
                 })
                 .fail(function (jqxhr, settings, exception) {
                 });
