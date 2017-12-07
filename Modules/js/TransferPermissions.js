@@ -2,7 +2,6 @@
 
 var TransferPermissions = function () {
     this.setActionToLink = function(){
-        console.log("setActionToLink");
         $('.LinkTransferPermissions').click(open);
     };
 
@@ -18,32 +17,10 @@ var TransferPermissions = function () {
             closeByBackdrop: false,
             closeByKeyboard: true,
             buttons: [
-                {
-                    icon: 'fa fa-plus-circle fa-lg',
-                    label: 'Agregar',
-                    cssClass: "btn-primary",
-                    hotkey: 13,
-                    action: function (dialogRef) {
-                        var button = this;
-                        dialogRef.enableButtons(false);
-                        dialogRef.setClosable(false);
-//                        if (_mergeFrontPageWithLegajo(templateForm))
-//                            dialogRef.close();
-//                        else {
-//                            dialogRef.setClosable(true);
-//                            dialogRef.enableButtons(true);
-//                        }
-                    }
-                },
-                {
-                    label: 'Cerrar',
-                    action: function (dialogRef) {
-                        dialogRef.close();
-                    }
-                }
+
             ],
             onshow: function (dialogRef) {
-                buildTable(content);
+                buildTableUserGroups(content);
             },
             onshown: function (dialogRef) {
 
@@ -51,9 +28,51 @@ var TransferPermissions = function () {
         });
     };
 
-    var buildTable = function(content){
+    var buildTableUserGroups = function(content){
         var table = $('<table>');
         content.append(table);
+
+        setTableData();
+    }
+
+    var setTableData = function(){
+        var groups = getGroups();
+    }
+
+    var getGroups = function(){
+        console.log("getGroups");
+        $.ajax({
+            async: false,
+            cache: false,
+            dataType: "json",
+            type: 'POST',
+            url: "Modules/php/TransferPermissions.php",
+            data: {option: "getUserGroups"
+            },
+            success: function (xml) {
+                if ($.parseXML(xml) === null)
+                    return errorMessage(xml);
+                else
+                    xml = $.parseXML(xml);
+
+                ($(xml).find('topographyAdded').each(function(){
+                    var message = $(this).find('Mensaje').text();
+                    Notificacion(message);
+                    status = 1;
+                }));
+
+                $(xml).find('Error').each(function ()
+                {
+                    var Mensaje = $(this).find('Mensaje').text();
+                    errorMessage(Mensaje);
+                });
+            },
+            beforeSend: function () {
+            },
+            error: function (objXMLHttpRequest) {
+                errorMessage(objXMLHttpRequest);
+            }
+        });
     }
 
 };
