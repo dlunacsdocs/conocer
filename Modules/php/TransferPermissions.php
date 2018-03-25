@@ -9,13 +9,14 @@ require_once dirname($RoutFile) . '/php/Main.php';
 
 class TransferPermissions extends Main
 {
+
     public function Ajax() {
         if (filter_input(INPUT_POST, "option") != NULL and filter_input(INPUT_POST, "option") != FALSE) {
 
             $idSession = Session::getIdSession();
 
             if ($idSession == null)
-                return XML::XMLReponse("Error", 0, "Expedient::No existe una sesión activa, por favor vuelva a iniciar sesión");
+                return json_encode(["status" => false, "message" => "No existe una sesión activa:: Permisos de transferencia"]);
 
             $userData = Session::getSessionParameters();
 
@@ -31,8 +32,9 @@ class TransferPermissions extends Main
         $resultData = $this->db->ConsultaSelect($userData["dataBaseName"], $query);
 
         if($resultData["Estado"] != 1)
+            return json_encode(["error" => $resultData["Estado"]]);
 
-        return json_encode($resultData);
+        $this->response->json(["status" => true, "data" => $resultData["ArrayDatos"]]);
     }
 }
 

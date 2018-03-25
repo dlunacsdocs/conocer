@@ -7,6 +7,7 @@ class ResponseManager
         if(is_string($response))
             return json_decode(array("status" => 0, "message" => $response));
 
-        return json_decode($response);
+        header('Content-type: application/json');
+        echo json_encode($response);
     }
 }
