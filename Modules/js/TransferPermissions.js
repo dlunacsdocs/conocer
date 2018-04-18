@@ -1,6 +1,9 @@
 /* global BootstrapDialog */
 
 var TransferPermissions = function () {
+    var dt;
+    var DT;
+
     this.setActionToLink = function(){
         $('.LinkTransferPermissions').click(open);
     };
@@ -20,16 +23,16 @@ var TransferPermissions = function () {
 
             ],
             onshow: function (dialogRef) {
-                buildTableUserGroups(content);
+
             },
             onshown: function (dialogRef) {
-
+                buildTableUserGroups(content);
             }
         });
     };
 
     var buildTableUserGroups = function(content){
-        var table = $('<table>');
+        var table = '<table id="groupsTable" class="display hover"><thead><tr><th>Nombre</th></tr></thead><tbody></tbody></table>';
         content.append(table);
 
         setTableData();
@@ -37,6 +40,45 @@ var TransferPermissions = function () {
 
     var setTableData = function(){
         var groups = getGroups();
+        DT = $('#groupsTable').dataTable({
+            "sDom": 'lfTrtip',
+            "bInfo": false, "autoWidth": false, "oLanguage": LanguajeDataTable,
+            "tableTools": {
+                "aButtons": [
+                    {"sExtends": "text", "sButtonText": '<i class="fa fa-plus-circle fa-lg"></i> Agregar Responsable', "fnClick": function () {
+                        _newInstanceModal();
+                    }},
+                    {"sExtends": "text", "sButtonText": '<i class="fa fa-trash-o"></i> Eliminar Responsable', "fnClick": function () {
+                        _confirmDeleteInstance();
+                    }},
+                    {
+                        "sExtends": "collection",
+                        "sButtonText": '<i class="fa fa-floppy-o fa-lg"></i>',
+                        "aButtons": ["csv", "xls", "pdf", "copy"]
+                    }
+                ]
+            }
+        });
+        dt = new $.fn.dataTable.Api("#groupsTable");
+
+        $(groups.data).each(function () {
+            var idGroup = this.IdGrupo;
+            var groupName = this.Nombre;
+            var data = [groupName];
+
+            var ai = dt.row.add(data).draw();
+            var n = DT.fnSettings().aoData[ ai[0] ].nTr;
+            n.setAttribute('id', idGroup);
+        });
+
+        $('#groupsTable tbody').on('click', 'tr', function () {
+            if ($(this).hasClass('selected'))
+                $(this).removeClass('selected');
+            else {
+                dt.$('tr.selected').removeClass('selected');
+                $(this).addClass('selected');
+            }
+        });
 
     }
 
