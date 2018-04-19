@@ -23,18 +23,42 @@ class TransferPermissions extends Main
             switch (filter_input(INPUT_POST, "option")) {
                 case "getUserGroups": $this->getUserGroups($userData);
                     break;
+                case "getGroupUsers":
+                    return $this->getGroupUsers($userData);
+                case "addManagerToGroup":
+                    return $this->addManagerToGroup($userData);
+                default: return $this->response->json(["status" => false, "message" => "option not found"]);
             }
         }
     }
 
     private function getUserGroups($userData){
-        $query = 'SELECT *FROM GruposUsuario';
+        $query = 'SELECT * FROM GruposUsuario LEFT JOIN TransferPermissions ON IdGrupo = idGroup LEFT JOIN CSDocs_Usuarios ON IdUsuario = idUser';
         $resultData = $this->db->ConsultaSelect($userData["dataBaseName"], $query);
 
         if($resultData["Estado"] != 1)
             return json_encode(["error" => $resultData["Estado"]]);
 
         $this->response->json(["status" => true, "data" => $resultData["ArrayDatos"]]);
+    }
+
+    private function getGroupUsers($userDataSession){
+        $instanceName = $userDataSession["dataBaseName"];
+        $idGroup = $_POST["idGroup"];
+
+        $query = 'SELECT * FROM GruposUsuario LEFT JOIN TransferPermissions ON IdGrupo = idGroup LEFT JOIN CSDocs_Usuarios ON IdUsuario = idUser';
+        $resultData = $this->db->ConsultaSelect($userData["dataBaseName"], $query);
+
+        if($resultData["Estado"] != 1)
+            return json_encode(["error" => $resultData["Estado"]]);
+
+        $this->response->json(["status" => true, "data" => $resultData["ArrayDatos"]]);
+    }
+
+    private function addManagerToGroup($userDataSession){
+        $instanceName = $userDataSession["dataBaseName"];
+        $idGroup = $_POST["idGroup"];
+
     }
 }
 

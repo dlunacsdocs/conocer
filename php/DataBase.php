@@ -414,6 +414,20 @@ class DataBase {
                 idTopography_Control INT AUTO_INCREMENT,
                 idTopography INT,
                 PRIMARY KEY (idTopography_Control))";
+
+        $transferPermissions = '
+        CREATE TABLE IF NOT EXISTS TransferPermissions(
+          id INT AUTO_INCREMENT NOT NULL,
+          idGroup INT NOT NULL,
+          idUser INT NOT NULL,
+          created_at DATETIME,
+          updated_at DATETIME,
+          PRIMARY KEY (id)
+        )
+        ';
+
+        if (($resusTransferPermissions = $this->ConsultaQuery($DataBaseName, $transferPermissions)) != 1 )
+            return "<p><b>Error</b> al crear <b>Permisos de transferencia</b></p> Detalles:<br>$administrativeUnitResult";
         
         if(!($topographyControlRes = $this->ConsultaQuery($DataBaseName, $topographyControl)))
                 return "<p><b>Error</b> al al crear el control de topografia</p>";
