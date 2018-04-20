@@ -3,6 +3,8 @@
 var TransferPermissions = function () {
     var dt;
     var DT;
+    var usersDT;
+    var usersdt;
 
     this.setActionToLink = function(){
         $('.LinkTransferPermissions').click(open);
@@ -59,6 +61,7 @@ var TransferPermissions = function () {
             var ai = dt.row.add(data).draw();
             var n = DT.fnSettings().aoData[ ai[0] ].nTr;
             n.setAttribute('id', idGroup);
+            n.setAttribute('groupName', groupName);
         });
 
         $('#groupsTable tbody').on('click', 'tr', function () {
@@ -78,7 +81,7 @@ var TransferPermissions = function () {
         "tableTools": {
             "aButtons": [
                 {"sExtends": "text", "sButtonText": '<i class="fa fa-plus-circle fa-lg"></i> Agregar Responsable', "fnClick": function () {
-                    addManager();
+                    addManagerInterface();
                 }},
                 {"sExtends": "text", "sButtonText": '<i class="fa fa-trash-o"></i> Eliminar Responsable', "fnClick": function () {
                     deleteManager();
@@ -118,39 +121,91 @@ var TransferPermissions = function () {
         return groups;
     }
 
-    var addManager = function(){
+    /**
+     * Interface for adding a manager in a selected group
+     * @returns {*}
+     */
+    var addManagerInterface = function(){
         var idGroup = $('#groupsTable tr.selected').attr('id');
+        var groupName = $('#groupsTable tr.selected').attr('groupName');
+
         idGroup = parseInt(idGroup);
 
         if(!idGroup > 0)
             return Advertencia("Debe seleccionar un grupo.");
 
-        var users = getGroupUsers(idGroup);
-        console.log(users);
-        return 0;
+        var content = $('<div>');
 
-        $.ajax({
-            async: false,
-            cache: false,
-            dataType: "json",
-            method: 'POST',
-            url: "Modules/php/TransferPermissions.php",
-            data: {option: "addManagerToGroup", idGroup: idGroup},
-            success: function (response) {
-                if(!response.status){
-                    console.log(response);
-                    return errorMessage("Error al obtener grupos de usuario");
+        BootstrapDialog.show({
+            title: '<i class="fa fa-exchange fa-lg"></i> '+groupName,
+            size: BootstrapDialog.SIZE_NORMAL,
+            type: BootstrapDialog.TYPE_PRIMARY,
+            message: content,
+            closable: true,
+            closeByBackdrop: false,
+            closeByKeyboard: true,
+            buttons: [
+                {
+                    "label": "Asociar",
+                    "class": "btn primary",
+                    action: function (dialog) {
+                        var idUser = $('#usersTable tr.selected').attr('id');
+
+                        if(parseInt(idUser) > 0)
+                            associateUserToGroup(idGroup, idUser);
+                        else
+                            Advertencia("Debe seleccionar un usuario");
+                    }
                 }
-                groups = response;
+            ],
+            onshow: function (dialogRef) {
+
             },
-            beforeSend: function () {
-            },
-            error: function (objXMLHttpRequest) {
-                errorMessage(objXMLHttpRequest);
+            onshown: function (dialogRef) {
+                groupsersTable(content, idGroup);
+            }
+        });
+
+    }
+
+
+    var groupsersTable = function(content, idGroup){
+        var table = '<table id = "usersTable" class = "table display hover">' +
+            '<thead><tr><th>Usuario</th></tr></thead>' +
+            '</table>';
+
+        content.append(table);
+
+        usersDT = $('#usersTable').dataTable(DataTable);
+        usersdt = new $.fn.dataTable.Api("#usersTable");
+
+        var users = getGroupUsers(idGroup);
+
+        $(users).each(function(){
+            var data = [this.Login];
+
+            var ai = usersdt.row.add(data).draw();
+            var n = usersDT.fnSettings().aoData[ ai[0] ].nTr;
+
+            n.setAttribute('id', this.IdUsuario);
+            n.setAttribute('login', this.Login);
+        });
+
+        $('#usersTable tbody').on('click', 'tr', function () {
+            if ($(this).hasClass('selected'))
+                $(this).removeClass('selected');
+            else {
+                dt.$('tr.selected').removeClass('selected');
+                $(this).addClass('selected');
             }
         });
     }
 
+    /**
+     * return users of group
+     * @param idGroup
+     * @returns {*}
+     */
     var getGroupUsers = function(idGroup){
         var users = null;
         $.ajax({
@@ -163,7 +218,7 @@ var TransferPermissions = function () {
             success: function (response) {
                 if(!response.status){
                     console.log(response);
-                    return errorMessage("Error al obtener grupos de usuario");
+                    return errorMessage("Error al obtener usuarios del grupo seleccionado");
                 }
                 users = response.data;
             },
@@ -174,6 +229,36 @@ var TransferPermissions = function () {
             }
         });
         return users;
+    }
+    /**
+     * Associate a user in an specific group
+     * @param idGroup
+     * @param idUser
+     */
+    var associateUserToGroup = function(idGroup, idUser){
+        var status = false;
+
+        $.ajax({
+            async: false,
+            cache: false,
+            dataType: "json",
+            method: 'POST',
+            url: "Modules/php/TransferPermissions.php",
+            data: {option: "associateUserToGroup", idGroup: idGroup, idUser: idUser},
+            success: function (response) {
+                if(!response.status){
+                    console.log(response);
+                    return errorMessage("Error al asociar un usuario al grupo seleccionado");
+                }
+                status = true;
+            },
+            beforeSend: function () {
+            },
+            error: function (objXMLHttpRequest) {
+                errorMessage(objXMLHttpRequest);
+            }
+        });
+        return status;
     }
 
     var deleteManager = function(){

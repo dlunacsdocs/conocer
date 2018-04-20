@@ -25,8 +25,8 @@ class TransferPermissions extends Main
                     break;
                 case "getGroupUsers":
                     return $this->getGroupUsers($userData);
-                case "addManagerToGroup":
-                    return $this->addManagerToGroup($userData);
+                case 'associateUserToGroup':
+                    return $this->associateUserToGroup($userData);
                 default: return $this->response->json(["status" => false, "message" => "option not found"]);
             }
         }
@@ -45,7 +45,7 @@ class TransferPermissions extends Main
     private function getGroupUsers($userDataSession){
         $idGroup = $_POST["idGroup"];
 
-        $query = "SELECT * FROM GruposUsuario INNER JOIN CSDocs_Usuarios ON IdGrupo = IdUsuario WHERE IdGrupo = $idGroup";
+        $query = "SELECT g.*, u.Login, u.IdUsuario FROM GruposUsuario g INNER JOIN CSDocs_Usuarios u ON g.IdGrupo = u.IdUsuario WHERE g.IdGrupo = $idGroup";
         $resultData = $this->db->ConsultaSelect($userDataSession["dataBaseName"], $query);
 
         if($resultData["Estado"] != 1)
@@ -54,10 +54,11 @@ class TransferPermissions extends Main
         return $this->response->json(["status" => true, "data" => $resultData["ArrayDatos"]]);
     }
 
-    private function addManagerToGroup($userDataSession){
-        $instanceName = $userDataSession["dataBaseName"];
+    private function associateUserToGroup($userDataSession){
+        $idUser = $_POST["idUser"];
         $idGroup = $_POST["idGroup"];
 
+        echo "<pre>"; var_dump($idGroup, $idUser); die();
     }
 }
 
