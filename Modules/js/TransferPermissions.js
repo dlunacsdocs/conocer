@@ -125,6 +125,10 @@ var TransferPermissions = function () {
         if(!idGroup > 0)
             return Advertencia("Debe seleccionar un grupo.");
 
+        var users = getGroupUsers(idGroup);
+        console.log(users);
+        return 0;
+
         $.ajax({
             async: false,
             cache: false,
@@ -147,7 +151,8 @@ var TransferPermissions = function () {
         });
     }
 
-    var getGroupUsers = function(){
+    var getGroupUsers = function(idGroup){
+        var users = null;
         $.ajax({
             async: false,
             cache: false,
@@ -160,7 +165,7 @@ var TransferPermissions = function () {
                     console.log(response);
                     return errorMessage("Error al obtener grupos de usuario");
                 }
-                groups = response;
+                users = response.data;
             },
             beforeSend: function () {
             },
@@ -168,6 +173,7 @@ var TransferPermissions = function () {
                 errorMessage(objXMLHttpRequest);
             }
         });
+        return users;
     }
 
     var deleteManager = function(){

@@ -43,16 +43,15 @@ class TransferPermissions extends Main
     }
 
     private function getGroupUsers($userDataSession){
-        $instanceName = $userDataSession["dataBaseName"];
         $idGroup = $_POST["idGroup"];
 
-        $query = 'SELECT * FROM GruposUsuario LEFT JOIN TransferPermissions ON IdGrupo = idGroup LEFT JOIN CSDocs_Usuarios ON IdUsuario = idUser';
-        $resultData = $this->db->ConsultaSelect($userData["dataBaseName"], $query);
+        $query = "SELECT * FROM GruposUsuario INNER JOIN CSDocs_Usuarios ON IdGrupo = IdUsuario WHERE IdGrupo = $idGroup";
+        $resultData = $this->db->ConsultaSelect($userDataSession["dataBaseName"], $query);
 
         if($resultData["Estado"] != 1)
-            return json_encode(["error" => $resultData["Estado"]]);
+            return $this->response->json(["status" => false,"message" => $resultData["Estado"]]);
 
-        $this->response->json(["status" => true, "data" => $resultData["ArrayDatos"]]);
+        return $this->response->json(["status" => true, "data" => $resultData["ArrayDatos"]]);
     }
 
     private function addManagerToGroup($userDataSession){
