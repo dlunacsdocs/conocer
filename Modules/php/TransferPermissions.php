@@ -33,7 +33,7 @@ class TransferPermissions extends Main
     }
 
     private function getUserGroups($userData){
-        $query = 'SELECT * FROM GruposUsuario LEFT JOIN TransferPermissions ON IdGrupo = idGroup LEFT JOIN CSDocs_Usuarios ON IdUsuario = idUser';
+        $query = 'SELECT * FROM GruposUsuario LEFT JOIN CSDocs_TransferPermissions ON IdGrupo = idGroup LEFT JOIN CSDocs_Usuarios ON IdUsuario = idUser';
         $resultData = $this->db->ConsultaSelect($userData["dataBaseName"], $query);
 
         if($resultData["Estado"] != 1)
@@ -58,7 +58,15 @@ class TransferPermissions extends Main
         $idUser = $_POST["idUser"];
         $idGroup = $_POST["idGroup"];
 
-        echo "<pre>"; var_dump($idGroup, $idUser); die();
+        $query = 'UPDATE CSDocs_TransferPermissions SET idUser = '.$idUser.' where idGroup = '. $idGroup ;
+
+        $resultData = $this->db->ConsultaQuery($userDataSession["dataBaseName"], $query);
+
+        if(!$resultData)
+            return $this->response->json(["status" => false,"message" => $resultData["Estado"]]);
+
+        return $this->response->json(["status" => true]);
+
     }
 }
 

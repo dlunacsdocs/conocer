@@ -151,8 +151,12 @@ var TransferPermissions = function () {
                     action: function (dialog) {
                         var idUser = $('#usersTable tr.selected').attr('id');
 
-                        if(parseInt(idUser) > 0)
-                            associateUserToGroup(idGroup, idUser);
+                        if(parseInt(idUser) > 0){
+                            if(associateUserToGroup(idGroup, idUser)){
+                                dialog.close();
+                                addAssociatedUserToTable(idGroup, idUser);
+                            }
+                        }
                         else
                             Advertencia("Debe seleccionar un usuario");
                     }
@@ -195,7 +199,7 @@ var TransferPermissions = function () {
             if ($(this).hasClass('selected'))
                 $(this).removeClass('selected');
             else {
-                dt.$('tr.selected').removeClass('selected');
+                usersdt.$('tr.selected').removeClass('selected');
                 $(this).addClass('selected');
             }
         });
@@ -247,7 +251,6 @@ var TransferPermissions = function () {
             data: {option: "associateUserToGroup", idGroup: idGroup, idUser: idUser},
             success: function (response) {
                 if(!response.status){
-                    console.log(response);
                     return errorMessage("Error al asociar un usuario al grupo seleccionado");
                 }
                 status = true;
@@ -255,10 +258,20 @@ var TransferPermissions = function () {
             beforeSend: function () {
             },
             error: function (objXMLHttpRequest) {
-                errorMessage(objXMLHttpRequest);
+                console.log(objXMLHttpRequest);
+                errorMessage(objXMLHttpRequest.responseText);
             }
         });
         return status;
+    }
+
+    var addAssociatedUserToTable = function(idGroup, idUser){
+        var groupName = $('#groupsTable tr.selected').attr('groupName');
+        var userName = $('#usersTable tr.selected').attr('login');
+
+        var data = dt.row('tr[id=' + idUser + ']').data();
+        data[1] = userName;
+        dt.row($('#groupsTable tr.selected')).data(data).draw()
     }
 
     var deleteManager = function(){

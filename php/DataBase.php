@@ -416,7 +416,7 @@ class DataBase {
                 PRIMARY KEY (idTopography_Control))";
 
         $transferPermissions = '
-        CREATE TABLE IF NOT EXISTS TransferPermissions(
+        CREATE TABLE IF NOT EXISTS CSDocs_TransferPermissions(
           id INT AUTO_INCREMENT NOT NULL,
           idGroup INT NOT NULL,
           idUser INT NOT NULL,
