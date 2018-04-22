@@ -9,7 +9,9 @@ var TransferPermissions = function () {
     this.setActionToLink = function(){
         $('.LinkTransferPermissions').click(open);
     };
-
+    /**
+     * Open the interface of transfer permissions
+     */
     var open = function () {
         var content = $('<div>', {class: ""});
 
@@ -75,6 +77,10 @@ var TransferPermissions = function () {
 
     }
 
+    /**
+     * settings of DataTable
+     * @type {{sDom: string, bInfo: boolean, autoWidth: boolean, oLanguage, tableTools: {aButtons: [null,null,null]}}}
+     */
     var tableSettings = {
         "sDom": 'lfTrtip',
         "bInfo": false, "autoWidth": false, "oLanguage": LanguajeDataTable,
@@ -146,8 +152,15 @@ var TransferPermissions = function () {
             closeByKeyboard: true,
             buttons: [
                 {
-                    "label": "Asociar",
-                    "class": "btn primary",
+                    label: "Cancelar",
+                    cssClass: "btn btn-default",
+                    action: function(dialog){
+                        dialog.close();
+                    }
+                },
+                {
+                    label: "Asociar",
+                    cssClass: "btn btn-primary",
                     action: function (dialog) {
                         var idUser = $('#usersTable tr.selected').attr('id');
 
@@ -229,7 +242,7 @@ var TransferPermissions = function () {
             beforeSend: function () {
             },
             error: function (objXMLHttpRequest) {
-                errorMessage(objXMLHttpRequest);
+                errorMessage(objXMLHttpRequest.responseText);
             }
         });
         return users;
@@ -269,11 +282,14 @@ var TransferPermissions = function () {
         var groupName = $('#groupsTable tr.selected').attr('groupName');
         var userName = $('#usersTable tr.selected').attr('login');
 
-        var data = dt.row('tr[id=' + idUser + ']').data();
+        var data = dt.row('tr[id=' + idGroup + ']').data();
         data[1] = userName;
         dt.row($('#groupsTable tr.selected')).data(data).draw()
     }
 
+    /**
+     * remove a manager from a group
+     */
     var deleteManager = function(){
 
     }
