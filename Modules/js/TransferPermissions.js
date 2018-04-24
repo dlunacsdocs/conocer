@@ -90,7 +90,7 @@ var TransferPermissions = function () {
                     addManagerInterface();
                 }},
                 {"sExtends": "text", "sButtonText": '<i class="fa fa-trash-o"></i> Eliminar Responsable', "fnClick": function () {
-                    deleteManager();
+                    deleteManagerConfirmation();
                 }},
                 {
                     "sExtends": "collection",
@@ -290,8 +290,95 @@ var TransferPermissions = function () {
     /**
      * remove a manager from a group
      */
-    var deleteManager = function(){
+    var deleteManagerConfirmation = function(){
+        var idGroup = $('#groupsTable tr.selected').attr('id');
+        var groupName = $('#groupsTable tr.selected').attr('groupName');
 
+        idGroup = parseInt(idGroup);
+
+        if(!idGroup > 0)
+            return Advertencia("Debe seleccionar un grupo.");
+
+        var content = $('<div>').append("¿Realmente desea eliminar al encargado de transferencia de archivo?");
+
+        BootstrapDialog.show({
+            title: '<i class="fa fa-exchange fa-lg"></i> '+groupName,
+            size: BootstrapDialog.SIZE_SMALL,
+            type: BootstrapDialog.TYPE_WARNING,
+            message: content,
+            closable: true,
+            closeByBackdrop: false,
+            closeByKeyboard: true,
+            buttons: [
+                {
+                    label: "Cancelar",
+                    cssClass: "btn btn-default",
+                    action: function(dialog){
+                        dialog.close();
+                    }
+                },
+                {
+                    label: "Eliminar",
+                    cssClass: "btn btn-warning",
+                    action: function (dialog) {
+                        if(deleteManager(idGroup, groupName)){
+                            var button = this;
+                            button.spin();
+                            removeUserFromGroup(idGroup, groupName);
+                        }
+                        dialog.close();
+                    }
+                }
+            ],
+            onshow: function (dialogRef) {
+
+            },
+            onshown: function (dialogRef) {
+            }
+        });
+    }
+
+    /**
+     * remove a user from a group of transfer permissions
+     * @param idGroup
+     * @param groupName
+     * @returns {boolean}
+     */
+    var deleteManager = function(idGroup, groupName){
+        var status = false;
+
+        $.ajax({
+            async: false,
+            cache: false,
+            dataType: "json",
+            method: 'POST',
+            url: "Modules/php/TransferPermissions.php",
+            data: {option: "deleteManagerFromGroup", idGroup: idGroup},
+            success: function (response) {
+                if(!response.status){
+                    return errorMessage("Error al asociar un usuario al grupo seleccionado");
+                }
+                status = true;
+            },
+            beforeSend: function () {
+            },
+            error: function (objXMLHttpRequest) {
+                console.log(objXMLHttpRequest);
+                errorMessage(objXMLHttpRequest.responseText);
+            }
+        });
+        return status;
+    }
+
+    /**
+     * remove a user from a table user group
+     * @param idGroup
+     * @param groupName
+     */
+    var removeUserFromGroup = function(idGroup, groupName){
+        var data = dt.row('tr[id=' + idGroup + ']').data();
+        data[1] = "";
+        dt.row($('#groupsTable tr.selected')).data(data).draw()
     }
 
 };

@@ -27,6 +27,8 @@ class TransferPermissions extends Main
                     return $this->getGroupUsers($userData);
                 case 'associateUserToGroup':
                     return $this->associateUserToGroup($userData);
+                case 'deleteManagerFromGroup':
+                    return $this->deleteManagerFromGroup($userData);
                 default: return $this->response->json(["status" => false, "message" => "option not found"]);
             }
         }
@@ -57,7 +59,9 @@ class TransferPermissions extends Main
 
         $query = "SELECT g.*, u.Login, u.IdUsuario FROM CSDocs_Usuarios u 
                     INNER JOIN GruposControl gc ON gc.IdUsuario = u.IdUsuario
-                    INNER JOIN GruposUsuario g ON g.IdGrupo = gc.IdGrupo WHERE g.IdGrupo = $idGroup";
+                    INNER JOIN GruposUsuario g ON g.IdGrupo = gc.IdGrupo 
+                    LEFT JOIN CSDocs_TransferPermissions t ON t.idUser = gc.IdUsuario 
+                    WHERE g.IdGrupo = $idGroup AND t.idUser IS NULL";
 
         $resultData = $this->db->ConsultaSelect($userDataSession["dataBaseName"], $query);
 
@@ -90,6 +94,22 @@ class TransferPermissions extends Main
 
         return $this->response->json(["status" => true]);
 
+    }
+
+    /**
+     * delete a user from a transfer permissions
+     * @param $userDataSession
+     * @return mixed
+     */
+    private function deleteManagerFromGroup($userDataSession){
+        $idGroup = $_POST["idGroup"];
+
+        $removeQuery = "DELETE FROM CSDocs_TransferPermissions WHERE idGroup = ".$idGroup;
+
+        if($this->db->ConsultaQuery($userDataSession["dataBaseName"], $removeQuery) != 1)
+            return $this->response->json(["status" => false,"message" => "Error al intentar eliminar asociados del grupo"]);
+
+        return $this->response->json(["status" => true]);
     }
 }
 
