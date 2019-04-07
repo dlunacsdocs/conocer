@@ -67,8 +67,8 @@ var ExpedientTag = function(){
     };
     
     var openTagInterface = function(activeNode){
-        if(!validateSystemPermission(idRepository, '8217bb4e7fa0541e0f5e04fea764ab91', 1))
-        return Advertencia("No tiene permiso de realizar esta acción");
+        // if(!validateSystemPermission(idRepository, '8217bb4e7fa0541e0f5e04fea764ab91', 1))
+        // return Advertencia("No tiene permiso de realizar esta acción");
     
         var content = $('<div>', {class: "row", style: "max-height: calc(100vh - 200px); overflow-y: auto;"});
         BootstrapDialog.show({
@@ -262,6 +262,9 @@ var ExpedientTag = function(){
     
     var getFrontPageData = function(activeNode){
         var parentFrontPage = getParentFrontPage(activeNode);
+        console.log("getFrontPageData");
+        console.log(idRepository);
+        console.log(repositoryName);
         var frontPage = expedient.frontPage.getFrontPageData(enterpriseKey, repositoryName, parentFrontPage.getKeyPath(), parentFrontPage.data.templateName + ".xml");
         return frontPage;
     };    

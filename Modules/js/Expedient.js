@@ -143,8 +143,8 @@ var ExpedientClass = function () {
         catalogKey = activeNode.data.catalogkey;
         idDocDisposition = activeNode.data.idDocDisposition;
         
-        if(!checkAuthorization(activeNode) !== 1)
-                return Advertencia("No tiene permiso para agregar una carátula");;
+        // if(!checkAuthorization(activeNode) !== 1)
+        //         return Advertencia("No tiene permiso para agregar una carátula");;
 
         var templates = TemplateDesigner.getTemplates(enterpriseKey, idRepository, repositoryName);
 

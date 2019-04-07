@@ -57,12 +57,12 @@ var ClassDocumentEnvironment = function(Source, IdGlobal, IdFile)
                    self.FileName = TableContentdT.fnGetData(position)[0];        
                    self.FileType = TableContentdT.fnGetData(position)[2];
                    self.FileRoute = TableContentdT.fnGetData(position)[6];
-                   self.IdRepository = $('#CM_select_repositorios option:selected').attr('idrepository');
-                   self.RepositoryName = $('#CM_select_repositorios option:selected').attr('repositoryname');  
-                   self.EnterpriseKey = $('#CM_select_empresas option:selected').attr('value');
-                   self.IdEnterprise = $('#CM_select_empresas option:selected').attr('id');
 //                   console.log(self.FileRoute+" "+self.FileName+" "+self.RepositoryName+' '+self.IdRepository);
-               }); 
+               });
+                self.IdRepository = $('#CM_select_repositorios option:selected').attr('idrepository');
+                self.RepositoryName = $('#CM_select_repositorios option:selected').attr('repositoryname');
+                self.EnterpriseKey = $('#CM_select_empresas option:selected').attr('value');
+                self.IdEnterprise = $('#CM_select_empresas option:selected').attr('id');
                 break;
 
             case 1:        
