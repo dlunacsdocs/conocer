@@ -28,8 +28,8 @@ class DataBase {
         $Password=$Conexion['Conexion']['Password'];
         $Host=$Conexion['Conexion']['Host'];
         error_reporting(E_ALL ^ E_DEPRECATED);
-        $enlace = mysql_connect($Host, $User, $Password);
-        mysql_set_charset('utf8');
+        $enlace = mysqli_connect($Host, $User, $Password);
+        mysqli_set_charset('utf8');
         return $enlace;
     }
 
