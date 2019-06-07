@@ -803,18 +803,18 @@ class Trash {
         $ResultadoConsulta=array();
         $conexion=  $BD->Conexion();
         if (!$conexion) {
-            $estado= mysql_error();
+            $estado= mysqli_error();
             $XML->ResponseXML("Error", 0, $estado);
             return 0;
         }
 
-        mysql_selectdb($DataBaseName, $conexion);
-        $select=mysql_query($QueryDirectoriesTrashed,  $conexion);
+        mysqli_selectdb($DataBaseName, $conexion);
+        $select=mysqli_query($QueryDirectoriesTrashed,  $conexion);
         
-        if(!$select){$estado= mysql_error(); $XML->ResponseXML("Error", 0, $estado);return 0;
-            }else{while(($ResultadoConsulta[] = mysql_fetch_row($select)) || array_pop($ResultadoConsulta)); }        
+        if(!$select){$estado= mysqli_error(); $XML->ResponseXML("Error", 0, $estado);return 0;
+            }else{while(($ResultadoConsulta[] = mysqli_fetch_row($select)) || array_pop($ResultadoConsulta)); }
         
-        mysql_close($conexion);
+        mysqli_close($conexion);
         
         
         

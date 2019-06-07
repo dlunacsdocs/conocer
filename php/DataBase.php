@@ -50,7 +50,7 @@ class DataBase {
 
         $CreateInstances = "CREATE TABLE IF NOT EXISTS `instancias` (IdInstancia INT(11) NOT NULL AUTO_INCREMENT,"
                 . "NombreInstancia VARCHAR(50) NOT NULL,"
-                . "fechaCreacion DATETIME NOT NULL DEFAULT 0,"
+                . "fechaCreacion DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,"
                 . "usuarioCreador VARCHAR(50) DEFAULT 'root',"
                 . "PRIMARY KEY (`IdInstancia`)) ENGINE=InnoDB AUTO_INCREMENT=1 DEFAULT CHARSET=utf8";
 
@@ -1165,23 +1165,23 @@ class DataBase {
         $conexion = $this->Conexion();
 
         if (!$conexion) {
-            $estado = mysql_error();
+            $estado = mysqli_error($conexion);
             return $estado;
         }
         $rootPass = md5("root");
         $sql = "SELECT *FROM Usuarios WHERE Login='$rootPass'";
 
-        mysql_select_db("cs-docs", $conexion);
-        $resultado = mysql_query($sql, $conexion);
+        mysqli_select_db($conexion,"cs-docs");
+        $resultado = mysqli_query($conexion, $sql);
 
         if (!$resultado) {
-            $estado = mysql_error();
-            mysql_close($conexion);
+            $estado = mysqli_error($conexion). "<br> ".  mysqli_errno($conexion);
+            mysqli_close($conexion);
             return $estado;
         } else
-            $Resultado = mysql_fetch_array($resultado);
+            $Resultado = mysqli_fetch_array($resultado);
 
-        mysql_close($conexion);
+        mysqli_close($conexion);
 
         $PesoRoot = $Resultado;
 
@@ -1200,17 +1200,17 @@ class DataBase {
         $estado = false;
         $conexion = $this->Conexion();
         if (!$conexion) {
-            $estado = mysql_error();
+            $estado = mysqli_error($conexion);
             return $estado;
         }
         $rootPass = md5("root");
         $sql = "INSERT INTO Usuarios (IdUsuario, Login, Password) VALUES(1,'root','$rootPass')";
-        mysql_select_db("cs-docs", $conexion);
-        $resultado = mysql_query($sql, $conexion);
+        mysqli_select_db($conexion, "cs-docs");
+        $resultado = mysqli_query($conexion, $sql);
         if (!$resultado) {
-            
+
         }
-        mysql_close($conexion);
+        mysqli_close($conexion);
 
         return $estado;
     }
@@ -1219,29 +1219,29 @@ class DataBase {
         $estado = TRUE;
         $conexion = $this->Conexion();
         if (!$conexion) {
-            $estado = mysql_error();
+            $estado = mysqli_error($conexion)." <br> ".  mysqli_errno($conexion);
             return $estado;
         }
-        mysql_select_db($DataBAse, $conexion);
+        mysqli_select_db($conexion, $DataBAse);
         $TablaPermisos = "CREATE TABLE IF NOT EXISTS Permisos"
-                . "(IdPermiso INT(11) NOT NULL AUTO_INCREMENT,"
-                . "ClavePermiso VARCHAR(10) NOT NULL,"
-                . "Lectura INT(1) NOT NULL,"
-                . "Escritura INT(1) NOT NULL,"
-                . "LecturaEscritura INT(1) NOT NULL,"
-                . "Ejecucion INT(1) NOT NULL,"
-                . "PRIMARY KEY(IdPermiso)"
-                . ")";
+            . "(IdPermiso INT(11) NOT NULL AUTO_INCREMENT,"
+            . "ClavePermiso VARCHAR(10) NOT NULL,"
+            . "Lectura INT(1) NOT NULL,"
+            . "Escritura INT(1) NOT NULL,"
+            . "LecturaEscritura INT(1) NOT NULL,"
+            . "Ejecucion INT(1) NOT NULL,"
+            . "PRIMARY KEY(IdPermiso)"
+            . ")";
 
-        $estado = (mysql_query($TablaPermisos)) ? 1 : "<p>Error al crear la tabla Permisos</p>";
+        $estado = (mysqli_query($conexion, $TablaPermisos)) ? 1 : "<p>Error al crear la tabla Permisos</p>";
         if ($estado != 1) {
-            echo mysql_error();
+            echo mysqli_error($conexion). "<br> ".  mysqli_errno($conexion);
             return;
         }
         $Insert = "INSERT INTO Permisos (IdPermiso,ClavePermiso,Lectura, Escritura, LecturaEscritura,Ejecucion) VALUES (1,'0',0,0,0,0),(2,'r',1,0,0,0),(3,'w',0,1,0,0),(4,'rw',1,1,1,0),(5,'rwx',1,1,1,1)";
-        $estado = (mysql_query($Insert)) ? 1 : "<p>Error al llenar la tabla Permisos</p>" . mysql_error() . mysql_close($conexion);
+        $estado = (mysqli_query($conexion, $Insert)) ? 1 : "<p>Error al llenar la tabla Permisos</p>" . mysqli_error($conexion) . mysqli_close($conexion);
         if ($estado != 1) {
-            echo mysql_error();
+            echo mysqli_error($conexion);
             return;
         }
 
@@ -1438,20 +1438,20 @@ class DataBase {
         $Resultado = 0;
         $conexion = $this->Conexion();
         if (!$conexion) {
-            $estado = mysqli_error();
+            $estado = mysqli_error($conexion);
             return $estado;
         }
 
         $sql = "SELECT $field FROM $Table WHERE $field=$Value";
-        mysqli_select_db($DataBaseName, $conexion);
-        $resultado = mysqli_query($sql, $conexion);
+        mysqli_select_db($conexion, $conexion);
+        $resultado = mysqli_query($conexion, $sql);
         if (!$resultado) {
-            $estado = mysqli_error();
+            $estado = mysqli_error($conexion);
         } else {
-            $Resultado = mysql_fetch_array($resultado);
+            $Resultado = mysqli_fetch_array($resultado);
         }
 
-        mysql_close($conexion);
+        mysqli_close($conexion);
         $PesoRoot = $Resultado;
         if ($PesoRoot == false) {
             $PesoRoot = 0;

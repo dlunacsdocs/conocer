@@ -1154,25 +1154,25 @@ class ContentManagement {
         Log::WriteEvent("40", $IdUsuario, $NombreUsuario, " \"$NombreArchivo\" ", $DataBaseName);
         
     }
-    
+
     function doDetailQuery($dataBaseName, $query){
         $DB = new DataBase();
         $Resultado = array();
-        
+
         $conexion=  $DB->Conexion();
-        
-        if (!$conexion) 
-            return mysql_error();
-        
-        mysql_selectdb($dataBaseName, $conexion);
-        $select=mysql_query($query,  $conexion);
-        
+
+        if (!$conexion)
+            return mysqli_error($conexion. "<br>".  mysqli_errno($conexion));
+
+        mysqli_select_db($conexion, $dataBaseName);
+        $select = mysqli_query($conexion, $query);
+
         if(!$select)
-            return mysql_error();
+            return mysqli_error($conexion)."<br>".  mysqli_errno($conexion);
         else
-            while(($Resultado[] = mysql_fetch_assoc($select,MYSQL_NUM)) || array_pop($Resultado)); 
-        
-        mysql_close($conexion);
+            while(($Resultado[] = mysqli_fetch_array($select)) || array_pop($Resultado));
+
+        mysqli_close($conexion);
 
         return $Resultado;
     }
@@ -1273,18 +1273,16 @@ class ContentManagement {
         
         if (!$conexion) 
             return XML::XMLReponse("Error", 0, "Error al obtener metadatos. ".  mysql_error());
-         
-        mysql_selectdb($DataBaseName, $conexion);
-        $select=mysql_query($query,  $conexion);
-        
+
+        mysqli_select_db($conexion, $DataBaseName);
+        $select = mysqli_query($conexion, $query);
+
         if(!$select)
-            return XML::XMLReponse("Error", 0, "Error al obtener metadatos. ".  mysql_error());
+            return XML::XMLReponse("Error", 0, "Error al obtener metadatos. ". mysqli_connect_errno()." ".  mysqli_connect_error());
         else
-        {
-            while(($File[] = mysql_fetch_assoc($select,MYSQL_NUM)) || array_pop($File)); 
-        }
-        
-        mysql_close($conexion);
+            while(($File[] = mysqli_fetch_array($select)) || array_pop($File));
+
+        mysqli_close($conexion);
         
         $cadena_campos='';
         $cadena_valores='';
