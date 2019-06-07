@@ -1438,15 +1438,15 @@ class DataBase {
         $Resultado = 0;
         $conexion = $this->Conexion();
         if (!$conexion) {
-            $estado = mysql_error();
+            $estado = mysqli_error();
             return $estado;
         }
 
         $sql = "SELECT $field FROM $Table WHERE $field=$Value";
-        mysql_select_db($DataBaseName, $conexion);
-        $resultado = mysql_query($sql, $conexion);
+        mysqli_select_db($DataBaseName, $conexion);
+        $resultado = mysqli_query($sql, $conexion);
         if (!$resultado) {
-            $estado = mysql_error();
+            $estado = mysqli_error();
         } else {
             $Resultado = mysql_fetch_array($resultado);
         }
@@ -1549,27 +1549,27 @@ class DataBase {
     }
 
     /*
-     * Se reciben dos cadenas:
-     * 1.- Específica los campos a insertar
-     * 2.- Especifica los valores a insertar en esos campos
-     */
+    * Se reciben dos cadenas:
+    * 1.- Específica los campos a insertar
+    * 2.- Especifica los valores a insertar en esos campos
+    */
 
     function ConsultaInsert($bd, $query) {
         $estado = true;
         $conexion = $this->Conexion();
         if (!$conexion) {
-            $estado = mysql_error();
+            $estado = mysqli_error($conexion);
 
             return $estado;
         }
 
-        mysql_select_db($bd, $conexion);
-        $insertar = mysql_query($query, $conexion);
+        mysqli_select_db($conexion, $bd);
+        $insertar = mysqli_query($conexion, $query);
         if (!$insertar) {
-            $estado = mysql_error();
+            $estado = mysqli_error($conexion);
             return $estado;
         }
-        mysql_close($conexion);
+        mysqli_close($conexion);
 
         return $estado;
     }
@@ -1578,19 +1578,19 @@ class DataBase {
         $estado = 0;
         $conexion = $this->Conexion();
         if (!$conexion) {
-            $estado = mysql_error();
-
+            $estado = mysqli_connect_error()." <br> ". mysqli_error($conexion)." <br> ".  mysqli_errno($conexion);
+            mysqli_close($conexion);
             return $estado;
         }
 
-        mysql_select_db($bd, $conexion);
-        $insertar = mysql_query($query, $conexion);
+        mysqli_select_db($conexion, $bd);
+        $insertar = mysqli_query($conexion, $query);
         if (!$insertar) {
-            $estado = mysql_error();
+            $estado = mysqli_error($conexion);
             return $estado;
         }
-        $estado = mysql_insert_id($conexion);
-        mysql_close($conexion);
+        $estado = mysqli_insert_id($conexion);
+        mysqli_close($conexion);
 
         return $estado;
     }
@@ -1599,60 +1599,56 @@ class DataBase {
         $estado = true;
         $conexion = $this->Conexion();
         if (!$conexion) {
-            $estado = mysql_error();
+            $estado = mysqli_error($conexion);
 
             return $estado;
         }
 
-        mysql_select_db($bd, $conexion);
-        $insertar = mysql_query($query, $conexion);
+        mysqli_select_db($conexion, $bd);
+        $insertar = mysqli_query($conexion, $query);
         if (!$insertar) {
-            $estado = mysql_error();
+            $estado = mysqli_error($conexion);
             return $estado;
         }
-        mysql_close($conexion);
+        mysqli_close($conexion);
 
         return $estado;
     }
 
     /*     * *****************************************************************************
      * Regresa un array asociativo si la consulta tuvo éxito sino devuelve el error
-     *                                                              
+     *
      *  Resultado = {
-     * 
+     *
      *          Estado=> True/False ,
      *          ArrayDatos=>  'Resultado de Consulta'
-     * 
-     *******************************************************************************/
-    function ConsultaSelect($bd,$query, $associativeArray = 1)
-    {
-        $estado=true;
-        $ResultadoConsulta=array();
-        $conexion=  $this->Conexion();
+     *
+     * ***************************************************************************** */
+
+    function ConsultaSelect($bd, $query) {
+        $estado = true;
+        $ResultadoConsulta = array();
+        $conexion = $this->Conexion();
         if (!$conexion) {
-            $estado = mysql_error();
+            $estado = "Error al conectar mysql. ".mysqli_connect_errno($conexion)." <br> ".  mysqli_connect_error($conexion);
             $error = array("Estado" => $estado, "ArrayDatos" => 0);
             return $error;
         }
 
-        mysql_selectdb($bd, $conexion);
-        $select=mysql_query($query,  $conexion);
-        if(!$select)
-            {
-                $estado= mysql_error(); 
-                $error=array("Estado"=>$estado, "ArrayDatos"=>0);
-                return $error;
-            }
-            else
-            {
-                if($associativeArray)
-                    while(($ResultadoConsulta[] = mysql_fetch_assoc($select)) || array_pop($ResultadoConsulta)); 
-                else
-                    while(($ResultadoConsulta[] = mysql_fetch_array($select)) || array_pop($ResultadoConsulta)); 
-            }
-        
-        
-        mysql_close($conexion);
+        mysqli_select_db($conexion, $bd);
+        $select = mysqli_query($conexion, $query);
+
+        if (!$select) {
+            $estado = mysqli_error($conexion). " <br> ".  mysqli_errno($conexion);
+            $error = array("Estado" => "Error al consultar datos. ".$estado, "ArrayDatos" => 0);
+            return $error;
+        } else {
+            while (($ResultadoConsulta[] = mysqli_fetch_assoc($select)) || array_pop($ResultadoConsulta));
+            mysqli_free_result($select);
+        }
+
+
+        mysqli_close($conexion);
 
         $Resultado = array("Estado" => $estado, "ArrayDatos" => $ResultadoConsulta);
         return $Resultado;
@@ -1666,17 +1662,17 @@ class DataBase {
         $estado = true;
         $conexion = $this->Conexion();
         if (!$conexion) {
-            $estado = mysql_error();
+            $estado = mysqli_error($conexion);
             return $estado;
         }
 
-        mysql_selectdb($DataBasaName, $conexion);
-        $select = mysql_query($query, $conexion);
+        mysqli_select_db($conexion, $DataBasaName);
+        $select = mysqli_query($conexion, $query);
         if (!$select) {
-            $estado = mysql_error();
+            $estado = mysqli_error($conexion). " <br> ".  mysqli_errno($conexion);
         }
 
-        mysql_close($conexion);
+        mysqli_close($conexion);
         return $estado;
     }
 
