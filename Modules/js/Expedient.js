@@ -69,8 +69,8 @@ var ExpedientClass = function () {
     var doValidations = function(activeNode){
         setEnvironmentData();
         console.log("idRepository: "+idRepository);
-        if(!validateSystemPermission(idRepository, '91d0dbfd38d950cb716c4dd26c5da08a', 1))
-            return Advertencia("No tiene permiso de realizar esta acción");
+        // if(!validateSystemPermission(idRepository, '91d0dbfd38d950cb716c4dd26c5da08a', 1))
+            // return Advertencia("No tiene permiso de realizar esta acción");
         
         if (typeof activeNode !== 'object')
             return Advertencia("Debe seleccionar un directorio");
